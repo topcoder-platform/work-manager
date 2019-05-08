@@ -1,6 +1,6 @@
 module.exports = (() => {
-  const env = process.env.NODE_ENV || 'development'
-
+  let env = process.env.NODE_ENV || 'development'
+  if (process.env.FORCE_DEV) env = 'development'
   // for security reason don't let to require any arbitrary file defined in process.env
   if (env === 'production') {
     return require('./production')
