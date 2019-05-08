@@ -1,0 +1,47 @@
+@import "../../../styles/includes";
+
+.row {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-content: space-between;
+  justify-content: flex-start;
+  margin-top: 30px;
+
+  .field {
+    @include upto-sm {
+      display: block;
+      padding-bottom: 10px;
+    }
+
+    label {
+      @include roboto-bold();
+
+      font-size: 16px;
+      line-height: 19px;
+      font-weight: 500;
+      color: $tc-gray-80;
+    }
+
+    &.col1 {
+      max-width: 185px;
+      min-width: 185px;
+      margin-left: 30px;
+      margin-right: 14px;
+      padding-top: 10px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+    }
+
+    &.col2 {
+      align-self: flex-end;
+      margin-bottom: auto;
+      margin-top: auto;
+      display: flex;
+      flex-direction: row;
+      max-width: 100px;
+      min-width: 100px;
+    }
+  }
+}

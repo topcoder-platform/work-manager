@@ -1,0 +1,147 @@
+@import "../../../styles/includes";
+
+.container {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+}
+
+.row {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  margin: 30px 30px 0 30px;
+  align-content: space-between;
+  justify-content: flex-start;
+
+  .field {
+    @include upto-sm {
+      display: block;
+      padding-bottom: 10px;
+    }
+
+    label {
+      @include roboto();
+
+      font-size: 16px;
+      line-height: 19px;
+      font-weight: 400;
+      color: $tc-gray-80;
+      padding-left: 16px;
+    }
+
+    &.col1 {
+      max-width: 185px;
+      min-width: 185px;
+      margin-right: 14px;
+      margin-bottom: auto;
+      margin-top: auto;
+      padding-top: 10px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+    }
+
+    &.col2 {
+      align-self: flex-end;
+      margin-bottom: auto;
+      margin-top: auto;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+
+  .col1 {
+    display: flex;
+    flex-grow: 1;
+    align-items: center;
+    max-width: 0;
+    min-width: 0;
+    margin-right: 0;
+    width: auto;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding-top: 0 !important;
+
+    span {
+      color: $tc-red;
+    }
+  }
+
+  .item {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    color: $tc-gray-80;
+    margin-right: 20px;
+
+    .order {
+      @include roboto;
+
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 17px;
+      margin-bottom: 2px;
+    }
+
+    .amount {
+      @include roboto-light();
+
+      font-size: 14px;
+      font-weight: 300;
+      line-height: 17px;
+    }
+
+  }
+}
+
+.row:first-of-type {
+  label {
+    @include roboto-medium();
+
+    font-weight: 500;
+    padding-left: 0;
+  }
+}
+
+.icon {
+  margin-left: 10px;
+  color: $tc-red;
+  cursor: pointer;
+}
+
+.editButton {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  color: $tc-gray-60;
+
+  cursor: pointer;
+
+  &.active {
+    color: $tc-blue-20;
+  }
+
+  span {
+    @include roboto-medium();
+
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 19px;
+  }
+  .icon {
+    color: $tc-gray-60;
+
+    &.active {
+      color: $tc-blue-20;
+    }
+  }
+}
+
+.button {
+  margin: 30px 0 0 30px;
+  width: 151px;
+  height: 40px;
+  align-self: flex-start;
+}

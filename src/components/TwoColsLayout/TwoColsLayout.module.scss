@@ -1,0 +1,32 @@
+.container {
+  display: flex;
+}
+
+.sidebar {
+  min-height: 100vh;
+  position: relative;
+  width: 280px;
+
+  @media screen and (max-width: 300px * 4) {
+    width: auto;
+    flex: 1;
+  }
+
+}
+
+.content {
+  /* minus sidebar width and minus sidebar border width */
+  width: calc(100% - 280px);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+
+  /*
+    if there is not enough space for sidebar to be 300
+    than content becomes 3/4 of the width
+  */
+  @media screen and (max-width: 300px * 4) {
+    width: auto;
+    flex: 4;
+  }
+}

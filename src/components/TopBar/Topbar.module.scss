@@ -1,0 +1,23 @@
+@import "../../styles/includes";
+.topbar {
+  height: 60px;
+  background-color: $white;
+  padding: 0 30px 0 30px;
+  border-bottom: 1px solid $gray;
+}
+
+.details {
+  display: block;
+  margin-left: auto;
+  text-align: right;
+  font-size: 16px;
+  line-height: 60px;
+
+}
+
+.icon {
+  vertical-align: middle;
+  color: $blue;
+  margin-left: 20px;
+  font-size: 20px;
+}

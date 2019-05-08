@@ -1,0 +1,30 @@
+@import "../../../styles/includes";
+
+.container {
+  @include roboto-medium();
+
+  width: 100%;
+  height: 100%;
+  border-radius: 50px;
+  text-decoration: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+
+  span {
+    color: $white;
+  }
+
+  &.danger {
+    background-color: $tc-red;
+  }
+
+  &.info {
+    background-color: $tc-blue-20;
+  }
+
+  &.success {
+    background-color: $tc-green-40;
+  }
+}

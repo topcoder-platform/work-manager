@@ -1,0 +1,47 @@
+@import '../../../styles/includes';
+
+.noChallenge {
+  justify-content: center;
+  align-items: center;
+  padding: 35px;
+  background-color: $white;
+  border-radius: 8px;
+  border: 1px solid $lighter-gray;
+
+  > p {
+    font-size: 20px;
+    line-height: 26px;
+    text-align: center;
+    margin: 0;
+  }
+}
+
+.tags {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.tag {
+  @include roboto-light();
+  color: $white;
+  text-decoration: none;
+  font-size: 15px;
+  line-height: 20px;
+  padding: 5px 15px;
+  margin: 0 10px;
+  border-radius: 3px;
+}
+
+.orange {
+  background-color: $orange;
+}
+
+.green {
+  background-color: $green;
+}
+
+.blue {
+  background-color: $light-blue;
+}
+

@@ -1,0 +1,63 @@
+@import "../../../styles/includes";
+
+.list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  ul {
+    display: flex;
+    flex-direction: column;
+    background-color: $white;
+    padding: 0;
+    margin: 0;
+
+    li {
+      list-style: none;
+      height: 83px;
+      width: 100%;
+      border-top: 1px $gray solid;
+
+      a {
+        text-decoration: none;
+      }
+    }
+  }
+}
+
+.header {
+  background-color: $light-bg;
+  height: 50px;
+  display: flex;
+  justify-content: flex-start;
+  padding: 0 20px;
+
+  .col1 {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex: 6;
+  }
+
+  .col2 {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 2;
+  }
+
+  .col3 {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex: 2;
+  }
+
+  .col4 {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex: 2;
+  }
+}

@@ -1,0 +1,146 @@
+@import "../../../styles/includes";
+.list {
+  width: 100%;
+  > thead > tr {
+    background-color: $white;
+  }
+}
+
+.itemReview {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-top: 1px solid $gray;
+  box-sizing: border-box;
+  td {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+}
+
+.itemReview:last-of-type {
+  background-color: $light-bg;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.itemArtifact {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-top: 1px solid $gray;
+  box-sizing: border-box;
+  td {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+}
+
+.itemArtifact:last-of-type {
+  background-color: $white;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.submissionLink {
+  color: $link-color;
+  margin-right: 5px;
+}
+
+.handle {
+  display: flex;
+}
+
+.date {
+  color: $light-text;
+  text-align: left;
+  width: 100%;
+}
+
+.type {
+  color: $light-text;
+  font-size: 14px;
+  text-align: start;
+}
+
+.score {
+  color: $light-text;
+  font-size: 14px;
+  text-align: start;
+}
+
+.passed {
+  color: $green;
+}
+
+.fail {
+  color: $red;
+}
+
+.header {
+  padding: 15px 0;
+}
+
+.action {
+  margin-right: 12px;
+}
+
+h2.heading {
+  @include roboto-light();
+  display: inline;
+  font-size: 24px;
+  line-height: 28px;
+  margin: 15px 0;
+  vertical-align: middle;
+
+  a {
+    color: $link-color;
+
+    svg {
+      margin-left: 5px;
+    }
+  }
+}
+
+.backButton {
+  display: inline-block;
+  font-size: 24px;
+  color: $gray;
+  vertical-align: middle;
+  margin-right: 15px;
+  box-sizing: border-box;
+}
+
+.tabs {
+  @include roboto;
+
+  font-size: 16px;
+  color: $dark-gray-90;
+  display: flex;
+  height: 47px;
+  justify-content: flex-start;
+  background-color: $light-gray;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+
+  div:last-of-type {
+    &.active {
+      border-left: 1px solid $white-text;
+      border-right: 0;
+    }
+  }
+
+  .tab {
+    width: 226px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    border-top-left-radius: 8px;
+
+    &.active {
+      background-color: $white;
+      border-right: 1px solid $white-text;
+    }
+  }
+}

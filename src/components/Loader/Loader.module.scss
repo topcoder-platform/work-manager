@@ -1,0 +1,48 @@
+$grey-light: #d6d6d6;
+$grey-lighter: #f2f2f2;
+
+.loader {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+}
+
+.container {
+  display: block;
+  height: 64px;
+  margin: 0 auto;
+  text-align: center;
+  width: 64px;
+}
+
+.circle1 {
+  fill: none;
+  stroke: #149efe;
+  stroke-width: 2;
+  animation: scale 1s infinite alternate;
+  transform-origin: center;
+}
+
+.circle2 {
+  fill: none;
+  stroke: #e3e4e5;
+  stroke-width: 2;
+  animation: scale 1s infinite alternate;
+  animation-delay: 0.5s;
+  transform-origin: center;
+}
+
+
+@keyframes scale {
+  0% {
+    transform: scale(4.0);
+    opacity: 1.0;
+  }
+  100% {
+    transform: scale(1.0);
+    opacity: 0.1;
+  }
+}
+

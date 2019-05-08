@@ -1,0 +1,49 @@
+@import "../../styles/includes";
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: auto;
+  height: 40px;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  cursor: pointer;
+
+  &.active {
+    border-color: $tc-blue-20;
+  }
+
+  img {
+    border-radius: 50%;
+    display: inline;
+    width: 40px;
+    height: 40px;
+    margin-right: 10px;
+  }
+
+  .handle {
+    @include roboto-medium();
+
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 17px;
+    margin-right: 10px;
+
+    &.yellow {
+      color: $tc-handle-yellow;
+    }
+
+    &.green {
+      color: $tc-handle-green;
+    }
+
+    &.red {
+      color: $tc-handle-red;
+    }
+
+    &.gray {
+      color: $tc-handle-gray;
+    }
+  }
+}

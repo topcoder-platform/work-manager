@@ -1,0 +1,303 @@
+/*
+/* Font
+*/
+@mixin roboto-light {
+  font-family: 'Roboto', Helvetica, Arial, sans-serif;
+  font-weight: 300;
+}
+
+@mixin roboto {
+  font-family: 'Roboto', Helvetica, Arial, sans-serif;
+  font-weight: 400;
+}
+
+@mixin roboto-medium {
+  font-family: 'Roboto', Helvetica, Arial, sans-serif;
+  font-weight: 500;
+}
+
+@mixin roboto-bold {
+  font-family: 'Roboto', Helvetica, Arial, sans-serif;
+  font-weight: 700;
+}
+
+@mixin tc-label-xl {
+  @include roboto-medium();
+
+  color: $tc-black;
+  font-size: 20px;
+  line-height: 30px;
+}
+
+@mixin tc-label-lg {
+  @include roboto-medium();
+
+  color: $tc-black;
+  font-size: 18px;
+  line-height: 22px;
+}
+
+@mixin tc-label-md {
+  @include roboto-medium();
+
+  color: $tc-black;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+@mixin tc-label-sm {
+  @include roboto;
+
+  color: $tc-black;
+  font-size: 12px;
+  line-height: 15px;
+}
+
+
+/*
+/* Form
+*/
+@mixin form-container-default {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+
+  @include upto-sm {
+    display: none;
+  }
+
+  .row {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    margin: 30px;
+    align-content: space-between;
+    justify-content: flex-start;
+    box-sizing: border-box;
+
+    .field {
+      @include upto-sm {
+        display: block;
+        padding-bottom: 10px;
+      }
+
+      label {
+        @include roboto-bold();
+
+        font-size: 16px;
+        line-height: 19px;
+        font-weight: 500;
+        color: $tc-gray-80;
+      }
+
+      .passwordCheckbox {
+        @include roboto-medium();
+
+        font-size: 10px;
+        line-height: 15px;
+        font-weight: 500;
+        color: $tc-gray-80;
+        margin-bottom: 5px;
+      }
+
+      &.col1 {
+        max-width: 185px;
+        min-width: 185px;
+        margin-right: 14px;
+        margin-bottom: auto;
+        margin-top: auto;
+        padding-top: 10px;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+      }
+
+      &.col2 {
+        align-self: flex-end;
+        width: 80%;
+        margin-bottom: auto;
+        margin-top: auto;
+        display: flex;
+        flex-direction: row;
+        max-width: 600px;
+        min-width: 600px;
+      }
+
+      &.col-percent50 {
+        align-self: flex-end;
+        width: 50%;
+        margin-bottom: auto;
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      &.col-percent35 {
+        align-self: flex-end;
+        width: 35%;
+        margin-bottom: auto;
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .date-input {
+        display: flex;
+        align-items: center;
+      }
+    }
+
+    &.hide {
+      display: none;
+    }
+  }
+}
+
+@mixin form-row {
+  .row {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    margin: 30px;
+    align-content: space-between;
+    justify-content: flex-start;
+    box-sizing: border-box;
+
+    .field {
+      @include upto-sm {
+        display: block;
+        padding-bottom: 10px;
+      }
+
+      label {
+        @include roboto-bold();
+
+        font-size: 16px;
+        line-height: 19px;
+        font-weight: 500;
+        color: $tc-gray-80;
+      }
+
+      .passwordCheckbox {
+        @include roboto-medium();
+
+        font-size: 10px;
+        line-height: 15px;
+        font-weight: 500;
+        color: $tc-gray-80;
+        margin-bottom: 5px;
+      }
+
+      &.col1 {
+        max-width: 185px;
+        min-width: 185px;
+        margin-right: 14px;
+        margin-bottom: auto;
+        margin-top: auto;
+        padding-top: 10px;
+        white-space: nowrap;
+        display: flex;
+        align-items: center;
+      }
+
+      &.col2 {
+        align-self: flex-end;
+        width: 80%;
+        margin-bottom: auto;
+        margin-top: auto;
+        display: flex;
+        flex-direction: row;
+        max-width: 600px;
+        min-width: 600px;
+      }
+
+      &.col-percent50 {
+        align-self: flex-end;
+        width: 50%;
+        margin-bottom: auto;
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      &.col-percent35 {
+        align-self: flex-end;
+        width: 35%;
+        margin-bottom: auto;
+        margin-top: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .date-input {
+        display: flex;
+        align-items: center;
+      }
+    }
+
+    &.hide {
+      display: none;
+    }
+  }
+}
+
+// Checkbox
+$checkbox-size: 20px;
+$checkbox-bg-empty: $tc-gray-10;
+$checkbox-bg-selected: $tc-blue-40;
+
+@mixin tc-checkbox {
+  height: $checkbox-size;
+  width: $checkbox-size;
+  position: absolute;
+  display: inline-block;
+  bottom: 0;
+
+  input[type=checkbox] {
+    display: none;
+  }
+
+  label {
+    cursor: pointer;
+    position: absolute;
+    display: inline-block;
+    width: $checkbox-size;
+    height: $checkbox-size;
+    top: 0;
+    left: 0;
+    box-shadow: none;
+    border: 1px solid $tc-gray-50;
+    background: $tc-gray-10;
+
+    &::after {
+      opacity: 0;
+      content: '';
+      position: absolute;
+      width: 13px;
+      height: 7px;
+      background: transparent;
+      top: 4px;
+      left: 3px;
+      border: 3px solid $tc-blue-20;
+      border-top: none;
+      border-right: none;
+      transform: rotate(-45deg);
+    }
+
+    &:hover::after {
+      opacity: 0.3;
+    }
+  }
+
+  input[type=checkbox]:checked ~ label {
+    background: $checkbox-bg-selected;
+    border-color: $checkbox-bg-selected;
+  }
+
+  input[type=checkbox]:checked + label::after {
+    opacity: 1;
+    border-color: $white;
+  }
+}
+
+

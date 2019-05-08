@@ -1,0 +1,41 @@
+@import "forms";
+
+body {
+  margin: 0;
+  padding: 0;
+  @include roboto;
+  color: $text-color;
+  background-color: $white-text;
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.block {
+  width: 100%;
+  display: block;
+}
+
+.light-text {
+  color: $light-text;
+}
+
+.bold {
+  @include roboto-bold();
+}
+
+.link-button {
+  &:any-link{
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    width: 100%;
+  }
+}
+
+// Hide authentication iframe
+#tc-accounts-iframe {
+  display: none;
+}
+

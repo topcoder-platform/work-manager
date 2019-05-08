@@ -1,0 +1,8 @@
+@import '../../styles/includes';
+
+.handle {
+  @include roboto-medium;
+  display: inline-block;
+  color: $text-color;
+  text-decoration: none;
+}

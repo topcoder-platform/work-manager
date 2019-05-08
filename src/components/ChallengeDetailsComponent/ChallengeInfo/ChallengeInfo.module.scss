@@ -1,0 +1,53 @@
+@import "../../../styles/includes";
+
+.container {
+  width: 100%;
+  background-color: $white;
+  border-radius: 8px;
+  border: 1px solid $lighter-gray;
+  display: flex;
+}
+
+.prizeAndStats {
+  flex: 3 2;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.stats {
+  font-size: 16px;
+  color: $light-text;
+  margin-top: 20px;
+}
+
+.phases {
+  flex: 2;
+  width: 100%;
+  padding: 20px 0;
+  min-width: 420px;
+}
+
+.actions {
+  flex: 2;
+  width: 100%;
+  background-color: $light-gray;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  max-width: 223px;
+}
+
+.challengeButton {
+  background-color: $button-blue;
+  color: $white;
+  text-align: center;
+  text-decoration: none;
+  line-height: 21px;
+  font-size: 16px;
+  border-radius: 6px;
+  padding:  6px 6px;
+  width: 100%;
+  margin: 0 31px 0 31px;
+}

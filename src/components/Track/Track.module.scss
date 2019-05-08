@@ -1,0 +1,36 @@
+@import "../../styles/includes";
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+  width: 140px;
+  border: 1px solid $tc-gray-40;
+  border-radius: 2px;
+  box-sizing: border-box;
+  cursor: pointer;
+
+  &.active {
+    border-color: $tc-blue-20;
+  }
+}
+
+.icon {
+  margin-right: 10px;
+  max-height: 18px;
+  min-height: 18px;
+  max-width: 18px;
+  min-width: 18px;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.name {
+  @include roboto-light();
+
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 18px;
+  color: $tc-gray-80;
+}

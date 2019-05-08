@@ -1,0 +1,82 @@
+@import "../../../styles/includes";
+
+.container {
+  height: 22px;
+  width: 86px;
+  border-radius: 11.5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  span {
+    @include roboto;
+
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 17px;
+    color: $white;
+    text-transform: capitalize;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  &.gray {
+    background-color: $status-gray;
+  }
+
+  &.green {
+    background-color: $status-green;
+  }
+
+  &.blue {
+    background-color: $status-blue;
+  }
+}
+
+.bigContainer {
+  width: 160px;
+  height: 40px;
+  border: 1px solid transparent;
+  border-radius: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: $white;
+
+  .name {
+    @include roboto;
+
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 19px;
+    color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &.gray {
+      color: $status-gray;
+    }
+
+    &.green {
+      color: $status-green;
+    }
+
+    &.blue {
+      color: $status-blue;
+    }
+  }
+
+  &.gray {
+    border-color: $status-gray;
+  }
+
+  &.green {
+    border-color: $status-green;
+  }
+
+  &.blue {
+    border-color: $status-blue;
+  }
+}

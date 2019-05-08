@@ -1,0 +1,76 @@
+@import "../../styles/includes";
+
+.container {
+  box-sizing: border-box;
+  display: flex;
+  height: 40px;
+  width: 449px;
+}
+
+.selectContainer {
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: $tc-prize-bg;
+  border: 1px solid $tc-gray-40;
+  max-width: 80px;
+  min-width: 80px;
+  width: 80px;
+  cursor: pointer;
+  border-right-width: 0;
+
+  .icon {
+    margin-left: 20px;
+  }
+
+  .icon:last-of-type {
+    margin-right: 20px;
+    margin-left: 0;
+  }
+
+  .iconList {
+    box-sizing: border-box;
+    display: none;
+    flex-direction: column;
+    justify-content: flex-start;
+    border: 1px solid $tc-blue-20;
+    background-color: $white;
+    width: 80px;
+    position: absolute;
+    margin-top: 60px;
+    margin-left: -1px;
+
+    .item {
+      width: 100%;
+      height: 40px;
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      //padding-left: 20px;
+
+      svg {
+        margin-left: 20px;
+      }
+    }
+    .item:hover {
+      background-color: #ebf5ff;
+    }
+
+    &.active {
+      display: flex;
+    }
+  }
+}
+.selectContainer:hover {
+  border: 1px solid $tc-blue-20;
+}
+
+.icon {
+  width: 21.68px;
+  height: 21.68px;
+  margin-right:10px;
+  color: $tc-black;
+}
+
+

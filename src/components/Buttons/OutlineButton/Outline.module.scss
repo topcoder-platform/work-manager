@@ -1,0 +1,54 @@
+@import "../../../styles/includes";
+
+.container {
+  @include roboto-bold();
+
+  width: 100%;
+  height: 100%;
+  border-radius: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  background-color: $white;
+  cursor: pointer;
+
+  span {
+    color: $white;
+  }
+
+  &.danger {
+    border: 1px solid $tc-red;
+
+    span {
+      color: $tc-red;
+    }
+  }
+
+  &.info {
+    border: 1px solid $tc-blue-20;
+
+    span {
+      color: $tc-blue-20;
+    }
+  }
+
+  &.success {
+    border: 1px solid $tc-green-40;
+
+    span {
+      color: $tc-green-40;
+    }
+  }
+
+  &.disable {
+    @include roboto-light();
+    font-weight: 300;
+
+    border: 1px solid $tc-gray-40;
+
+    span {
+      color: $tc-gray-40;
+    }
+  }
+}

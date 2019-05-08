@@ -1,0 +1,48 @@
+@import "../../styles/includes";
+
+table {
+  border-spacing: 0;
+   tbody > tr {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: $white;
+    font-size: 15px;
+    padding: 0 20px;
+
+    td {
+      width: 100%;
+    }
+
+    td:last-of-type {
+      justify-content: flex-end;
+    }
+  }
+
+  > thead > tr {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: $light-bg;
+    font-size: 15px;
+    padding: 0 20px;
+
+    th {
+      @include roboto();
+      width: 100%;
+      text-align: start;
+      padding: 15px 0 15px 0;
+    }
+
+    th:last-of-type {
+      text-align: right;
+      justify-content: flex-end;
+    }
+  }
+}
+
+.hidden {
+  display: none;
+}
+
+tbody.expand {
+  width: 100%;
+}

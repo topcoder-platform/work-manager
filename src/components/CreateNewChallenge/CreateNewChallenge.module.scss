@@ -1,0 +1,332 @@
+@import "../../styles/includes";
+
+.wrapper {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 30px;
+}
+
+.title {
+  @include roboto-bold();
+
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 29px;
+  color: $challenges-title;
+  margin-top: 30px;
+  text-align: center;
+}
+
+.textRequired {
+  @include roboto-medium();
+
+  color: $tc-red;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 14px;
+  align-self: flex-end;
+  margin-top: 30px;
+  margin-right: 30px;
+  margin-bottom: 2px;
+}
+
+.container {
+  width: 100%;
+
+  .formContainer {
+    box-sizing: border-box;
+    margin: 0 30px 30px 30px;
+
+
+    @include form-container-default();
+
+    form {
+      width: 100%;
+    }
+
+    .group {
+      @include form-container-default();
+      background-color: $white;
+      width: 100%;
+      margin-bottom: 30px;
+      border: 1px solid $lighter-gray;
+      border-radius: 6px;
+      box-sizing: border-box;
+
+      .row {
+        margin-bottom: 0;
+
+        .col1 {
+          display: flex;
+          flex-grow: 1;
+          align-items: center;
+          max-width: 0;
+          min-width: 0;
+          margin-right: 0;
+          width: auto;
+          margin-top: 0 !important;
+          margin-bottom: 0 !important;
+          padding-top: 0 !important;
+
+          span {
+            color: $tc-red;
+          }
+        }
+
+        .col2 {
+          width: auto;
+
+          div {
+            margin-right: 13px;
+          }
+
+          div:last-child {
+            margin-right: 0;
+          }
+
+          .subGroup {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+
+            .subRow {
+              display: flex;
+              align-items: center;
+              margin-bottom: 18px;
+            }
+            .subRow:last-of-type {
+              margin-bottom: 0;
+            }
+          }
+        }
+
+        .tcCheckbox {
+          @include tc-checkbox;
+
+          .tc-checkbox-label {
+            @include roboto-light();
+
+            line-height: 17px;
+            font-weight: 300;
+            margin-left: 21px;
+            user-select: none;
+            cursor: pointer;
+            width: 195px;
+            font-size: 14px;
+            color: #3d3d3d;
+          }
+
+          height: 18px;
+          width: 210px;
+          margin: 0;
+          padding: 0;
+          vertical-align: bottom;
+          position: relative;
+          display: inline-block;
+
+          input[type=checkbox] {
+            display: none;
+          }
+
+          label {
+            @include roboto-light();
+
+            line-height: 17px;
+            font-weight: 300;
+            cursor: pointer;
+            position: absolute;
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            top: 0;
+            left: 0;
+            border: none;
+            box-shadow: none;
+            background: $tc-gray-30;
+            transition: all 0.15s ease-in-out;
+
+            &::after {
+              opacity: 0;
+              content: '';
+              position: absolute;
+              width: 9px;
+              height: 5px;
+              background: transparent;
+              top: 2px;
+              left: 2px;
+              border-top: none;
+              border-right: none;
+              transform: rotate(-45deg);
+              transition: all 0.15s ease-in-out;
+            }
+
+            &:hover::after {
+              opacity: 0.3;
+            }
+
+            div {
+              margin-left: 24px;
+              width: 300px;
+            }
+          }
+
+          input[type=checkbox]:checked ~ label {
+            background: $tc-blue-20;
+          }
+
+          input[type=checkbox]:checked + label::after {
+            border-color: $white;
+          }
+        }
+      }
+    }
+    .group:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .breakLine {
+      margin-left: 30px;
+      margin-right: 30px;
+      border: 1px solid $tc-gray-40;
+      margin-top: 30px;
+      margin-bottom: 0;
+    }
+
+
+  }
+
+  .buttonContainer {
+    display: flex;
+    margin: 0 30px;
+    justify-content: flex-end;
+
+    .button {
+      width: 135px;
+      height: 40px;
+      margin-right: 30px;
+    }
+    .button:nth-of-type(3) {
+      width: 175px;
+    }
+    .button:last-of-type {
+      margin-right: 0;
+    }
+  }
+
+}
+
+.modalContainer {
+  padding: 0;
+  position: fixed;
+  overflow: auto;
+  z-index: 10000;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: auto;
+  max-width: none;
+  transform: none;
+  background: transparent;
+  color: $text-color;
+  opacity: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .contentContainer {
+    box-sizing: border-box;
+    background: $white;
+    opacity: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 6px;
+    margin: 0 auto;
+    width: 852px;
+    height: 581px;
+    padding: 30px;
+
+    .content {
+      padding: 30px;
+      width: 100%;
+      height: 100%;
+    }
+
+    .title {
+      @include roboto-bold();
+
+      font-size: 30px;
+      line-height: 36px;
+      margin-bottom: 30px;
+      margin-top: 0;
+    }
+
+    span {
+      @include roboto;
+
+      font-size: 22px;
+      font-weight: 400;
+      line-height: 26px;
+    }
+
+    &.confirm {
+      width: 999px;
+      height: 450px;
+
+      .buttonGroup {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 260px;
+
+        .buttonSizeA {
+          width: 193px;
+          height: 40px;
+          margin-right: 33px;
+
+          span {
+            font-size: 18px;
+            font-weight: 500;
+          }
+        }
+
+        .buttonSizeB{
+          width: 160px;
+          height: 40px;
+
+          span {
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 22px;
+          }
+        }
+      }
+    }
+
+    .buttonGroup {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 391px;
+
+      .button {
+        width: 135px;
+        height: 40px;
+        margin-right: 66px;
+
+        span {
+          font-size: 18px;
+          font-weight: 500;
+        }
+      }
+
+      .button:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+}
+
