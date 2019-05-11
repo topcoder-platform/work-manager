@@ -442,10 +442,10 @@ class CreateNewChallenge extends Component {
                 <OutlineButton text={'Cancel'} type={'danger'} link={'/'} />
               </div>
               <div className={styles.button}>
-                <OutlineButton text={'Save as Draft'} type={'success'} link={'/'} />
+                <OutlineButton text={'Save as Draft'} type={'success'} />
               </div>
               <div className={styles.button}>
-                <OutlineButton text={'Save as Templates'} type={'success'} link={'/'} />
+                <OutlineButton text={'Save as Templates'} type={'success'} />
               </div>
               <div className={styles.button}>
                 <PrimaryButton text={'Launch'} type={'info'} onClick={() => (this.setState({ isLunch: true }))} />
