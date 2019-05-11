@@ -69,6 +69,7 @@ class CreateNewChallenge extends Component {
     this.onUpdatePhaseDate = this.onUpdatePhaseDate.bind(this)
     this.onUpdatePhaseTime = this.onUpdatePhaseTime.bind(this)
     this.onUploadFile = this.onUploadFile.bind(this)
+    this.calculateTotalChallengeCost = this.calculateTotalChallengeCost.bind(this)
   }
 
   componentDidMount () {
@@ -90,7 +91,11 @@ class CreateNewChallenge extends Component {
     const reviewCost = convertDollarToInteger(newChallenge.reviewCost, '$')
     const copilotFee = convertDollarToInteger(newChallenge.copilotFee, '$')
     const challengeFee = convertDollarToInteger(newChallenge.challengeFee, '$')
-    newChallenge['challengeTotalAmount'] = '$ ' + (reviewCost + copilotFee + challengeFee + (checkpointPrize * checkpointNoOfPrizes))
+    let prizes = 0
+    newChallenge.prizes.map(function (element) {
+      prizes += convertDollarToInteger(element.amount, '$')
+    })
+    newChallenge['challengeTotalAmount'] = '$ ' + (prizes + reviewCost + copilotFee + challengeFee + (checkpointPrize * checkpointNoOfPrizes))
   }
 
   /**
