@@ -90,7 +90,7 @@ class CreateNewChallenge extends Component {
     const reviewCost = convertDollarToInteger(newChallenge.reviewCost, '$')
     const copilotFee = convertDollarToInteger(newChallenge.copilotFee, '$')
     const challengeFee = convertDollarToInteger(newChallenge.challengeFee, '$')
-    newChallenge['challengeTotalAmount'] = '$ '  (reviewCost  copilotFee  challengeFee  (checkpointPrize * checkpointNoOfPrizes))
+    newChallenge['challengeTotalAmount'] = '$ '  (reviewCost + copilotFee + challengeFee + (checkpointPrize * checkpointNoOfPrizes))
   }
 
   /**
