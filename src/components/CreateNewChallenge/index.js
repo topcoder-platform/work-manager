@@ -25,7 +25,7 @@ import CheckpointPrizesField from './CheckpointPrizes-Field'
 import AttachmentField from './Attachment-Field'
 import TextEditorField from './TextEditor-Field'
 import ChallengeScheduleField from './ChallengeSchedule-Field'
-import { validateValue } from '../../util/input-check'
+import { validateValue, convertDollarToInteger } from '../../util/input-check'
 import dropdowns from './mock-data/dropdowns'
 import styles from './CreateNewChallenge.module.scss'
 
@@ -81,6 +81,19 @@ class CreateNewChallenge extends Component {
   }
 
   /**
+   * Calculate total cost of the challenge
+   * @param newChallenge - ref to updated newChallenge
+   */
+  calculateTotalChallengeCost (newChallenge) {
+    const checkpointNoOfPrizes = newChallenge.checkpointPrizes.checkNumber
+    const checkpointPrize = convertDollarToInteger(newChallenge.checkpointPrizes.checkAmount, '$')
+    const reviewCost = convertDollarToInteger(newChallenge.reviewCost, '$')
+    const copilotFee = convertDollarToInteger(newChallenge.copilotFee, '$')
+    const challengeFee = convertDollarToInteger(newChallenge.challengeFee, '$')
+    newChallenge['challengeTotalAmount'] = '$ '  (reviewCost  copilotFee  challengeFee  (checkpointPrize * checkpointNoOfPrizes))
+  }
+
+  /**
    * Update Input value of challenge
    * @param e The input event
    * @param isSub The value from sub field of challenge field
@@ -127,6 +140,8 @@ class CreateNewChallenge extends Component {
       }
     }
 
+    // calculate total cost of challenge
+    this.calculateTotalChallengeCost(newChallenge)
     this.setState({ challenge: newChallenge })
   }
 
