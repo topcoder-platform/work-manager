@@ -71,7 +71,7 @@ class ChallengePrizesField extends Component {
             <label htmlFor={`${index}-prize`}>{this.getOrder(index + 1)} Prize :</label>
           </div>
           <div className={cn(styles.field, styles.col2)}>
-            <PrizeInput prize={prize} onUpdateInput={onUpdateInput} onUpdateChallengePrizeType={onUpdateChallengePrizeType} index={index} activeIndex={currentPrizeIndex} togglePrizeSelect={this.togglePrizeSelect} />
+            <PrizeInput prize={prize} isFocus={index === challenge.focusIndex} onUpdateInput={onUpdateInput} onUpdateChallengePrizeType={onUpdateChallengePrizeType} index={index} activeIndex={currentPrizeIndex} togglePrizeSelect={this.togglePrizeSelect} />
             {
               index > 0 && (
                 <div className={styles.icon} onClick={() => removePrize(index)}>

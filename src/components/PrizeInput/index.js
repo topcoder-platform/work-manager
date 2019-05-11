@@ -32,7 +32,7 @@ class PrizeInput extends React.Component {
 
   render () {
     const { isOpen } = this.state
-    const { prize, onUpdateInput, index } = this.props
+    const { prize, onUpdateInput, index, isFocus } = this.props
     const showIcon = (type) => {
       if (type === 'money') return faDollarSign
       return faGift
@@ -59,7 +59,7 @@ class PrizeInput extends React.Component {
           <FontAwesomeIcon className={styles.icon} icon={faAngleDown} />
         </div>
 
-        <input id='amount' name='amount' type='text' placeholder='Prize' value={prize.amount} maxLength='200' onChange={(e) => onUpdateInput(e, true, 'prizes', index, prize.type === CHALLENGE_PRIZE_TYPE.MONEY ? VALIDATION_VALUE_TYPE.INTEGER : VALIDATION_VALUE_TYPE.STRING)} />
+        <input id='amount' name='amount' autoFocus={isFocus} type='text' placeholder='Prize' value={prize.amount} maxLength='200' onChange={(e) => onUpdateInput(e, true, 'prizes', index, prize.type === CHALLENGE_PRIZE_TYPE.MONEY ? VALIDATION_VALUE_TYPE.INTEGER : VALIDATION_VALUE_TYPE.STRING)} />
       </div>
     )
   }
@@ -69,7 +69,8 @@ PrizeInput.propTypes = {
   prize: PropTypes.shape().isRequired,
   onUpdateInput: PropTypes.func.isRequired,
   onUpdateChallengePrizeType: PropTypes.func.isRequired,
-  index: PropTypes.number.isRequired
+  index: PropTypes.number.isRequired,
+  isFocus: PropTypes.bool
 }
 
 export default PrizeInput
