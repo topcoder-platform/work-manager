@@ -182,11 +182,13 @@ class CreateNewChallenge extends Component {
         if (isSingleCheck) {
           newChallenge[field][id] = checked
         } else {
-          for (let key in newChallenge[field]) {
-            if (typeof key === 'boolean') {
-              newChallenge[field][key] = false
-            } else {
-              newChallenge[field][key] = ''
+          if (field !== 'terms') {
+            for (let key in newChallenge[field]) {
+              if (typeof key === 'boolean') {
+                newChallenge[field][key] = false
+              } else {
+                newChallenge[field][key] = ''
+              }
             }
           }
           newChallenge[field][id] = checked
