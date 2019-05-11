@@ -248,7 +248,6 @@
     border-radius: 6px;
     margin: 0 auto;
     width: 852px;
-    height: 581px;
     padding: 30px;
 
     .content {
@@ -276,12 +275,11 @@
 
     &.confirm {
       width: 999px;
-      height: 450px;
 
       .buttonGroup {
         display: flex;
         justify-content: space-between;
-        margin-top: 260px;
+        margin-top: 30px;
 
         .buttonSizeA {
           width: 193px;
@@ -310,7 +308,7 @@
     .buttonGroup {
       display: flex;
       justify-content: space-between;
-      margin-top: 391px;
+      margin-top: 30px;
 
       .button {
         width: 135px;
