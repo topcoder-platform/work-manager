@@ -5,6 +5,7 @@ import cn from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDown, faAngleUp } from '@fortawesome/free-solid-svg-icons'
 import { SIDEBAR_MENU } from '../../config/constants'
+import xss from 'xss'
 
 import styles from './ProjectCard.module.scss'
 
@@ -28,7 +29,7 @@ const ProjectCard = ({ projectName, projectId, activeMenu, selected, setActiveMe
   return (
     <div className={styles.container}>
       <div className={cn(styles.projectName, { [styles.selected]: selected })} onClick={() => changeProject(projectId)}>
-        <div className={styles.name}>{projectName}</div>
+        <div className={styles.name} dangerouslySetInnerHTML={{ __html: xss(decodeURIComponent(projectName)) }} />
         <FontAwesomeIcon className={styles.icon} icon={showIcon(selected)} />
       </div>
       <div className={cn({ [styles.hide]: !selected })}>
