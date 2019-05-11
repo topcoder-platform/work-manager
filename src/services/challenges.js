@@ -53,6 +53,6 @@ export async function fetchProjectChallenges (projectId, status) {
     filters.push(`status=${status}`)
   }
   filters.push(`projectId=${projectId}`)
-  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challenges${filters.length > 0 ? `?filter=${filters.join('&')}` : ''}`)
+  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challenges${filters.length > 0 ? `?filter=${encodeURIComponent(filters.join('&'))}` : ''}`)
   return _.get(response, 'data.result.content')
 }
