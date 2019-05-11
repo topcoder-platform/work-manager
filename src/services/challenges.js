@@ -49,8 +49,10 @@ export async function fetchChallengeTypes () {
  */
 export async function fetchProjectChallenges (projectId, status) {
   let filters = []
+  if (!_.isEmpty(status)) {
+    filters.push(`status=${status}`)
+  }
   filters.push(`projectId=${projectId}`)
-  if (!_.isEmpty(status)) filters.push(`status=${status}`)
   const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challenges${filters.length > 0 ? `?filter=${filters.join('&')}` : ''}`)
   return _.get(response, 'data.result.content')
 }
