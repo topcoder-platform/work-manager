@@ -136,7 +136,7 @@ class CreateNewChallenge extends Component {
               newChallenge[field][index]['amount'] = e.target.value.trim()
               break
             case VALIDATION_VALUE_TYPE.INTEGER:
-              newChallenge[field][index]['amount'] = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER, '$')
+              newChallenge[field][index]['amount'] = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER)
           }
           break
         default:
@@ -146,7 +146,7 @@ class CreateNewChallenge extends Component {
     }
 
     // calculate total cost of challenge
-    this.calculateTotalChallengeCost(newChallenge)
+    // this.calculateTotalChallengeCost(newChallenge)
     this.setState({ challenge: newChallenge })
   }
 
