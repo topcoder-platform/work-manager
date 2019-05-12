@@ -54,8 +54,10 @@
 
     .Select--multi > .Select-control > .Select-multi-value-wrapper {
       display: flex;
+      flex-wrap: wrap;
       justify-content: flex-start;
       align-items: center;
+      padding-bottom: 4px;
 
       .Select-value {
         background-color: $tc-blue-20;
