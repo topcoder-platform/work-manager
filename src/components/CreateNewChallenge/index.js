@@ -48,7 +48,6 @@ class CreateNewChallenge extends Component {
       isLunch: false,
       isConfirm: false,
       isClose: false,
-      currentTrack: '',
       currentCopilot: 'thomaskranitsas',
       challenge: null,
       isOpenAdvanceSettings: true,

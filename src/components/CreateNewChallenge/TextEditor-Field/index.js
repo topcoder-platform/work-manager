@@ -6,6 +6,7 @@ import FinalDeliverablesField from '../FinalDeliverables-Field'
 import StockArtsField from '../StockArts-Field'
 import SubmssionVisibility from '../SubmissionVisibility-Field'
 import MaximumSubmissionsField from '../MaximumSubmissions-Field'
+import { CHALLENGE_TRACKS } from '../../../config/constants'
 import styles from './TextEditor-Field.module.scss'
 import PropTypes from 'prop-types'
 
@@ -48,7 +49,8 @@ class TextEditorField extends Component {
 
   render () {
     const { keywords, challenge, onUpdateCheckbox, onUpdateInput, onUpdateMultiSelect } = this.props
-    const { currentTab } = this.state
+    const challengeTrack = challenge.track
+
     return (
       <div className={styles.container}>
         { this.renderTabs() }
@@ -56,12 +58,12 @@ class TextEditorField extends Component {
           <textarea className={styles.editor} id='requirements' name='requirements' placeholder='' value={challenge.requirements} maxLength='240' cols='3' rows='10' onChange={onUpdateInput} />
         </div>
         {
-          currentTab === TABS.CLASSIC_EDITOR && (
+          challengeTrack && (challengeTrack === CHALLENGE_TRACKS.DEVELOP || challengeTrack === CHALLENGE_TRACKS.QA) && (
             <TechAndPlatformField keywords={keywords} challenge={challenge} onUpdateMultiSelect={onUpdateMultiSelect} />
           )
         }
         {
-          currentTab === TABS.MARKDOWN && (
+          challengeTrack && challengeTrack === CHALLENGE_TRACKS.DESIGN && (
             <React.Fragment>
               <FinalDeliverablesField challenge={challenge} onUpdateCheckbox={onUpdateCheckbox} />
               <StockArtsField challenge={challenge} onUpdateCheckbox={onUpdateCheckbox} />
