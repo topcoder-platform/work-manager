@@ -10,8 +10,8 @@ const CheckpointPrizesField = ({ challenge, onUpdateInput, removeCheckpointPrize
         <label htmlFor='checkpointPrizes'>Checkpoint Prizes :</label>
       </div>
       <div className={cn(styles.field, styles.col2)}>
-        <input id='checkNumber' name='checkNumber' type='text' placeholder='Number of checkpoint prizes' value={challenge.checkpointPrizes.checkNumber} maxLength='200' onChange={(e) => onUpdateInput(e, true, 'checkpointPrizes')} />
-        <input id='checkAmount' name='checkAmount' type='text' placeholder='Amount per prizes' value={challenge.checkpointPrizes.checkAmount} maxLength='200' onChange={(e) => onUpdateInput(e, true, 'checkpointPrizes')} />
+        <input id='checkNumber' name='checkNumber' type='text' defaultValue='0' placeholder='Number of checkpoint prizes' value={challenge.checkpointPrizes.checkNumber} maxLength='200' onChange={(e) => onUpdateInput(e, true, 'checkpointPrizes')} />
+        <input id='checkAmount' name='checkAmount' type='text' defaultValue='$ 0' placeholder='Amount per prizes' value={challenge.checkpointPrizes.checkAmount} maxLength='200' onChange={(e) => onUpdateInput(e, true, 'checkpointPrizes')} />
       </div>
     </div>
   )

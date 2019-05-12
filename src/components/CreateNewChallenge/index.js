@@ -48,7 +48,6 @@ class CreateNewChallenge extends Component {
       isLunch: false,
       isConfirm: false,
       isClose: false,
-      currentTrack: '',
       currentCopilot: 'thomaskranitsas',
       challenge: null,
       isOpenAdvanceSettings: true,
@@ -86,16 +85,18 @@ class CreateNewChallenge extends Component {
    * @param newChallenge - ref to updated newChallenge
    */
   calculateTotalChallengeCost (newChallenge) {
-    const checkpointNoOfPrizes = newChallenge.checkpointPrizes.checkNumber
+    const checkpointNoOfPrizes = newChallenge.checkpointPrizes.checkNumber || 0
     const checkpointPrize = convertDollarToInteger(newChallenge.checkpointPrizes.checkAmount, '$')
     const reviewCost = convertDollarToInteger(newChallenge.reviewCost, '$')
     const copilotFee = convertDollarToInteger(newChallenge.copilotFee, '$')
     const challengeFee = convertDollarToInteger(newChallenge.challengeFee, '$')
-    let prizes = 0
-    newChallenge.prizes.map(function (element) {
-      prizes += convertDollarToInteger(element.amount, '$')
+    let totalPrizes = 0
+    newChallenge.prizes.map(function (prize) {
+      if (prize.type === 'money') {
+        totalPrizes += convertDollarToInteger(prize.amount, '$')
+      }
     })
-    newChallenge['challengeTotalAmount'] = '$ ' + (prizes + reviewCost + copilotFee + challengeFee + (checkpointPrize * checkpointNoOfPrizes))
+    newChallenge['challengeTotalAmount'] = '$ ' + (totalPrizes + reviewCost + copilotFee + challengeFee + (checkpointPrize * checkpointNoOfPrizes))
   }
 
   /**
@@ -134,8 +135,10 @@ class CreateNewChallenge extends Component {
           switch (valueType) {
             case VALIDATION_VALUE_TYPE.STRING:
               newChallenge[field][index]['amount'] = e.target.value.trim()
+              newChallenge['focusIndex'] = index
               break
             case VALIDATION_VALUE_TYPE.INTEGER:
+              newChallenge['focusIndex'] = index
               newChallenge[field][index]['amount'] = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER)
           }
           break
@@ -146,7 +149,7 @@ class CreateNewChallenge extends Component {
     }
 
     // calculate total cost of challenge
-    // this.calculateTotalChallengeCost(newChallenge)
+    this.calculateTotalChallengeCost(newChallenge)
     this.setState({ challenge: newChallenge })
   }
 
