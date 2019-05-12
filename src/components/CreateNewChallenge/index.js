@@ -116,8 +116,10 @@ class CreateNewChallenge extends Component {
           switch (valueType) {
             case VALIDATION_VALUE_TYPE.STRING:
               newChallenge[field][index]['amount'] = e.target.value.trim()
+              newChallenge['focusIndex'] = index
               break
             case VALIDATION_VALUE_TYPE.INTEGER:
+              newChallenge['focusIndex'] = index
               newChallenge[field][index]['amount'] = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER, '$')
           }
           break
