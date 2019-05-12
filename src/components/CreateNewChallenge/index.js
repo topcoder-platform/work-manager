@@ -50,7 +50,7 @@ class CreateNewChallenge extends Component {
       isClose: false,
       currentCopilot: 'thomaskranitsas',
       challenge: null,
-      isOpenAdvanceSettings: true,
+      isOpenAdvanceSettings: false,
       showCheckpointPrizes: true
     }
     this.onUpdateInput = this.onUpdateInput.bind(this)
