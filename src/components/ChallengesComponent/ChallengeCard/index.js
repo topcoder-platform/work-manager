@@ -116,30 +116,12 @@ const renderStatus = (status) => {
 }
 
 class ChallengeCard extends React.Component {
-  constructor (props) {
-    super(props)
-    this.state = {
-      isHover: false
-    }
-    this.toggleHover = this.toggleHover.bind(this)
-    this.removeHover = this.removeHover.bind(this)
-  }
-
-  toggleHover () {
-    this.setState({ isHover: true })
-  }
-
-  removeHover () {
-    this.setState({ isHover: false })
-  }
-
   render () {
     const { challenge } = this.props
     const { phaseMessage, endTime } = getPhaseInfo(challenge)
-    const { isHover } = this.state
 
     return (
-      <div className={styles.item} onMouseEnter={this.toggleHover} onMouseLeave={this.removeHover}>
+      <div className={styles.item}>
         <Link className={styles.col1} to={`/challenges/${challenge.id}`}>
           <div>
             <TrackIcon className={styles.icon} track={challenge.track} subTrack={challenge.subTrack} />
@@ -156,27 +138,19 @@ class ChallengeCard extends React.Component {
           <span className={styles.block}>{phaseMessage}</span>
           <span className='block light-text'>{endTime}</span>
         </Link>
-        {
-          isHover && (
-            <div className={styles.col4}>
-              {hoverComponents(challenge)}
-            </div>
-          )
-        }
-        {
-          !isHover && (
-            <div className={styles.col4}>
-              <div className={styles.faIconContainer}>
-                <FontAwesomeIcon icon={faUser} className={styles.faIcon} />
-                <span>{challenge.numRegistrants}</span>
-              </div>
-              <div className={styles.faIconContainer}>
-                <FontAwesomeIcon icon={faFile} className={styles.faIcon} />
-                <span>{challenge.numSubmissions}</span>
-              </div>
-            </div>
-          )
-        }
+        <div className={cn(styles.col4, styles.editingContainer)}>
+          {hoverComponents(challenge)}
+        </div>
+        <div className={cn(styles.col4, styles.iconsContainer)}>
+          <div className={styles.faIconContainer}>
+            <FontAwesomeIcon icon={faUser} className={styles.faIcon} />
+            <span>{challenge.numRegistrants}</span>
+          </div>
+          <div className={styles.faIconContainer}>
+            <FontAwesomeIcon icon={faFile} className={styles.faIcon} />
+            <span>{challenge.numSubmissions}</span>
+          </div>
+        </div>
       </div>
     )
   }

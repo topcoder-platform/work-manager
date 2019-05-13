@@ -6,6 +6,12 @@
   justify-content: space-between;
   font-size: 16px;
   height: 100%;
+  .editingContainer {
+    display: none;
+  }
+  .iconsContainer {
+    display: flex;
+  }
   &:hover {@import "../../../styles/includes";
 
     .item {
@@ -117,6 +123,13 @@
 
     cursor: pointer;
     background-color: $lighter-gray;
+
+    .editingContainer {
+      display: flex;
+    }
+    .iconsContainer {
+      display: none;
+    }
   }
 
   .block {
