@@ -4,13 +4,15 @@
  */
 import React from 'react'
 import PropTypes from 'prop-types'
+import cn from 'classnames'
 
 import styles from './TwoColsLayout.module.scss'
 
 const TwoColsLayout = ({
-  children
+  children,
+  scrollIndependent
 }) => (
-  <div className={styles.container}>
+  <div className={cn(styles.container, { [styles.scrollIndependent]: scrollIndependent })}>
     {children}
   </div>
 )
@@ -42,11 +44,13 @@ TwoColsLayout.Content.propTypes = {
 }
 
 TwoColsLayout.defaultProps = {
-  children: null
+  children: null,
+  scrollIndependent: false
 }
 
 TwoColsLayout.propTypes = {
-  children: PropTypes.node
+  children: PropTypes.node,
+  scrollIndependent: PropTypes.bool
 }
 
 export default TwoColsLayout

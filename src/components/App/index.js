@@ -6,7 +6,7 @@ import TwoColsLayout from '../TwoColsLayout'
 
 const App = (content, topbar, sidebar) => () => {
   return (
-    <TwoColsLayout>
+    <TwoColsLayout scrollIndependent>
       <TwoColsLayout.Sidebar>
         {sidebar}
       </TwoColsLayout.Sidebar>
