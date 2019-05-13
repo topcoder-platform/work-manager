@@ -3,7 +3,6 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import cn from 'classnames'
-import Sticky from 'react-stickynode'
 import moment from 'moment'
 import Modal from '../Modal'
 import { getForumURL, VALIDATION_VALUE_TYPE } from '../../config/constants'
@@ -336,147 +335,103 @@ class CreateNewChallenge extends Component {
       return <div>&nbsp;</div>
     }
     return (
-      <Sticky top={10} bottomBoundary='#SidebarContainer'>
-        <div className={styles.wrapper}>
-          <Helmet title={getTitle(isNew)} />
-          <div className={styles.title}>{getTitle(isNew)}</div>
-          <div className={styles.textRequired}>* Required</div>
-          <div className={styles.container}>
-            {
-              isLunch && !isConfirm && (
-                <Modal theme={theme}>
-                  <div className={styles.contentContainer}>
-                    <div className={styles.title}>Launch Challenge Confirmation</div>
-                    <span>Do you want to launch this challenge?</span>
-                    <div className={styles.buttonGroup}>
-                      <div className={styles.button}>
-                        <OutlineButton text={'Cancel'} type={'danger'} onClick={() => this.setState({ isLunch: false })} />
-                      </div>
-                      <div className={styles.button}>
-                        <PrimaryButton text={'Confirm'} type={'info'} onClick={() => {
-                          this.setState({ isConfirm: true })
-                          console.log(`Challenge: ${JSON.stringify(challenge)}`)
-                        }} />
-                      </div>
-                    </div>
+      <div className={styles.wrapper}>
+        <Helmet title={getTitle(isNew)} />
+        <div className={styles.title}>{getTitle(isNew)}</div>
+        <div className={styles.textRequired}>* Required</div>
+        <div className={styles.container}>
+          { isLunch && !isConfirm && (
+            <Modal theme={theme}>
+              <div className={styles.contentContainer}>
+                <div className={styles.title}>Launch Challenge Confirmation</div>
+                <span>Do you want to launch this challenge?</span>
+                <div className={styles.buttonGroup}>
+                  <div className={styles.button}>
+                    <OutlineButton text={'Cancel'} type={'danger'} onClick={() => this.setState({ isLunch: false })} />
                   </div>
-                </Modal>
-              )
-            }
-            {
-              isLunch && isConfirm && (
-                <Modal theme={theme}>
-                  <div className={cn(styles.contentContainer, styles.confirm)}>
-                    <div className={styles.title}>Success</div>
-                    <span>We have scheduled your challenge and processed the payment</span>
-                    <div className={styles.buttonGroup}>
-                      <div className={styles.buttonSizeA}>
-                        <PrimaryButton text={'Back to Dashboard'} type={'info'} link={'/'} />
-                      </div>
-                      <div className={styles.buttonSizeA}>
-                        <OutlineButton text={'View Challenge'} type={'success'} link={'/challenges/30043616'} />
-                      </div>
-                      <div className={styles.buttonSizeB}>
-                        <OutlineButton text={'View Forum'} type={'success'} url={`${getForumURL('30043616')}`} />
-                      </div>
-                    </div>
+                  <div className={styles.button}>
+                    <PrimaryButton text={'Confirm'} type={'info'} onClick={() => { this.setState({ isConfirm: true }) }} />
                   </div>
-                </Modal>
-              )
-            }
-            <div className={styles.formContainer}>
-              <form name='challenge-info-form' noValidate autoComplete='off'>
-                <div className={styles.group}>
-                  <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
-                  <TypeField types={dropdowns['trackType']} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
-                  <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
-                  <CopilotField challenge={challenge} copilots={dropdowns['copilots']} onUpdateOthers={this.onUpdateOthers} />
-                  <ReviewTypeField reviewers={dropdowns['reviewers']} challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} onUpdateSelect={this.onUpdateSelect} />
-                  <div className={styles.row}>
-                    <div className={styles.tcCheckbox}>
-                      <input
-                        name='isOpenAdvanceSettings'
-                        type='checkbox'
-                        id='isOpenAdvanceSettings'
-                        checked={isOpenAdvanceSettings}
-                        onChange={this.toggleAdvanceSettings}
-                      />
-                      <label htmlFor='isOpenAdvanceSettings'>
-                        <div>
-                          View Advance Settings
-                        </div>
-                        <input type='hidden' />
-                      </label>
-                    </div>
-                  </div>
-                  {
-                    isOpenAdvanceSettings && (
-                      <React.Fragment>
-                        <TermsField challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} />
-                        <BillingAccountField accounts={dropdowns['billingAccounts']} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
-                        <GroupsField groups={dropdowns['groups']} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
-                        <hr className={styles.breakLine} />
-                      </React.Fragment>
-                    )
-                  }
-                  <ChallengeScheduleField
-                    templates={dropdowns['timelineTemplates']}
-                    challenge={challenge}
-                    onUpdateSelect={this.onUpdateSelect}
-                    isOpenAdvanceSettings={isOpenAdvanceSettings}
-                    onUpdatePhaseDate={this.onUpdatePhaseDate}
-                    onUpdatePhaseTime={this.onUpdatePhaseTime}
-                  />
                 </div>
-                <div className={styles.group}>
-                  <div className={styles.title}>Details requirements</div>
-                  <TextEditorField
-                    keywords={dropdowns['keywords']}
-                    challenge={challenge}
-                    onUpdateCheckbox={this.onUpdateCheckbox}
-                    onUpdateInput={this.onUpdateInput}
-                    onUpdateMultiSelect={this.onUpdateMultiSelect} />
-                  <AttachmentField challenge={challenge} removeAttachment={this.removeAttachment} onUploadFile={this.onUploadFile} />
-                  <ChallengePrizesField
-                    challenge={challenge}
-                    addNewPrize={this.addNewPrize}
-                    removePrize={this.removePrize}
-                    onUpdateInput={this.onUpdateInput}
-                    onUpdateChallengePrizeType={this.onUpdateChallengePrizeType}
-                  />
-                  {
-                    showCheckpointPrizes && (
-                      <CheckpointPrizesField
-                        challenge={challenge}
-                        onUpdateInput={this.onUpdateInput}
-                        removeCheckpointPrizesPanel={this.removeCheckpointPrizesPanel}
-                      />
-                    )
-                  }
-                  <ReviewCostField challenge={challenge} onUpdateInput={this.onUpdateInput} />
-                  <ChallengeFeeField challenge={challenge} />
-                  <CopilotFeeField challenge={challenge} onUpdateInput={this.onUpdateInput} />
-                  <ChallengeTotalField challenge={challenge} />
+              </div>
+            </Modal>
+          ) } { isLunch && isConfirm && (
+            <Modal theme={theme}>
+              <div className={cn(styles.contentContainer, styles.confirm)}>
+                <div className={styles.title}>Success</div>
+                <span>We have scheduled your challenge and processed the payment</span>
+                <div className={styles.buttonGroup}>
+                  <div className={styles.buttonSizeA}>
+                    <PrimaryButton text={'Back to Dashboard'} type={'info'} link={'/'} />
+                  </div>
+                  <div className={styles.buttonSizeA}>
+                    <OutlineButton text={'View Challenge'} type={'success'} link={'/challenges/30043616'} />
+                  </div>
+                  <div className={styles.buttonSizeB}>
+                    <OutlineButton text={'View Forum'} type={'success'} url={`${getForumURL('30043616')}`} />
+                  </div>
                 </div>
-              </form>
-            </div>
-            <div className={styles.buttonContainer}>
-              <div className={styles.button}>
-                <OutlineButton text={'Cancel'} type={'danger'} link={'/'} />
               </div>
-              <div className={styles.button}>
-                <OutlineButton text={'Save as Draft'} type={'success'} />
+            </Modal>
+          ) }
+          <div className={styles.formContainer}>
+            <form name='challenge-info-form' noValidate autoComplete='off'>
+              <div className={styles.group}>
+                <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
+                <TypeField types={dropdowns['trackType']} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
+                <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
+                <CopilotField challenge={challenge} copilots={dropdowns['copilots']} onUpdateOthers={this.onUpdateOthers} />
+                <ReviewTypeField reviewers={dropdowns['reviewers']} challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} onUpdateSelect={this.onUpdateSelect} />
+                <div className={styles.row}>
+                  <div className={styles.tcCheckbox}>
+                    <input name='isOpenAdvanceSettings' type='checkbox' id='isOpenAdvanceSettings' checked={isOpenAdvanceSettings} onChange={this.toggleAdvanceSettings} />
+                    <label htmlFor='isOpenAdvanceSettings'>
+                      <div>
+                        View Advance Settings
+                      </div>
+                      <input type='hidden' />
+                    </label>
+                  </div>
+                </div>
+                { isOpenAdvanceSettings && (
+                  <React.Fragment>
+                    <TermsField challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} />
+                    <BillingAccountField accounts={dropdowns['billingAccounts']} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
+                    <GroupsField groups={dropdowns['groups']} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
+                    <hr className={styles.breakLine} />
+                  </React.Fragment>
+                ) }
+                <ChallengeScheduleField templates={dropdowns['timelineTemplates']} challenge={challenge} onUpdateSelect={this.onUpdateSelect} isOpenAdvanceSettings={isOpenAdvanceSettings} onUpdatePhaseDate={this.onUpdatePhaseDate} onUpdatePhaseTime={this.onUpdatePhaseTime} />
               </div>
-              <div className={styles.button}>
-                <OutlineButton text={'Save as Templates'} type={'success'} />
+              <div className={styles.group}>
+                <div className={styles.title}>Details requirements</div>
+                <TextEditorField keywords={dropdowns['keywords']} challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} onUpdateInput={this.onUpdateInput} onUpdateMultiSelect={this.onUpdateMultiSelect} />
+                <AttachmentField challenge={challenge} removeAttachment={this.removeAttachment} onUploadFile={this.onUploadFile} />
+                <ChallengePrizesField challenge={challenge} addNewPrize={this.addNewPrize} removePrize={this.removePrize} onUpdateInput={this.onUpdateInput} onUpdateChallengePrizeType={this.onUpdateChallengePrizeType} /> {showCheckpointPrizes && (
+                  <CheckpointPrizesField challenge={challenge} onUpdateInput={this.onUpdateInput} removeCheckpointPrizesPanel={this.removeCheckpointPrizesPanel} />)}
+                <ReviewCostField challenge={challenge} onUpdateInput={this.onUpdateInput} />
+                <ChallengeFeeField challenge={challenge} />
+                <CopilotFeeField challenge={challenge} onUpdateInput={this.onUpdateInput} />
+                <ChallengeTotalField challenge={challenge} />
               </div>
-              <div className={styles.button}>
-                <PrimaryButton text={'Launch'} type={'info'} onClick={() => (this.setState({ isLunch: true }))} />
-              </div>
-            </div>
+            </form>
           </div>
         </div>
-      </Sticky>
+        <div className={styles.buttonContainer}>
+          <div className={styles.button}>
+            <OutlineButton text={'Cancel'} type={'danger'} link={'/'} />
+          </div>
+          <div className={styles.button}>
+            <OutlineButton text={'Save as Draft'} type={'success'} />
+          </div>
+          <div className={styles.button}>
+            <OutlineButton text={'Save as Templates'} type={'success'} />
+          </div>
+          <div className={styles.button}>
+            <PrimaryButton text={'Launch'} type={'info'} onClick={() => (this.setState({ isLunch: true }))} />
+          </div>
+        </div>
+      </div>
     )
   }
 }
@@ -487,7 +442,6 @@ CreateNewChallenge.defaultProps = {
 
 CreateNewChallenge.propTypes = {
   isNew: PropTypes.bool.isRequired
-  // challengeId: PropTypes.string
 }
 
 export default CreateNewChallenge

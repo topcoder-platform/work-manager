@@ -13,7 +13,7 @@
 }
 
 .sidebar {
-  min-height: 100vh;
+  height: 100vh;
   position: relative;
   width: 280px;
 
@@ -27,8 +27,9 @@
 .content {
   /* minus sidebar width and minus sidebar border width */
   width: calc(100% - 280px);
-  min-height: 100vh;
+  max-height: 100vh;
   display: flex;
+  position: relative;
   flex-direction: column;
 
   /*
