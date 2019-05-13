@@ -25,7 +25,7 @@ import CheckpointPrizesField from './CheckpointPrizes-Field'
 import AttachmentField from './Attachment-Field'
 import TextEditorField from './TextEditor-Field'
 import ChallengeScheduleField from './ChallengeSchedule-Field'
-import { validateValue } from '../../util/input-check'
+import { validateValue, convertDollarToInteger } from '../../util/input-check'
 import dropdowns from './mock-data/dropdowns'
 import styles from './CreateNewChallenge.module.scss'
 
@@ -68,6 +68,7 @@ class CreateNewChallenge extends Component {
     this.onUpdatePhaseDate = this.onUpdatePhaseDate.bind(this)
     this.onUpdatePhaseTime = this.onUpdatePhaseTime.bind(this)
     this.onUploadFile = this.onUploadFile.bind(this)
+    this.calculateTotalChallengeCost = this.calculateTotalChallengeCost.bind(this)
   }
 
   componentDidMount () {
@@ -77,6 +78,25 @@ class CreateNewChallenge extends Component {
     } else {
       this.setState({ challenge: dropdowns['newChallenge'] })
     }
+  }
+
+  /**
+   * Calculate total cost of the challenge
+   * @param newChallenge - ref to updated newChallenge
+   */
+  calculateTotalChallengeCost (newChallenge) {
+    const checkpointNoOfPrizes = newChallenge.checkpointPrizes.checkNumber || 0
+    const checkpointPrize = convertDollarToInteger(newChallenge.checkpointPrizes.checkAmount, '$')
+    const reviewCost = convertDollarToInteger(newChallenge.reviewCost, '$')
+    const copilotFee = convertDollarToInteger(newChallenge.copilotFee, '$')
+    const challengeFee = convertDollarToInteger(newChallenge.challengeFee, '$')
+    let totalPrizes = 0
+    newChallenge.prizes.map(function (prize) {
+      if (prize.type === 'money') {
+        totalPrizes += convertDollarToInteger(prize.amount, '$')
+      }
+    })
+    newChallenge['challengeTotalAmount'] = '$ ' + (totalPrizes + reviewCost + copilotFee + challengeFee + (checkpointPrize * checkpointNoOfPrizes))
   }
 
   /**
@@ -119,7 +139,7 @@ class CreateNewChallenge extends Component {
               break
             case VALIDATION_VALUE_TYPE.INTEGER:
               newChallenge['focusIndex'] = index
-              newChallenge[field][index]['amount'] = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER, '$')
+              newChallenge[field][index]['amount'] = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER)
           }
           break
         default:
@@ -128,6 +148,8 @@ class CreateNewChallenge extends Component {
       }
     }
 
+    // calculate total cost of challenge
+    this.calculateTotalChallengeCost(newChallenge)
     this.setState({ challenge: newChallenge })
   }
 

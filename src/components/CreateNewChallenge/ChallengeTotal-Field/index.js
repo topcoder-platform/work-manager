@@ -11,7 +11,7 @@ const ChallengeTotalField = ({ challenge }) => {
         <label htmlFor='challengeTotal'>Estimated Challenge Total :</label>
       </div>
       <div className={cn(styles.field, styles.col2)}>
-        <span>{_.isEmpty(challenge.challengeTotalAmount) ? '' : `$ ${challenge.challengeTotalAmount}`}</span>
+        <span>{_.isEmpty(challenge.challengeTotalAmount) ? '' : challenge.challengeTotalAmount}</span>
       </div>
     </div>
   )

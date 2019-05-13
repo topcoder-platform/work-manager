@@ -20,3 +20,10 @@ export const validateValue = (value, checkType = '', prefix = '') => {
       return value
   }
 }
+
+export const convertDollarToInteger = (value, prefix = '') => {
+  if (value) {
+    return parseInt(value.replace(prefix, '').replace(' ', '').replace(/[^0-9]/g, ''))
+  }
+  return 0
+}
