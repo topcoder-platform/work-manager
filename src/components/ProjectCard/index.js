@@ -29,7 +29,7 @@ const ProjectCard = ({ projectName, projectId, activeMenu, selected, setActiveMe
   return (
     <div className={styles.container}>
       <div className={cn(styles.projectName, { [styles.selected]: selected })} onClick={() => changeProject(projectId)}>
-        <div className={styles.name} dangerouslySetInnerHTML={{ __html: xss(decodeURIComponent(projectName)) }} />
+        <div className={styles.name} dangerouslySetInnerHTML={{ __html: xss(projectName) }} />
         <FontAwesomeIcon className={styles.icon} icon={showIcon(selected)} />
       </div>
       <div className={cn({ [styles.hide]: !selected })}>
