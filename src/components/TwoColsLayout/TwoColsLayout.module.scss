@@ -1,5 +1,15 @@
 .container {
   display: flex;
+
+  &.scrollIndependent {
+
+    .sidebar,
+    .content {
+      min-height: 0;
+      height: 100vh;
+      overflow: auto;
+    }
+  }
 }
 
 .sidebar {
