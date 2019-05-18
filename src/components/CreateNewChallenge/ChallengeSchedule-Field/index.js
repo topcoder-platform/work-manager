@@ -52,8 +52,8 @@ class ChallengeScheduleField extends Component {
     const { challenge, onUpdateSelect, onUpdatePhaseDate, onUpdatePhaseTime, removePhase } = this.props
     return (
       _.map(challenge.phases, (p, index) => (
-        <div className={styles.PhaseRow}>
-          <PhaseInput phase={p} key={p.name} onUpdateSelect={onUpdateSelect} index={index} onUpdatePhaseDate={onUpdatePhaseDate} onUpdatePhaseTime={onUpdatePhaseTime} />
+        <div className={styles.PhaseRow} key={p.name}>
+          <PhaseInput phase={p} onUpdateSelect={onUpdateSelect} index={index} onUpdatePhaseDate={onUpdatePhaseDate} onUpdatePhaseTime={onUpdatePhaseTime} />
 
           <div className={styles.icon} onClick={() => removePhase(index)}>
             <FontAwesomeIcon icon={faTrash} />
