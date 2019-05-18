@@ -23,15 +23,6 @@
       color: $tc-gray-80;
     }
 
-    .passwordCheckbox {
-      @include roboto-medium();
-
-      font-size: 10px;
-      line-height: 15px;
-      font-weight: 500;
-      color: $tc-gray-80;
-      margin-bottom: 5px;
-    }
 
     &.col1 {
       max-width: 185px;
@@ -48,101 +39,7 @@
       margin-top: auto;
       display: flex;
       flex-direction: row;
-
-      .subGroup {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-
-        .subRow {
-          display: flex;
-          align-items: center;
-          margin-bottom: 18px;
-        }
-
-        .subRow:last-of-type {
-          margin-bottom: 0;
-        }
-      }
-    }
-  }
-
-  .tcCheckbox {
-    @include tc-checkbox;
-
-    .tc-checkbox-label {
-      @include roboto-light();
-
-      line-height: 17px;
-      font-weight: 300;
-      margin-left: 21px;
-      user-select: none;
-      cursor: pointer;
-      width: 195px;
-      font-size: 14px;
-      color: #3d3d3d;
-    }
-
-    height: 18px;
-    width: 210px;
-    margin: 0;
-    padding: 0;
-    vertical-align: bottom;
-    position: relative;
-    display: inline-block;
-
-    input[type=checkbox] {
-      display: none;
-    }
-
-    label {
-      @include roboto-light();
-
-      line-height: 17px;
-      font-weight: 300;
-      cursor: pointer;
-      position: absolute;
-      display: inline-block;
-      width: 14px;
-      height: 14px;
-      top: 0;
-      left: 0;
-      border: none;
-      box-shadow: none;
-      background: $tc-gray-30;
-      transition: all 0.15s ease-in-out;
-
-      &::after {
-        opacity: 0;
-        content: '';
-        position: absolute;
-        width: 9px;
-        height: 5px;
-        background: transparent;
-        top: 2px;
-        left: 2px;
-        border-top: none;
-        border-right: none;
-        transform: rotate(-45deg);
-        transition: all 0.15s ease-in-out;
-      }
-
-      &:hover::after {
-        opacity: 0.3;
-      }
-
-      div {
-        margin-left: 24px;
-        width: 300px;
-      }
-    }
-
-    input[type=checkbox]:checked ~ label {
-      background: $tc-blue-20;
-    }
-
-    input[type=checkbox]:checked + label::after {
-      border-color: $white;
+      width: 600px;
     }
   }
 }
