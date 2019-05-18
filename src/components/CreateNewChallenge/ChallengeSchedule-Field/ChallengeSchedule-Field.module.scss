@@ -4,6 +4,22 @@
   display: flex;
   flex-direction: column;
 
+  .PhaseRow{
+    display: flex;
+    align-items: center;
+    color: $tc-red;
+    margin: 30px 30px 0 30px;
+    cursor: pointer;
+    
+    .icon{
+      height: 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      margin-top: 23px;
+    }
+  }
+
   .row {
     box-sizing: border-box;
     display: flex;
@@ -11,6 +27,8 @@
     justify-content: space-between;
     margin: 30px 30px 0 30px;
     height: 40px;
+
+
 
     .field {
       @include upto-sm {

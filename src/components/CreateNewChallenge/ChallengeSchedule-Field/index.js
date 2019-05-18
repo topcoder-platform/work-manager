@@ -6,7 +6,7 @@ import cn from 'classnames'
 import PhaseInput from '../../PhaseInput'
 import Select from '../../Select'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAngleDown } from '@fortawesome/free-solid-svg-icons'
+import { faAngleDown, faTrash } from '@fortawesome/free-solid-svg-icons'
 
 class ChallengeScheduleField extends Component {
   constructor (props) {
@@ -49,15 +49,24 @@ class ChallengeScheduleField extends Component {
   }
 
   renderPhaseEditor () {
-    const { challenge, onUpdateSelect, onUpdatePhaseDate, onUpdatePhaseTime } = this.props
+    const { challenge, onUpdateSelect, onUpdatePhaseDate, onUpdatePhaseTime, removePhase } = this.props
     return (
-      _.map(challenge.phases, (p, index) => <PhaseInput phase={p} key={p.name} onUpdateSelect={onUpdateSelect} index={index} onUpdatePhaseDate={onUpdatePhaseDate} onUpdatePhaseTime={onUpdatePhaseTime} />)
-    )
+      _.map(challenge.phases, (p, index) => (
+        <div className={styles.PhaseRow}>
+          <PhaseInput phase={p} key={p.name} onUpdateSelect={onUpdateSelect} index={index} onUpdatePhaseDate={onUpdatePhaseDate} onUpdatePhaseTime={onUpdatePhaseTime} />
+
+          <div className={styles.icon} onClick={() => removePhase(index)}>
+            <FontAwesomeIcon icon={faTrash} />
+          </div>
+
+        </div>
+      )
+      ))
   }
 
   render () {
     const { isEdit, currentTemplate } = this.state
-    const { templates, isOpenAdvanceSettings } = this.props
+    const { templates, isOpenAdvanceSettings, resetPhase } = this.props
     return (
       <div className={styles.container}>
         {
@@ -98,7 +107,7 @@ class ChallengeScheduleField extends Component {
                       value={currentTemplate}
                       onChange={(e) => this.setState({
                         currentTemplate: e
-                      })}
+                      }, () => resetPhase())}
                     />
                   </div>
                 </div>
@@ -120,6 +129,8 @@ class ChallengeScheduleField extends Component {
 ChallengeScheduleField.propTypes = {
   templates: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,
+  removePhase: PropTypes.func.isRequired,
+  resetPhase: PropTypes.func.isRequired,
   onUpdateSelect: PropTypes.func.isRequired,
   isOpenAdvanceSettings: PropTypes.bool.isRequired,
   onUpdatePhaseDate: PropTypes.func.isRequired,
