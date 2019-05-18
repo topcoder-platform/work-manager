@@ -132,6 +132,7 @@
     }
   ],
   "keywords": [ ".NET", "API", "NodeJS", "Angular", "Android", "C++", "ReactJS", "SASS"],
+  "terms": [ "Standard Topcoder Terms", "Project Customer Term", "Non Disclosure Agreement(NDA)"],
   "fileTypes": [
     "Layered PSD files created in Adobe Photoshop or similar",
     "All files created in Adobe Illustrator or similar",
@@ -236,11 +237,9 @@
       "internal": false,
       "reviewer": ""
     },
-    "terms": {
-      "standard": true,
-      "project": false,
-      "nda": false
-    },
+    "terms": [
+      "Standard Topcoder Terms"
+    ],
     "billingAccount": "Account A",
     "group": "Group A",
     "phases": [
@@ -364,11 +363,9 @@
       "internal": false,
       "reviewer": ""
     },
-    "terms": {
-      "standard": false,
-      "project": false,
-      "nda": false
-    },
+    "terms": [
+        "Standard Topcoder Terms"     
+    ],
     "billingAccount": "A",
     "group": "",
     "phases": [

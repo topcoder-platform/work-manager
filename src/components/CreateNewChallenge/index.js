@@ -278,6 +278,7 @@ class CreateNewChallenge extends Component {
    * @param field The challenge field
    */
   onUpdateMultiSelect (options, field) {
+    if (field === 'terms' && options.indexOf('Standard Topcoder Terms') === -1) return
     const { challenge } = this.state
     const newChallenge = { ...challenge }
     newChallenge[field] = options ? options.split(',') : []
@@ -395,7 +396,7 @@ class CreateNewChallenge extends Component {
                 </div>
                 { isOpenAdvanceSettings && (
                   <React.Fragment>
-                    <TermsField challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} />
+                    <TermsField terms={dropdowns['terms']} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />
                     <BillingAccountField accounts={dropdowns['billingAccounts']} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
                     <GroupsField groups={dropdowns['groups']} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
                     <hr className={styles.breakLine} />
