@@ -40,7 +40,7 @@ class ChallengeList extends Component {
     const { activeMenu } = this.props
     const challenges = this.filterChallenges(searchText)
 
-    if (challenges.length === 0 && searchText !== '') {
+    if (challenges.length === 0 && searchText === '') {
       return <NoChallenge activeMenu={activeMenu} />
     }
 
