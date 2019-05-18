@@ -11,7 +11,6 @@ import styles from './TextEditor-Field.module.scss'
 import PropTypes from 'prop-types'
 
 const TABS = {
-  CLASSIC_EDITOR: 'Classic Editor',
   MARKDOWN: 'Markdown',
   IMPORT: 'Import',
   FROM_TEMPLATES: 'From Templates'
@@ -21,7 +20,7 @@ class TextEditorField extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      currentTab: TABS.CLASSIC_EDITOR
+      currentTab: TABS.MARKDOWN
     }
     this.renderTabs = this.renderTabs.bind(this)
     this.switchTab = this.switchTab.bind(this)
