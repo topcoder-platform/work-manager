@@ -12,6 +12,14 @@
 
   &.active {
     border-color: $tc-blue-20;
+
+    &:hover {
+      border-color: $tc-blue-20;      
+    }
+  }
+
+  &:hover {
+    border-color: $tc-handle-gray;   
   }
 
   img {

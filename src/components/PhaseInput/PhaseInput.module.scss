@@ -59,6 +59,12 @@
       .timePicker {
         width: 146px;
         margin-right: 30px;
+
+        :global {
+          .rc-time-picker-clear {
+            top: 9px; 
+          }
+        }
       }
       .scorecards {
         width: 229px;

@@ -2,12 +2,12 @@
 
 .select {
   :global {
-    @import '~react-select/dist/react-select';
+    $select-input-height: 40px;
+    @import '~react-select/scss/default';
 
     width: 100%;
 
     .Select-control {
-      height: 40px !important;
       border-radius: 2px !important;
     }
     .Select.is-focused:not(.is-open) > .Select-control {
@@ -53,11 +53,6 @@
     }
 
     .Select--multi > .Select-control > .Select-multi-value-wrapper {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: flex-start;
-      align-items: center;
-      padding-bottom: 4px;
 
       .Select-value {
         background-color: $tc-blue-20;
