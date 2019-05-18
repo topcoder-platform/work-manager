@@ -60,6 +60,8 @@ class CreateNewChallenge extends Component {
     this.removeAttachment = this.removeAttachment.bind(this)
     this.addNewPrize = this.addNewPrize.bind(this)
     this.removePrize = this.removePrize.bind(this)
+    this.removePhase = this.removePhase.bind(this)
+    this.resetPhase = this.resetPhase.bind(this)
     this.removeCheckpointPrizesPanel = this.removeCheckpointPrizesPanel.bind(this)
     this.toggleLunch = this.toggleLunch.bind(this)
     this.onUpdateMultiSelect = this.onUpdateMultiSelect.bind(this)
@@ -267,6 +269,29 @@ class CreateNewChallenge extends Component {
     newChallenge.prizes = _.clone(newPrizeList)
     this.setState({ challenge: newChallenge })
   }
+  /**
+   * Remove Phase from challenge Phases list
+   * @param index
+   */
+  removePhase (index) {
+    const { challenge: oldChallenge } = this.state
+    const newChallenge = { ...oldChallenge }
+    const newPhaseList = _.cloneDeep(oldChallenge.phases)
+    newPhaseList.splice(index, 1)
+    newChallenge.phases = _.clone(newPhaseList)
+    this.setState({ challenge: newChallenge })
+  }
+  /**
+   * Reset  challenge Phases
+   * @param index
+   */
+  resetPhase () {
+    const { challenge: oldChallenge } = this.state
+    const newChallenge = { ...oldChallenge }
+    const newPhaseList = _.cloneDeep(dropdowns['newChallenge'].phases)
+    newChallenge.phases = _.clone(newPhaseList)
+    this.setState({ challenge: newChallenge })
+  }
 
   toggleLunch () {
     this.setState({ isLunch: true })
@@ -402,7 +427,7 @@ class CreateNewChallenge extends Component {
                     <hr className={styles.breakLine} />
                   </React.Fragment>
                 ) }
-                <ChallengeScheduleField templates={dropdowns['timelineTemplates']} challenge={challenge} onUpdateSelect={this.onUpdateSelect} isOpenAdvanceSettings={isOpenAdvanceSettings} onUpdatePhaseDate={this.onUpdatePhaseDate} onUpdatePhaseTime={this.onUpdatePhaseTime} />
+                <ChallengeScheduleField templates={dropdowns['timelineTemplates']} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} isOpenAdvanceSettings={isOpenAdvanceSettings} onUpdatePhaseDate={this.onUpdatePhaseDate} onUpdatePhaseTime={this.onUpdatePhaseTime} />
               </div>
               <div className={styles.group}>
                 <div className={styles.title}>Details requirements</div>
