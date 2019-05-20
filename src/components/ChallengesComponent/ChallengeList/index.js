@@ -7,7 +7,6 @@ import PropTypes from 'prop-types'
 import styles from './ChallengeList.module.scss'
 import NoChallenge from '../NoChallenge'
 import ChallengeCard from '../ChallengeCard'
-import { SIDEBAR_MENU } from '../../../config/constants'
 
 class ChallengeList extends Component {
   constructor (props) {
@@ -27,7 +26,7 @@ class ChallengeList extends Component {
     let challenges = this.props.challenges
 
     return challenges.filter(challenge => {
-      return challenge.name.indexOf(text) > 0
+      return challenge.name.toLowerCase().indexOf(text.toLowerCase()) > 0
     })
   }
 
@@ -46,10 +45,9 @@ class ChallengeList extends Component {
 
     return (
       <div className={styles.list}>
-        { activeMenu === SIDEBAR_MENU.ALL_CHALLENGES && <div className={styles.row}>
+        <div className={styles.row}>
           <input name='searchText' type='text' placeholder='Search Challenge' value={searchText} onChange={(e) => this.updateSearchText(e)} />
         </div>
-        }
         <div className={styles.header}>
           <div className={styles.col1}>Challenges Names</div>
           <div className={styles.col2}>Status</div>
