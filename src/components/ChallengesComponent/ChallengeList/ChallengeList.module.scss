@@ -26,6 +26,21 @@
   }
 }
 
+.row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+
+  input {
+    max-width: 162px;
+
+    @include upto-sm {
+      display: block;
+      padding-bottom: 10px;
+    }
+  }
+}
+
 .header {
   background-color: $light-bg;
   height: 50px;
