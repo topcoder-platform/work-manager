@@ -26,7 +26,7 @@ class ChallengeList extends Component {
     let challenges = this.props.challenges
 
     return challenges.filter(challenge => {
-      return challenge.name.toLowerCase().indexOf(text.toLowerCase()) > 0
+      return challenge.name.toLowerCase().indexOf(text.toLowerCase()) > -1
     })
   }
 
