@@ -13,13 +13,18 @@ class ChallengePrizesField extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      isEdit: false,
+      isEdit: true,
       currentPrizeIndex: -1
     }
     this.renderPrizes = this.renderPrizes.bind(this)
     this.getOrder = this.getOrder.bind(this)
     this.toggleEditMode = this.toggleEditMode.bind(this)
     this.togglePrizeSelect = this.togglePrizeSelect.bind(this)
+  }
+
+  componentDidMount () {
+    const { addNewPrize } = this.props
+    addNewPrize()
   }
 
   getOrder (number) {
