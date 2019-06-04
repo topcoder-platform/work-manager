@@ -13,7 +13,6 @@ import ChallengeNameField from './ChallengeName-Field'
 import CopilotField from './Copilot-Field'
 import ReviewTypeField from './ReviewType-Field'
 import TermsField from './Terms-Field'
-import BillingAccountField from './BillingAccount-Field'
 import GroupsField from './Groups-Field'
 import ReviewCostField from './ReviewCost-Field'
 import ChallengeFeeField from './ChallengeFee-Field'
@@ -422,7 +421,6 @@ class CreateNewChallenge extends Component {
                 { isOpenAdvanceSettings && (
                   <React.Fragment>
                     <TermsField terms={dropdowns['terms']} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />
-                    <BillingAccountField accounts={dropdowns['billingAccounts']} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
                     <GroupsField groups={dropdowns['groups']} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
                     <hr className={styles.breakLine} />
                   </React.Fragment>
