@@ -15,7 +15,6 @@ import ReviewTypeField from './ReviewType-Field'
 import TermsField from './Terms-Field'
 import GroupsField from './Groups-Field'
 import ReviewCostField from './ReviewCost-Field'
-import ChallengeFeeField from './ChallengeFee-Field'
 import CopilotFeeField from './CopilotFee-Field'
 import ChallengeTotalField from './ChallengeTotal-Field'
 import ChallengePrizesField from './ChallengePrizes-Field'
@@ -434,7 +433,6 @@ class CreateNewChallenge extends Component {
                 <ChallengePrizesField challenge={challenge} addNewPrize={this.addNewPrize} removePrize={this.removePrize} onUpdateInput={this.onUpdateInput} onUpdateChallengePrizeType={this.onUpdateChallengePrizeType} /> {showCheckpointPrizes && (
                   <CheckpointPrizesField challenge={challenge} onUpdateInput={this.onUpdateInput} removeCheckpointPrizesPanel={this.removeCheckpointPrizesPanel} />)}
                 <ReviewCostField challenge={challenge} onUpdateInput={this.onUpdateInput} />
-                <ChallengeFeeField challenge={challenge} />
                 <CopilotFeeField challenge={challenge} onUpdateInput={this.onUpdateInput} />
                 <ChallengeTotalField challenge={challenge} />
               </div>
