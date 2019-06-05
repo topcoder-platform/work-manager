@@ -48,8 +48,6 @@ class ProjectCard extends Component {
   render () {
     const { projectName, projectId, activeMenu, activeProjectId } = this.props
     const { selected } = this.state
-    console.log(projectId)
-    console.log(activeProjectId)
     return (
       <div className={styles.container}>
         <div className={cn(styles.projectName, { [styles.selected]: selected })} onClick={() => this.changeProject(projectId)}>
