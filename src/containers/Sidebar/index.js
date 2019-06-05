@@ -12,7 +12,7 @@ class SidebarContainer extends Component {
   }
 
   render () {
-    const { projects, isLoading, activeProjectId, activeMenu, setActiveMenu, setActiveProject } = this.props
+    const { projects, isLoading, activeProjectId, activeMenu, setActiveMenu, setActiveProject, projectId } = this.props
     return (
       <Sidebar
         projects={_.sortBy(projects, ['name'])}
@@ -21,6 +21,7 @@ class SidebarContainer extends Component {
         activeMenu={activeMenu}
         setActiveMenu={setActiveMenu}
         setActiveProject={setActiveProject}
+        projectId={projectId}
       />
     )
   }
@@ -33,7 +34,8 @@ SidebarContainer.propTypes = {
   activeProjectId: PropTypes.number,
   activeMenu: PropTypes.string,
   setActiveMenu: PropTypes.func,
-  setActiveProject: PropTypes.func
+  setActiveProject: PropTypes.func,
+  projectId: PropTypes.string
 }
 
 const mapStateToProps = ({ sidebar }) => ({
