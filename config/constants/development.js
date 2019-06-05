@@ -9,5 +9,4 @@ module.exports = {
   CHALLENGE_API_URL: 'https://api.topcoder-dev.com/v4',
   PROJECT_API_URL: 'https://api.topcoder-dev.com/v3',
   SUBMISSION_REVIEW_API_URL: 'https://local.topcoder-dev.com:3010',
-  FORUM_URL: 'https://apps.topcoder-dev.com/forums/?module=Category&categoryID='
 }

@@ -9,5 +9,4 @@ module.exports = {
   CHALLENGE_API_URL: 'https://api.topcoder.com/v4',
   PROJECT_API_URL: 'https://api.topcoder.com/v3',
   SUBMISSION_REVIEW_API_URL: 'https://submission-review-api.herokuapp.com',
-  FORUM_URL: 'https://apps.topcoder.com/forums/?module=Category&categoryID='
 }

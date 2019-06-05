@@ -9,7 +9,6 @@ import TopBarContainer from './containers/TopbarContainer'
 import Sidebar from './containers/Sidebar'
 import ChallengeList from './containers/Challenges'
 import CreateNewChallenge from './containers/CreateNewChallenge'
-import ChallengeDetails from './containers/ChallengeDetails'
 import { getFreshToken } from 'tc-accounts'
 import { ACCOUNTS_APP_LOGIN_URL, SIDEBAR_MENU } from './config/constants'
 import { saveToken } from './actions/auth'
@@ -45,18 +44,6 @@ class Routes extends React.Component {
             <Sidebar />
           )()}
         />
-        <Route exact path='/challenges/:challengeId(\d{8}|\d{5})'
-          render={({ match }) => renderApp(
-            <ChallengeDetails challengeId={match.params.challengeId} />,
-            <TopBarContainer />,
-            <Sidebar />
-          )()} />
-        <Route exact path='/challenges/:challengeId(\d{8}|\d{5})/submissions/:submissionId'
-          render={({ match }) => renderApp(
-            <ChallengeDetails challengeId={match.params.challengeId} submissionId={match.params.submissionId} />,
-            <TopBarContainer />,
-            <Sidebar />
-          )()} />
         <Route exact path='/projects/:projectId/challenges/active'
           render={({ match }) => renderApp(
             <ChallengeList menu={SIDEBAR_MENU.ACTIVE_CHALLENGES} projectId={match.params.projectId} />,

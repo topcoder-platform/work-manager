@@ -77,7 +77,6 @@ export const CHALLENGE_STATUS = {
 }
 
 export const PROJECT_API_URL = process.env.PROJECT_API_URL
-export const FORUM_URL = process.env.FORUM_URL
 
 export const ACCOUNTS_APP_CONNECTOR_URL = process.env.ACCOUNTS_APP_CONNECTOR_URL
 export const ACCOUNTS_APP_LOGIN_URL = process.env.ACCOUNTS_APP_LOGIN_URL
@@ -97,7 +96,6 @@ export const downloadSubmissionURL = (submissionId, token) =>
   `${SUBMISSION_REVIEW_API_URL}/challengeSubmissions/${submissionId}/download?token=${token}`
 export const downloadSubmissionArtifactURL = (submissionId, artifactId, token) =>
   `${SUBMISSION_REVIEW_API_URL}/challengeSubmissions/${submissionId}/artifacts/${artifactId}/download?token=${token}`
-export const getForumURL = (forumId) => `${FORUM_URL}${forumId}`
 
 export const SYSTEM_USERS = [
   'TC System',

@@ -5,7 +5,7 @@ import { Helmet } from 'react-helmet'
 import cn from 'classnames'
 import moment from 'moment'
 import Modal from '../Modal'
-import { getForumURL, VALIDATION_VALUE_TYPE } from '../../config/constants'
+import { VALIDATION_VALUE_TYPE } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
 import TypeField from './Type-Field'
@@ -390,9 +390,6 @@ class CreateNewChallenge extends Component {
                   </div>
                   <div className={styles.buttonSizeA}>
                     <OutlineButton text={'View Challenge'} type={'success'} link={'/challenges/30043616'} />
-                  </div>
-                  <div className={styles.buttonSizeB}>
-                    <OutlineButton text={'View Forum'} type={'success'} url={`${getForumURL('30043616')}`} />
                   </div>
                 </div>
               </div>
