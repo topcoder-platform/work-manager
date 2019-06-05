@@ -14,7 +14,7 @@ import ChallengeStatus from '../ChallengeStatus'
 import TrackIcon from '../../TrackIcon'
 import styles from './ChallengeCard.module.scss'
 import { getFormattedDuration, getLastDate } from '../../../util/date'
-import { CHALLENGE_STATUS, getForumURL } from '../../../config/constants'
+import { CHALLENGE_STATUS, COMMUNITY_APP_URL } from '../../../config/constants'
 
 const STALLED_MSG = 'Stalled'
 const DRAFT_MSG = 'In Draft'
@@ -87,18 +87,11 @@ const hoverComponents = (challenge) => {
   switch (challenge.status) {
     case CHALLENGE_STATUS.DRAFT:
       return (<ChallengeStatus status={CHALLENGE_STATUS.ACTIVE} isBig={challenge.status !== ''} />)
-    case CHALLENGE_STATUS.COMPLETED:
-      return (
-        <div className={cn(styles.linkGroup, styles.onlyOne)}>
-          <a className={styles.link} href={getForumURL(challenge.forumId)}>View Forum</a>
-        </div>
-      )
     case CHALLENGE_STATUS.ACTIVE:
     default:
       return (
         <div className={styles.linkGroup}>
           <Link className={styles.link} to={`/projects/12738/challenges/${challenge.id}/edit`}>Edit</Link>
-          <a className={styles.link} href={getForumURL(challenge.forumId)}>View Forum</a>
         </div>
       )
   }
@@ -122,7 +115,7 @@ class ChallengeCard extends React.Component {
 
     return (
       <div className={styles.item}>
-        <Link className={styles.col1} to={`/challenges/${challenge.id}`}>
+        <a className={styles.col1} href={`${COMMUNITY_APP_URL}/challenges/${challenge.id}`}>
           <div>
             <TrackIcon className={styles.icon} track={challenge.track} subTrack={challenge.subTrack} />
           </div>
@@ -130,14 +123,14 @@ class ChallengeCard extends React.Component {
             <span className={styles.block}>{challenge.name}</span>
             <span className='block light-text'>Ends {getEndDate(challenge)}</span>
           </div>
-        </Link>
-        <Link className={styles.col2} to={`/challenges/${challenge.id}`}>
-          { renderStatus(challenge.status) }
-        </Link>
-        <Link className={styles.col3} to={`/challenges/${challenge.id}`}>
+        </a>
+        <a className={styles.col2} href={`${COMMUNITY_APP_URL}/challenges/${challenge.id}`}>
+          {renderStatus(challenge.status)}
+        </a>
+        <a className={styles.col3} href={`${COMMUNITY_APP_URL}/challenges/${challenge.id}`}>
           <span className={styles.block}>{phaseMessage}</span>
           <span className='block light-text'>{endTime}</span>
-        </Link>
+        </a>
         <div className={cn(styles.col4, styles.editingContainer)}>
           {hoverComponents(challenge)}
         </div>

@@ -12,16 +12,6 @@ export async function fetchMemberChallenges (handle) {
 }
 
 /**
- * Api request for fetching challenge details
- * @param challengeId
- * @returns {Promise<*>}
- */
-export async function fetchChallengeDetails (challengeId) {
-  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challenges/${challengeId}`)
-  return _.get(response, 'data.result.content')
-}
-
-/**
  * Api request for fetching member's challenge (it includes member roles)
  * @param {String} handle
  * @param challengeId

@@ -1,8 +1,0 @@
-@import '../../../styles/includes.scss';
-
-h2.heading {
-  @include roboto-light();
-  font-size: 24px;
-  line-height: 28px;
-  margin: 15px 0;
-}
