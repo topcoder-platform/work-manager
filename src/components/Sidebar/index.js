@@ -7,7 +7,7 @@ import ProjectCard from '../ProjectCard'
 import TopcoderLogo from '../../assets/images/topcoder-logo.png'
 import styles from './Sidebar.module.scss'
 
-const Sidebar = ({ projects, isLoading, activeProject, activeMenu, setActiveProject, setActiveMenu }) => {
+const Sidebar = ({ projects, isLoading, activeProject, activeMenu, setActiveProject, setActiveMenu, projectId }) => {
   const projectComponents = projects.map(p => (
     <li key={p.id}>
       <ProjectCard
@@ -17,6 +17,7 @@ const Sidebar = ({ projects, isLoading, activeProject, activeMenu, setActiveProj
         activeMenu={activeMenu}
         setActiveMenu={setActiveMenu}
         setActiveProject={setActiveProject}
+        activeProjectId={projectId}
       />
     </li>
   ))
@@ -42,7 +43,8 @@ Sidebar.propTypes = {
   activeProject: PropTypes.number,
   activeMenu: PropTypes.string,
   setActiveProject: PropTypes.func,
-  setActiveMenu: PropTypes.func
+  setActiveMenu: PropTypes.func,
+  projectId: PropTypes.string
 }
 
 export default Sidebar

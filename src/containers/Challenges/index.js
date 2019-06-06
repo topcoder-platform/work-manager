@@ -3,7 +3,7 @@
  */
 // import _ from 'lodash'
 import React, { Component } from 'react'
-import { Redirect } from 'react-router-dom'
+// import { Redirect } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { SIDEBAR_MENU, CHALLENGE_STATUS } from '../../config/constants'
@@ -46,7 +46,7 @@ class Challenges extends Component {
     const { challenges, isLoading, activeProjectId, projectId, activeMenu, menu } = this.props
     const { projectChanged } = this.state
     if (projectChanged && (menu !== activeMenu || projectId !== activeProjectId.toString())) {
-      return <Redirect to={{ pathname: `/projects/${activeProjectId}/challenges/active` }} />
+      // return <Redirect to={{ pathname: `/projects/${activeProjectId}/challenges/active` }} />
     }
 
     return (

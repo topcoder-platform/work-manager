@@ -48,16 +48,26 @@ class Routes extends React.Component {
           render={({ match }) => renderApp(
             <ChallengeList menu={SIDEBAR_MENU.ACTIVE_CHALLENGES} projectId={match.params.projectId} />,
             <TopBarContainer />,
-            <Sidebar />
+            <Sidebar projectId={match.params.projectId} />
           )()} />
         <Route exact path='/projects/:projectId/challenges/all'
           render={({ match }) => renderApp(
             <ChallengeList menu={SIDEBAR_MENU.ALL_CHALLENGES} projectId={match.params.projectId} />,
             <TopBarContainer />,
-            <Sidebar />
+            <Sidebar projectId={match.params.projectId} />
           )()} />
-        <Route exact path='/projects/:projectId/challenges/new' render={renderApp(<CreateNewChallenge />, <TopBarContainer />, <Sidebar />)} />
-        <Route exact path='/projects/:projectId/challenges/:challengeId/edit' render={renderApp(<CreateNewChallenge />, <TopBarContainer />, <Sidebar />)} />
+        <Route exact path='/projects/:projectId/challenges/new'
+          render={({ match }) => renderApp(
+            <CreateNewChallenge />,
+            <TopBarContainer />,
+            <Sidebar projectId={match.params.projectId} />
+          )()} />
+        <Route exact path='/projects/:projectId/challenges/:challengeId/edit'
+          render={({ match }) => renderApp(
+            <CreateNewChallenge />,
+            <TopBarContainer />,
+            <Sidebar projectId={match.params.projectId} />
+          )()} />
         {/* If path is not defined redirect to landing page */}
         <Redirect to='/' />
       </Switch>
