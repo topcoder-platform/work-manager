@@ -363,7 +363,6 @@ class CreateNewChallenge extends Component {
   render () {
     const { isLunch, isConfirm, challenge, isOpenAdvanceSettings, showCheckpointPrizes } = this.state
     const { isNew } = this.props
-    console.log(this.porps)
     if (_.isEmpty(challenge)) {
       return <div>&nbsp;</div>
     }
