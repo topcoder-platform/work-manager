@@ -15,6 +15,9 @@ class TextEditorField extends Component {
 
     return (
       <div className={styles.container}>
+        <div className={styles.row}>
+          <textarea className={styles.editor} id='requirements' name='requirements' placeholder='' value={challenge.requirements} maxLength='240' cols='3' rows='10' onChange={onUpdateInput} />
+        </div>
         {
           challengeTrack && (challengeTrack === CHALLENGE_TRACKS.DEVELOP || challengeTrack === CHALLENGE_TRACKS.QA) && (
             <TechAndPlatformField keywords={keywords} challenge={challenge} onUpdateMultiSelect={onUpdateMultiSelect} />

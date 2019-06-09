@@ -424,6 +424,7 @@ class CreateNewChallenge extends Component {
                 <ChallengeScheduleField templates={dropdowns['timelineTemplates']} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} isOpenAdvanceSettings={isOpenAdvanceSettings} onUpdatePhaseDate={this.onUpdatePhaseDate} onUpdatePhaseTime={this.onUpdatePhaseTime} />
               </div>
               <div className={styles.group}>
+                <div className={styles.title}>Details requirements</div>
                 <TextEditorField keywords={dropdowns['keywords']} challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} onUpdateInput={this.onUpdateInput} onUpdateMultiSelect={this.onUpdateMultiSelect} />
                 { !isNew && (
                   <AttachmentField challenge={challenge} removeAttachment={this.removeAttachment} onUploadFile={this.onUploadFile} />
