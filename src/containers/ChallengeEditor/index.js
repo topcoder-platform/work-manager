@@ -2,13 +2,13 @@ import _ from 'lodash'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { withRouter } from 'react-router-dom'
-import CreateNewChallengeComponent from '../../components/CreateNewChallenge'
+import ChallengeEditorComponent from '../../components/ChallengeEditor'
 
-class CreateNewChallenge extends Component {
+class ChallengeEditor extends Component {
   render () {
     const { match } = this.props
     return (
-      <CreateNewChallengeComponent
+      <ChallengeEditorComponent
         challengeId={_.get(match.params, 'challengeId', null)}
         isNew={_.isEmpty(_.get(match.params, 'challengeId', null))}
       />
@@ -16,7 +16,7 @@ class CreateNewChallenge extends Component {
   }
 }
 
-CreateNewChallenge.propTypes = {
+ChallengeEditor.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
       challengeId: PropTypes.string
@@ -25,4 +25,4 @@ CreateNewChallenge.propTypes = {
   }).isRequired
 }
 
-export default withRouter(CreateNewChallenge)
+export default withRouter(ChallengeEditor)

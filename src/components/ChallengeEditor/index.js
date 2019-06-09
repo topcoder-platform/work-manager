@@ -24,7 +24,7 @@ import TextEditorField from './TextEditor-Field'
 import ChallengeScheduleField from './ChallengeSchedule-Field'
 import { validateValue, convertDollarToInteger } from '../../util/input-check'
 import dropdowns from './mock-data/dropdowns'
-import styles from './CreateNewChallenge.module.scss'
+import styles from './ChallengeEditor.module.scss'
 
 const theme = {
   container: styles.modalContainer
@@ -38,14 +38,13 @@ const getTitle = (isNew) => {
   return 'Edit Challenge'
 }
 
-class CreateNewChallenge extends Component {
+class ChallengeEditor extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      isLunch: false,
+      isLaunch: false,
       isConfirm: false,
       isClose: false,
-      currentCopilot: 'thomaskranitsas',
       challenge: null,
       isOpenAdvanceSettings: false,
       showCheckpointPrizes: true
@@ -61,17 +60,27 @@ class CreateNewChallenge extends Component {
     this.removePhase = this.removePhase.bind(this)
     this.resetPhase = this.resetPhase.bind(this)
     this.removeCheckpointPrizesPanel = this.removeCheckpointPrizesPanel.bind(this)
-    this.toggleLunch = this.toggleLunch.bind(this)
+    this.toggleLaunch = this.toggleLaunch.bind(this)
     this.onUpdateMultiSelect = this.onUpdateMultiSelect.bind(this)
     this.onUpdateChallengePrizeType = this.onUpdateChallengePrizeType.bind(this)
     this.onUpdatePhaseDate = this.onUpdatePhaseDate.bind(this)
     this.onUpdatePhaseTime = this.onUpdatePhaseTime.bind(this)
     this.onUploadFile = this.onUploadFile.bind(this)
     this.calculateTotalChallengeCost = this.calculateTotalChallengeCost.bind(this)
+    this.resetChallengeData = this.resetChallengeData.bind(this)
   }
 
   componentDidMount () {
+    this.resetChallengeData(this.props.isNew)
+  }
+
+  componentWillReceiveProps (nextProps) {
     const { isNew } = this.props
+    const { isNew: newValue } = nextProps
+    if (isNew !== newValue) this.resetChallengeData(newValue)
+  }
+
+  resetChallengeData (isNew) {
     if (!isNew) {
       this.setState({ challenge: dropdowns['challenge'] })
     } else {
@@ -299,8 +308,8 @@ class CreateNewChallenge extends Component {
     this.setState({ challenge: newChallenge })
   }
 
-  toggleLunch () {
-    this.setState({ isLunch: true })
+  toggleLaunch () {
+    this.setState({ isLaunch: true })
   }
 
   /**
@@ -361,7 +370,7 @@ class CreateNewChallenge extends Component {
   }
 
   render () {
-    const { isLunch, isConfirm, challenge, isOpenAdvanceSettings, showCheckpointPrizes } = this.state
+    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, showCheckpointPrizes } = this.state
     const { isNew } = this.props
     if (_.isEmpty(challenge)) {
       return <div>&nbsp;</div>
@@ -372,14 +381,14 @@ class CreateNewChallenge extends Component {
         <div className={styles.title}>{getTitle(isNew)}</div>
         <div className={styles.textRequired}>* Required</div>
         <div className={styles.container}>
-          { isLunch && !isConfirm && (
+          { isLaunch && !isConfirm && (
             <Modal theme={theme}>
               <div className={styles.contentContainer}>
                 <div className={styles.title}>Launch Challenge Confirmation</div>
                 <span>Do you want to launch this challenge?</span>
                 <div className={styles.buttonGroup}>
                   <div className={styles.button}>
-                    <OutlineButton text={'Cancel'} type={'danger'} onClick={() => this.setState({ isLunch: false })} />
+                    <OutlineButton text={'Cancel'} type={'danger'} onClick={() => this.setState({ isLaunch: false })} />
                   </div>
                   <div className={styles.button}>
                     <PrimaryButton text={'Confirm'} type={'info'} onClick={() => { this.setState({ isConfirm: true }) }} />
@@ -387,7 +396,7 @@ class CreateNewChallenge extends Component {
                 </div>
               </div>
             </Modal>
-          ) } { isLunch && isConfirm && (
+          ) } { isLaunch && isConfirm && (
             <Modal theme={theme}>
               <div className={cn(styles.contentContainer, styles.confirm)}>
                 <div className={styles.title}>Success</div>
@@ -454,7 +463,7 @@ class CreateNewChallenge extends Component {
             <OutlineButton text={'Save as Draft'} type={'success'} />
           </div>
           <div className={styles.button}>
-            <PrimaryButton text={'Launch'} type={'info'} onClick={() => (this.setState({ isLunch: true }))} />
+            <PrimaryButton text={'Launch'} type={'info'} onClick={() => (this.setState({ isLaunch: true }))} />
           </div>
         </div>
       </div>
@@ -462,12 +471,12 @@ class CreateNewChallenge extends Component {
   }
 }
 
-CreateNewChallenge.defaultProps = {
+ChallengeEditor.defaultProps = {
   challengeId: null
 }
 
-CreateNewChallenge.propTypes = {
+ChallengeEditor.propTypes = {
   isNew: PropTypes.bool.isRequired
 }
 
-export default CreateNewChallenge
+export default ChallengeEditor

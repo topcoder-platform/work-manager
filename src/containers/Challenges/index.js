@@ -26,9 +26,6 @@ class Challenges extends Component {
   componentWillReceiveProps (nextProps) {
     const { activeMenu, projectId, activeProjectId } = nextProps
     const { activeMenu: oldActiveMenu, projectId: oldProjectId, activeProjectId: oldActiveProjectId } = this.props
-    console.log(`projectId: ${projectId}, oldProjectId: ${oldProjectId}`)
-    console.log(`activeProjectId: ${activeProjectId}, oldActiveProjectId: ${oldActiveProjectId}`)
-    console.log(`activeMenu: ${activeMenu}`)
     if (activeMenu !== oldActiveMenu || projectId !== oldProjectId || activeProjectId !== oldActiveProjectId) {
       const status = activeMenu === SIDEBAR_MENU.ACTIVE_CHALLENGES ? CHALLENGE_STATUS.ACTIVE : ''
       this.props.loadChallenges(activeProjectId, status)
