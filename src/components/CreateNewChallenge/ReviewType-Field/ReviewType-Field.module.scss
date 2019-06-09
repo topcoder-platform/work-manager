@@ -33,6 +33,10 @@
       white-space: nowrap;
       display: flex;
       align-items: center;
+
+      span {
+        color: $tc-red;
+      }
     }
 
     &.col2 {

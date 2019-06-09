@@ -8,7 +8,7 @@ const ReviewTypeField = ({ reviewers, challenge, onUpdateCheckbox, onUpdateSelec
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
-        <label htmlFor='reviewType'>Review Type :</label>
+        <label htmlFor='reviewType'>Review Type <span>*</span> :</label>
       </div>
       <div className={cn(styles.field, styles.col2)}>
         <div className={styles.subGroup}>

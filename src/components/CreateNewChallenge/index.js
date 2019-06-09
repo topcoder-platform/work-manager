@@ -75,7 +75,12 @@ class CreateNewChallenge extends Component {
     if (!isNew) {
       this.setState({ challenge: dropdowns['challenge'] })
     } else {
-      this.setState({ challenge: dropdowns['newChallenge'] })
+      this.setState({ challenge: {
+        ...dropdowns['newChallenge'],
+        reviewType: {
+          community: true
+        }
+      } })
     }
   }
 
@@ -199,6 +204,9 @@ class CreateNewChallenge extends Component {
   onUpdateCheckbox (id, checked, field = '', index = -1, isSingleCheck = false) {
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge }
+    if (field === 'reviewType' && !checked) {
+      return
+    }
     if (index < 0) {
       if (!_.isEmpty(field)) {
         if (isSingleCheck) {
