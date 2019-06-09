@@ -424,9 +424,10 @@ class CreateNewChallenge extends Component {
                 <ChallengeScheduleField templates={dropdowns['timelineTemplates']} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} isOpenAdvanceSettings={isOpenAdvanceSettings} onUpdatePhaseDate={this.onUpdatePhaseDate} onUpdatePhaseTime={this.onUpdatePhaseTime} />
               </div>
               <div className={styles.group}>
-                <div className={styles.title}>Details requirements</div>
                 <TextEditorField keywords={dropdowns['keywords']} challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} onUpdateInput={this.onUpdateInput} onUpdateMultiSelect={this.onUpdateMultiSelect} />
-                <AttachmentField challenge={challenge} removeAttachment={this.removeAttachment} onUploadFile={this.onUploadFile} />
+                { !isNew && (
+                  <AttachmentField challenge={challenge} removeAttachment={this.removeAttachment} onUploadFile={this.onUploadFile} />
+                )}
                 <ChallengePrizesField challenge={challenge} addNewPrize={this.addNewPrize} removePrize={this.removePrize} onUpdateInput={this.onUpdateInput} onUpdateChallengePrizeType={this.onUpdateChallengePrizeType} /> {showCheckpointPrizes && (
                   <CheckpointPrizesField challenge={challenge} onUpdateInput={this.onUpdateInput} removeCheckpointPrizesPanel={this.removeCheckpointPrizesPanel} />)}
                 <ReviewCostField challenge={challenge} onUpdateInput={this.onUpdateInput} />
@@ -442,9 +443,6 @@ class CreateNewChallenge extends Component {
           </div>
           <div className={styles.button}>
             <OutlineButton text={'Save as Draft'} type={'success'} />
-          </div>
-          <div className={styles.button}>
-            <OutlineButton text={'Save as Templates'} type={'success'} />
           </div>
           <div className={styles.button}>
             <PrimaryButton text={'Launch'} type={'info'} onClick={() => (this.setState({ isLunch: true }))} />

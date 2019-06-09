@@ -1,6 +1,4 @@
-import _ from 'lodash'
 import React, { Component } from 'react'
-import cn from 'classnames'
 import TechAndPlatformField from '../TechAndPlatform-Field'
 import FinalDeliverablesField from '../FinalDeliverables-Field'
 import StockArtsField from '../StockArts-Field'
@@ -10,52 +8,13 @@ import { CHALLENGE_TRACKS } from '../../../config/constants'
 import styles from './TextEditor-Field.module.scss'
 import PropTypes from 'prop-types'
 
-const TABS = {
-  MARKDOWN: 'Markdown',
-  IMPORT: 'Import',
-  FROM_TEMPLATES: 'From Templates'
-}
-
 class TextEditorField extends Component {
-  constructor (props) {
-    super(props)
-    this.state = {
-      currentTab: TABS.MARKDOWN
-    }
-    this.renderTabs = this.renderTabs.bind(this)
-    this.switchTab = this.switchTab.bind(this)
-    // this.renderEditorFields = this.renderEditorFields.bind(this)
-  }
-
-  switchTab (tab) {
-    this.setState({ currentTab: tab })
-  }
-
-  renderTabs () {
-    const { currentTab } = this.state
-    return (
-      <div className={styles.row}>
-        {
-          _.map(TABS, tab => (
-            <div className={cn(styles.tab, { [styles.active]: currentTab === tab })} onClick={() => this.switchTab(tab)} key={tab}>
-              <span>{tab}</span>
-            </div>
-          ))
-        }
-      </div>
-    )
-  }
-
   render () {
     const { keywords, challenge, onUpdateCheckbox, onUpdateInput, onUpdateMultiSelect } = this.props
     const challengeTrack = challenge.track
 
     return (
       <div className={styles.container}>
-        { this.renderTabs() }
-        <div className={styles.row}>
-          <textarea className={styles.editor} id='requirements' name='requirements' placeholder='' value={challenge.requirements} maxLength='240' cols='3' rows='10' onChange={onUpdateInput} />
-        </div>
         {
           challengeTrack && (challengeTrack === CHALLENGE_TRACKS.DEVELOP || challengeTrack === CHALLENGE_TRACKS.QA) && (
             <TechAndPlatformField keywords={keywords} challenge={challenge} onUpdateMultiSelect={onUpdateMultiSelect} />
