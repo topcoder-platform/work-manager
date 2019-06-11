@@ -40,11 +40,7 @@ class Challenges extends Component {
   }
 
   render () {
-    const { challenges, isLoading, activeProjectId, projectId, activeMenu, menu } = this.props
-    const { projectChanged } = this.state
-    if (projectChanged && (menu !== activeMenu || projectId !== activeProjectId.toString())) {
-      // return <Redirect to={{ pathname: `/projects/${activeProjectId}/challenges/active` }} />
-    }
+    const { challenges, isLoading, activeMenu } = this.props
 
     return (
       <ChallengesComponent challenges={challenges} isLoading={isLoading} activeMenu={activeMenu} />
@@ -58,8 +54,7 @@ Challenges.propTypes = {
   loadChallenges: PropTypes.func,
   activeMenu: PropTypes.string,
   projectId: PropTypes.string,
-  activeProjectId: PropTypes.number,
-  menu: PropTypes.string
+  activeProjectId: PropTypes.number
 }
 
 const mapStateToProps = ({ challenges, sidebar }) => ({

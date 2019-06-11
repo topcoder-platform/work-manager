@@ -46,10 +46,10 @@ class ChallengeList extends Component {
     return (
       <div className={styles.list}>
         <div className={styles.row}>
-          <input name='searchText' type='text' placeholder='Search Challenge' value={searchText} onChange={(e) => this.updateSearchText(e)} />
+          <input name='searchText' type='text' placeholder='Search Challenges' value={searchText} onChange={(e) => this.updateSearchText(e)} />
         </div>
         <div className={styles.header}>
-          <div className={styles.col1}>Challenges Names</div>
+          <div className={styles.col1}>Challenges Name</div>
           <div className={styles.col2}>Status</div>
           <div className={styles.col3}>Current phase</div>
           <div className={styles.col4}>&nbsp;</div>

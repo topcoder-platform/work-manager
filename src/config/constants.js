@@ -35,8 +35,6 @@ export const LOAD_SUBMISSION_ARTIFACTS_SUCCESS = 'LOAD_SUBMISSION_ARTIFACTS_SUCC
 export const LOAD_SUBMISSION_ARTIFACTS_PENDING = 'LOAD_SUBMISSION_ARTIFACTS_PENDING'
 export const LOAD_SUBMISSION_ARTIFACTS_FAILURE = 'LOAD_SUBMISSION_ARTIFACTS_FAILURE'
 
-export const SWITCH_TAB = 'SWITCH_TAB'
-
 export const SAVE_AUTH_TOKEN = 'SAVE_AUTH_TOKEN'
 
 // Name of challenge tracks
@@ -59,11 +57,6 @@ export const MARATHON_MATCH_SUBTRACKS = [
   'DEVELOP_MARATHON_MATCH'
 ]
 
-export const SUBMISSION_DETAILS_TABS = {
-  REVIEW_SUMMARY: 'Review Summary',
-  ARTIFACTS: 'Artifacts'
-}
-
 export const SIDEBAR_MENU = {
   ACTIVE_CHALLENGES: 'Active Challenges',
   ALL_CHALLENGES: 'All Challenges',
@@ -85,17 +78,10 @@ export const COMMUNITY_APP_URL = process.env.COMMUNITY_APP_URL
 
 export const CHALLENGE_API_URL = process.env.CHALLENGE_API_URL
 
-export const SUBMISSION_REVIEW_API_URL = process.env.SUBMISSION_REVIEW_API_URL
-
 export const MEMBER_API_URL = process.env.MEMBER_API_URL
 export const MEMBER_API_V3_URL = process.env.MEMBER_API_V3_URL
 
-export const getTCChallengeURL = (challengeId) => `${COMMUNITY_APP_URL}/challenges/${challengeId}`
 export const getTCMemberURL = (handle) => `${COMMUNITY_APP_URL}/members/${handle}`
-export const downloadSubmissionURL = (submissionId, token) =>
-  `${SUBMISSION_REVIEW_API_URL}/challengeSubmissions/${submissionId}/download?token=${token}`
-export const downloadSubmissionArtifactURL = (submissionId, artifactId, token) =>
-  `${SUBMISSION_REVIEW_API_URL}/challengeSubmissions/${submissionId}/artifacts/${artifactId}/download?token=${token}`
 
 export const SYSTEM_USERS = [
   'TC System',

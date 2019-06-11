@@ -20,7 +20,6 @@ ChallengeEditor.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
       challengeId: PropTypes.string
-      // projectId: PropTypes.string
     })
   }).isRequired
 }

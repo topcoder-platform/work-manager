@@ -17,26 +17,14 @@
     }
   }
 
+  .noProjects {
+    @include roboto;
+    font-weight: 400;
+    padding-left: 30px;
+    padding-right: 20px;
+    color: $white;
+  }
 }
-
-//.item {
-//  display: block;
-//  @include roboto;
-//  padding: 20px 0 20px 0;
-//  text-align: center;
-//  font-size: 18px;
-//  color: $white-text;
-//  text-decoration: none;
-//  background-color: lighten($darker-gray, 10);
-//  border-left: 4px solid transparent;
-//}
-//
-//.active {
-//  border-left-color: $teal;
-//  background-color: $darker-gray;
-//}
-//
-
 
 .logo {
   width: calc(100% - 100px);
