@@ -136,7 +136,6 @@ class ChallengePrizesField extends Component {
       <div className={styles.row}>
         {
           _.map(this.getChallengePrize().prizes, (p, index) => {
-            console.log(p)
             if (!_.isEmpty(p.value)) {
               return (
                 <div className={styles.item} key={`${index}-${p.value}-noedit`}>
