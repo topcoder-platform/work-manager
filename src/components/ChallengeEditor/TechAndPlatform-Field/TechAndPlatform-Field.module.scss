@@ -30,8 +30,16 @@
       white-space: nowrap;
       display: flex;
       align-items: center;
+
+      span {
+        color: $tc-red;
+      }
     }
 
+    &.col2.error {
+      color: $tc-red;
+      margin-top: -25px;
+    }
     &.col2 {
       align-self: flex-end;
       margin-bottom: auto;

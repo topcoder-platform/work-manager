@@ -4,7 +4,7 @@ import Select from '../../Select'
 import cn from 'classnames'
 import styles from './Groups-Field.module.scss'
 
-const GroupsField = ({ groups, onUpdateSelect, challenge }) => {
+const GroupsField = ({ groups, onUpdateMultiSelect, challenge }) => {
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
@@ -13,14 +13,12 @@ const GroupsField = ({ groups, onUpdateSelect, challenge }) => {
       <div className={cn(styles.field, styles.col2)}>
         <Select
           name='group'
-          options={groups}
-          value={challenge.group}
-          placeholder='Select a group'
-          labelKey='name'
-          valueKey='name'
-          clearable={false}
-          onChange={(e) => onUpdateSelect(e)}
-          disabled={false}
+          multi
+          options={groups.map(g => ({ label: g.name, value: g.name }))}
+          simpleValue
+          value={challenge.groups.join(',')}
+          placeholder='Select groups'
+          onChange={(e) => onUpdateMultiSelect(e, 'groups')}
         />
       </div>
     </div>
@@ -28,7 +26,7 @@ const GroupsField = ({ groups, onUpdateSelect, challenge }) => {
 }
 
 GroupsField.propTypes = {
-  onUpdateSelect: PropTypes.func.isRequired,
+  onUpdateMultiSelect: PropTypes.func.isRequired,
   challenge: PropTypes.shape().isRequired,
   groups: PropTypes.arrayOf(PropTypes.shape()).isRequired
 }

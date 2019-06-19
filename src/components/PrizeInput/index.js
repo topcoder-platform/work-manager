@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import cn from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDown, faDollarSign, faGift } from '@fortawesome/free-solid-svg-icons'
-import { CHALLENGE_PRIZE_TYPE, VALIDATION_VALUE_TYPE } from '../../config/constants'
+import { CHALLENGE_PRIZE_TYPE } from '../../config/constants'
 
 import styles from './PrizeInput.module.scss'
 
@@ -32,10 +32,10 @@ class PrizeInput extends React.Component {
 
   render () {
     const { isOpen } = this.state
-    const { prize, onUpdateInput, index, isFocus } = this.props
+    const { prize, onUpdateInput, isFocus, index } = this.props
     const showIcon = (type) => {
-      if (type === 'money') return faDollarSign
-      return faGift
+      if (type === CHALLENGE_PRIZE_TYPE.GIFT) return faGift
+      return faDollarSign
     }
 
     return (
@@ -45,10 +45,10 @@ class PrizeInput extends React.Component {
             {
               isOpen && (
                 <React.Fragment>
-                  <div className={styles.item} id={CHALLENGE_PRIZE_TYPE.MONEY} onClick={(e) => this.onUpdatePrizeType(e)}>
+                  <div className={styles.item} id={CHALLENGE_PRIZE_TYPE.MONEY} onClick={(e) => this.onUpdatePrizeType(e, index)}>
                     <FontAwesomeIcon className={styles.icon} icon={showIcon(CHALLENGE_PRIZE_TYPE.MONEY)} />
                   </div>
-                  <div className={styles.item} id={CHALLENGE_PRIZE_TYPE.GIFT} onClick={(e) => this.onUpdatePrizeType(e)}>
+                  <div className={styles.item} id={CHALLENGE_PRIZE_TYPE.GIFT} onClick={(e) => this.onUpdatePrizeType(e, index)}>
                     <FontAwesomeIcon className={styles.icon} icon={showIcon(CHALLENGE_PRIZE_TYPE.GIFT)} />
                   </div>
                 </React.Fragment>
@@ -59,7 +59,9 @@ class PrizeInput extends React.Component {
           <FontAwesomeIcon className={styles.icon} icon={faAngleDown} />
         </div>
 
-        <input id='amount' name='amount' autoFocus={isFocus} type='text' placeholder='Prize' value={prize.amount} maxLength='200' onChange={(e) => onUpdateInput(e, true, 'prizes', index, prize.type === CHALLENGE_PRIZE_TYPE.MONEY ? VALIDATION_VALUE_TYPE.INTEGER : VALIDATION_VALUE_TYPE.STRING)} />
+        <input
+          id='amount' name='amount' autoFocus={isFocus} type='text' placeholder='Prize'
+          value={prize.value} maxLength='200' onChange={e => onUpdateInput(e.target.value, index)} />
       </div>
     )
   }

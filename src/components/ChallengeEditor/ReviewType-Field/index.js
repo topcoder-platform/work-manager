@@ -4,7 +4,9 @@ import Select from '../../Select'
 import cn from 'classnames'
 import styles from './ReviewType-Field.module.scss'
 
-const ReviewTypeField = ({ reviewers, challenge, onUpdateCheckbox, onUpdateSelect }) => {
+const ReviewTypeField = ({ reviewers, challenge, onUpdateOthers, onUpdateSelect }) => {
+  const isCommunity = challenge.reviewType === 'community'
+  const isInternal = challenge.reviewType === 'internal'
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
@@ -18,8 +20,8 @@ const ReviewTypeField = ({ reviewers, challenge, onUpdateCheckbox, onUpdateSelec
                 name='community'
                 type='checkbox'
                 id='community'
-                checked={challenge.reviewType.community}
-                onChange={(e) => onUpdateCheckbox('community', e.target.checked, 'reviewType', -1, false)}
+                checked={isCommunity}
+                onChange={(e) => e.target.checked && onUpdateOthers({ field: 'reviewType', value: 'community' })}
               />
               <label htmlFor='community'>
                 <div className={styles.checkboxLabel}>
@@ -35,8 +37,8 @@ const ReviewTypeField = ({ reviewers, challenge, onUpdateCheckbox, onUpdateSelec
                 name='internal'
                 type='checkbox'
                 id='internal'
-                checked={challenge.reviewType.internal}
-                onChange={(e) => onUpdateCheckbox('internal', e.target.checked, 'reviewType')}
+                checked={isInternal}
+                onChange={(e) => e.target.checked && onUpdateOthers({ field: 'reviewType', value: 'internal' })}
               />
               <label htmlFor='internal'>
                 <div className={styles.checkboxLabel}>
@@ -46,16 +48,16 @@ const ReviewTypeField = ({ reviewers, challenge, onUpdateCheckbox, onUpdateSelec
               </label>
             </div>
             {
-              !challenge.reviewType.community && (
+              isInternal && (
                 <Select
                   name='reviewer'
                   options={reviewers}
                   placeholder='Select Reviewer'
-                  labelKey='name'
-                  valueKey='name'
+                  labelKey='handle'
+                  valueKey='handle'
                   clearable={false}
-                  value={challenge.reviewType.reviewer}
-                  onChange={(e) => onUpdateSelect(e, true, 'reviewType')}
+                  value={challenge.reviewer}
+                  onChange={(e) => onUpdateSelect(e.handle, false, 'reviewer')}
                   disabled={false}
                 />
               )
@@ -70,7 +72,7 @@ const ReviewTypeField = ({ reviewers, challenge, onUpdateCheckbox, onUpdateSelec
 ReviewTypeField.propTypes = {
   reviewers: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,
-  onUpdateCheckbox: PropTypes.func.isRequired,
+  onUpdateOthers: PropTypes.func.isRequired,
   onUpdateSelect: PropTypes.func.isRequired
 }
 

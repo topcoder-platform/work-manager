@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import cn from 'classnames'
 import moment from 'moment'
+import { pick } from 'lodash/fp'
 import Modal from '../Modal'
 import { VALIDATION_VALUE_TYPE } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
@@ -22,9 +23,11 @@ import CheckpointPrizesField from './CheckpointPrizes-Field'
 import AttachmentField from './Attachment-Field'
 import TextEditorField from './TextEditor-Field'
 import ChallengeScheduleField from './ChallengeSchedule-Field'
-import { validateValue, convertDollarToInteger } from '../../util/input-check'
+import { convertDollarToInteger, validateValue } from '../../util/input-check'
 import dropdowns from './mock-data/dropdowns'
 import styles from './ChallengeEditor.module.scss'
+import Loader from '../Loader'
+import { createChallenge, fetchChallenge, updateChallenge } from '../../services/challenges'
 
 const theme = {
   container: styles.modalContainer
@@ -47,7 +50,9 @@ class ChallengeEditor extends Component {
       isClose: false,
       challenge: null,
       isOpenAdvanceSettings: false,
-      showCheckpointPrizes: true
+      isLoading: false,
+      isSaving: false,
+      hasValidationErrors: false
     }
     this.onUpdateInput = this.onUpdateInput.bind(this)
     this.onUpdateSelect = this.onUpdateSelect.bind(this)
@@ -55,63 +60,64 @@ class ChallengeEditor extends Component {
     this.onUpdateCheckbox = this.onUpdateCheckbox.bind(this)
     this.toggleAdvanceSettings = this.toggleAdvanceSettings.bind(this)
     this.removeAttachment = this.removeAttachment.bind(this)
-    this.addNewPrize = this.addNewPrize.bind(this)
-    this.removePrize = this.removePrize.bind(this)
     this.removePhase = this.removePhase.bind(this)
     this.resetPhase = this.resetPhase.bind(this)
-    this.removeCheckpointPrizesPanel = this.removeCheckpointPrizesPanel.bind(this)
     this.toggleLaunch = this.toggleLaunch.bind(this)
     this.onUpdateMultiSelect = this.onUpdateMultiSelect.bind(this)
     this.onUpdateChallengePrizeType = this.onUpdateChallengePrizeType.bind(this)
     this.onUpdatePhaseDate = this.onUpdatePhaseDate.bind(this)
     this.onUpdatePhaseTime = this.onUpdatePhaseTime.bind(this)
     this.onUploadFile = this.onUploadFile.bind(this)
-    this.calculateTotalChallengeCost = this.calculateTotalChallengeCost.bind(this)
     this.resetChallengeData = this.resetChallengeData.bind(this)
+    this.onUpdateDescription = this.onUpdateDescription.bind(this)
+    this.onSubmitChallenge = this.onSubmitChallenge.bind(this)
+    this.saveDraft = this.saveDraft.bind(this)
+    this.resetModal = this.resetModal.bind(this)
   }
 
   componentDidMount () {
-    this.resetChallengeData(this.props.isNew)
+    this.resetChallengeData(this.props.isNew, this.props.challengeId)
   }
 
   componentWillReceiveProps (nextProps) {
     const { isNew } = this.props
-    const { isNew: newValue } = nextProps
-    if (isNew !== newValue) this.resetChallengeData(newValue)
+    const { isNew: newValue, challengeId } = nextProps
+    if (isNew !== newValue) this.resetChallengeData(newValue, challengeId)
+    if (this.props.metadata.challengePhases && (!this.state.challenge.phases || !this.state.challenge.phases.length)) {
+      this.setState(prevState => ({
+        ...prevState,
+        challenge: { ...prevState.challenge, phases: this.props.metadata.challengePhases }
+      }))
+    }
   }
 
-  resetChallengeData (isNew) {
+  async resetChallengeData (isNew, challengeId) {
     if (!isNew) {
-      this.setState({ challenge: dropdowns['challenge'] })
+      try {
+        this.setState({ isLoading: true, isConfirm: false, isLaunch: false })
+        const challenge = await fetchChallenge(challengeId)
+        this.setState({ challenge: { ...dropdowns['newChallenge'], ...challenge }, isLoading: false })
+      } catch (e) {
+        window.location = window.location.origin
+        this.setState({ isLoading: true })
+      }
     } else {
       this.setState({ challenge: {
         ...dropdowns['newChallenge'],
-        reviewType: {
-          community: true
-        }
+        phases: this.props.metadata.challengePhases
       } })
     }
   }
 
-  /**
-   * Calculate total cost of the challenge
-   * @param newChallenge - ref to updated newChallenge
-   */
-  calculateTotalChallengeCost (newChallenge) {
-    const checkpointNoOfPrizes = newChallenge.checkpointPrizes.checkNumber || 0
-    const checkpointPrize = convertDollarToInteger(newChallenge.checkpointPrizes.checkAmount, '$')
-    const reviewCost = convertDollarToInteger(newChallenge.reviewCost, '$')
-    const copilotFee = convertDollarToInteger(newChallenge.copilotFee, '$')
-    const challengeFee = convertDollarToInteger(newChallenge.challengeFee, '$')
-    let totalPrizes = 0
-    newChallenge.prizes.map(function (prize) {
-      if (prize.type === 'money') {
-        totalPrizes += convertDollarToInteger(prize.amount, '$')
-      }
-    })
-    newChallenge['challengeTotalAmount'] = '$ ' + (totalPrizes + reviewCost + copilotFee + challengeFee + (checkpointPrize * checkpointNoOfPrizes))
+  resetModal () {
+    console.log('test')
+    this.setState({ isLoading: true, isConfirm: false, isLaunch: false })
   }
-
+  onUpdateDescription (description) {
+    const { challenge: oldChallenge } = this.state
+    const newChallenge = { ...oldChallenge, description }
+    this.setState({ challenge: newChallenge })
+  }
   /**
    * Update Input value of challenge
    * @param e The input event
@@ -162,7 +168,6 @@ class ChallengeEditor extends Component {
     }
 
     // calculate total cost of challenge
-    this.calculateTotalChallengeCost(newChallenge)
     this.setState({ challenge: newChallenge })
   }
 
@@ -178,7 +183,7 @@ class ChallengeEditor extends Component {
       const { challenge: oldChallenge } = this.state
       const newChallenge = { ...oldChallenge }
       if (!isSub) {
-        newChallenge[option.key] = option.name
+        newChallenge[field] = option
       } else {
         if (index < 0) {
           newChallenge[field][option.key] = option.name
@@ -245,11 +250,6 @@ class ChallengeEditor extends Component {
     this.setState({ isOpenAdvanceSettings: !isOpenAdvanceSettings })
   }
 
-  removeCheckpointPrizesPanel () {
-    const { showCheckpointPrizes } = this.state
-    this.setState({ showCheckpointPrizes: !showCheckpointPrizes })
-  }
-
   removeAttachment (file) {
     const { challenge } = this.state
     const newChallenge = { ...challenge }
@@ -259,31 +259,6 @@ class ChallengeEditor extends Component {
     this.setState({ challenge: newChallenge })
   }
 
-  addNewPrize () {
-    const prize = {
-      amount: 0,
-      type: 'money'
-    }
-    const { challenge: oldChallenge } = this.state
-    const newChallenge = { ...oldChallenge }
-    const newPrizeList = _.cloneDeep(oldChallenge.prizes)
-    newPrizeList.push(prize)
-    newChallenge.prizes = _.clone(newPrizeList)
-    this.setState({ challenge: newChallenge })
-  }
-
-  /**
-   * Remove prize from challenge prizes list
-   * @param index
-   */
-  removePrize (index) {
-    const { challenge: oldChallenge } = this.state
-    const newChallenge = { ...oldChallenge }
-    const newPrizeList = _.cloneDeep(oldChallenge.prizes)
-    newPrizeList.splice(index, 1)
-    newChallenge.prizes = _.clone(newPrizeList)
-    this.setState({ challenge: newChallenge })
-  }
   /**
    * Remove Phase from challenge Phases list
    * @param index
@@ -298,18 +273,35 @@ class ChallengeEditor extends Component {
   }
   /**
    * Reset  challenge Phases
-   * @param index
    */
-  resetPhase () {
-    const { challenge: oldChallenge } = this.state
-    const newChallenge = { ...oldChallenge }
-    const newPhaseList = _.cloneDeep(dropdowns['newChallenge'].phases)
-    newChallenge.phases = _.clone(newPhaseList)
-    this.setState({ challenge: newChallenge })
+  resetPhase (timeline) {
+    this.onUpdateOthers({
+      field: 'phases',
+      value: this.props.metadata.challengePhases.filter(p => {
+        return timeline.phases.map(p => p.name || p).indexOf(p.name) !== -1
+      }) })
   }
 
   toggleLaunch () {
-    this.setState({ isLaunch: true })
+    if (this.validateChallenge()) {
+      this.setState({ isLaunch: true })
+    }
+  }
+
+  validateChallenge () {
+    if (Object.values(pick(['track', 'typeId', 'name', 'description', 'tags', 'prizeSets'], this.state.challenge)).filter(v => !v.length).length) {
+      this.setState(prevState => ({
+        ...prevState,
+        challenge: {
+          ...prevState.challenge,
+          submitTriggered: true
+        }
+      }))
+      this.setState({ hasValidationErrors: true })
+      return false
+    }
+    this.setState({ hasValidationErrors: false })
+    return true
   }
 
   /**
@@ -369,9 +361,34 @@ class ChallengeEditor extends Component {
     this.setState({ challenge: newChallenge })
   }
 
+  saveDraft () {
+    if (this.validateChallenge()) {
+      this.onSubmitChallenge('Draft')
+    }
+  }
+  async onSubmitChallenge (status = 'Active') {
+    if (this.state.isSaving) return
+    const { challengeId } = this.props
+    const challenge = pick(['phases', 'typeId', 'track', 'name', 'description', 'reviewType', 'tags', 'groups', 'prizeSets'], this.state.challenge)
+    challenge.phases = challenge.phases.map(pick(['description', 'duration', 'id', 'isActive', 'name', 'predecessor']))
+    challenge.timelineTemplateId = this.props.metadata.timelineTemplates[0].id
+    challenge.projectId = this.props.projectId
+    challenge.prizeSets = challenge.prizeSets.map(p => {
+      const prizes = p.prizes.map(s => ({ ...s, value: convertDollarToInteger(s.value, '$') }))
+      return { ...p, prizes }
+    })
+    challenge.status = status
+    try {
+      this.setState({ isSaving: true })
+      const response = challengeId ? await updateChallenge(challenge, challengeId) : await createChallenge(challenge)
+      this.setState({ isLaunch: true, isConfirm: response.data.id, challenge: { ...this.state.challenge, ...challenge }, isSaving: false })
+    } catch (e) {
+      this.setState({ isSaving: false })
+    }
+  }
   render () {
-    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, showCheckpointPrizes } = this.state
-    const { isNew } = this.props
+    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings } = this.state
+    const { isNew, isLoading, metadata } = this.props
     if (_.isEmpty(challenge)) {
       return <div>&nbsp;</div>
     }
@@ -379,8 +396,8 @@ class ChallengeEditor extends Component {
       <div className={styles.wrapper}>
         <Helmet title={getTitle(isNew)} />
         <div className={styles.title}>{getTitle(isNew)}</div>
-        <div className={styles.textRequired}>* Required</div>
-        <div className={styles.container}>
+        {!isLoading && <div className={styles.textRequired}>* Required</div>}
+        {!isLoading ? <div className={styles.container}>
           { isLaunch && !isConfirm && (
             <Modal theme={theme}>
               <div className={styles.contentContainer}>
@@ -388,10 +405,10 @@ class ChallengeEditor extends Component {
                 <span>Do you want to launch this challenge?</span>
                 <div className={styles.buttonGroup}>
                   <div className={styles.button}>
-                    <OutlineButton text={'Cancel'} type={'danger'} onClick={() => this.setState({ isLaunch: false })} />
+                    <OutlineButton text={'Cancel'} type={'danger'} onClick={() => this.resetModal()} />
                   </div>
                   <div className={styles.button}>
-                    <PrimaryButton text={'Confirm'} type={'info'} onClick={() => { this.setState({ isConfirm: true }) }} />
+                    <PrimaryButton text={this.state.isSaving ? 'Saving...' : 'Confirm'} type={'info'} onClick={() => this.onSubmitChallenge('Active')} />
                   </div>
                 </div>
               </div>
@@ -400,13 +417,13 @@ class ChallengeEditor extends Component {
             <Modal theme={theme}>
               <div className={cn(styles.contentContainer, styles.confirm)}>
                 <div className={styles.title}>Success</div>
-                <span>We have scheduled your challenge and processed the payment</span>
+                <span>{ challenge.status === 'Draft' ? 'Your challenge is saved as draft' : 'We have scheduled your challenge and processed the payment'}</span>
                 <div className={styles.buttonGroup}>
                   <div className={styles.buttonSizeA}>
                     <PrimaryButton text={'Back to Dashboard'} type={'info'} link={'/'} />
                   </div>
-                  <div className={styles.buttonSizeA}>
-                    <OutlineButton text={'View Challenge'} type={'success'} link={'/challenges/30043616'} />
+                  <div className={styles.buttonSizeA} onClick={() => this.resetModal()}>
+                    <OutlineButton text={'View Challenge'} type={'success'} link={`/projects/${this.props.projectId}/challenges/${isConfirm}/edit`} />
                   </div>
                 </div>
               </div>
@@ -416,10 +433,10 @@ class ChallengeEditor extends Component {
             <form name='challenge-info-form' noValidate autoComplete='off'>
               <div className={styles.group}>
                 <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
-                <TypeField types={dropdowns['trackType']} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
+                <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
                 <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
-                <CopilotField challenge={challenge} copilots={dropdowns['copilots']} onUpdateOthers={this.onUpdateOthers} />
-                <ReviewTypeField reviewers={dropdowns['reviewers']} challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} onUpdateSelect={this.onUpdateSelect} />
+                <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
+                <ReviewTypeField reviewers={metadata.members} challenge={challenge} onUpdateOthers={this.onUpdateOthers} onUpdateSelect={this.onUpdateSelect} />
                 <div className={styles.row}>
                   <div className={styles.tcCheckbox}>
                     <input name='isOpenAdvanceSettings' type='checkbox' id='isOpenAdvanceSettings' checked={isOpenAdvanceSettings} onChange={this.toggleAdvanceSettings} />
@@ -434,38 +451,40 @@ class ChallengeEditor extends Component {
                 { isOpenAdvanceSettings && (
                   <React.Fragment>
                     <TermsField terms={dropdowns['terms']} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />
-                    <GroupsField groups={dropdowns['groups']} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
+                    <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
                     <hr className={styles.breakLine} />
                   </React.Fragment>
                 ) }
-                <ChallengeScheduleField templates={dropdowns['timelineTemplates']} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} isOpenAdvanceSettings={isOpenAdvanceSettings} onUpdatePhaseDate={this.onUpdatePhaseDate} onUpdatePhaseTime={this.onUpdatePhaseTime} />
+                <ChallengeScheduleField templates={metadata.timelineTemplates} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} isOpenAdvanceSettings={isOpenAdvanceSettings} onUpdatePhaseDate={this.onUpdatePhaseDate} onUpdatePhaseTime={this.onUpdatePhaseTime} />
               </div>
               <div className={styles.group}>
                 <div className={styles.title}>Details requirements</div>
-                <TextEditorField keywords={dropdowns['keywords']} challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} onUpdateInput={this.onUpdateInput} onUpdateMultiSelect={this.onUpdateMultiSelect} />
-                { !isNew && (
+                <TextEditorField keywords={dropdowns['keywords']} challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} onUpdateInput={this.onUpdateInput} onUpdateDescription={this.onUpdateDescription} onUpdateMultiSelect={this.onUpdateMultiSelect} />
+                { false && (
                   <AttachmentField challenge={challenge} removeAttachment={this.removeAttachment} onUploadFile={this.onUploadFile} />
                 )}
-                <ChallengePrizesField challenge={challenge} addNewPrize={this.addNewPrize} removePrize={this.removePrize} onUpdateInput={this.onUpdateInput} onUpdateChallengePrizeType={this.onUpdateChallengePrizeType} /> {showCheckpointPrizes && (
-                  <CheckpointPrizesField challenge={challenge} onUpdateInput={this.onUpdateInput} removeCheckpointPrizesPanel={this.removeCheckpointPrizesPanel} />)}
-                <ReviewCostField challenge={challenge} onUpdateInput={this.onUpdateInput} />
-                <CopilotFeeField challenge={challenge} onUpdateInput={this.onUpdateInput} />
+                <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
+                <CheckpointPrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
+                <ReviewCostField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
+                <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
                 <ChallengeTotalField challenge={challenge} />
+                { this.state.hasValidationErrors && !challenge.prizeSets.length && <div className={styles.error}>Should have at-least 1 prize value</div> }
               </div>
             </form>
           </div>
-        </div>
-        <div className={styles.buttonContainer}>
+        </div> : <Loader />}
+        {!isLoading && this.state.hasValidationErrors && <div className={styles.error}>Please fix the errors before saving</div>}
+        {!isLoading && <div className={styles.buttonContainer}>
           <div className={styles.button}>
             <OutlineButton text={'Cancel'} type={'danger'} link={'/'} />
           </div>
           <div className={styles.button}>
-            <OutlineButton text={'Save as Draft'} type={'success'} />
+            <OutlineButton text={this.state.isSaving ? 'Saving...' : 'Save as Draft'} type={'success'} onClick={this.saveDraft} />
           </div>
           <div className={styles.button}>
-            <PrimaryButton text={'Launch'} type={'info'} onClick={() => (this.setState({ isLaunch: true }))} />
+            <PrimaryButton text={'Launch'} type={'info'} onClick={this.toggleLaunch} />
           </div>
-        </div>
+        </div>}
       </div>
     )
   }
@@ -476,7 +495,11 @@ ChallengeEditor.defaultProps = {
 }
 
 ChallengeEditor.propTypes = {
-  isNew: PropTypes.bool.isRequired
+  isNew: PropTypes.bool.isRequired,
+  projectId: PropTypes.string.isRequired,
+  challengeId: PropTypes.string,
+  metadata: PropTypes.object.isRequired,
+  isLoading: PropTypes.bool.isRequired
 }
 
 export default ChallengeEditor

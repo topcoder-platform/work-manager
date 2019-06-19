@@ -24,6 +24,7 @@ Development configuration is in `config/constants/development.js`
 - `DEV_APP_URL`: (Development) The URL to start the app from (eg http://local.topcoder-dev.com)
 - `CHALLENGE_API_URL`: The challenge API URL
 - `PROJECT_API_URL`: The project API URL
+- `API_V3_URL`: The API v3 URL
 
 ### Development
 

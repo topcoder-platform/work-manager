@@ -41,8 +41,9 @@ class ProjectCard extends Component {
     // history.push(`/projects/${projectId}/challenges/active`)
   }
 
-  changeMenu (menu) {
+  changeMenu (menu, projectId) {
     this.props.setActiveMenu(menu)
+    this.props.setActiveProject(projectId)
   }
 
   render () {
@@ -56,13 +57,13 @@ class ProjectCard extends Component {
         </div>
         <div className={cn({ [styles.hide]: !selected })}>
           <Link to={`/projects/${projectId}/challenges/active`}>
-            <div className={cn(styles.item, { [styles.active]: this.isActive(activeMenu, SIDEBAR_MENU.ACTIVE_CHALLENGES, projectId, activeProjectId) })} onClick={() => this.changeMenu(SIDEBAR_MENU.ACTIVE_CHALLENGES)}>Active Challenges</div>
+            <div className={cn(styles.item, { [styles.active]: this.isActive(activeMenu, SIDEBAR_MENU.ACTIVE_CHALLENGES, projectId, activeProjectId) })} onClick={() => this.changeMenu(SIDEBAR_MENU.ACTIVE_CHALLENGES, projectId)}>Active Challenges</div>
           </Link>
           <Link to={`/projects/${projectId}/challenges/all`}>
-            <div className={cn(styles.item, { [styles.active]: this.isActive(activeMenu, SIDEBAR_MENU.ALL_CHALLENGES, projectId, activeProjectId) })} onClick={() => this.changeMenu(SIDEBAR_MENU.ALL_CHALLENGES)}>All Challenges</div>
+            <div className={cn(styles.item, { [styles.active]: this.isActive(activeMenu, SIDEBAR_MENU.ALL_CHALLENGES, projectId, activeProjectId) })} onClick={() => this.changeMenu(SIDEBAR_MENU.ALL_CHALLENGES, projectId)}>All Challenges</div>
           </Link>
           <Link to={`/projects/${projectId}/challenges/new`}>
-            <div className={cn(styles.item, { [styles.active]: this.isActive(activeMenu, SIDEBAR_MENU.NEW_CHALLENGE, projectId, activeProjectId) })} onClick={() => this.changeMenu(SIDEBAR_MENU.NEW_CHALLENGE)}>New Challenge</div>
+            <div className={cn(styles.item, { [styles.active]: this.isActive(activeMenu, SIDEBAR_MENU.NEW_CHALLENGE, projectId, activeProjectId) })} onClick={() => this.changeMenu(SIDEBAR_MENU.NEW_CHALLENGE, projectId)}>New Challenge</div>
           </Link>
         </div>
       </div>
@@ -76,7 +77,8 @@ ProjectCard.propTypes = {
   selected: PT.bool.isRequired,
   activeMenu: PT.string.isRequired,
   setActiveMenu: PT.func.isRequired,
-  activeProjectId: PT.string
+  activeProjectId: PT.string,
+  setActiveProject: PT.func.isRequired
 }
 
 export default ProjectCard

@@ -7,22 +7,31 @@ import styles from './TechAndPlatform-Field.module.scss'
 const TechAndPlatformField = ({ keywords, challenge, onUpdateMultiSelect }) => {
   const mapOps = item => ({ label: item, value: item })
   return (
-    <div className={styles.row}>
-      <div className={cn(styles.field, styles.col1)}>
-        <label htmlFor='keywords'>Technology / Platform :</label>
+    <>
+      <div className={styles.row}>
+        <div className={cn(styles.field, styles.col1)}>
+          <label htmlFor='keywords'>Technology / Platform<span>*</span> :</label>
+        </div>
+        <div className={cn(styles.field, styles.col2)}>
+          <input type='hidden' />
+          <Select
+            id='track-select'
+            multi
+            options={keywords.map(mapOps)}
+            simpleValue
+            value={challenge.tags.join(',')}
+            onChange={(value) => onUpdateMultiSelect(value, 'tags')}
+          />
+        </div>
       </div>
-      <div className={cn(styles.field, styles.col2)}>
-        <input type='hidden' />
-        <Select
-          id='track-select'
-          multi
-          options={keywords.map(mapOps)}
-          simpleValue
-          value={challenge.keywords.join(',')}
-          onChange={(value) => onUpdateMultiSelect(value, 'keywords')}
-        />
-      </div>
-    </div>
+
+      { challenge.submitTriggered && !challenge.tags.length && <div className={styles.row}>
+        <div className={cn(styles.field, styles.col1)} />
+        <div className={cn(styles.field, styles.col2, styles.error)}>
+          Technology/Platform is required field
+        </div>
+      </div> }
+    </>
   )
 }
 

@@ -21,6 +21,7 @@ export function setActiveMenu (menu) {
  */
 export function setActiveProject (projectId) {
   return (dispatch, getState) => {
+    if (getState().sidebar.activeProjectId === projectId) return
     dispatch({
       type: SET_ACTIVE_PROJECT,
       projectId: getState().sidebar.activeProjectId === projectId ? -1 : projectId

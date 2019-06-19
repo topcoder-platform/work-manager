@@ -7,22 +7,20 @@ import MaximumSubmissionsField from '../MaximumSubmissions-Field'
 import { CHALLENGE_TRACKS } from '../../../config/constants'
 import styles from './TextEditor-Field.module.scss'
 import PropTypes from 'prop-types'
+import DescriptionField from '../Description-Field'
 
 class TextEditorField extends Component {
   render () {
-    const { keywords, challenge, onUpdateCheckbox, onUpdateInput, onUpdateMultiSelect } = this.props
+    const { keywords, challenge, onUpdateCheckbox, onUpdateInput, onUpdateDescription, onUpdateMultiSelect } = this.props
     const challengeTrack = challenge.track
 
     return (
       <div className={styles.container}>
         <div className={styles.row}>
-          <textarea className={styles.editor} id='requirements' name='requirements' placeholder='' value={challenge.requirements} maxLength='240' cols='3' rows='10' onChange={onUpdateInput} />
+          <DescriptionField challenge={challenge} onUpdateDescription={onUpdateDescription} />
         </div>
-        {
-          challengeTrack && (challengeTrack === CHALLENGE_TRACKS.DEVELOP || challengeTrack === CHALLENGE_TRACKS.QA) && (
-            <TechAndPlatformField keywords={keywords} challenge={challenge} onUpdateMultiSelect={onUpdateMultiSelect} />
-          )
-        }
+        { challenge.submitTriggered && !challenge.description && <div className={styles.error}>Description is required field</div> }
+        <TechAndPlatformField keywords={keywords} challenge={challenge} onUpdateMultiSelect={onUpdateMultiSelect} />
         {
           challengeTrack && challengeTrack === CHALLENGE_TRACKS.DESIGN && (
             <React.Fragment>
@@ -43,6 +41,7 @@ TextEditorField.propTypes = {
   challenge: PropTypes.shape().isRequired,
   onUpdateCheckbox: PropTypes.func.isRequired,
   onUpdateInput: PropTypes.func.isRequired,
+  onUpdateDescription: PropTypes.func.isRequired,
   onUpdateMultiSelect: PropTypes.func.isRequired
 }
 

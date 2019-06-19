@@ -15,7 +15,7 @@ const validateInteger = (value, prefixText = '') => {
 export const validateValue = (value, checkType = '', prefix = '') => {
   switch (checkType) {
     case VALIDATION_VALUE_TYPE.INTEGER:
-      return validateInteger(value, prefix)
+      return validateInteger('' + value, prefix)
     default:
       return value
   }
@@ -23,7 +23,7 @@ export const validateValue = (value, checkType = '', prefix = '') => {
 
 export const convertDollarToInteger = (value, prefix = '') => {
   if (value) {
-    return parseInt(value.replace(prefix, '').replace(' ', '').replace(/[^0-9]/g, ''))
+    return parseInt(('' + value).replace(prefix, '').replace(' ', '').replace(/[^0-9]/g, ''))
   }
   return 0
 }

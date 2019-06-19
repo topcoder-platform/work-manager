@@ -5,14 +5,22 @@ import cn from 'classnames'
 
 const ChallengeNameField = ({ challenge, onUpdateInput }) => {
   return (
-    <div className={styles.row}>
-      <div className={cn(styles.field, styles.col1)}>
-        <label htmlFor='challengeName'>Challenge Name <span>*</span> :</label>
+    <>
+      <div className={styles.row}>
+        <div className={cn(styles.field, styles.col1)}>
+          <label htmlFor='challengeName'>Challenge Name <span>*</span> :</label>
+        </div>
+        <div className={cn(styles.field, styles.col2)}>
+          <input id='name' name='name' type='text' placeholder='Challenge Name' value={challenge.name} maxLength='200' required onChange={onUpdateInput} />
+        </div>
       </div>
-      <div className={cn(styles.field, styles.col2)}>
-        <input id='challengeName' name='challengeName' type='text' placeholder='Challenge Name' value={challenge.challengeName} maxLength='200' required onChange={onUpdateInput} />
-      </div>
-    </div>
+      { challenge.submitTriggered && !challenge.name && <div className={styles.row}>
+        <div className={cn(styles.field, styles.col1)} />
+        <div className={cn(styles.field, styles.col2, styles.error)}>
+          Name is required field
+        </div>
+      </div> }
+    </>
   )
 }
 

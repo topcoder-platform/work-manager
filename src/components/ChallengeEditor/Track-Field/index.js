@@ -15,16 +15,24 @@ const TrackField = ({ challenge, onUpdateOthers }) => {
   }
 
   return (
-    <div className={styles.row}>
-      <div className={cn(styles.field, styles.col1)}>
-        <label htmlFor='track'>Track <span>*</span> :</label>
+    <>
+      <div className={styles.row}>
+        <div className={cn(styles.field, styles.col1)}>
+          <label htmlFor='track'>Track <span>*</span> :</label>
+        </div>
+        <div className={cn(styles.field, styles.col2)}>
+          {
+            _.map(CHALLENGE_TRACKS, track => renderTracks(track, challenge.track))
+          }
+        </div>
       </div>
-      <div className={cn(styles.field, styles.col2)}>
-        {
-          _.map(CHALLENGE_TRACKS, track => renderTracks(track, challenge.track))
-        }
-      </div>
-    </div>
+      { challenge.submitTriggered && !challenge.track && <div className={styles.row}>
+        <div className={cn(styles.field, styles.col1)} />
+        <div className={cn(styles.field, styles.col2, styles.error)}>
+          Track is required field
+        </div>
+      </div> }
+    </>
   )
 }
 

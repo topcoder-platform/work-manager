@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { axiosInstance } from './axiosWithAuth'
-import { MEMBER_API_URL, CHALLENGE_API_URL } from '../config/constants'
+import { MEMBER_API_URL, CHALLENGE_API_URL, PROJECT_API_URL, API_V3_URL } from '../config/constants'
 
 /**
  * Api request for fetching member's active challenges
@@ -27,10 +27,29 @@ export async function fetchMemberChallenge (handle, challengeId) {
  * @returns {Promise<*>}
  */
 export async function fetchChallengeTypes () {
-  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challenge-types`)
-  return _.get(response, 'data.result.content')
+  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challengeTypes?isActive=true`)
+  return _.get(response, 'data', [])
 }
 
+export async function fetchGroups () {
+  const response = await axiosInstance.get(`${API_V3_URL}/groups`)
+  return _.get(response, 'data.result.content', [])
+}
+
+export async function fetchTimelineTemplates () {
+  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/timelineTemplates`)
+  return _.get(response, 'data', [])
+}
+
+export async function fetchChallengePhases () {
+  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challengePhases`)
+  return _.get(response, 'data', [])
+}
+
+export async function fetchChallenge (challengeId) {
+  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challenges/${challengeId}`)
+  return _.get(response, 'data')
+}
 /**
  * Api request for fetching project's challenges
  * @param projectId Project id
@@ -47,6 +66,13 @@ export async function fetchProjectChallenges (projectId, status) {
   if (!_.isEmpty(status)) {
     filters.push(`status=${status}`)
   }
-  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challenges${filters.length > 0 ? `?filter=${encodeURIComponent(filters.join('&'))}` : ''}`)
+  const response = await axiosInstance.get(`${PROJECT_API_URL}/challenges${filters.length > 0 ? `?filter=${encodeURIComponent(filters.join('&'))}` : ''}`)
   return _.get(response, 'data.result.content')
+}
+
+export function createChallenge (challenge) {
+  return axiosInstance.post(`${CHALLENGE_API_URL}/challenges`, challenge)
+}
+export function updateChallenge (challenge, challengeId) {
+  return axiosInstance.put(`${CHALLENGE_API_URL}/challenges/${challengeId}`, challenge)
 }

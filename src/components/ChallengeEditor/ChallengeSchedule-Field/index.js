@@ -7,6 +7,7 @@ import PhaseInput from '../../PhaseInput'
 import Select from '../../Select'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDown, faTrash } from '@fortawesome/free-solid-svg-icons'
+import jstz from 'jstimezonedetect'
 
 class ChallengeScheduleField extends Component {
   constructor (props) {
@@ -107,7 +108,7 @@ class ChallengeScheduleField extends Component {
                       value={currentTemplate}
                       onChange={(e) => this.setState({
                         currentTemplate: e
-                      }, () => resetPhase())}
+                      }, () => resetPhase(e))}
                     />
                   </div>
                 </div>
@@ -119,7 +120,7 @@ class ChallengeScheduleField extends Component {
           isEdit && this.renderPhaseEditor()
         }
         <div className={cn(styles.row, styles.timezone)}>
-          <span>Timezone:Europe/Athens</span>
+          <span>Timezone:{jstz.determine().name()}</span>
         </div>
       </div>
     )

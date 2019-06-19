@@ -4,6 +4,11 @@
   display: flex;
   flex-direction: column;
 
+
+   .error {
+      color: $tc-red;
+      margin-left: 25px;
+   }
   .row {
     box-sizing: border-box;
     display: flex;

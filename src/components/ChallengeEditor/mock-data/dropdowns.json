@@ -230,13 +230,9 @@
   "challenge": {
     "track": "DEVELOP",
     "trackType": "Code",
-    "challengeName": "Build Our New Challenge Creation App",
+    "name": "Build Our New Challenge Creation App",
     "copilot": "thomaskranitsas",
-    "reviewType": {
-      "community": true,
-      "internal": false,
-      "reviewer": ""
-    },
+    "reviewType": "community",
     "terms": [
       "Standard Topcoder Terms"
     ],
@@ -294,7 +290,7 @@
       }
     ],
     "requirements": "Create our new Challenge Creation app based on the provided storyboard.",
-    "keywords": ["ReactJS"],
+    "tags": ["ReactJS"],
     "fileTypes": [
       {
         "name": "Layered PSD files created in Adobe Photoshop or similar",
@@ -344,10 +340,11 @@
         "amount": "$ 600"
       }
     ],
-    "checkpointPrizes": {
-      "checkNumber": 0,
-      "checkAmount": 0
-    },
+    "prizeSets": [{
+      "type": "Checkpoint prize",
+      "description": "Checkpoint prizes",
+      "prizes": []
+    }],
     "reviewCost": "$ 300",
     "challengeFee": "150",
     "copilotFee": "$ 600",
@@ -355,72 +352,18 @@
   },
   "newChallenge": {
     "track": "",
-    "trackType": "",
-    "challengeName": "",
+    "typeId": "",
+    "name": "",
     "copilot": "",
-    "reviewType": {
-      "community": false,
-      "internal": false,
-      "reviewer": ""
-    },
+    "reviewType": "community",
     "terms": [
-        "Standard Topcoder Terms"     
+        "Standard Topcoder Terms"
     ],
     "billingAccount": "A",
-    "group": "",
-    "phases": [
-      {
-        "name": "Start",
-        "date": "",
-        "time": ""
-      },
-      {
-        "name": "Registration",
-        "date": "",
-        "time": ""
-      },
-      {
-        "name": "Submission",
-        "date": "",
-        "time": ""
-      },
-      {
-        "name": "Review",
-        "date": "",
-        "time": "",
-        "scorecard": "",
-        "scorecards": [
-          {
-            "key": "scorecard",
-            "name": "Card A"
-          },
-          {
-            "key": "scorecard",
-            "name": "Card B"
-          },
-          {
-            "key": "scorecard",
-            "name": "Card C"
-          },
-          {
-            "key": "scorecard",
-            "name": "Card D"
-          }
-        ]
-      },
-      {
-        "name": "Appeals End",
-        "date": "",
-        "time": ""
-      },
-      {
-        "name": "Appeals Response End",
-        "date":  "",
-        "time": ""
-      }
-    ],
-    "requirements": "",
-    "keywords": [],
+    "groups": [],
+    "phases": [],
+    "description": "",
+    "tags": [],
     "fileTypes": [
       {
         "name": "Layered PSD files created in Adobe Photoshop or similar",
@@ -461,10 +404,7 @@
         "amount": ""
       }
     ],
-    "checkpointPrizes": {
-      "number": null,
-      "amount": null
-    },
+    "prizeSets": [],
     "reviewCost": "",
     "challengeFee": "",
     "copilotFee": "",
