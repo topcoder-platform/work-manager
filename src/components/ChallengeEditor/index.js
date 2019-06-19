@@ -458,7 +458,7 @@ class ChallengeEditor extends Component {
                 <ChallengeScheduleField templates={metadata.timelineTemplates} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} isOpenAdvanceSettings={isOpenAdvanceSettings} onUpdatePhaseDate={this.onUpdatePhaseDate} onUpdatePhaseTime={this.onUpdatePhaseTime} />
               </div>
               <div className={styles.group}>
-                <div className={styles.title}>Details requirements</div>
+                <div className={styles.title}>Detailed Requirements</div>
                 <TextEditorField keywords={dropdowns['keywords']} challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} onUpdateInput={this.onUpdateInput} onUpdateDescription={this.onUpdateDescription} onUpdateMultiSelect={this.onUpdateMultiSelect} />
                 { false && (
                   <AttachmentField challenge={challenge} removeAttachment={this.removeAttachment} onUploadFile={this.onUploadFile} />

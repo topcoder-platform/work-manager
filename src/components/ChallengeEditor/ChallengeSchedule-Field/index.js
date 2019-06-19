@@ -120,7 +120,7 @@ class ChallengeScheduleField extends Component {
           isEdit && this.renderPhaseEditor()
         }
         <div className={cn(styles.row, styles.timezone)}>
-          <span>Timezone:{jstz.determine().name()}</span>
+          <span>Timezone: {jstz.determine().name()}</span>
         </div>
       </div>
     )
