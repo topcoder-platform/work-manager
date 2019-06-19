@@ -142,6 +142,9 @@
       "web.jsx",
       "jsx",
       "node"
+    ],
+    "modulePathIgnorePatterns": [
+      "node_modules"
     ]
   },
   "babel": {
