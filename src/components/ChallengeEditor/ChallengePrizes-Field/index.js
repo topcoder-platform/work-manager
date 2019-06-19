@@ -105,7 +105,6 @@ class ChallengePrizesField extends Component {
 
   renderPrizes () {
     const { isEdit, currentPrizeIndex } = this.state
-    const { challenge } = this.props
 
     if (isEdit) {
       return _.map(this.getChallengePrize().prizes, (prize, index) => (
@@ -136,12 +135,12 @@ class ChallengePrizesField extends Component {
     return (
       <div className={styles.row}>
         {
-          _.map(challenge.prizes, (p, index) => {
-            if (!_.isEmpty(p.amount)) {
+          _.map(this.getChallengePrize().prizes, (p, index) => {
+            if (!_.isEmpty(p.value)) {
               return (
-                <div className={styles.item} key={`${index}-${p.amount}-noedit`}>
+                <div className={styles.item} key={`${index}-${p.value}-noedit`}>
                   <span className={styles.order}>{this.getOrder(index + 1)} Prize</span>
-                  <span className={styles.amount}>{p.amount}</span>
+                  <span className={styles.value}>{p.value}</span>
                 </div>
               )
             }
