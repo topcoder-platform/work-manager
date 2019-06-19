@@ -10,6 +10,11 @@
   border-radius: 20px;
   cursor: pointer;
 
+  div {
+    width: 32px;
+    height: 32px;
+  }
+
   &.active {
     border-color: $tc-blue-20;
 

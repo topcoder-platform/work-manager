@@ -1,13 +1,17 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
-
+import ReactSVG from 'react-svg'
 import styles from './CopilotCard.module.scss'
 
+const assets = require.context('../../assets/images', false, /svg/)
+
 const CopilotCard = ({ copilot, selectedCopilot, onUpdateOthers }) => {
+  const icon = './user.svg'
   return (
     <div className={cn(styles.container, { [styles.active]: copilot.handle === selectedCopilot })} onClick={() => onUpdateOthers({ field: 'copilot', value: copilot.handle })}>
-      <img src={copilot.photoURL || 'https://www.flaticon.com/free-icon/user_149071#term=user&page=1&position=12'} alt='copilot' />
+      {copilot.photoURL && <img src={copilot.photoURL} alt='copilot' />}
+      {!copilot.photoURL && <ReactSVG path={assets(`${icon}`)} />}
       <span className={cn(styles.handle, styles[copilot.color])}>{copilot.handle}</span>
     </div>
   )
