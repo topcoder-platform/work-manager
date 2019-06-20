@@ -50,11 +50,16 @@ class ChallengeScheduleField extends Component {
   }
 
   renderPhaseEditor () {
-    const { challenge, onUpdateSelect, onUpdatePhaseDate, onUpdatePhaseTime, removePhase } = this.props
+    const { challenge, onUpdateSelect, onUpdatePhase, removePhase } = this.props
     return (
       _.map(challenge.phases, (p, index) => (
         <div className={styles.PhaseRow} key={p.name}>
-          <PhaseInput phase={p} onUpdateSelect={onUpdateSelect} index={index} onUpdatePhaseDate={onUpdatePhaseDate} onUpdatePhaseTime={onUpdatePhaseTime} />
+          <PhaseInput
+            phase={p}
+            withDuration
+            onUpdateSelect={onUpdateSelect}
+            onUpdatePhase={newValue => onUpdatePhase(newValue, 'duration', index)}
+          />
 
           <div className={styles.icon} onClick={() => removePhase(index)}>
             <FontAwesomeIcon icon={faTrash} />
@@ -67,7 +72,7 @@ class ChallengeScheduleField extends Component {
 
   render () {
     const { isEdit, currentTemplate } = this.state
-    const { templates, isOpenAdvanceSettings, resetPhase } = this.props
+    const { templates, isOpenAdvanceSettings, resetPhase, challenge, onUpdateOthers } = this.props
     return (
       <div className={styles.container}>
         {
@@ -116,6 +121,21 @@ class ChallengeScheduleField extends Component {
             </React.Fragment>
           )
         }
+        { isEdit && (
+          <div className={styles.PhaseRow}>
+            <PhaseInput
+              withDates
+              phase={{
+                name: 'Start Date',
+                date: challenge.startDate
+              }}
+              onUpdatePhase={newValue => onUpdateOthers({
+                field: 'startDate',
+                value: newValue
+              })}
+            />
+          </div>
+        ) }
         {
           isEdit && this.renderPhaseEditor()
         }
@@ -134,8 +154,8 @@ ChallengeScheduleField.propTypes = {
   resetPhase: PropTypes.func.isRequired,
   onUpdateSelect: PropTypes.func.isRequired,
   isOpenAdvanceSettings: PropTypes.bool.isRequired,
-  onUpdatePhaseDate: PropTypes.func.isRequired,
-  onUpdatePhaseTime: PropTypes.func.isRequired
+  onUpdatePhase: PropTypes.func.isRequired,
+  onUpdateOthers: PropTypes.func.isRequired
 }
 
 export default ChallengeScheduleField
