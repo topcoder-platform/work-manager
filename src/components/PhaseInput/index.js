@@ -14,16 +14,15 @@ import 'react-day-picker/lib/style.css'
 import 'rc-time-picker/assets/index.css'
 import Select from '../Select'
 
-const format = 'hh:mm a'
+const timeFormat = 'HH:mm'
 const dateFormat = 'DD/MM/YYYY'
 
 class PhaseInput extends Component {
   render () {
-    const { phase, onUpdateSelect, index, onUpdatePhaseDate, onUpdatePhaseTime } = this.props
-    let time = moment()
-    if (!_.isEmpty(phase.date) && !_.isEmpty(phase.time)) {
-      time = moment(`${phase.date} ${phase.time}`)
-    }
+    const { phase, onUpdateSelect, onUpdatePhase, withDates, withDuration } = this.props
+    const date = moment(phase.date).format(dateFormat)
+    const time = moment(phase.date)
+
     return (
       <div className={styles.container}>
         <div className={styles.row}>
@@ -31,12 +30,27 @@ class PhaseInput extends Component {
             <label htmlFor={`${phase.name}`}>{phase.name} :</label>
           </div>
           <div className={cn(styles.field, styles.col2)}>
-            <div className={styles.dayPicker}>
-              <DayPickerInput formatDate={formatDate} parseDate={parseDate} placeholder={dateFormat} value={phase.date} onDayChange={(selectedDay) => onUpdatePhaseDate(selectedDay, index)} format={dateFormat} />
-            </div>
-            <div className={styles.timePicker}>
-              <TimePicker showSecond={false} use12Hours value={time} format={format} onChange={(value) => onUpdatePhaseTime(moment(value).format('HH:MM'), index)} />
-            </div>
+            {
+              withDates && (
+                <div className={styles.dayPicker}>
+                  <DayPickerInput formatDate={formatDate} parseDate={parseDate} placeholder={dateFormat} value={date} onDayChange={(selectedDay) => onUpdatePhase(moment(`${moment(selectedDay).format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`))} format={dateFormat} />
+                </div>
+              )
+            }
+            {
+              withDates && (
+                <div className={styles.timePicker}>
+                  <TimePicker showSecond={false} value={time} format={timeFormat} onChange={(value) => onUpdatePhase(value)} />
+                </div>
+              )
+            }
+            {
+              withDuration && (
+                <div>
+                  <input type='number' value={phase.duration} onChange={e => onUpdatePhase(e.target.value)} min={0} placeholder='Duration (hours)' />
+                </div>
+              )
+            }
             {
               !_.isEmpty(phase.scorecards) && (
                 <div className={styles.scorecards}>
@@ -48,7 +62,7 @@ class PhaseInput extends Component {
                     valueKey='name'
                     clearable={false}
                     value={phase.scorecard}
-                    onChange={(e) => onUpdateSelect(e, true, 'phases', index)}
+                    onChange={(e) => onUpdateSelect(e, true, 'phases')}
                   />
                 </div>
               )
@@ -60,11 +74,16 @@ class PhaseInput extends Component {
   }
 }
 
+PhaseInput.defaultProps = {
+  withDates: false,
+  withDuration: false
+}
+
 PhaseInput.propTypes = {
   phase: PropTypes.shape().isRequired,
-  onUpdateSelect: PropTypes.func.isRequired,
-  index: PropTypes.number.isRequired,
-  onUpdatePhaseDate: PropTypes.func.isRequired,
-  onUpdatePhaseTime: PropTypes.func.isRequired
+  onUpdateSelect: PropTypes.func,
+  onUpdatePhase: PropTypes.func.isRequired,
+  withDates: PropTypes.bool,
+  withDuration: PropTypes.bool
 }
 export default PhaseInput

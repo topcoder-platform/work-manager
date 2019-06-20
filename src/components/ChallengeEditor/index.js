@@ -65,8 +65,7 @@ class ChallengeEditor extends Component {
     this.toggleLaunch = this.toggleLaunch.bind(this)
     this.onUpdateMultiSelect = this.onUpdateMultiSelect.bind(this)
     this.onUpdateChallengePrizeType = this.onUpdateChallengePrizeType.bind(this)
-    this.onUpdatePhaseDate = this.onUpdatePhaseDate.bind(this)
-    this.onUpdatePhaseTime = this.onUpdatePhaseTime.bind(this)
+    this.onUpdatePhase = this.onUpdatePhase.bind(this)
     this.onUploadFile = this.onUploadFile.bind(this)
     this.resetChallengeData = this.resetChallengeData.bind(this)
     this.onUpdateDescription = this.onUpdateDescription.bind(this)
@@ -83,12 +82,6 @@ class ChallengeEditor extends Component {
     const { isNew } = this.props
     const { isNew: newValue, challengeId } = nextProps
     if (isNew !== newValue) this.resetChallengeData(newValue, challengeId)
-    if (this.props.metadata.challengePhases && (!this.state.challenge.phases || !this.state.challenge.phases.length)) {
-      this.setState(prevState => ({
-        ...prevState,
-        challenge: { ...prevState.challenge, phases: this.props.metadata.challengePhases }
-      }))
-    }
   }
 
   async resetChallengeData (isNew, challengeId) {
@@ -104,7 +97,8 @@ class ChallengeEditor extends Component {
     } else {
       this.setState({ challenge: {
         ...dropdowns['newChallenge'],
-        phases: this.props.metadata.challengePhases
+        startDate: moment().add(1, 'hour'),
+        phases: []
       } })
     }
   }
@@ -275,11 +269,20 @@ class ChallengeEditor extends Component {
    * Reset  challenge Phases
    */
   resetPhase (timeline) {
+    const validPhase = this.props.metadata.challengePhases.filter(p => {
+      return timeline.phases.map(p => p.name || p).indexOf(p.name) !== -1
+    })
+
+    const sorted = []
+
+    for (let i = 0; i < timeline.phases.length; i += 1) {
+      sorted.push(_.find(validPhase, p => p.name === timeline.phases[i]))
+    }
+
     this.onUpdateOthers({
       field: 'phases',
-      value: this.props.metadata.challengePhases.filter(p => {
-        return timeline.phases.map(p => p.name || p).indexOf(p.name) !== -1
-      }) })
+      value: sorted
+    })
   }
 
   toggleLaunch () {
@@ -331,22 +334,12 @@ class ChallengeEditor extends Component {
     }
   }
 
-  onUpdatePhaseDate (selectedDay, index) {
+  onUpdatePhase (newValue, property, index) {
+    if (property === 'duration' && newValue < 0) newValue = 0
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge }
-    if (oldChallenge.phases[index].date !== moment(selectedDay).format('YYYY-MM-DD')) {
-      newChallenge.phases[index].date = moment(selectedDay).format('YYYY-MM-DD')
-      this.setState({ challenge: newChallenge })
-    }
-  }
-
-  onUpdatePhaseTime (time, index) {
-    const { challenge: oldChallenge } = this.state
-    const newChallenge = { ...oldChallenge }
-    if (oldChallenge.phases[index].time !== time) {
-      newChallenge.phases[index].time = time
-      this.setState({ challenge: newChallenge })
-    }
+    newChallenge.phases[index][property] = newValue
+    this.setState({ challenge: newChallenge })
   }
 
   onUploadFile (files) {
@@ -369,7 +362,7 @@ class ChallengeEditor extends Component {
   async onSubmitChallenge (status = 'Active') {
     if (this.state.isSaving) return
     const { challengeId } = this.props
-    const challenge = pick(['phases', 'typeId', 'track', 'name', 'description', 'reviewType', 'tags', 'groups', 'prizeSets'], this.state.challenge)
+    const challenge = pick(['phases', 'typeId', 'track', 'name', 'description', 'reviewType', 'tags', 'groups', 'prizeSets', 'startDate'], this.state.challenge)
     challenge.phases = challenge.phases.map(pick(['description', 'duration', 'id', 'isActive', 'name', 'predecessor']))
     challenge.timelineTemplateId = this.props.metadata.timelineTemplates[0].id
     challenge.projectId = this.props.projectId
@@ -455,7 +448,7 @@ class ChallengeEditor extends Component {
                     <hr className={styles.breakLine} />
                   </React.Fragment>
                 ) }
-                <ChallengeScheduleField templates={metadata.timelineTemplates} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} isOpenAdvanceSettings={isOpenAdvanceSettings} onUpdatePhaseDate={this.onUpdatePhaseDate} onUpdatePhaseTime={this.onUpdatePhaseTime} />
+                <ChallengeScheduleField templates={metadata.timelineTemplates} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} isOpenAdvanceSettings={isOpenAdvanceSettings} onUpdatePhase={this.onUpdatePhase} onUpdateOthers={this.onUpdateOthers} />
               </div>
               <div className={styles.group}>
                 <div className={styles.title}>Detailed Requirements</div>
