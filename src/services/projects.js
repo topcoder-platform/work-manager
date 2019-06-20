@@ -11,10 +11,21 @@ export async function fetchMemberProjects () {
   return _.get(response, 'data.result.content')
 }
 
+/**
+ * Api request for fetching project by id
+ * @param id Project id
+ * @returns {Promise<*>}
+ */
 export async function fetchProjectById (id) {
   const response = await axiosInstance.get(`${PROJECT_API_URL}/projects/${id}`)
   return _.get(response, 'data.result.content')
 }
+
+/**
+ * Api request for fetching project members
+ * @param ids ProjectMembers id array
+ * @returns {Promise<*>}
+ */
 export async function fetchProjectMembers (ids) {
   const query = encodeURI(_.map(ids, id => `userId:${id}`).join(' OR '))
   const fields = 'userId%2Chandle%2CphotoURL%2CfirstName%2ClastName'
