@@ -36,6 +36,9 @@ export function loadChallenges (projectId, status) {
   }
 }
 
+/**
+ * Loads Challenge details
+ */
 export function loadChallengeDetails (projectId, challengeId) {
   return async (dispatch, getState) => {
     const { selectedProjectId, metadata } = getState().challenges

@@ -31,25 +31,43 @@ export async function fetchChallengeTypes () {
   return _.get(response, 'data', [])
 }
 
+/**
+ * Api request for fetching Groups
+ * @returns {Promise<*>}
+ */
 export async function fetchGroups () {
   const response = await axiosInstance.get(`${API_V3_URL}/groups`)
   return _.get(response, 'data.result.content', [])
 }
 
+/**
+ * Api request for fetching timeline templates
+ * @returns {Promise<*>}
+ */
 export async function fetchTimelineTemplates () {
   const response = await axiosInstance.get(`${CHALLENGE_API_URL}/timelineTemplates`)
   return _.get(response, 'data', [])
 }
 
+/**
+ * Api request for fetching challenge phases
+ * @returns {Promise<*>}
+ */
 export async function fetchChallengePhases () {
   const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challengePhases`)
   return _.get(response, 'data', [])
 }
 
+/**
+ * Api request for fetching challenge details
+ * @param projectId Challenge id
+ * @returns {Promise<*>}
+ */
 export async function fetchChallenge (challengeId) {
   const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challenges/${challengeId}`)
   return _.get(response, 'data')
 }
+
 /**
  * Api request for fetching project's challenges
  * @param projectId Project id
@@ -70,9 +88,21 @@ export async function fetchProjectChallenges (projectId, status) {
   return _.get(response, 'data.result.content')
 }
 
+/**
+ * Api request for creating new challenge
+ * @param challenge challenge data
+ * @returns {Promise<*>}
+ */
 export function createChallenge (challenge) {
   return axiosInstance.post(`${CHALLENGE_API_URL}/challenges`, challenge)
 }
+
+/**
+ * Api request for updating challenge
+ * @param challenge challenge data
+ * @param challengeId Challenge id
+ * @returns {Promise<*>}
+ */
 export function updateChallenge (challenge, challengeId) {
   return axiosInstance.put(`${CHALLENGE_API_URL}/challenges/${challengeId}`, challenge)
 }
