@@ -32,7 +32,7 @@ export async function fetchChallengeTypes () {
 }
 
 /**
- * Api request for fetching challenge types
+ * Api request for fetching challenge tags
  * @returns {Promise<*>}
  */
 export async function fetchChallengeTags () {
