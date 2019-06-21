@@ -20,6 +20,7 @@ class ChallengeScheduleField extends Component {
     }
     this.toggleEditMode = this.toggleEditMode.bind(this)
     this.getPhaseEndDate = this.getPhaseEndDate.bind(this)
+    this.renderTimeLine = this.renderTimeLine.bind(this)
   }
 
   toggleEditMode () {
@@ -67,36 +68,32 @@ class ChallengeScheduleField extends Component {
         ]
       )
 
-      // challenge Start Date
-      var startDate = moment(challenge.startDate)
-      var endDate = null
-      var registrationDuration = 0
-
-      challenge.phases.map(function (p) {
-        // these checks are HACK since Registration and Submission start from StartDate
-        if (p.name === 'Registration') {
-          registrationDuration = p.duration
-        }
-        if (p.name === 'Submission') {
-          endDate = moment(startDate).add(p.duration - registrationDuration, 'hours')
+      var oneDay = 3600000 // = 1 hr
+      _.map(challenge.phases, (p, index) => {
+        var startDate = index === 0 || !p.predecessor ? moment(challenge.startDate).toDate() : this.getPhaseEndDate(index - 1).toDate()
+        var endDate = this.getPhaseEndDate(index).toDate()
+        var currentTime = moment().valueOf()
+        var percentage = 0
+        if (startDate.getTime() > currentTime) {
+          percentage = 0
+        } else if (endDate.getTime() > currentTime) {
+          percentage = Math.round(((currentTime - startDate.getTime()) / (oneDay * p.duration)) * 100)
         } else {
-          endDate = moment(startDate).add(p.duration, 'hours')
+          percentage = Math.round(((endDate.getTime() - startDate.getTime()) / (oneDay * p.duration)) * 100)
         }
         timelines.push(
           [
             p.name,
             p.name,
-            startDate.clone().toDate(),
-            endDate.clone().toDate(),
+            startDate,
+            endDate,
             null,
-            0,
-            null
+            percentage,
+            p.predecessor ? challenge.phases.filter(ph => ph.id === p.predecessor)[0].name : null
           ]
         )
-        startDate = moment(endDate)
       })
     }
-    console.log('Returning ' + JSON.stringify(timelines))
     return timelines
   }
 
@@ -125,7 +122,6 @@ class ChallengeScheduleField extends Component {
   render () {
     const { isEdit, currentTemplate } = this.state
     const { templates, resetPhase, challenge, onUpdateOthers } = this.props
-    console.log('GURi ' + JSON.stringify(challenge.phases))
 
     return (
       <div className={styles.container}>
@@ -144,16 +140,17 @@ class ChallengeScheduleField extends Component {
           </div>
         </div>
         {
-          !isEdit && challenge.phases && (
-            <Chart
-              width={'100%'}
-              padding={'10px'}
-              height={'400px'}
-              chartType='Gantt'
-              loader={<div>Loading Chart</div>}
-              data={this.renderTimeLine()}
-              rootProps={{ 'data-testid': '1' }}
-            />
+          !isEdit && typeof challenge.phases !== 'undefined' && challenge.phases.length > 0 && (
+            <div className={styles.chart}>
+              <Chart
+                width={'100%'}
+                height={'100%'}
+                chartType='Gantt'
+                loader={<div>Loading Timelines</div>}
+                data={this.renderTimeLine()}
+                rootProps={{ 'data-testid': '1' }}
+              />
+            </div>
           )
         }
         {
