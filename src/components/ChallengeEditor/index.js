@@ -466,11 +466,13 @@ class ChallengeEditor extends Component {
           <div className={styles.button}>
             <OutlineButton text={'Cancel'} type={'danger'} link={'/'} />
           </div>
+          { isNew && (
+            <div className={styles.button}>
+              <OutlineButton text={this.state.isSaving ? 'Saving...' : 'Save as Draft'} type={'success'} onClick={this.saveDraft} />
+            </div>
+          ) }
           <div className={styles.button}>
-            <OutlineButton text={this.state.isSaving ? 'Saving...' : 'Save as Draft'} type={'success'} onClick={this.saveDraft} />
-          </div>
-          <div className={styles.button}>
-            <PrimaryButton text={'Launch'} type={'info'} onClick={this.toggleLaunch} />
+            <PrimaryButton text={isNew ? 'Launch' : 'Update'} type={'info'} onClick={this.toggleLaunch} />
           </div>
         </div>}
       </div>

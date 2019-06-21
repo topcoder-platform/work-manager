@@ -3,6 +3,9 @@
  */
 import { VALIDATION_VALUE_TYPE } from '../config/constants'
 
+/**
+ * Validates Integer
+ */
 const validateInteger = (value, prefixText = '') => {
   const newValue = value.replace(prefixText, '').replace(' ', '').replace(/[^0-9]/g, '')
   if (newValue.length > 0) {
@@ -12,6 +15,9 @@ const validateInteger = (value, prefixText = '') => {
   }
 }
 
+/**
+ * Validates Value
+ */
 export const validateValue = (value, checkType = '', prefix = '') => {
   switch (checkType) {
     case VALIDATION_VALUE_TYPE.INTEGER:
@@ -21,6 +27,11 @@ export const validateValue = (value, checkType = '', prefix = '') => {
   }
 }
 
+/**
+ * Converts dollar to integer
+ * @param value
+ * @param prefix
+ */
 export const convertDollarToInteger = (value, prefix = '') => {
   if (value) {
     return parseInt(('' + value).replace(prefix, '').replace(' ', '').replace(/[^0-9]/g, ''))
