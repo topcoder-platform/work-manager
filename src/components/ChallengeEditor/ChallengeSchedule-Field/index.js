@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import moment from 'moment'
 import styles from './ChallengeSchedule-Field.module.scss'
 import cn from 'classnames'
 import PhaseInput from '../../PhaseInput'
@@ -17,11 +18,36 @@ class ChallengeScheduleField extends Component {
       currentTemplate: ''
     }
     this.toggleEditMode = this.toggleEditMode.bind(this)
+    this.getPhaseEndDate = this.getPhaseEndDate.bind(this)
   }
 
   toggleEditMode () {
     const { isEdit } = this.state
     this.setState({ isEdit: !isEdit })
+  }
+
+  getPhaseEndDate (index) {
+    const { challenge } = this.props
+    const map = {}
+    const alreadyCalculated = {}
+    _.each(challenge.phases, p => { map[p.id] = p.duration })
+    const finalDate = moment(challenge.startDate)
+    finalDate.add(challenge.phases[index].duration, 'hours')
+
+    if (!challenge.phases[index].predecessor) {
+      return finalDate
+    }
+
+    for (let i = index; i >= 0; i -= 1) {
+      const { predecessor } = challenge.phases[i]
+      if (predecessor) {
+        if (!alreadyCalculated[predecessor]) {
+          alreadyCalculated[predecessor] = true
+          finalDate.add(map[predecessor], 'hours')
+        }
+      }
+    }
+    return finalDate
   }
 
   renderTimeLine () {
@@ -59,6 +85,7 @@ class ChallengeScheduleField extends Component {
             withDuration
             onUpdateSelect={onUpdateSelect}
             onUpdatePhase={newValue => onUpdatePhase(newValue, 'duration', index)}
+            endDate={this.getPhaseEndDate(index)}
           />
 
           <div className={styles.icon} onClick={() => removePhase(index)}>
@@ -72,17 +99,15 @@ class ChallengeScheduleField extends Component {
 
   render () {
     const { isEdit, currentTemplate } = this.state
-    const { templates, isOpenAdvanceSettings, resetPhase, challenge, onUpdateOthers } = this.props
+    const { templates, resetPhase, challenge, onUpdateOthers } = this.props
     return (
       <div className={styles.container}>
-        {
-          isEdit && !isOpenAdvanceSettings && (
-            <hr className={styles.breakLine} />
-          )
-        }
         <div className={styles.row}>
-          <div className={cn(styles.field, styles.col1)}>
+          <div className={cn(styles.field, styles.col1, styles.title)}>
             <label htmlFor={`challengeSchedule`}>Challenge Schedule :</label>
+            <div className={styles.timezone}>
+              <span>Timezone: {jstz.determine().name()}</span>
+            </div>
           </div>
           <div className={cn(styles.field, styles.col2)} onClick={this.toggleEditMode}>
             <div className={cn(styles.editButton, { [styles.active]: isEdit })}>
@@ -99,7 +124,7 @@ class ChallengeScheduleField extends Component {
             <React.Fragment>
               <div className={cn(styles.row, styles.flexStart)}>
                 <div className={cn(styles.field, styles.col1)}>
-                  <label htmlFor={'notitle'}>&nbsp;</label>
+                  <label htmlFor={'notitle'}>Timeline template :</label>
                 </div>
                 <div className={cn(styles.field, styles.col2)}>
                   <div className={styles.templates}>
@@ -139,9 +164,6 @@ class ChallengeScheduleField extends Component {
         {
           isEdit && this.renderPhaseEditor()
         }
-        <div className={cn(styles.row, styles.timezone)}>
-          <span>Timezone: {jstz.determine().name()}</span>
-        </div>
       </div>
     )
   }
@@ -153,7 +175,6 @@ ChallengeScheduleField.propTypes = {
   removePhase: PropTypes.func.isRequired,
   resetPhase: PropTypes.func.isRequired,
   onUpdateSelect: PropTypes.func.isRequired,
-  isOpenAdvanceSettings: PropTypes.bool.isRequired,
   onUpdatePhase: PropTypes.func.isRequired,
   onUpdateOthers: PropTypes.func.isRequired
 }

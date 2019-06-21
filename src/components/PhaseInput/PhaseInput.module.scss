@@ -34,10 +34,26 @@
       margin-right: 14px;
       margin-bottom: auto;
       margin-top: auto;
-      padding-top: 10px;
       white-space: nowrap;
       display: flex;
       align-items: center;
+    }
+
+    &.phaseName {
+      flex-direction: column;
+      align-items: flex-start;
+
+      .previewDates {
+        font-size: 13px;
+        display: flex;
+        color: $red;
+        font-weight: 300;
+
+        span {
+          color: $dark-gray;
+          margin-right: 10px;
+        }
+      }
     }
 
     &.col2 {
@@ -49,16 +65,29 @@
 
       input {
         border-radius: 2px;
-        width: 165px;
       }
 
       .dayPicker {
+        width: 180px;
         margin-right: 30px;
+
+        :global {
+          .DayPickerInput {
+            width: 100%;
+          }
+        }
+
+        input {
+          width: 100%;
+        }
       }
 
       .timePicker {
-        width: 146px;
-        margin-right: 30px;
+        width: 90px;
+
+        input {
+          width: 100%;
+        }
 
         :global {
           .rc-time-picker-clear {
@@ -66,8 +95,14 @@
           }
         }
       }
+
+      .durationPicker {
+        width: 180px;
+      }
+
       .scorecards {
-        width: 229px;
+        width: 190px;
+        margin-left: 30px;
       }
     }
   }

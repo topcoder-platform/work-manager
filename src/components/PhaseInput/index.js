@@ -19,15 +19,23 @@ const dateFormat = 'DD/MM/YYYY'
 
 class PhaseInput extends Component {
   render () {
-    const { phase, onUpdateSelect, onUpdatePhase, withDates, withDuration } = this.props
+    const { phase, onUpdateSelect, onUpdatePhase, withDates, withDuration, endDate } = this.props
     const date = moment(phase.date).format(dateFormat)
     const time = moment(phase.date)
 
     return (
       <div className={styles.container}>
         <div className={styles.row}>
-          <div className={cn(styles.field, styles.col1)}>
+          <div className={cn(styles.field, styles.col1, styles.phaseName)}>
             <label htmlFor={`${phase.name}`}>{phase.name} :</label>
+            {
+              withDuration && endDate && (
+                <div className={styles.previewDates}>
+                  <span>Ends:</span>
+                  {moment(endDate).format(`${dateFormat} ${timeFormat}`)}
+                </div>
+              )
+            }
           </div>
           <div className={cn(styles.field, styles.col2)}>
             {
@@ -46,7 +54,7 @@ class PhaseInput extends Component {
             }
             {
               withDuration && (
-                <div>
+                <div className={styles.durationPicker}>
                   <input type='number' value={phase.duration} onChange={e => onUpdatePhase(e.target.value)} min={0} placeholder='Duration (hours)' />
                 </div>
               )
@@ -76,7 +84,8 @@ class PhaseInput extends Component {
 
 PhaseInput.defaultProps = {
   withDates: false,
-  withDuration: false
+  withDuration: false,
+  endDate: null
 }
 
 PhaseInput.propTypes = {
@@ -84,6 +93,7 @@ PhaseInput.propTypes = {
   onUpdateSelect: PropTypes.func,
   onUpdatePhase: PropTypes.func.isRequired,
   withDates: PropTypes.bool,
-  withDuration: PropTypes.bool
+  withDuration: PropTypes.bool,
+  endDate: PropTypes.shape()
 }
 export default PhaseInput

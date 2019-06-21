@@ -442,10 +442,9 @@ class ChallengeEditor extends Component {
                   <React.Fragment>
                     <TermsField terms={dropdowns['terms']} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />
                     <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
-                    <hr className={styles.breakLine} />
                   </React.Fragment>
                 ) }
-                <ChallengeScheduleField templates={metadata.timelineTemplates} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} isOpenAdvanceSettings={isOpenAdvanceSettings} onUpdatePhase={this.onUpdatePhase} onUpdateOthers={this.onUpdateOthers} />
+                <ChallengeScheduleField templates={metadata.timelineTemplates} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} onUpdatePhase={this.onUpdatePhase} onUpdateOthers={this.onUpdateOthers} />
               </div>
               <div className={styles.group}>
                 <div className={styles.title}>Detailed Requirements</div>
