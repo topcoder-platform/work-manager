@@ -19,7 +19,7 @@ class PrizeInput extends React.Component {
 
   toggleSelect () {
     const { isOpen } = this.state
-    this.setState({ isOpen: !isOpen })
+    this.setState({ isOpen: isOpen }) // Temp disabled
   }
 
   onUpdatePrizeType (e) {

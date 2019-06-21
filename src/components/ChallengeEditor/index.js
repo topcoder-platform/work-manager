@@ -15,11 +15,9 @@ import CopilotField from './Copilot-Field'
 import ReviewTypeField from './ReviewType-Field'
 import TermsField from './Terms-Field'
 import GroupsField from './Groups-Field'
-import ReviewCostField from './ReviewCost-Field'
 import CopilotFeeField from './CopilotFee-Field'
 import ChallengeTotalField from './ChallengeTotal-Field'
 import ChallengePrizesField from './ChallengePrizes-Field'
-import CheckpointPrizesField from './CheckpointPrizes-Field'
 import AttachmentField from './Attachment-Field'
 import TextEditorField from './TextEditor-Field'
 import ChallengeScheduleField from './ChallengeSchedule-Field'
@@ -104,7 +102,6 @@ class ChallengeEditor extends Component {
   }
 
   resetModal () {
-    console.log('test')
     this.setState({ isLoading: true, isConfirm: false, isLaunch: false })
   }
   onUpdateDescription (description) {
@@ -457,8 +454,6 @@ class ChallengeEditor extends Component {
                   <AttachmentField challenge={challenge} removeAttachment={this.removeAttachment} onUploadFile={this.onUploadFile} />
                 )}
                 <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
-                <CheckpointPrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
-                <ReviewCostField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
                 <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
                 <ChallengeTotalField challenge={challenge} />
                 { this.state.hasValidationErrors && !challenge.prizeSets.length && <div className={styles.error}>Should have at-least 1 prize value</div> }

@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import TechAndPlatformField from '../TechAndPlatform-Field'
+import TagsField from '../TagsField'
 import FinalDeliverablesField from '../FinalDeliverables-Field'
 import StockArtsField from '../StockArts-Field'
 import SubmssionVisibility from '../SubmissionVisibility-Field'
@@ -20,7 +20,7 @@ class TextEditorField extends Component {
           <DescriptionField challenge={challenge} onUpdateDescription={onUpdateDescription} />
         </div>
         { challenge.submitTriggered && !challenge.description && <div className={styles.error}>Description is required field</div> }
-        <TechAndPlatformField keywords={keywords} challenge={challenge} onUpdateMultiSelect={onUpdateMultiSelect} />
+        <TagsField keywords={keywords} challenge={challenge} onUpdateMultiSelect={onUpdateMultiSelect} />
         {
           challengeTrack && challengeTrack === CHALLENGE_TRACKS.DESIGN && (
             <React.Fragment>
