@@ -5,7 +5,7 @@ import cn from 'classnames'
 import styles from './Tags-Field.module.scss'
 
 const TagsField = ({ keywords, challenge, onUpdateMultiSelect }) => {
-  const mapOps = item => ({ label: item, value: item })
+  const mapOps = item => ({ label: item.name, value: item.id })
   return (
     <>
       <div className={styles.row}>
@@ -37,7 +37,7 @@ const TagsField = ({ keywords, challenge, onUpdateMultiSelect }) => {
 
 TagsField.propTypes = {
   challenge: PropTypes.shape().isRequired,
-  keywords: PropTypes.arrayOf(PropTypes.string).isRequired,
+  keywords: PropTypes.arrayOf(PropTypes.object).isRequired,
   onUpdateMultiSelect: PropTypes.func.isRequired
 }
 

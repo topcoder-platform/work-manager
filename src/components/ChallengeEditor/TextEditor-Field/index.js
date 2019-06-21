@@ -13,6 +13,9 @@ class TextEditorField extends Component {
   render () {
     const { keywords, challenge, onUpdateCheckbox, onUpdateInput, onUpdateDescription, onUpdateMultiSelect } = this.props
     const challengeTrack = challenge.track
+    const challengeTags = keywords.map(function (tag) {
+      return { id: tag.name, name: tag.name }
+    })
 
     return (
       <div className={styles.container}>
@@ -20,7 +23,7 @@ class TextEditorField extends Component {
           <DescriptionField challenge={challenge} onUpdateDescription={onUpdateDescription} />
         </div>
         { challenge.submitTriggered && !challenge.description && <div className={styles.error}>Description is required field</div> }
-        <TagsField keywords={keywords} challenge={challenge} onUpdateMultiSelect={onUpdateMultiSelect} />
+        <TagsField keywords={challengeTags} challenge={challenge} onUpdateMultiSelect={onUpdateMultiSelect} />
         {
           challengeTrack && challengeTrack === CHALLENGE_TRACKS.DESIGN && (
             <React.Fragment>
@@ -37,7 +40,7 @@ class TextEditorField extends Component {
 }
 
 TextEditorField.propTypes = {
-  keywords: PropTypes.arrayOf(PropTypes.string).isRequired,
+  keywords: PropTypes.arrayOf(PropTypes.object).isRequired,
   challenge: PropTypes.shape().isRequired,
   onUpdateCheckbox: PropTypes.func.isRequired,
   onUpdateInput: PropTypes.func.isRequired,
