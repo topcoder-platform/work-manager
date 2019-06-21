@@ -448,7 +448,7 @@ class ChallengeEditor extends Component {
               </div>
               <div className={styles.group}>
                 <div className={styles.title}>Detailed Requirements</div>
-                <TextEditorField keywords={metadata.challengeTags} challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} onUpdateInput={this.onUpdateInput} onUpdateDescription={this.onUpdateDescription} onUpdateMultiSelect={this.onUpdateMultiSelect} />
+                <TextEditorField challengeTags={metadata.challengeTags} challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} onUpdateInput={this.onUpdateInput} onUpdateDescription={this.onUpdateDescription} onUpdateMultiSelect={this.onUpdateMultiSelect} />
                 { false && (
                   <AttachmentField challenge={challenge} removeAttachment={this.removeAttachment} onUploadFile={this.onUploadFile} />
                 )}
