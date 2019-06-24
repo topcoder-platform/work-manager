@@ -35,6 +35,10 @@ class Routes extends React.Component {
       return null
     }
 
+    if (this.props.user.role !== 'copilot' && this.props.user.role !== 'administrator') {
+      return (<Redirect to={{ pathname: '/', state: { warnMessage: "You are not authorized to use this application" }}} />)
+    }
+
     return (
       <Switch>
         <Route exact path='/'
@@ -69,7 +73,7 @@ class Routes extends React.Component {
             <Sidebar projectId={match.params.projectId} />
           )()} />
         {/* If path is not defined redirect to landing page */}
-        <Redirect to='/' />
+        <Redirect to={{ pathname: '/', state: { warnMessage: null }}} />
       </Switch>
     )
   }

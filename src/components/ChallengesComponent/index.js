@@ -9,14 +9,14 @@ import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
 import Loader from '../Loader'
 
-const ChallengesComponent = ({ challenges, isLoading, activeMenu }) => {
+const ChallengesComponent = ({ challenges, isLoading, activeMenu, warnMessage }) => {
   return (
     <Sticky top={10} bottomBoundary='#SidebarContainer'>
       <div>
         <Helmet title={activeMenu} />
         <div className={styles.title}>{activeMenu}</div>
         <div className={styles.challenges}>
-          {isLoading ? <Loader /> : <ChallengeList challenges={challenges} activeMenu={activeMenu} />}
+          {isLoading ? <Loader /> : <ChallengeList challenges={challenges} warnMessage={warnMessage} activeMenu={activeMenu} />}
         </div>
       </div>
     </Sticky>
@@ -26,7 +26,8 @@ const ChallengesComponent = ({ challenges, isLoading, activeMenu }) => {
 ChallengesComponent.propTypes = {
   challenges: PropTypes.arrayOf(PropTypes.object),
   isLoading: PropTypes.bool,
-  activeMenu: PropTypes.string
+  activeMenu: PropTypes.string,
+  warnMessage: PropTypes.string
 }
 
 ChallengesComponent.defaultProps = {

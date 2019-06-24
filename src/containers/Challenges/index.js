@@ -41,9 +41,9 @@ class Challenges extends Component {
 
   render () {
     const { challenges, isLoading, activeMenu } = this.props
-
+    const warnMessage = this.props.location.state.warnMessage
     return (
-      <ChallengesComponent challenges={challenges} isLoading={isLoading} activeMenu={activeMenu} />
+      <ChallengesComponent warnMessage={warnMessage} challenges={challenges} isLoading={isLoading} activeMenu={activeMenu} />
     )
   }
 }

@@ -36,11 +36,15 @@ class ChallengeList extends Component {
 
   render () {
     const { searchText } = this.state
-    const { activeMenu } = this.props
+    const { activeMenu, warnMessage } = this.props
     const challenges = this.filterChallenges(searchText)
 
     if (challenges.length === 0 && searchText === '') {
       return <NoChallenge activeMenu={activeMenu} />
+    }
+
+    if (warnMessage) {
+      return <Message message={warnMessage} />
     }
 
     return (
@@ -72,7 +76,8 @@ ChallengeList.defaultProps = {
 
 ChallengeList.propTypes = {
   challenges: PropTypes.arrayOf(PropTypes.object),
-  activeMenu: PropTypes.string
+  activeMenu: PropTypes.string,
+  warnMessage: PropTypes.string
 }
 
 export default ChallengeList
