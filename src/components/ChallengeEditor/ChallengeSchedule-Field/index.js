@@ -5,6 +5,7 @@ import moment from 'moment'
 import styles from './ChallengeSchedule-Field.module.scss'
 import cn from 'classnames'
 import PhaseInput from '../../PhaseInput'
+import Chart from 'react-google-charts'
 import Select from '../../Select'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDown, faTrash } from '@fortawesome/free-solid-svg-icons'
@@ -19,6 +20,7 @@ class ChallengeScheduleField extends Component {
     }
     this.toggleEditMode = this.toggleEditMode.bind(this)
     this.getPhaseEndDate = this.getPhaseEndDate.bind(this)
+    this.renderTimeLine = this.renderTimeLine.bind(this)
   }
 
   toggleEditMode () {
@@ -52,27 +54,47 @@ class ChallengeScheduleField extends Component {
 
   renderTimeLine () {
     const { challenge } = this.props
-    return (
-      <React.Fragment>
-        <div className={styles.row}>
-          <div className={styles.timeline}>
-            {
-              _.map(challenge.phases, p => (
-                <div className={styles.phase} key={p.name}>
-                  <div className={styles.circle}>&nbsp;</div>
-                  <span>{p.name}</span>
-                  {
-                    !_.isEmpty(p.date) && !_.isEmpty(p.time) && (
-                      <span>{p.date}, {p.time}</span>
-                    )
-                  }
-                </div>
-              ))
-            }
-          </div>
-        </div>
-      </React.Fragment>
-    )
+    const timelines = []
+    if (challenge.phases) {
+      timelines.push(
+        [
+          { type: 'string', label: 'Task ID' },
+          { type: 'string', label: 'Task Name' },
+          { type: 'date', label: 'Start Date' },
+          { type: 'date', label: 'End Date' },
+          { type: 'number', label: 'Duration' },
+          { type: 'number', label: 'Percent Complete' },
+          { type: 'string', label: 'Dependencies' }
+        ]
+      )
+
+      var oneDay = 3600000 // = 1 hr
+      _.map(challenge.phases, (p, index) => {
+        var startDate = index === 0 || !p.predecessor ? moment(challenge.startDate).toDate() : this.getPhaseEndDate(index - 1).toDate()
+        var endDate = this.getPhaseEndDate(index).toDate()
+        var currentTime = moment().valueOf()
+        var percentage = 0
+        if (startDate.getTime() > currentTime) {
+          percentage = 0
+        } else if (endDate.getTime() > currentTime) {
+          percentage = Math.round(((currentTime - startDate.getTime()) / (oneDay * p.duration)) * 100)
+        } else {
+          percentage = Math.round(((endDate.getTime() - startDate.getTime()) / (oneDay * p.duration)) * 100)
+        }
+        timelines.push(
+          [
+            p.name,
+            p.name,
+            startDate,
+            endDate,
+            null,
+            percentage,
+            p.predecessor ? challenge.phases.filter(ph => ph.id === p.predecessor)[0].name : null
+          ]
+        )
+      })
+    }
+    return timelines
   }
 
   renderPhaseEditor () {
@@ -100,6 +122,7 @@ class ChallengeScheduleField extends Component {
   render () {
     const { isEdit, currentTemplate } = this.state
     const { templates, resetPhase, challenge, onUpdateOthers } = this.props
+
     return (
       <div className={styles.container}>
         <div className={styles.row}>
@@ -117,7 +140,18 @@ class ChallengeScheduleField extends Component {
           </div>
         </div>
         {
-          !isEdit && this.renderTimeLine()
+          !isEdit && typeof challenge.phases !== 'undefined' && challenge.phases.length > 0 && (
+            <div className={styles.chart}>
+              <Chart
+                width={'100%'}
+                height={'100%'}
+                chartType='Gantt'
+                loader={<div>Loading Timelines</div>}
+                data={this.renderTimeLine()}
+                rootProps={{ 'data-testid': '1' }}
+              />
+            </div>
+          )
         }
         {
           isEdit && (
