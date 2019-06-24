@@ -1,6 +1,7 @@
 import {
   fetchProjectChallenges,
   fetchChallengeTypes,
+  fetchChallengeTags,
   fetchGroups, fetchTimelineTemplates, fetchChallengePhases
 } from '../services/challenges'
 import {
@@ -67,11 +68,13 @@ export function loadChallengeDetails (projectId, challengeId) {
       const timelineTemplates = await fetchTimelineTemplates()
       const challengePhases = await fetchChallengePhases()
       const challengeTypes = await fetchChallengeTypes()
+      const challengeTags = await fetchChallengeTags()
       const groups = await fetchGroups()
       dispatch({
         type: LOAD_CHALLENGE_METADATA_SUCCESS,
         metadata: {
           challengeTypes,
+          challengeTags,
           groups,
           timelineTemplates,
           challengePhases: challengePhases.filter(c => c.isActive)

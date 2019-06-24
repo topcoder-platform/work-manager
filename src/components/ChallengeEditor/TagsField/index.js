@@ -4,8 +4,8 @@ import Select from '../../Select'
 import cn from 'classnames'
 import styles from './Tags-Field.module.scss'
 
-const TagsField = ({ keywords, challenge, onUpdateMultiSelect }) => {
-  const mapOps = item => ({ label: item, value: item })
+const TagsField = ({ challengeTags, challenge, onUpdateMultiSelect }) => {
+  const mapOps = item => ({ label: item.name, value: item.id })
   return (
     <>
       <div className={styles.row}>
@@ -17,7 +17,7 @@ const TagsField = ({ keywords, challenge, onUpdateMultiSelect }) => {
           <Select
             id='track-select'
             multi
-            options={keywords.map(mapOps)}
+            options={challengeTags.map(mapOps)}
             simpleValue
             value={challenge.tags.join(',')}
             onChange={(value) => onUpdateMultiSelect(value, 'tags')}
@@ -37,7 +37,7 @@ const TagsField = ({ keywords, challenge, onUpdateMultiSelect }) => {
 
 TagsField.propTypes = {
   challenge: PropTypes.shape().isRequired,
-  keywords: PropTypes.arrayOf(PropTypes.string).isRequired,
+  challengeTags: PropTypes.arrayOf(PropTypes.object).isRequired,
   onUpdateMultiSelect: PropTypes.func.isRequired
 }
 

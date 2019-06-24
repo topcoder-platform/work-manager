@@ -32,6 +32,15 @@ export async function fetchChallengeTypes () {
 }
 
 /**
+ * Api request for fetching challenge tags
+ * @returns {Promise<*>}
+ */
+export async function fetchChallengeTags () {
+  const response = await axiosInstance.get(`${API_V3_URL}/tags/?domain=SKILLS&status=APPROVED`)
+  return _.get(response, 'data.result.content', [])
+}
+
+/**
  * Api request for fetching Groups
  * @returns {Promise<*>}
  */
