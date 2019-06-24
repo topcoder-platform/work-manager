@@ -70,12 +70,12 @@ export default function (state = initialState, action) {
     case UPLOAD_ATTACHMENT_PENDING:
       return { ...state, isUploading: true, isSuccess: false, uploadingId: action.challengeId }
     case UPLOAD_ATTACHMENT_SUCCESS:
-      toastrSuccess('Success', `${action.filename} upload success`)
+      toastrSuccess('Success', `${action.filename} uploaded successfully. Save the challenge to reflect the changes!`)
       attachments = _.cloneDeep(state.attachments)
       attachments.push(action.attachment)
       return { ...state, isUploading: false, isSuccess: true, uploadingId: null, attachments }
     case UPLOAD_ATTACHMENT_FAILURE:
-      toastrFailure('Failure', `${action.filename} upload failure`)
+      toastrFailure('Upload failure', `Failed to upload ${action.filename}`)
       return { ...state, isUploading: false, isSuccess: false, uploadingId: null }
     case REMOVE_ATTACHMENT:
       attachments = _.filter(state.attachments, item => {

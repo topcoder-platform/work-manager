@@ -366,7 +366,9 @@ class ChallengeEditor extends Component {
       return { ...p, prizes }
     })
     challenge.status = status
-    challenge.attachmentIds = _.map(attachments, item => item.id)
+    if (this.state.challenge.id) {
+      challenge.attachmentIds = _.map(attachments, item => item.id)
+    }
     delete challenge.attachments
     try {
       this.setState({ isSaving: true })
