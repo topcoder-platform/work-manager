@@ -40,6 +40,12 @@ export const LOAD_CHALLENGE_METADATA_SUCCESS = 'LOAD_CHALLENGE_METADATA_SUCCESS'
 
 export const SAVE_AUTH_TOKEN = 'SAVE_AUTH_TOKEN'
 
+export const UPLOAD_ATTACHMENT_PENDING = 'UPLOAD_ATTACHMENT_PENDING'
+export const UPLOAD_ATTACHMENT_FAILURE = 'UPLOAD_ATTACHMENT_FAILURE'
+export const UPLOAD_ATTACHMENT_SUCCESS = 'UPLOAD_ATTACHMENT_SUCCESS'
+
+export const REMOVE_ATTACHMENT = 'REMOVE_ATTACHMENT'
+
 // Name of challenge tracks
 export const CHALLENGE_TRACKS = {
   DESIGN: 'DESIGN',
@@ -102,3 +108,6 @@ export const CHALLENGE_PRIZE_TYPE = {
   MONEY: 'money',
   GIFT: 'gift'
 }
+
+export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
+  `${CHALLENGE_API_URL}/challenges/${challengeId}/attachments/${attachmentId}?token=${token}`

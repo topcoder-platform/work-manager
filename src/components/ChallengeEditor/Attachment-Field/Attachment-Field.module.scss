@@ -158,7 +158,8 @@
       .col1 {
         color: $tc-blue-20;
         flex: 4;
-
+        cursor: pointer;
+        text-decoration: none;
       }
       .col2 {
         flex: 4;

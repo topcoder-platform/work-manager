@@ -3,7 +3,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { withRouter } from 'react-router-dom'
 import ChallengeEditorComponent from '../../components/ChallengeEditor'
-import { loadChallengeDetails } from '../../actions/challenges'
+import { loadChallengeDetails, createAttachment, removeAttachment } from '../../actions/challenges'
 import { connect } from 'react-redux'
 
 class ChallengeEditor extends Component {
@@ -23,7 +23,7 @@ class ChallengeEditor extends Component {
   }
 
   render () {
-    const { match, isLoading, challengeDetails, metadata } = this.props
+    const { match, isLoading, challengeDetails, metadata, createAttachment, attachments, token, removeAttachment } = this.props
     return (
       <ChallengeEditorComponent
         isLoading={isLoading}
@@ -31,7 +31,11 @@ class ChallengeEditor extends Component {
         metadata={metadata}
         projectId={_.get(match.params, 'projectId', null)}
         challengeId={_.get(match.params, 'challengeId', null)}
-        isNew={_.isEmpty(_.get(match.params, 'challengeId', null))}
+        isNew={!_.has(match.params, 'challengeId')}
+        uploadAttachment={createAttachment}
+        attachments={attachments}
+        token={token}
+        removeAttachment={removeAttachment}
       />
     )
   }
@@ -49,17 +53,25 @@ ChallengeEditor.propTypes = {
   metadata: PropTypes.shape({
     challengeTypes: PropTypes.array
   }),
-  isLoading: PropTypes.bool
+  isLoading: PropTypes.bool,
+  createAttachment: PropTypes.func,
+  attachments: PropTypes.arrayOf(PropTypes.shape()),
+  token: PropTypes.string,
+  removeAttachment: PropTypes.func
 }
 
-const mapStateToProps = ({ challenges: { challengeDetails, metadata, isLoading } }) => ({
+const mapStateToProps = ({ challenges: { challengeDetails, metadata, isLoading, attachments }, auth: { token } }) => ({
   challengeDetails,
   metadata,
-  isLoading
+  isLoading,
+  attachments,
+  token
 })
 
 const mapDispatchToProps = {
-  loadChallengeDetails
+  loadChallengeDetails,
+  createAttachment,
+  removeAttachment
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChallengeEditor))

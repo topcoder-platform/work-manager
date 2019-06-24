@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import { axiosInstance } from './axiosWithAuth'
+import FormData from 'form-data'
 import { MEMBER_API_URL, CHALLENGE_API_URL, PROJECT_API_URL, API_V3_URL } from '../config/constants'
 
 /**
@@ -114,4 +115,10 @@ export function createChallenge (challenge) {
  */
 export function updateChallenge (challenge, challengeId) {
   return axiosInstance.put(`${CHALLENGE_API_URL}/challenges/${challengeId}`, challenge)
+}
+
+export function uploadAttachment (challengeId, file) {
+  const data = new FormData()
+  data.append('attachment', file)
+  return axiosInstance.post(`${CHALLENGE_API_URL}/challenges/${challengeId}/attachments`, data)
 }
