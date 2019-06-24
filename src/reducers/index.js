@@ -2,6 +2,7 @@
  * Combines all reducers into one
  */
 import { combineReducers } from 'redux'
+import { reducer as toastrReducer } from 'react-redux-toastr'
 import auth from './auth'
 import challenges from './challenges'
 import challengeSubmissions from './challengeSubmissions'
@@ -11,5 +12,6 @@ export default combineReducers({
   auth,
   challenges,
   challengeSubmissions,
-  sidebar
+  sidebar,
+  toastr: toastrReducer
 })

@@ -25,7 +25,7 @@ import { convertDollarToInteger, validateValue } from '../../util/input-check'
 import dropdowns from './mock-data/dropdowns'
 import styles from './ChallengeEditor.module.scss'
 import Loader from '../Loader'
-import { createChallenge, fetchChallenge, updateChallenge } from '../../services/challenges'
+import { createChallenge, updateChallenge } from '../../services/challenges'
 
 const theme = {
   container: styles.modalContainer
@@ -64,7 +64,6 @@ class ChallengeEditor extends Component {
     this.onUpdateMultiSelect = this.onUpdateMultiSelect.bind(this)
     this.onUpdateChallengePrizeType = this.onUpdateChallengePrizeType.bind(this)
     this.onUpdatePhase = this.onUpdatePhase.bind(this)
-    this.onUploadFile = this.onUploadFile.bind(this)
     this.resetChallengeData = this.resetChallengeData.bind(this)
     this.onUpdateDescription = this.onUpdateDescription.bind(this)
     this.onSubmitChallenge = this.onSubmitChallenge.bind(this)
@@ -73,21 +72,20 @@ class ChallengeEditor extends Component {
   }
 
   componentDidMount () {
-    this.resetChallengeData(this.props.isNew, this.props.challengeId)
+    this.resetChallengeData(this.props.isNew, this.props.challengeId, this.props.challengeDetails, this.props.metadata, this.props.attachments)
   }
 
   componentWillReceiveProps (nextProps) {
-    const { isNew } = this.props
-    const { isNew: newValue, challengeId } = nextProps
-    if (isNew !== newValue) this.resetChallengeData(newValue, challengeId)
+    const { isNew: newValue, challengeId, challengeDetails, metadata, attachments } = nextProps
+    this.resetChallengeData(newValue, challengeId, challengeDetails, metadata, attachments)
   }
 
-  async resetChallengeData (isNew, challengeId) {
+  async resetChallengeData (isNew, challengeId, challengeDetails, metadata, attachments) {
     if (!isNew) {
       try {
-        this.setState({ isLoading: true, isConfirm: false, isLaunch: false })
-        const challenge = await fetchChallenge(challengeId)
-        this.setState({ challenge: { ...dropdowns['newChallenge'], ...challenge }, isLoading: false })
+        this.setState({ isConfirm: false, isLaunch: false })
+        const newChallenge = this.updateAttachmentlist(challengeDetails, attachments)
+        this.setState({ challenge: { ...dropdowns['newChallenge'], ...newChallenge }, isLoading: false })
       } catch (e) {
         window.location = window.location.origin
         this.setState({ isLoading: true })
@@ -358,7 +356,7 @@ class ChallengeEditor extends Component {
   }
   async onSubmitChallenge (status = 'Active') {
     if (this.state.isSaving) return
-    const { challengeId } = this.props
+    const { challengeId, attachments } = this.props
     const challenge = pick(['phases', 'typeId', 'track', 'name', 'description', 'reviewType', 'tags', 'groups', 'prizeSets', 'startDate'], this.state.challenge)
     challenge.phases = challenge.phases.map(pick(['description', 'duration', 'id', 'isActive', 'name', 'predecessor']))
     challenge.timelineTemplateId = this.props.metadata.timelineTemplates[0].id
@@ -368,6 +366,8 @@ class ChallengeEditor extends Component {
       return { ...p, prizes }
     })
     challenge.status = status
+    challenge.attachmentIds = _.map(attachments, item => item.id)
+    delete challenge.attachments
     try {
       this.setState({ isSaving: true })
       const response = challengeId ? await updateChallenge(challenge, challengeId) : await createChallenge(challenge)
@@ -376,9 +376,25 @@ class ChallengeEditor extends Component {
       this.setState({ isSaving: false })
     }
   }
+
+  updateAttachmentlist (challenge, attachments) {
+    const newChallenge = _.cloneDeep(challenge)
+    if (attachments.length > 0) {
+      if (!_.has(challenge, 'attachments')) {
+        newChallenge.attachments = []
+      }
+
+      newChallenge.attachments = _.cloneDeep(attachments)
+    } else {
+      newChallenge.attachments = []
+    }
+
+    return newChallenge
+  }
+
   render () {
     const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings } = this.state
-    const { isNew, isLoading, metadata } = this.props
+    const { isNew, isLoading, metadata, uploadAttachment, token, removeAttachment } = this.props
     if (_.isEmpty(challenge)) {
       return <div>&nbsp;</div>
     }
@@ -449,8 +465,13 @@ class ChallengeEditor extends Component {
               <div className={styles.group}>
                 <div className={styles.title}>Detailed Requirements</div>
                 <TextEditorField challengeTags={metadata.challengeTags} challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} onUpdateInput={this.onUpdateInput} onUpdateDescription={this.onUpdateDescription} onUpdateMultiSelect={this.onUpdateMultiSelect} />
-                { false && (
-                  <AttachmentField challenge={challenge} removeAttachment={this.removeAttachment} onUploadFile={this.onUploadFile} />
+                { !isNew && (
+                  <AttachmentField
+                    challenge={challenge}
+                    onUploadFile={uploadAttachment}
+                    token={token}
+                    removeAttachment={removeAttachment}
+                  />
                 )}
                 <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
                 <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
@@ -480,15 +501,21 @@ class ChallengeEditor extends Component {
 }
 
 ChallengeEditor.defaultProps = {
-  challengeId: null
+  challengeId: null,
+  attachments: []
 }
 
 ChallengeEditor.propTypes = {
+  challengeDetails: PropTypes.object.isRequired,
   isNew: PropTypes.bool.isRequired,
   projectId: PropTypes.string.isRequired,
   challengeId: PropTypes.string,
   metadata: PropTypes.object.isRequired,
-  isLoading: PropTypes.bool.isRequired
+  isLoading: PropTypes.bool.isRequired,
+  uploadAttachment: PropTypes.func.isRequired,
+  removeAttachment: PropTypes.func.isRequired,
+  attachments: PropTypes.arrayOf(PropTypes.shape()),
+  token: PropTypes.string.isRequired
 }
 
 export default ChallengeEditor
