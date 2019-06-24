@@ -13,6 +13,8 @@ import { getFreshToken } from 'tc-accounts'
 import { ACCOUNTS_APP_LOGIN_URL, SIDEBAR_MENU } from './config/constants'
 import { saveToken } from './actions/auth'
 import { connect } from 'react-redux'
+import { checkRoleAllowed } from './util/input-check'
+var jwtDecode = require('jwt-decode')
 
 class Routes extends React.Component {
   componentWillMount () {
@@ -35,7 +37,9 @@ class Routes extends React.Component {
       return null
     }
 
-    if (this.props.user.role !== 'copilot' && this.props.user.role !== 'administrator') {
+    let isAllowed = checkRoleAllowed(jwtDecode(this.props.token).roles)
+
+    if (!isAllowed) {
       let warnMessage = 'You are not authorized to use this application'
       return (
         <Switch>
@@ -103,7 +107,7 @@ Routes.propTypes = {
   saveToken: PropTypes.func,
   location: PropTypes.object,
   isLoggedIn: PropTypes.bool,
-  user: PropTypes.object
+  token: PropTypes.string
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Routes))
