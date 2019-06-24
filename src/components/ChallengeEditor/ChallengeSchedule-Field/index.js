@@ -11,6 +11,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDown, faTrash } from '@fortawesome/free-solid-svg-icons'
 import jstz from 'jstimezonedetect'
 
+const GANTT_ROW_HEIGHT = 45
+const GANTT_FOOTER_HEIGHT = 40
+
 class ChallengeScheduleField extends Component {
   constructor (props) {
     super(props)
@@ -144,7 +147,7 @@ class ChallengeScheduleField extends Component {
             <div className={styles.chart}>
               <Chart
                 width={'100%'}
-                height={'100%'}
+                height={`${(challenge.phases.length * GANTT_ROW_HEIGHT) + GANTT_FOOTER_HEIGHT}px`}
                 chartType='Gantt'
                 loader={<div>Loading Timelines</div>}
                 data={this.renderTimeLine()}
