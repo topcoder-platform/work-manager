@@ -36,7 +36,19 @@ class Routes extends React.Component {
     }
 
     if (this.props.user.role !== 'copilot' && this.props.user.role !== 'administrator') {
-      return (<Redirect to={{ pathname: '/', state: { warnMessage: "You are not authorized to use this application" }}} />)
+      let warnMessage = 'You are not authorized to use this application'
+      return (
+        <Switch>
+          <Route exact path='/'
+            render={() => renderApp(
+              <ChallengeList menu='NULL' warnMessage={warnMessage} />,
+              <TopBarContainer />,
+              <Sidebar />
+            )()}
+          />
+          <Redirect to='/' />
+        </Switch>
+      )
     }
 
     return (
@@ -73,7 +85,7 @@ class Routes extends React.Component {
             <Sidebar projectId={match.params.projectId} />
           )()} />
         {/* If path is not defined redirect to landing page */}
-        <Redirect to={{ pathname: '/', state: { warnMessage: null }}} />
+        <Redirect to='/' />
       </Switch>
     )
   }
@@ -90,7 +102,8 @@ const mapDispatchToProps = {
 Routes.propTypes = {
   saveToken: PropTypes.func,
   location: PropTypes.object,
-  isLoggedIn: PropTypes.bool
+  isLoggedIn: PropTypes.bool,
+  user: PropTypes.object
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Routes))

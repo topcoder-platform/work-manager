@@ -7,6 +7,7 @@ import PropTypes from 'prop-types'
 import styles from './ChallengeList.module.scss'
 import NoChallenge from '../NoChallenge'
 import ChallengeCard from '../ChallengeCard'
+import Message from '../Message'
 
 class ChallengeList extends Component {
   constructor (props) {
@@ -38,13 +39,11 @@ class ChallengeList extends Component {
     const { searchText } = this.state
     const { activeMenu, warnMessage } = this.props
     const challenges = this.filterChallenges(searchText)
-
+    if (warnMessage) {
+      return <Message warnMessage={warnMessage} />
+    }
     if (challenges.length === 0 && searchText === '') {
       return <NoChallenge activeMenu={activeMenu} />
-    }
-
-    if (warnMessage) {
-      return <Message message={warnMessage} />
     }
 
     return (

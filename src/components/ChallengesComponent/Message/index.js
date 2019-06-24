@@ -14,11 +14,11 @@ const Message = ({ warnMessage }) => {
 }
 
 Message.defaultProps = {
-    warnMessage: ''
+  warnMessage: ''
 }
 
 Message.propTypes = {
-    warnMessage: PropTypes.string
+  warnMessage: PropTypes.string
 }
 
 export default Message
