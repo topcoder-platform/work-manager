@@ -40,10 +40,9 @@ class Challenges extends Component {
   }
 
   render () {
-    const { challenges, isLoading, activeMenu } = this.props
-
+    const { challenges, isLoading, activeMenu, warnMessage } = this.props
     return (
-      <ChallengesComponent challenges={challenges} isLoading={isLoading} activeMenu={activeMenu} />
+      <ChallengesComponent warnMessage={warnMessage} challenges={challenges} isLoading={isLoading} activeMenu={activeMenu} />
     )
   }
 }
@@ -54,7 +53,8 @@ Challenges.propTypes = {
   loadChallenges: PropTypes.func,
   activeMenu: PropTypes.string,
   projectId: PropTypes.string,
-  activeProjectId: PropTypes.number
+  activeProjectId: PropTypes.number,
+  warnMessage: PropTypes.string
 }
 
 const mapStateToProps = ({ challenges, sidebar }) => ({
