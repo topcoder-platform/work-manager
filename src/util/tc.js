@@ -1,7 +1,7 @@
 /**
  * Topcoder related utilities
  */
-import { MARATHON_MATCH_SUBTRACKS, CHALLENGE_TRACKS } from '../config/constants'
+import { MARATHON_MATCH_SUBTRACKS, CHALLENGE_TRACKS, ALLOWED_USER_ROLES } from '../config/constants'
 
 export const RATING_COLORS = [{
   color: '#9D9FA0' /* Grey */,
@@ -40,3 +40,9 @@ export function getRatingColor (rating) {
 export function fixedTrack (track, subTrack) {
   return MARATHON_MATCH_SUBTRACKS.includes(subTrack) ? CHALLENGE_TRACKS.DATA_SCIENCE : track
 }
+
+/**
+ * Checks if role is present in allowed roles
+ * @param  roles
+ */
+export const checkAllowedRoles = (roles) => roles.some(val => ALLOWED_USER_ROLES.indexOf(val.toLowerCase()) > -1)

@@ -109,5 +109,10 @@ export const CHALLENGE_PRIZE_TYPE = {
   GIFT: 'gift'
 }
 
+export const ALLOWED_USER_ROLES = [
+  'copilot',
+  'administrator'
+]
+
 export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
   `${CHALLENGE_API_URL}/challenges/${challengeId}/attachments/${attachmentId}?token=${token}`

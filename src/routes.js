@@ -4,6 +4,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Redirect, Route, Switch, withRouter } from 'react-router-dom'
+import jwtDecode from 'jwt-decode'
+import _ from 'lodash'
 import renderApp from './components/App'
 import TopBarContainer from './containers/TopbarContainer'
 import Sidebar from './containers/Sidebar'
@@ -13,8 +15,7 @@ import { getFreshToken } from 'tc-accounts'
 import { ACCOUNTS_APP_LOGIN_URL, SIDEBAR_MENU } from './config/constants'
 import { saveToken } from './actions/auth'
 import { connect } from 'react-redux'
-import { checkRoleAllowed } from './util/input-check'
-var jwtDecode = require('jwt-decode')
+import { checkAllowedRoles } from './util/tc'
 
 class Routes extends React.Component {
   componentWillMount () {
@@ -37,7 +38,7 @@ class Routes extends React.Component {
       return null
     }
 
-    let isAllowed = checkRoleAllowed(jwtDecode(this.props.token).roles)
+    let isAllowed = checkAllowedRoles(_.get(jwtDecode(this.props.token), 'roles'))
 
     if (!isAllowed) {
       let warnMessage = 'You are not authorized to use this application'

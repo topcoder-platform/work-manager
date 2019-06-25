@@ -38,12 +38,3 @@ export const convertDollarToInteger = (value, prefix = '') => {
   }
   return 0
 }
-
-/**
- * Checks if role is present to allow application access
- * @param  roles
- */
-export const checkRoleAllowed = (roles) => {
-  const allowedRoles = ['copilot', 'administrator']
-  return roles.some(val => allowedRoles.indexOf(val) > -1)
-}
