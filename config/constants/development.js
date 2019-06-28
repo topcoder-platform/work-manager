@@ -7,5 +7,6 @@ module.exports = {
   DEV_APP_URL: 'https://local.topcoder-dev.com',
   CHALLENGE_API_URL: 'https://tc-challenges-v5-dev.herokuapp.com',
   PROJECT_API_URL: 'https://api.topcoder-dev.com/v4',
+  API_V4_URL: 'https://api.topcoder-dev.com/v4',
   API_V3_URL: 'https://api.topcoder-dev.com/v3'
 }

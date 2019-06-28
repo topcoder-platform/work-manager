@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import { axiosInstance } from './axiosWithAuth'
 import FormData from 'form-data'
-import { MEMBER_API_URL, CHALLENGE_API_URL, PROJECT_API_URL, API_V3_URL } from '../config/constants'
+import { MEMBER_API_URL, CHALLENGE_API_URL, PROJECT_API_URL, API_V3_URL, API_V4_URL } from '../config/constants'
 
 /**
  * Api request for fetching member's active challenges
@@ -37,8 +37,12 @@ export async function fetchChallengeTypes () {
  * @returns {Promise<*>}
  */
 export async function fetchChallengeTags () {
-  const response = await axiosInstance.get(`${API_V3_URL}/tags/?domain=SKILLS&status=APPROVED`)
-  return _.get(response, 'data.result.content', [])
+  const platforms = await axiosInstance.get(`${API_V4_URL}/platforms`)
+  const technologies = await axiosInstance.get(`${API_V4_URL}/technologies`)
+  return [
+    ..._.map(_.get(platforms, 'data.result.content', []), tag => _.pick(tag, 'name')),
+    ..._.map(_.get(technologies, 'data.result.content', []), tag => _.pick(tag, 'name'))
+  ]
 }
 
 /**

@@ -508,7 +508,7 @@ ChallengeEditor.defaultProps = {
 }
 
 ChallengeEditor.propTypes = {
-  challengeDetails: PropTypes.object.isRequired,
+  challengeDetails: PropTypes.object,
   isNew: PropTypes.bool.isRequired,
   projectId: PropTypes.string.isRequired,
   challengeId: PropTypes.string,
