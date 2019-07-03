@@ -3,12 +3,14 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { withRouter } from 'react-router-dom'
 import ChallengeEditorComponent from '../../components/ChallengeEditor'
-import { loadChallengeDetails, createAttachment, removeAttachment } from '../../actions/challenges'
+import { loadChallengeDetails, createAttachment, removeAttachment, setFilterChallengeName } from '../../actions/challenges'
 import { connect } from 'react-redux'
 
 class ChallengeEditor extends Component {
   componentDidMount () {
-    const { match, loadChallengeDetails } = this.props
+    const { match, loadChallengeDetails, setFilterChallengeName } = this.props
+    // reset filter challenge name
+    setFilterChallengeName('')
     loadChallengeDetails(_.get(match.params, 'projectId', null), _.get(match.params, 'challengeId', null))
   }
 
@@ -57,7 +59,8 @@ ChallengeEditor.propTypes = {
   createAttachment: PropTypes.func,
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string,
-  removeAttachment: PropTypes.func
+  removeAttachment: PropTypes.func,
+  setFilterChallengeName: PropTypes.func
 }
 
 const mapStateToProps = ({ challenges: { challengeDetails, metadata, isLoading, attachments }, auth: { token } }) => ({
@@ -71,7 +74,8 @@ const mapStateToProps = ({ challenges: { challengeDetails, metadata, isLoading, 
 const mapDispatchToProps = {
   loadChallengeDetails,
   createAttachment,
-  removeAttachment
+  removeAttachment,
+  setFilterChallengeName
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChallengeEditor))

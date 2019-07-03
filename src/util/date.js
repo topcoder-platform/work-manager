@@ -1,6 +1,7 @@
 /**
  * Provides date related utility methods
  */
+import _ from 'lodash'
 import moment from 'moment'
 import 'moment-duration-format'
 
@@ -40,4 +41,34 @@ export const getRoundFormattedDuration = (duration) => {
   if (duration > DAY_MS) format = 'D[d]'
   else format = 'H[h]'
   return moment.duration(duration).format(format)
+}
+
+/**
+ * Get phase end data
+ * @param index  the phase index
+ * @param challenge the challenge data
+ * @returns {moment.Moment}
+ */
+export const getPhaseEndDate = (index, challenge) => {
+  const map = {}
+  const alreadyCalculated = {}
+  _.each(challenge.phases, p => { map[p.id] = p.duration })
+  const finalDate = moment(challenge.startDate)
+  finalDate.add(challenge.phases[index].duration, 'hours')
+
+  if (!challenge.phases[index].predecessor) {
+    return finalDate
+  }
+
+  for (let i = index; i >= 0; i -= 1) {
+    const { predecessor } = challenge.phases[i]
+    if (predecessor) {
+      if (!alreadyCalculated[predecessor]) {
+        alreadyCalculated[predecessor] = true
+        finalDate.add(map[predecessor], 'hours')
+      }
+    }
+  }
+
+  return finalDate
 }

@@ -16,10 +16,10 @@ const statuses = {
   [CHALLENGE_STATUS.COMPLETED]: styles.blue
 }
 
-const ChallengeStatus = ({ status, isBig }) => {
+const ChallengeStatus = ({ status, isBig, onUpdateLaunch }) => {
   if (isBig) {
     return (
-      <div className={cn(styles.bigContainer, statuses[status])}>
+      <div className={cn(styles.bigContainer, statuses[status])} onClick={() => onUpdateLaunch()}>
         <span className={cn(styles.name, statuses[status])}>Activate</span>
       </div>
     )
@@ -37,7 +37,8 @@ ChallengeStatus.defaultProps = {
 
 ChallengeStatus.propTypes = {
   status: PropTypes.string,
-  isBig: PropTypes.bool
+  isBig: PropTypes.bool,
+  onUpdateLaunch: PropTypes.func
 }
 
 export default ChallengeStatus

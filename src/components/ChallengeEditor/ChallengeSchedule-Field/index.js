@@ -4,12 +4,13 @@ import PropTypes from 'prop-types'
 import moment from 'moment'
 import styles from './ChallengeSchedule-Field.module.scss'
 import cn from 'classnames'
+import jstz from 'jstimezonedetect'
 import PhaseInput from '../../PhaseInput'
 import Chart from 'react-google-charts'
 import Select from '../../Select'
+import { getPhaseEndDate } from '../../../util/date'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDown, faTrash } from '@fortawesome/free-solid-svg-icons'
-import jstz from 'jstimezonedetect'
 
 const GANTT_ROW_HEIGHT = 45
 const GANTT_FOOTER_HEIGHT = 40
@@ -22,37 +23,12 @@ class ChallengeScheduleField extends Component {
       currentTemplate: ''
     }
     this.toggleEditMode = this.toggleEditMode.bind(this)
-    this.getPhaseEndDate = this.getPhaseEndDate.bind(this)
     this.renderTimeLine = this.renderTimeLine.bind(this)
   }
 
   toggleEditMode () {
     const { isEdit } = this.state
     this.setState({ isEdit: !isEdit })
-  }
-
-  getPhaseEndDate (index) {
-    const { challenge } = this.props
-    const map = {}
-    const alreadyCalculated = {}
-    _.each(challenge.phases, p => { map[p.id] = p.duration })
-    const finalDate = moment(challenge.startDate)
-    finalDate.add(challenge.phases[index].duration, 'hours')
-
-    if (!challenge.phases[index].predecessor) {
-      return finalDate
-    }
-
-    for (let i = index; i >= 0; i -= 1) {
-      const { predecessor } = challenge.phases[i]
-      if (predecessor) {
-        if (!alreadyCalculated[predecessor]) {
-          alreadyCalculated[predecessor] = true
-          finalDate.add(map[predecessor], 'hours')
-        }
-      }
-    }
-    return finalDate
   }
 
   renderTimeLine () {
@@ -73,8 +49,8 @@ class ChallengeScheduleField extends Component {
 
       var oneDay = 3600000 // = 1 hr
       _.map(challenge.phases, (p, index) => {
-        var startDate = index === 0 || !p.predecessor ? moment(challenge.startDate).toDate() : this.getPhaseEndDate(index - 1).toDate()
-        var endDate = this.getPhaseEndDate(index).toDate()
+        var startDate = index === 0 || !p.predecessor ? moment(challenge.startDate).toDate() : getPhaseEndDate(index - 1, challenge).toDate()
+        var endDate = getPhaseEndDate(index, challenge).toDate()
         var currentTime = moment().valueOf()
         var percentage = 0
         if (startDate.getTime() > currentTime) {
@@ -110,7 +86,7 @@ class ChallengeScheduleField extends Component {
             withDuration
             onUpdateSelect={onUpdateSelect}
             onUpdatePhase={newValue => onUpdatePhase(newValue, 'duration', index)}
-            endDate={this.getPhaseEndDate(index)}
+            endDate={getPhaseEndDate(index, challenge)}
           />
 
           <div className={styles.icon} onClick={() => removePhase(index)}>

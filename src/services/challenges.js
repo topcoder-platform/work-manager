@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import qs from 'qs'
 import { axiosInstance } from './axiosWithAuth'
 import FormData from 'form-data'
 import { MEMBER_API_URL, CHALLENGE_API_URL, PROJECT_API_URL, API_V3_URL, API_V4_URL } from '../config/constants'
@@ -125,4 +126,26 @@ export function uploadAttachment (challengeId, file) {
   const data = new FormData()
   data.append('attachment', file)
   return axiosInstance.post(`${CHALLENGE_API_URL}/challenges/${challengeId}/attachments`, data)
+}
+
+/**
+ * Fetch challenges from v5 API
+ * @param filters
+ * @param params
+ */
+export function fetchChallenges (filters, params) {
+  const query = {
+    ...filters,
+    ...params
+  }
+  return axiosInstance.get(`${CHALLENGE_API_URL}/challenges?${qs.stringify(query, { encode: false })}`)
+}
+
+/**
+ * Partially update the challenge with the provided id. Only the fields that are provided in the body will be changed.
+ * @param challengeId
+ * @param params
+ */
+export function patchChallenge (challengeId, params) {
+  return axiosInstance.patch(`${CHALLENGE_API_URL}/challenges/${challengeId}`, params)
 }

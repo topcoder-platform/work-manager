@@ -46,6 +46,10 @@ export const UPLOAD_ATTACHMENT_SUCCESS = 'UPLOAD_ATTACHMENT_SUCCESS'
 
 export const REMOVE_ATTACHMENT = 'REMOVE_ATTACHMENT'
 
+export const SET_FILTER_CHALLENGE_NAME = 'SET_FILTER_CHALLENGE_NAME'
+
+export const RESET_SIDEBAR_ACTIVE_PARAMS = 'RESET_SIDEBAR_ACTIVE_PARAMS'
+
 // Name of challenge tracks
 export const CHALLENGE_TRACKS = {
   DESIGN: 'DESIGN',
@@ -115,5 +119,13 @@ export const ALLOWED_USER_ROLES = [
   'administrator'
 ]
 
+export const COMPETITION_TRACKS = {
+  DATA_SCIENCE: 'data_science',
+  DESIGN: 'design',
+  DEVELOP: 'develop'
+}
+
 export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
   `${CHALLENGE_API_URL}/challenges/${challengeId}/attachments/${attachmentId}?token=${token}`
+
+export const PAGE_SIZE = 20

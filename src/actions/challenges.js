@@ -1,13 +1,13 @@
 import _ from 'lodash'
 import {
-  fetchProjectChallenges,
   fetchChallengeTypes,
   fetchChallengeTags,
   fetchGroups,
   fetchTimelineTemplates,
   fetchChallengePhases,
   uploadAttachment,
-  fetchChallenge
+  fetchChallenge,
+  fetchChallenges
 } from '../services/challenges'
 import {
   LOAD_CHALLENGE_DETAILS_PENDING,
@@ -21,9 +21,37 @@ import {
   UPLOAD_ATTACHMENT_FAILURE,
   UPLOAD_ATTACHMENT_PENDING,
   UPLOAD_ATTACHMENT_SUCCESS,
-  REMOVE_ATTACHMENT
+  REMOVE_ATTACHMENT,
+  PAGE_SIZE,
+  SET_FILTER_CHALLENGE_NAME
 } from '../config/constants'
 import { fetchProjectById, fetchProjectMembers } from '../services/projects'
+
+/**
+ * Get all challenges
+ * @param getter
+ * @param page
+ * @param prev
+ * @returns {*}
+ */
+function getAll (getter, page = 1, prev) {
+  return getter({
+    page,
+    perPage: PAGE_SIZE
+  }).then((res) => {
+    if (res.data.length === 0) {
+      return prev || res.data
+    }
+    // parse challenges
+    let current = []
+    if (prev) {
+      current = prev.concat(res.data)
+    } else {
+      current = res.data
+    }
+    return getAll(getter, 1 + page, current)
+  })
+}
 
 /**
  * Member challenges related redux actions
@@ -32,17 +60,35 @@ import { fetchProjectById, fetchProjectMembers } from '../services/projects'
 /**
  * Loads active challenges of project
  */
-export function loadChallenges (projectId, status) {
+export function loadChallenges (projectId, status, filterChallengeName = null) {
   return (dispatch, getState) => {
     dispatch({
       type: LOAD_CHALLENGES_PENDING,
       challenges: []
     })
 
-    fetchProjectChallenges(projectId, status).then(challenges => dispatch({
-      type: LOAD_CHALLENGES_SUCCESS,
-      challenges
-    })).catch(() => dispatch({
+    const filters = {}
+    if (!_.isEmpty(filterChallengeName)) {
+      filters['name'] = filterChallengeName
+    }
+    if (_.isInteger(projectId) && projectId > 0) {
+      filters['projectId'] = projectId
+    }
+    if (!_.isEmpty(status)) {
+      filters['status'] = _.startCase(status.toLowerCase())
+    } else if (!(_.isInteger(projectId) && projectId > 0)) {
+      filters['status'] = 'Active'
+    }
+
+    const calls = [
+      getAll(params => fetchChallenges(filters, params))
+    ]
+    return Promise.all(calls).then(([challenges]) => {
+      dispatch({
+        type: LOAD_CHALLENGES_SUCCESS,
+        challenges
+      })
+    }).catch(() => dispatch({
       type: LOAD_CHALLENGES_FAILURE,
       challenges: []
     }))
@@ -146,6 +192,19 @@ export function removeAttachment (attachmentId) {
     dispatch({
       type: REMOVE_ATTACHMENT,
       attachmentId
+    })
+  }
+}
+
+/**
+ * Set filter challenge name
+ * @param value
+ */
+export function setFilterChallengeName (value) {
+  return (dispatch) => {
+    dispatch({
+      type: SET_FILTER_CHALLENGE_NAME,
+      value
     })
   }
 }
