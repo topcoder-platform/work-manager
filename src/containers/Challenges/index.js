@@ -8,7 +8,8 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { SIDEBAR_MENU, CHALLENGE_STATUS } from '../../config/constants'
 import ChallengesComponent from '../../components/ChallengesComponent'
-import { loadChallenges } from '../../actions/challenges'
+import { loadChallenges, setFilterChallengeName } from '../../actions/challenges'
+import { resetSidebarActiveParams } from '../../actions/sidebar'
 
 class Challenges extends Component {
   constructor (props) {
@@ -18,21 +19,35 @@ class Challenges extends Component {
     }
   }
   componentDidMount () {
-    const { activeMenu, activeProjectId } = this.props
-    const status = activeMenu === SIDEBAR_MENU.ACTIVE_CHALLENGES ? CHALLENGE_STATUS.ACTIVE : ''
-    this.props.loadChallenges(activeProjectId, status)
+    const { activeMenu, activeProjectId, filterChallengeName, resetSidebarActiveParams, menu } = this.props
+    if (menu === 'NULL' && (activeMenu !== '' || activeProjectId !== -1)) {
+      resetSidebarActiveParams()
+    } else {
+      const status = activeMenu === SIDEBAR_MENU.ACTIVE_CHALLENGES ? CHALLENGE_STATUS.ACTIVE : ''
+      this.props.loadChallenges(activeProjectId, status, filterChallengeName)
+    }
   }
 
   componentWillReceiveProps (nextProps) {
-    const { activeMenu, projectId, activeProjectId } = nextProps
-    const { activeMenu: oldActiveMenu, projectId: oldProjectId, activeProjectId: oldActiveProjectId } = this.props
-    if (activeMenu !== oldActiveMenu || projectId !== oldProjectId || activeProjectId !== oldActiveProjectId) {
-      const status = activeMenu === SIDEBAR_MENU.ACTIVE_CHALLENGES ? CHALLENGE_STATUS.ACTIVE : ''
-      this.props.loadChallenges(activeProjectId, status)
+    let resetFilterChalllengeName = false
+    const { activeMenu, projectId, activeProjectId, filterChallengeName, setFilterChallengeName } = nextProps
+    const { activeMenu: oldActiveMenu, projectId: oldProjectId, activeProjectId: oldActiveProjectId, filterChallengeName: oldFilterChallengeName } = this.props
+    const status = activeMenu === SIDEBAR_MENU.ACTIVE_CHALLENGES ? CHALLENGE_STATUS.ACTIVE : ''
+    if (activeMenu !== oldActiveMenu || projectId !== oldProjectId || activeProjectId !== oldActiveProjectId || filterChallengeName !== oldFilterChallengeName) {
       if (projectId !== oldProjectId) {
         this.setState({ projectChanged: true })
+        resetFilterChalllengeName = true
       } else if (activeProjectId !== oldActiveProjectId) {
         this.setState({ projectChanged: true })
+        resetFilterChalllengeName = true
+      }
+
+      if (activeMenu !== oldActiveMenu) resetFilterChalllengeName = true
+
+      if (resetFilterChalllengeName && filterChallengeName !== '') {
+        setFilterChallengeName('')
+      } else {
+        this.props.loadChallenges(activeProjectId, status, filterChallengeName)
       }
     } else {
       this.setState({ projectChanged: false })
@@ -40,21 +55,32 @@ class Challenges extends Component {
   }
 
   render () {
-    const { challenges, isLoading, activeMenu, warnMessage } = this.props
+    const { challenges, isLoading, activeMenu, warnMessage, setFilterChallengeName, filterChallengeName } = this.props
     return (
-      <ChallengesComponent warnMessage={warnMessage} challenges={challenges} isLoading={isLoading} activeMenu={activeMenu} />
+      <ChallengesComponent
+        warnMessage={warnMessage}
+        challenges={challenges}
+        isLoading={isLoading}
+        activeMenu={activeMenu}
+        setFilterChallengeName={setFilterChallengeName}
+        filterChallengeName={filterChallengeName}
+      />
     )
   }
 }
 
 Challenges.propTypes = {
+  menu: PropTypes.string,
   challenges: PropTypes.arrayOf(PropTypes.object),
   isLoading: PropTypes.bool,
   loadChallenges: PropTypes.func,
   activeMenu: PropTypes.string,
   projectId: PropTypes.string,
   activeProjectId: PropTypes.number,
-  warnMessage: PropTypes.string
+  warnMessage: PropTypes.string,
+  filterChallengeName: PropTypes.string,
+  setFilterChallengeName: PropTypes.func,
+  resetSidebarActiveParams: PropTypes.func
 }
 
 const mapStateToProps = ({ challenges, sidebar }) => ({
@@ -64,7 +90,9 @@ const mapStateToProps = ({ challenges, sidebar }) => ({
 })
 
 const mapDispatchToProps = {
-  loadChallenges
+  loadChallenges,
+  setFilterChallengeName,
+  resetSidebarActiveParams
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Challenges)

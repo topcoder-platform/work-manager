@@ -15,7 +15,8 @@ import {
   UPLOAD_ATTACHMENT_FAILURE,
   UPLOAD_ATTACHMENT_SUCCESS,
   UPLOAD_ATTACHMENT_PENDING,
-  REMOVE_ATTACHMENT
+  REMOVE_ATTACHMENT,
+  SET_FILTER_CHALLENGE_NAME
 } from '../config/constants'
 
 const initialState = {
@@ -28,7 +29,8 @@ const initialState = {
   isUploading: false,
   uploadingId: null,
   attachments: [],
-  challenge: null
+  challenge: null,
+  filterChallengeName: ''
 }
 
 function toastrSuccess (title, message) {
@@ -84,6 +86,8 @@ export default function (state = initialState, action) {
         }
       })
       return { ...state, attachments }
+    case SET_FILTER_CHALLENGE_NAME:
+      return { ...state, filterChallengeName: action.value }
     default:
       return state
   }

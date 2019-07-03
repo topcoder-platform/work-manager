@@ -1,9 +1,10 @@
 /**
  * Component to render list of challenges
  */
-import _ from 'lodash'
+import { debounce, map } from 'lodash'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
+import { DebounceInput } from 'react-debounce-input'
 import styles from './ChallengeList.module.scss'
 import NoChallenge from '../NoChallenge'
 import ChallengeCard from '../ChallengeCard'
@@ -13,57 +14,61 @@ class ChallengeList extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      searchText: ''
+      searchText: this.props.filterChallengeName
     }
-
-    this.filterChallenges = this.filterChallenges.bind(this)
+    this.updateSearchText = debounce(this.updateSearchText.bind(this), 1000)
   }
 
-  filterChallenges (text) {
-    if (text.trim() === '') {
-      return this.props.challenges
-    }
-
-    let challenges = this.props.challenges
-
-    return challenges.filter(challenge => {
-      return challenge.name.toLowerCase().indexOf(text.toLowerCase()) > -1
-    })
-  }
-
-  updateSearchText (e) {
-    this.setState({ searchText: e.target.value })
+  updateSearchText (value) {
+    this.setState({ searchText: value })
+    const { setFilterChallengeName } = this.props
+    setFilterChallengeName(value)
   }
 
   render () {
     const { searchText } = this.state
-    const { activeMenu, warnMessage } = this.props
-    const challenges = this.filterChallenges(searchText)
+    const { activeMenu, warnMessage, challenges } = this.props
     if (warnMessage) {
       return <Message warnMessage={warnMessage} />
-    }
-    if (challenges.length === 0 && searchText === '') {
-      return <NoChallenge activeMenu={activeMenu} />
     }
 
     return (
       <div className={styles.list}>
         <div className={styles.row}>
-          <input name='searchText' type='text' placeholder='Search Challenges' value={searchText} onChange={(e) => this.updateSearchText(e)} />
+          <DebounceInput
+            minLength={2}
+            debounceTimeout={300}
+            placeholder='Search Challenges'
+            onChange={(e) => this.updateSearchText(e.target.value)}
+            value={searchText}
+          />
         </div>
-        <div className={styles.header}>
-          <div className={styles.col1}>Challenges Name</div>
-          <div className={styles.col2}>Status</div>
-          <div className={styles.col3}>Current phase</div>
-          <div className={styles.col4}>&nbsp;</div>
-        </div>
-        <ul>
-          {
-            _.map(challenges, (c) => {
-              return <li key={`challenge-card-${c.id}`}><ChallengeCard challenge={c} /></li>
-            })
-          }
-        </ul>
+        {
+          challenges.length === 0 && (
+            <NoChallenge activeMenu={activeMenu} />
+          )
+        }
+        {
+          challenges.length > 0 && (
+            <div className={styles.header}>
+              <div className={styles.col1}>Challenges Name</div>
+              <div className={styles.col2}>Status</div>
+              <div className={styles.col3}>Current phase</div>
+              <div className={styles.col4}>&nbsp;</div>
+            </div>
+          )
+        }
+        {
+          challenges.length > 0 && (
+            <ul>
+              {
+                map(challenges, (c) => {
+                  return <li key={`challenge-card-${c.id}`}><ChallengeCard challenge={c} /></li>
+                })
+              }
+            </ul>
+          )
+        }
       </div>
     )
   }
@@ -76,7 +81,9 @@ ChallengeList.defaultProps = {
 ChallengeList.propTypes = {
   challenges: PropTypes.arrayOf(PropTypes.object),
   activeMenu: PropTypes.string,
-  warnMessage: PropTypes.string
+  warnMessage: PropTypes.string,
+  setFilterChallengeName: PropTypes.func,
+  filterChallengeName: PropTypes.string
 }
 
 export default ChallengeList
