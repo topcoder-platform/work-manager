@@ -29,22 +29,22 @@ class Challenges extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    let resetFilterChalllengeName = false
+    let resetFilterChallengeName = false
     const { activeMenu, projectId, activeProjectId, filterChallengeName, setFilterChallengeName } = nextProps
     const { activeMenu: oldActiveMenu, projectId: oldProjectId, activeProjectId: oldActiveProjectId, filterChallengeName: oldFilterChallengeName } = this.props
     const status = activeMenu === SIDEBAR_MENU.ACTIVE_CHALLENGES ? CHALLENGE_STATUS.ACTIVE : ''
     if (activeMenu !== oldActiveMenu || projectId !== oldProjectId || activeProjectId !== oldActiveProjectId || filterChallengeName !== oldFilterChallengeName) {
       if (projectId !== oldProjectId) {
         this.setState({ projectChanged: true })
-        resetFilterChalllengeName = true
+        resetFilterChallengeName = true
       } else if (activeProjectId !== oldActiveProjectId) {
         this.setState({ projectChanged: true })
-        resetFilterChalllengeName = true
+        resetFilterChallengeName = true
       }
 
-      if (activeMenu !== oldActiveMenu) resetFilterChalllengeName = true
+      if (activeMenu !== oldActiveMenu) resetFilterChallengeName = true
 
-      if (resetFilterChalllengeName && filterChallengeName !== '') {
+      if (resetFilterChallengeName && filterChallengeName !== '') {
         setFilterChallengeName('')
       } else {
         this.props.loadChallenges(activeProjectId, status, filterChallengeName)

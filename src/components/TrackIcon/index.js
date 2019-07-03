@@ -25,22 +25,14 @@ const TrackIcon = ({ track, subTrack, className }) => {
   let newTrack = ''
   let newSubTrack = ''
 
-  if (_.isEmpty(track)) {
-    // gracefully handle error
-    newTrack = ''
-  } else {
+  if (!_.isEmpty(track)) {
     const value = _.find(Object.values(COMPETITION_TRACKS), item => item === track.toLowerCase())
     if (!_.isEmpty(value)) {
       newTrack = track.toLowerCase()
-    } else {
-      // gracefully handle error
-      newTrack = ''
     }
   }
-  if (_.isEmpty(subTrack)) {
-    // gracefully handle error
-    newSubTrack = ''
-  } else {
+
+  if (!_.isEmpty(subTrack)) {
     const result = getAbbreviation(track.toLowerCase(), subTrack)
     newSubTrack = _.isEmpty(result) ? '' : subTrack.toLowerCase()
   }
@@ -50,7 +42,9 @@ const TrackIcon = ({ track, subTrack, className }) => {
     styleTrack = COMPETITION_TRACKS.DATA_SCIENCE
   }
   // gracefully handle error, set default style if track is undefined
-  if (_.isEmpty(styleTrack)) styleTrack = COMPETITION_TRACKS.DEVELOP
+  if (_.isEmpty(styleTrack)) {
+    styleTrack = COMPETITION_TRACKS.DEVELOP
+  }
 
   let abbrValue
   if (_.isEmpty(newTrack) && _.isEmpty(newSubTrack)) {

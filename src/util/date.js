@@ -44,7 +44,7 @@ export const getRoundFormattedDuration = (duration) => {
 }
 
 /**
- * Get phase end data
+ * Get phase end date
  * @param index  the phase index
  * @param challenge the challenge data
  * @returns {moment.Moment}
