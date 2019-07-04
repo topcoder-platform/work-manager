@@ -86,19 +86,18 @@ const getPhaseInfo = (c) => {
 const hoverComponents = (challenge, onUpdateLaunch) => {
   switch (challenge.status.toUpperCase()) {
     case CHALLENGE_STATUS.DRAFT:
-      return (
-        <ChallengeStatus
-          status={CHALLENGE_STATUS.ACTIVE}
-          isBig={challenge.status !== ''}
-          challengeId={challenge.id}
-          onUpdateLaunch={onUpdateLaunch}
-        />
-      )
     case CHALLENGE_STATUS.ACTIVE:
     default:
       return (
         <div className={styles.linkGroup}>
           <Link className={styles.link} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`}>Edit</Link>
+          {
+            challenge.status === 'Draft' && (
+              <button className={styles.activateButton} onClick={() => onUpdateLaunch()}>
+                <span>Activate</span>
+              </button>
+            )
+          }
         </div>
       )
   }

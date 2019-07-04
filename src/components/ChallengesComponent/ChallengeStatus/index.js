@@ -16,29 +16,16 @@ const statuses = {
   [CHALLENGE_STATUS.COMPLETED]: styles.blue
 }
 
-const ChallengeStatus = ({ status, isBig, onUpdateLaunch }) => {
-  if (isBig) {
-    return (
-      <div className={cn(styles.bigContainer, statuses[status])} onClick={() => onUpdateLaunch()}>
-        <span className={cn(styles.name, statuses[status])}>Activate</span>
-      </div>
-    )
-  }
-
+const ChallengeStatus = ({ status }) => {
   return (
     <div className={cn(styles.container, statuses[status])}>
       <span>{_.startCase(_.toLower(status))}</span>
     </div>
   )
 }
-ChallengeStatus.defaultProps = {
-  isBig: false
-}
 
 ChallengeStatus.propTypes = {
-  status: PropTypes.string,
-  isBig: PropTypes.bool,
-  onUpdateLaunch: PropTypes.func
+  status: PropTypes.string
 }
 
 export default ChallengeStatus
