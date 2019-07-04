@@ -136,7 +136,7 @@ class ChallengePrizesField extends Component {
       <div className={styles.row}>
         {
           _.map(this.getChallengePrize().prizes, (p, index) => {
-            if (!_.isEmpty(p.value)) {
+            if (p.value) {
               return (
                 <div className={styles.item} key={`${index}-${p.value}-noedit`}>
                   <span className={styles.order}>{this.getOrder(index + 1)} Prize</span>
