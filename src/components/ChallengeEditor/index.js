@@ -396,7 +396,7 @@ class ChallengeEditor extends Component {
 
   render () {
     const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings } = this.state
-    const { isNew, isLoading, metadata, uploadAttachment, token, removeAttachment } = this.props
+    const { isNew, isDraft, isLoading, metadata, uploadAttachment, token, removeAttachment } = this.props
     if (_.isEmpty(challenge)) {
       return <div>&nbsp;</div>
     }
@@ -488,13 +488,13 @@ class ChallengeEditor extends Component {
           <div className={styles.button}>
             <OutlineButton text={'Cancel'} type={'danger'} link={'/'} />
           </div>
-          { isNew && (
+          { (isNew || isDraft) && (
             <div className={styles.button}>
               <OutlineButton text={this.state.isSaving ? 'Saving...' : 'Save as Draft'} type={'success'} onClick={this.saveDraft} />
             </div>
           ) }
           <div className={styles.button}>
-            <PrimaryButton text={isNew ? 'Launch' : 'Update'} type={'info'} onClick={this.toggleLaunch} />
+            <PrimaryButton text={(isNew || isDraft) ? 'Launch' : 'Update'} type={'info'} onClick={this.toggleLaunch} />
           </div>
         </div>}
       </div>
@@ -510,6 +510,7 @@ ChallengeEditor.defaultProps = {
 ChallengeEditor.propTypes = {
   challengeDetails: PropTypes.object,
   isNew: PropTypes.bool.isRequired,
+  isDraft: PropTypes.bool.isRequired,
   projectId: PropTypes.string.isRequired,
   challengeId: PropTypes.string,
   metadata: PropTypes.object.isRequired,

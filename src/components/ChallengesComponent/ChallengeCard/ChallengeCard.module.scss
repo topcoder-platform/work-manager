@@ -161,6 +161,31 @@
   }
 }
 
+.activateButton {
+  height: 24px;
+  border: 1px solid transparent;
+  border-radius: 25px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: $white;
+  border-color: $status-green;
+  cursor: pointer;
+
+  span {
+    @include roboto;
+
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 19px;
+    color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: $status-green;
+  }
+}
+
 .icon {
   vertical-align: bottom;
 }
