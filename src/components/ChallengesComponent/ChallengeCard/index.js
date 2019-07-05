@@ -12,9 +12,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFile, faUser } from '@fortawesome/free-solid-svg-icons'
 import ChallengeStatus from '../ChallengeStatus'
 import Modal from '../../Modal'
-import TrackIcon from '../../TrackIcon'
+import ChallengeTag from '../ChallengeTag'
 import styles from './ChallengeCard.module.scss'
-import { getFormattedDuration, getPhaseEndDate } from '../../../util/date'
+import { getFormattedDuration } from '../../../util/date'
 import { CHALLENGE_STATUS, COMMUNITY_APP_URL } from '../../../config/constants'
 import { OutlineButton, PrimaryButton } from '../../Buttons'
 import { patchChallenge } from '../../../services/challenges'
@@ -195,12 +195,9 @@ class ChallengeCard extends React.Component {
           </Modal>
         ) }
         <a className={styles.col1} href={`${COMMUNITY_APP_URL}/challenges/${challenge.id}`}>
-          <div>
-            <TrackIcon className={styles.icon} track={challenge.track} subTrack={challenge.subTrack} />
-          </div>
           <div className={styles.name}>
             <span className={styles.block}>{challenge.name}</span>
-            <span className='block light-text'>Ends {getPhaseEndDate(challenge.phases.length - 1, challenge).format('MMM DD')}</span>
+            <ChallengeTag track={challenge.track} challengeType={challenge.type} />
           </div>
         </a>
         <a className={styles.col2} href={`${COMMUNITY_APP_URL}/challenges/${challenge.id}`}>
