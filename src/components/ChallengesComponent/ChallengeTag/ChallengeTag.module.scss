@@ -10,6 +10,7 @@
   max-height: 22px;
   height: 22px;
   margin: 5px 0; 
+  color: $dark-gray;
 
   span {
     font-size: 15px;
@@ -28,12 +29,17 @@
   background-color: $green;
 }
 
+.qa {
+  color: $white;
+  background-color: $green;
+}
+
 .design {
   color: $white;
   background-color: $light-blue;
 }
 
 .design {
-    color: $white;
-    background-color: $green;
-  }
+  color: $white;
+  background-color: $green;
+}
