@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
+import _ from 'lodash'
 
 import styles from './MaximumSubmissions-Field.module.scss'
 
@@ -22,7 +23,7 @@ class MaximumSubmissionsField extends Component {
                   name='unlimited'
                   id='unlimited'
                   type='checkbox'
-                  checked={challenge.maximumSubmissions.unlimited}
+                  checked={_.get(challenge, 'maximumSubmissions.unlimited')}
                   onChange={(e) => onUpdateCheckbox('unlimited', e.target.checked, 'maximumSubmissions')}
                 />
                 <label htmlFor='unlimited'>
@@ -41,7 +42,7 @@ class MaximumSubmissionsField extends Component {
                   name='limit'
                   id='limit'
                   type='checkbox'
-                  checked={challenge.maximumSubmissions.limit}
+                  checked={_.get(challenge, 'maximumSubmissions.limit')}
                   onChange={(e) => onUpdateCheckbox('limit', e.target.checked, 'maximumSubmissions')}
                 />
                 <label htmlFor='limit'>
@@ -51,7 +52,7 @@ class MaximumSubmissionsField extends Component {
                   <input type='hidden' />
                 </label>
               </div>
-              <input id='count' name='count' type='text' placeholder='' value={challenge.maximumSubmissions.count} maxLength='200' onChange={(e) => onUpdateInput(e, true, 'maximumSubmissions')} />
+              <input id='count' name='count' type='text' placeholder='' value={_.get(challenge, 'maximumSubmissions.count')} maxLength='200' onChange={(e) => onUpdateInput(e, true, 'maximumSubmissions')} />
             </div>
           </div>
         </div>
