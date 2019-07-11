@@ -213,23 +213,23 @@ class ChallengeEditor extends Component {
     if (index < 0) {
       if (!_.isEmpty(field)) {
         if (isSingleCheck) {
-          newChallenge[field][id] = checked
+          _.set(newChallenge, `${field}.${id}`, checked)
         } else {
           if (field !== 'terms') {
             for (let key in newChallenge[field]) {
               if (typeof key === 'boolean') {
-                newChallenge[field][key] = false
+                _.set(newChallenge, `${field}.${key}`, false)
               } else {
-                newChallenge[field][key] = ''
+                _.set(newChallenge, `${field}.${key}`, '')
               }
             }
           }
-          newChallenge[field][id] = checked
+          _.set(newChallenge, `${field}.${id}`, checked)
         }
       }
       newChallenge[id] = checked
     } else {
-      newChallenge[field][index].check = checked
+      _.set(newChallenge, `${field}.${index}.check`, checked)
     }
     this.setState({ challenge: newChallenge })
   }
