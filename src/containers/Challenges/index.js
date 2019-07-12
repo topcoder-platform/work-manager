@@ -19,12 +19,13 @@ class Challenges extends Component {
     }
   }
   componentDidMount () {
-    const { activeMenu, activeProjectId, filterChallengeName, resetSidebarActiveParams, menu } = this.props
+    const { activeMenu, activeProjectId, filterChallengeName, resetSidebarActiveParams, menu, projectId } = this.props
     if (menu === 'NULL' && (activeMenu !== '' || activeProjectId !== -1)) {
       resetSidebarActiveParams()
     } else {
-      const status = activeMenu === SIDEBAR_MENU.ACTIVE_CHALLENGES ? CHALLENGE_STATUS.ACTIVE : ''
-      this.props.loadChallenges(activeProjectId, status, filterChallengeName)
+      const status = menu === SIDEBAR_MENU.ACTIVE_CHALLENGES ? CHALLENGE_STATUS.ACTIVE : ''
+      const id = activeProjectId > 0 ? activeProjectId : parseInt(projectId)
+      this.props.loadChallenges(id, status, filterChallengeName)
     }
   }
 
