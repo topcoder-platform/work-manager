@@ -192,6 +192,9 @@ class ChallengeEditor extends Component {
   onUpdateOthers (data) {
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge }
+    if (data.field === 'copilot' && data.value === newChallenge[data.field]) {
+      data.value = null
+    }
     newChallenge[data.field] = data.value
     this.setState({ challenge: newChallenge })
   }

@@ -104,6 +104,12 @@
         width: 190px;
         margin-left: 30px;
       }
+
+      :global{
+        .rc-time-picker-clear{
+          display: none;
+        }
+      }
     }
   }
 }
