@@ -19,7 +19,6 @@ class ChallengePrizesField extends Component {
       currentPrizeIndex: -1
     }
     this.renderPrizes = this.renderPrizes.bind(this)
-    this.getOrder = this.getOrder.bind(this)
     this.toggleEditMode = this.toggleEditMode.bind(this)
     this.togglePrizeSelect = this.togglePrizeSelect.bind(this)
     this.addNewPrize = this.addNewPrize.bind(this)
@@ -59,34 +58,6 @@ class ChallengePrizesField extends Component {
     onUpdateOthers({ field: 'prizeSets', value: [...challenge.prizeSets.filter(p => p.type !== type), challengePrize] })
   }
 
-  getOrder (number) {
-    const { isEdit } = this.state
-    switch (number) {
-      case 1:
-        return isEdit ? 'First' : '1st'
-      case 2:
-        return isEdit ? 'Second' : '2nd'
-      case 3:
-        return isEdit ? 'Third' : '3rd'
-      case 4:
-        return isEdit ? 'Fourth' : '4th'
-      case 5:
-        return isEdit ? 'Fifth' : '5th'
-      case 6:
-        return isEdit ? 'Sixth' : '6th'
-      case 7:
-        return isEdit ? 'Seventh' : '7th'
-      case 8:
-        return isEdit ? 'Eighth' : '8th'
-      case 9:
-        return isEdit ? 'Ninth' : '9th'
-      case 10:
-        return isEdit ? 'Tenth' : '10th'
-      default:
-        return ''
-    }
-  }
-
   toggleEditMode () {
     const { isEdit } = this.state
     this.setState({ isEdit: !isEdit })
@@ -110,7 +81,7 @@ class ChallengePrizesField extends Component {
       return _.map(this.getChallengePrize().prizes, (prize, index) => (
         <div className={styles.row} key={`${index}-${prize.amount}-edit`}>
           <div className={cn(styles.field, styles.col1)}>
-            <label htmlFor={`${index}-prize`}>{this.getOrder(index + 1)} Prize :</label>
+            <label htmlFor={`${index}-prize`}>Prize {index + 1}:</label>
           </div>
           <div className={cn(styles.field, styles.col2)}>
             <PrizeInput
@@ -139,7 +110,7 @@ class ChallengePrizesField extends Component {
             if (p.value) {
               return (
                 <div className={styles.item} key={`${index}-${p.value}-noedit`}>
-                  <span className={styles.order}>{this.getOrder(index + 1)} Prize</span>
+                  <span className={styles.order}>Prize {index + 1}</span>
                   <span className={styles.value}>{p.value}</span>
                 </div>
               )

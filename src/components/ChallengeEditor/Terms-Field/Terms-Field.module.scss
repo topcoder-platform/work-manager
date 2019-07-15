@@ -41,5 +41,12 @@
       flex-direction: row;
       width: 600px;
     }
+
+    :global{
+      .Select-clear-zone {
+        display: none;
+        }
+      }
+    }
   }
-}
+
