@@ -27,6 +27,10 @@ const BillingAccountField = ({ accounts, onUpdateSelect, challenge }) => {
   )
 }
 
+BillingAccountField.defaultProps = {
+  accounts: []
+}
+
 BillingAccountField.propTypes = {
   onUpdateSelect: PropTypes.func.isRequired,
   challenge: PropTypes.shape().isRequired,

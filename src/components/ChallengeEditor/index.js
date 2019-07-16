@@ -24,7 +24,6 @@ import ChallengeScheduleField from './ChallengeSchedule-Field'
 import { convertDollarToInteger, validateValue } from '../../util/input-check'
 import dropdowns from './mock-data/dropdowns'
 import styles from './ChallengeEditor.module.scss'
-import Loader from '../Loader'
 import { createChallenge, updateChallenge } from '../../services/challenges'
 
 const theme = {
@@ -407,8 +406,8 @@ class ChallengeEditor extends Component {
       <div className={styles.wrapper}>
         <Helmet title={getTitle(isNew)} />
         <div className={styles.title}>{getTitle(isNew)}</div>
-        {!isLoading && <div className={styles.textRequired}>* Required</div>}
-        {!isLoading ? <div className={styles.container}>
+        <div className={styles.textRequired}>* Required</div>
+        <div className={styles.container}>
           { isLaunch && !isConfirm && (
             <Modal theme={theme}>
               <div className={styles.contentContainer}>
@@ -485,7 +484,7 @@ class ChallengeEditor extends Component {
               </div>
             </form>
           </div>
-        </div> : <Loader />}
+        </div>
         {!isLoading && this.state.hasValidationErrors && <div className={styles.error}>Please fix the errors before saving</div>}
         {!isLoading && <div className={styles.buttonContainer}>
           <div className={styles.button}>

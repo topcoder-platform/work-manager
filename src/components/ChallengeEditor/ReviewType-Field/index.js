@@ -69,6 +69,10 @@ const ReviewTypeField = ({ reviewers, challenge, onUpdateOthers, onUpdateSelect 
   )
 }
 
+ReviewTypeField.defaultProps = {
+  reviewers: []
+}
+
 ReviewTypeField.propTypes = {
   reviewers: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,

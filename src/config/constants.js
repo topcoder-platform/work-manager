@@ -128,4 +128,4 @@ export const COMPETITION_TRACKS = {
 export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
   `${CHALLENGE_API_URL}/challenges/${challengeId}/attachments/${attachmentId}?token=${token}`
 
-export const PAGE_SIZE = 20
+export const PAGE_SIZE = 50
