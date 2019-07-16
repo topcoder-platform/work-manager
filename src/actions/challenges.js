@@ -28,32 +28,6 @@ import {
 import { fetchProjectById, fetchProjectMembers } from '../services/projects'
 
 /**
- * Get all challenges
- * @param getter
- * @param page
- * @param prev
- * @returns {*}
- */
-function getAll (getter, page = 1, prev) {
-  return getter({
-    page,
-    perPage: PAGE_SIZE
-  }).then((res) => {
-    if (res.data.length === 0) {
-      return prev || res.data
-    }
-    // parse challenges
-    let current = []
-    if (prev) {
-      current = prev.concat(res.data)
-    } else {
-      current = res.data
-    }
-    return getAll(getter, 1 + page, current)
-  })
-}
-
-/**
  * Member challenges related redux actions
  */
 
@@ -80,18 +54,37 @@ export function loadChallenges (projectId, status, filterChallengeName = null) {
       filters['status'] = 'Active'
     }
 
-    const calls = [
-      getAll(params => fetchChallenges(filters, params))
-    ]
-    return Promise.all(calls).then(([challenges]) => {
+    let fetchedChallenges = []
+
+    function getChallengesByPage (filters, page) {
       dispatch({
-        type: LOAD_CHALLENGES_SUCCESS,
-        challenges
+        type: LOAD_CHALLENGES_PENDING
       })
-    }).catch(() => dispatch({
-      type: LOAD_CHALLENGES_FAILURE,
-      challenges: []
-    }))
+      return fetchChallenges(filters, {
+        page,
+        perPage: PAGE_SIZE
+      }).then((res) => {
+        if (res.data.length > 0) {
+          fetchedChallenges = fetchedChallenges.concat(res.data)
+          dispatch({
+            type: LOAD_CHALLENGES_SUCCESS,
+            challenges: fetchedChallenges
+          })
+          // recurse until no further challenges are found
+          return getChallengesByPage(filters, page + 1)
+        } else {
+          dispatch({
+            type: LOAD_CHALLENGES_SUCCESS,
+            challenges: fetchedChallenges
+          })
+        }
+      }).catch(() => dispatch({
+        type: LOAD_CHALLENGES_FAILURE,
+        challenges: []
+      }))
+    }
+    let page = 1
+    getChallengesByPage(filters, page)
   }
 }
 

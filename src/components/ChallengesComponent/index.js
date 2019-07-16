@@ -16,7 +16,8 @@ const ChallengesComponent = ({ challenges, isLoading, activeMenu, warnMessage, s
         <Helmet title={activeMenu} />
         <div className={styles.title}>{activeMenu}</div>
         <div className={styles.challenges}>
-          {isLoading ? <Loader /> : <ChallengeList challenges={challenges} warnMessage={warnMessage} activeMenu={activeMenu} setFilterChallengeName={setFilterChallengeName} filterChallengeName={filterChallengeName} />}
+          {isLoading && challenges.length === 0 ? <Loader /> : <ChallengeList challenges={challenges} warnMessage={warnMessage} activeMenu={activeMenu} setFilterChallengeName={setFilterChallengeName} filterChallengeName={filterChallengeName} />}
+          {isLoading && challenges.length > 0 && <Loader />}
         </div>
       </div>
     </Sticky>
