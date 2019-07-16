@@ -182,6 +182,10 @@ class ChallengeScheduleField extends Component {
   }
 }
 
+ChallengeScheduleField.defaultProps = {
+  templates: []
+}
+
 ChallengeScheduleField.propTypes = {
   templates: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,

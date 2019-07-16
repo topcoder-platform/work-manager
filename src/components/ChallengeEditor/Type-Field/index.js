@@ -35,6 +35,10 @@ const TypeField = ({ types, onUpdateSelect, challenge }) => {
   )
 }
 
+TypeField.defaultProps = {
+  types: []
+}
+
 TypeField.propTypes = {
   // currentType: PropTypes.string.isRequired,
   types: PropTypes.arrayOf(PropTypes.shape()).isRequired,

@@ -26,6 +26,10 @@ const TermsField = ({ terms, challenge, onUpdateMultiSelect }) => {
   )
 }
 
+TermsField.defaultProps = {
+  terms: []
+}
+
 TermsField.propTypes = {
   challenge: PropTypes.shape().isRequired,
   terms: PropTypes.arrayOf(PropTypes.string).isRequired,

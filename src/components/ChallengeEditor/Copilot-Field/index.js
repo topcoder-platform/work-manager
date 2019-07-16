@@ -21,6 +21,10 @@ const CopilotField = ({ copilots, challenge, onUpdateOthers }) => {
   )
 }
 
+CopilotField.defaultProps = {
+  copilots: []
+}
+
 CopilotField.propTypes = {
   copilots: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,

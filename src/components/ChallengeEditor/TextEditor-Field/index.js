@@ -39,6 +39,10 @@ class TextEditorField extends Component {
   }
 }
 
+TextEditorField.defaultProps = {
+  challengeTags: []
+}
+
 TextEditorField.propTypes = {
   challengeTags: PropTypes.arrayOf(PropTypes.object).isRequired,
   challenge: PropTypes.shape().isRequired,

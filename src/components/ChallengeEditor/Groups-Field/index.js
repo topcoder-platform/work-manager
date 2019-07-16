@@ -25,6 +25,10 @@ const GroupsField = ({ groups, onUpdateMultiSelect, challenge }) => {
   )
 }
 
+GroupsField.defaultProps = {
+  groups: []
+}
+
 GroupsField.propTypes = {
   onUpdateMultiSelect: PropTypes.func.isRequired,
   challenge: PropTypes.shape().isRequired,

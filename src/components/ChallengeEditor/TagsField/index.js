@@ -35,6 +35,10 @@ const TagsField = ({ challengeTags, challenge, onUpdateMultiSelect }) => {
   )
 }
 
+TagsField.defaultProps = {
+  challengeTags: []
+}
+
 TagsField.propTypes = {
   challenge: PropTypes.shape().isRequired,
   challengeTags: PropTypes.arrayOf(PropTypes.object).isRequired,
