@@ -30,7 +30,8 @@ const initialState = {
   uploadingId: null,
   attachments: [],
   challenge: null,
-  filterChallengeName: ''
+  filterChallengeName: '',
+  status: ''
 }
 
 function toastrSuccess (title, message) {
@@ -51,7 +52,30 @@ export default function (state = initialState, action) {
     case LOAD_CHALLENGES_SUCCESS:
       return { ...state, challenges: action.challenges, isLoading: false }
     case LOAD_CHALLENGES_PENDING:
-      return { ...state, isLoading: true }
+      return {
+        ...state,
+        isLoading: true,
+        ...(
+          action.challenges ? {
+            challenges: action.challenges
+          } : {}
+        ),
+        ...(
+          action.projectId ? {
+            projectId: action.projectId
+          } : {}
+        ),
+        ...(
+          action.status ? {
+            status: action.status
+          } : {}
+        ),
+        ...(
+          action.filterChallengeName ? {
+            filterChallengeName: action.filterChallengeName
+          } : {}
+        )
+      }
     case LOAD_CHALLENGE_DETAILS_PENDING:
       return { ...state, isLoading: true, attachments: [], challenge: null }
     case LOAD_CHALLENGES_FAILURE:

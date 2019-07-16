@@ -24,7 +24,7 @@ class Challenges extends Component {
       resetSidebarActiveParams()
     } else {
       const status = menu === SIDEBAR_MENU.ACTIVE_CHALLENGES ? CHALLENGE_STATUS.ACTIVE : ''
-      const id = activeProjectId > 0 ? activeProjectId : parseInt(projectId)
+      const id = activeProjectId > 0 ? activeProjectId : (projectId ? parseInt(projectId) : null)
       this.props.loadChallenges(id, status, filterChallengeName)
     }
   }

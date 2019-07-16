@@ -36,9 +36,17 @@ import { fetchProjectById, fetchProjectMembers } from '../services/projects'
  */
 export function loadChallenges (projectId, status, filterChallengeName = null) {
   return (dispatch, getState) => {
+    const oldState = getState().challenges
+    if (oldState.status === status &&
+      filterChallengeName === oldState.filterChallengeName &&
+      `${projectId}` === oldState.projectId) return
+
     dispatch({
       type: LOAD_CHALLENGES_PENDING,
-      challenges: []
+      challenges: [],
+      projectId: projectId ? `${projectId}` : '',
+      status,
+      filterChallengeName
     })
 
     const filters = {}
@@ -49,7 +57,7 @@ export function loadChallenges (projectId, status, filterChallengeName = null) {
       filters['projectId'] = projectId
     }
     if (!_.isEmpty(status)) {
-      filters['status'] = _.startCase(status.toLowerCase())
+      filters['status'] = status === '' ? undefined : _.startCase(status.toLowerCase())
     } else if (!(_.isInteger(projectId) && projectId > 0)) {
       filters['status'] = 'Active'
     }
@@ -57,6 +65,7 @@ export function loadChallenges (projectId, status, filterChallengeName = null) {
     let fetchedChallenges = []
 
     function getChallengesByPage (filters, page) {
+      if (!_.isEmpty(projectId) && getState().challenges.projectId !== `${projectId}`) return
       dispatch({
         type: LOAD_CHALLENGES_PENDING
       })
@@ -65,13 +74,18 @@ export function loadChallenges (projectId, status, filterChallengeName = null) {
         perPage: PAGE_SIZE
       }).then((res) => {
         if (res.data.length > 0) {
-          fetchedChallenges = fetchedChallenges.concat(res.data)
+          fetchedChallenges = [
+            ...fetchedChallenges,
+            ...res.data
+          ]
           dispatch({
             type: LOAD_CHALLENGES_SUCCESS,
             challenges: fetchedChallenges
           })
           // recurse until no further challenges are found
-          return getChallengesByPage(filters, page + 1)
+          if (_.get(res, 'headers.x-total-pages', 0) > page) {
+            return getChallengesByPage(filters, page + 1)
+          }
         } else {
           dispatch({
             type: LOAD_CHALLENGES_SUCCESS,

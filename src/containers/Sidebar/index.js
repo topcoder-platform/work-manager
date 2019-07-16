@@ -4,7 +4,6 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Sidebar from '../../components/Sidebar'
 import { loadProjects, setActiveMenu, setActiveProject } from '../../actions/sidebar'
-import { loadChallenges } from '../../actions/challenges'
 
 class SidebarContainer extends Component {
   componentDidMount () {
@@ -45,8 +44,7 @@ const mapStateToProps = ({ sidebar }) => ({
 const mapDispatchToProps = {
   loadProjects,
   setActiveMenu,
-  setActiveProject,
-  loadChallenges
+  setActiveProject
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(SidebarContainer)
