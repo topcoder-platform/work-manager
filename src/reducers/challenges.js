@@ -90,7 +90,13 @@ export default function (state = initialState, action) {
         attachments: _.has(action.challengeDetails, 'attachments') ? action.challengeDetails.attachments : []
       }
     case LOAD_CHALLENGE_METADATA_SUCCESS:
-      return { ...state, metadata: { ...state.metadata, ...action.metadata } }
+      return {
+        ...state,
+        metadata: {
+          ...state.metadata,
+          [action.metadataKey]: action.metadataValue
+        }
+      }
     case LOAD_CHALLENGE_MEMBERS_SUCCESS:
       return { ...state, metadata: { ...state.metadata, members: action.members } }
     case UPLOAD_ATTACHMENT_PENDING:

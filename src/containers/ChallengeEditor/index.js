@@ -3,14 +3,38 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { withRouter } from 'react-router-dom'
 import ChallengeEditorComponent from '../../components/ChallengeEditor'
-import { loadChallengeDetails, createAttachment, removeAttachment, setFilterChallengeName } from '../../actions/challenges'
+import {
+  loadTimelineTemplates,
+  loadChallengePhases,
+  loadChallengeTypes,
+  loadChallengeTags,
+  loadGroups,
+  loadChallengeDetails,
+  createAttachment,
+  removeAttachment,
+  setFilterChallengeName
+} from '../../actions/challenges'
 import { connect } from 'react-redux'
 
 class ChallengeEditor extends Component {
   componentDidMount () {
-    const { match, loadChallengeDetails, setFilterChallengeName } = this.props
+    const {
+      match,
+      loadChallengeDetails,
+      setFilterChallengeName,
+      loadTimelineTemplates,
+      loadChallengePhases,
+      loadChallengeTypes,
+      loadChallengeTags,
+      loadGroups
+    } = this.props
     // reset filter challenge name
     setFilterChallengeName('')
+    loadTimelineTemplates()
+    loadChallengePhases()
+    loadChallengeTypes()
+    loadChallengeTags()
+    loadGroups()
     loadChallengeDetails(_.get(match.params, 'projectId', null), _.get(match.params, 'challengeId', null))
   }
 
@@ -51,6 +75,11 @@ ChallengeEditor.propTypes = {
       projectId: PropTypes.string
     })
   }).isRequired,
+  loadTimelineTemplates: PropTypes.func,
+  loadChallengePhases: PropTypes.func,
+  loadChallengeTypes: PropTypes.func,
+  loadChallengeTags: PropTypes.func,
+  loadGroups: PropTypes.func,
   loadChallengeDetails: PropTypes.func,
   challengeDetails: PropTypes.object,
   metadata: PropTypes.shape({
@@ -74,6 +103,11 @@ const mapStateToProps = ({ challenges: { challengeDetails, metadata, isLoading, 
 
 const mapDispatchToProps = {
   loadChallengeDetails,
+  loadTimelineTemplates,
+  loadChallengePhases,
+  loadChallengeTypes,
+  loadChallengeTags,
+  loadGroups,
   createAttachment,
   removeAttachment,
   setFilterChallengeName

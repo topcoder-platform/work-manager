@@ -107,45 +107,11 @@ export function loadChallenges (projectId, status, filterChallengeName = null) {
  */
 export function loadChallengeDetails (projectId, challengeId) {
   return async (dispatch, getState) => {
-    const { selectedProjectId, metadata } = getState().challenges
+    const { selectedProjectId } = getState().challenges
     dispatch({
       type: LOAD_CHALLENGE_DETAILS_PENDING,
       challengeDetails: {}
     })
-
-    if (selectedProjectId !== projectId) {
-      const selectedProject = getState().sidebar.projects.length
-        ? getState().sidebar.projects.find(p => p.id === +projectId)
-        : await fetchProjectById(projectId)
-      const projectMembers = selectedProject.members
-        .filter(m => m.role === 'manager' || m.role === 'copilot')
-        .map(m => m.userId)
-      const members = projectMembers.length
-        ? await fetchProjectMembers(projectMembers)
-        : []
-      dispatch({
-        type: LOAD_CHALLENGE_MEMBERS_SUCCESS,
-        members
-      })
-    }
-
-    if (!metadata.challengeTypes) {
-      const timelineTemplates = await fetchTimelineTemplates()
-      const challengePhases = await fetchChallengePhases()
-      const challengeTypes = await fetchChallengeTypes()
-      const challengeTags = await fetchChallengeTags()
-      const groups = await fetchGroups()
-      dispatch({
-        type: LOAD_CHALLENGE_METADATA_SUCCESS,
-        metadata: {
-          challengeTypes,
-          challengeTags,
-          groups,
-          timelineTemplates,
-          challengePhases: challengePhases.filter(c => c.isActive)
-        }
-      })
-    }
 
     if (challengeId) {
       fetchChallenge(challengeId).then((challenge) => {
@@ -164,6 +130,77 @@ export function loadChallengeDetails (projectId, challengeId) {
         challengeDetails: null
       })
     }
+
+    if (selectedProjectId !== projectId) {
+      const selectedProject = getState().sidebar.projects.length
+        ? getState().sidebar.projects.find(p => p.id === +projectId)
+        : await fetchProjectById(projectId)
+      const projectMembers = selectedProject.members
+        .filter(m => m.role === 'manager' || m.role === 'copilot')
+        .map(m => m.userId)
+      const members = projectMembers.length
+        ? await fetchProjectMembers(projectMembers)
+        : []
+      dispatch({
+        type: LOAD_CHALLENGE_MEMBERS_SUCCESS,
+        members
+      })
+    }
+  }
+}
+
+export function loadTimelineTemplates () {
+  return async (dispatch) => {
+    const timelineTemplates = await fetchTimelineTemplates()
+    dispatch({
+      type: LOAD_CHALLENGE_METADATA_SUCCESS,
+      metadataKey: 'timelineTemplates',
+      metadataValue: timelineTemplates
+    })
+  }
+}
+
+export function loadChallengePhases () {
+  return async (dispatch) => {
+    const challengePhases = await fetchChallengePhases()
+    dispatch({
+      type: LOAD_CHALLENGE_METADATA_SUCCESS,
+      metadataKey: 'challengePhases',
+      metadataValue: challengePhases.filter(c => c.isActive)
+    })
+  }
+}
+
+export function loadChallengeTypes () {
+  return async (dispatch) => {
+    const challengeTypes = await fetchChallengeTypes()
+    dispatch({
+      type: LOAD_CHALLENGE_METADATA_SUCCESS,
+      metadataKey: 'challengeTypes',
+      metadataValue: challengeTypes
+    })
+  }
+}
+
+export function loadChallengeTags () {
+  return async (dispatch) => {
+    const challengeTags = await fetchChallengeTags()
+    dispatch({
+      type: LOAD_CHALLENGE_METADATA_SUCCESS,
+      metadataKey: 'challengeTags',
+      metadataValue: challengeTags
+    })
+  }
+}
+
+export function loadGroups () {
+  return async (dispatch) => {
+    const groups = await fetchGroups()
+    dispatch({
+      type: LOAD_CHALLENGE_METADATA_SUCCESS,
+      metadataKey: 'groups',
+      metadataValue: groups
+    })
   }
 }
 
