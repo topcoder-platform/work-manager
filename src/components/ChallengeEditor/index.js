@@ -20,6 +20,7 @@ import ChallengeTotalField from './ChallengeTotal-Field'
 import ChallengePrizesField from './ChallengePrizes-Field'
 import AttachmentField from './Attachment-Field'
 import TextEditorField from './TextEditor-Field'
+import Loader from '../Loader'
 import ChallengeScheduleField from './ChallengeSchedule-Field'
 import { convertDollarToInteger, validateValue } from '../../util/input-check'
 import dropdowns from './mock-data/dropdowns'
@@ -83,10 +84,9 @@ class ChallengeEditor extends Component {
     if (!isNew) {
       try {
         this.setState({ isConfirm: false, isLaunch: false })
-        const newChallenge = this.updateAttachmentlist(challengeDetails, attachments)
-        this.setState({ challenge: { ...dropdowns['newChallenge'], ...newChallenge }, isLoading: false })
+        const challengeData = this.updateAttachmentlist(challengeDetails, attachments)
+        this.setState({ challenge: { ...dropdowns['newChallenge'], ...challengeData }, isLoading: false })
       } catch (e) {
-        window.location = window.location.origin
         this.setState({ isLoading: true })
       }
     } else {
@@ -398,9 +398,32 @@ class ChallengeEditor extends Component {
 
   render () {
     const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings } = this.state
-    const { isNew, isDraft, isLoading, metadata, uploadAttachment, token, removeAttachment } = this.props
+    const { isNew, isDraft, isLoading, metadata, uploadAttachment, token, removeAttachment, failedToLoad } = this.props
     if (_.isEmpty(challenge)) {
       return <div>&nbsp;</div>
+    }
+    if (isLoading) return <Loader />
+    if (failedToLoad) {
+      return (
+        <div className={styles.wrapper}>
+          <div className={styles.title}>There was an error loading the challenge</div>
+          <br />
+          <div className={styles.container}>
+            <div className={styles.formContainer}>
+              <div className={styles.group}>
+                <div className={styles.row}>
+                  <div className={styles.error}>
+                    Please try again later and if the issue persists contact us at&nbsp;
+                    <a href='mailto:support@topcoder.com'>support@topcoder.com</a>
+                    &nbsp;to resolve the issue as soon as possible.
+                  </div>
+                  <br />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
     }
     return (
       <div className={styles.wrapper}>
@@ -506,7 +529,8 @@ class ChallengeEditor extends Component {
 
 ChallengeEditor.defaultProps = {
   challengeId: null,
-  attachments: []
+  attachments: [],
+  failedToLoad: false
 }
 
 ChallengeEditor.propTypes = {
@@ -520,7 +544,8 @@ ChallengeEditor.propTypes = {
   uploadAttachment: PropTypes.func.isRequired,
   removeAttachment: PropTypes.func.isRequired,
   attachments: PropTypes.arrayOf(PropTypes.shape()),
-  token: PropTypes.string.isRequired
+  token: PropTypes.string.isRequired,
+  failedToLoad: PropTypes.bool
 }
 
 export default ChallengeEditor

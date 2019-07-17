@@ -49,7 +49,7 @@ class ChallengeEditor extends Component {
   }
 
   render () {
-    const { match, isLoading, challengeDetails, metadata, createAttachment, attachments, token, removeAttachment } = this.props
+    const { match, isLoading, challengeDetails, metadata, createAttachment, attachments, token, removeAttachment, failedToLoad } = this.props
     return (
       <ChallengeEditorComponent
         isLoading={isLoading}
@@ -63,6 +63,7 @@ class ChallengeEditor extends Component {
         attachments={attachments}
         token={token}
         removeAttachment={removeAttachment}
+        failedToLoad={failedToLoad}
       />
     )
   }
@@ -90,15 +91,17 @@ ChallengeEditor.propTypes = {
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string,
   removeAttachment: PropTypes.func,
-  setFilterChallengeName: PropTypes.func
+  setFilterChallengeName: PropTypes.func,
+  failedToLoad: PropTypes.bool
 }
 
-const mapStateToProps = ({ challenges: { challengeDetails, metadata, isLoading, attachments }, auth: { token } }) => ({
+const mapStateToProps = ({ challenges: { challengeDetails, metadata, isLoading, attachments, failedToLoad }, auth: { token } }) => ({
   challengeDetails,
   metadata,
   isLoading,
   attachments,
-  token
+  token,
+  failedToLoad
 })
 
 const mapDispatchToProps = {
