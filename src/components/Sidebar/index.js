@@ -2,23 +2,29 @@
  * Component to render sidebar of app
  */
 import React from 'react'
+import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
+import cn from 'classnames'
 import _ from 'lodash'
 import ProjectCard from '../ProjectCard'
 import Loader from '../Loader'
 import TopcoderLogo from '../../assets/images/topcoder-logo.png'
 import styles from './Sidebar.module.scss'
 
-const Sidebar = ({ projects, isLoading, activeProject, activeMenu, setActiveProject, setActiveMenu, projectId }) => {
+const Sidebar = ({
+  projects, isLoading, activeProject, activeMenu, selectedProject, setActiveProject, setActiveMenu,
+  setSelectedProject, projectId, resetSidebarActiveParams
+}) => {
   const projectComponents = projects.map(p => (
     <li key={p.id}>
       <ProjectCard
         projectName={p.name}
         projectId={p.id}
-        selected={activeProject === p.id}
+        selected={selectedProject === p.id || activeProject === p.id}
         activeMenu={activeMenu}
         setActiveMenu={setActiveMenu}
         setActiveProject={setActiveProject}
+        setSelectedProject={setSelectedProject}
         activeProjectId={projectId}
       />
     </li>
@@ -35,6 +41,11 @@ const Sidebar = ({ projects, isLoading, activeProject, activeMenu, setActiveProj
           </div>
         )
       }
+      <Link to='/'>
+        <div className={cn(styles.homeLink, { [styles.active]: !projectId })} onClick={resetSidebarActiveParams}>
+          Active challenges
+        </div>
+      </Link>
       {
         isLoading ? <Loader /> : (
           <ul>
@@ -51,9 +62,12 @@ Sidebar.propTypes = {
   isLoading: PropTypes.bool,
   activeProject: PropTypes.number,
   activeMenu: PropTypes.string,
+  selectedProject: PropTypes.number,
   setActiveProject: PropTypes.func,
   setActiveMenu: PropTypes.func,
-  projectId: PropTypes.string
+  setSelectedProject: PropTypes.func,
+  projectId: PropTypes.string,
+  resetSidebarActiveParams: PropTypes.func
 }
 
 export default Sidebar
