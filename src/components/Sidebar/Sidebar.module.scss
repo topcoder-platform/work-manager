@@ -17,6 +17,10 @@
     }
   }
 
+  a {
+    text-decoration: none;
+  }
+
   .noProjects {
     @include roboto;
     font-weight: 400;
@@ -46,4 +50,22 @@
   justify-content: center;
   align-items: center;
   margin-bottom: 37px
+}
+
+.homeLink {
+  @include roboto;
+
+  color: $white;
+  font-size: 16px;
+  line-height: 19px;
+  height: 50px;
+  border-left: 2px solid transparent;
+  padding-left: 30px;
+  display: flex;
+  align-items: center;
+
+  &.active {
+    background-color: #1C3040;
+    border-left-color: $teal;
+  }
 }

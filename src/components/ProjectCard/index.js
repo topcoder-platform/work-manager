@@ -12,9 +12,6 @@ import styles from './ProjectCard.module.scss'
 class ProjectCard extends Component {
   constructor (props) {
     super(props)
-    this.state = {
-      selected: props.selected
-    }
 
     this.isActive = this.isActive.bind(this)
     this.showIcon = this.showIcon.bind(this)
@@ -32,13 +29,8 @@ class ProjectCard extends Component {
     return faAngleDown
   }
 
-  changeProject () {
-    if (this.state.selected) {
-      this.setState({ selected: false })
-    } else {
-      this.setState({ selected: true })
-    }
-    // history.push(`/projects/${projectId}/challenges/active`)
+  changeProject (projectId) {
+    this.props.setSelectedProject(projectId)
   }
 
   changeMenu (menu, projectId) {
@@ -47,8 +39,8 @@ class ProjectCard extends Component {
   }
 
   render () {
-    const { projectName, projectId, activeMenu, activeProjectId } = this.props
-    const { selected } = this.state
+    const { projectName, projectId, activeMenu, activeProjectId, selected } = this.props
+
     return (
       <div className={styles.container}>
         <div className={cn(styles.projectName, { [styles.selected]: selected })} onClick={() => this.changeProject(projectId)}>
@@ -78,7 +70,8 @@ ProjectCard.propTypes = {
   activeMenu: PT.string.isRequired,
   setActiveMenu: PT.func.isRequired,
   activeProjectId: PT.string,
-  setActiveProject: PT.func.isRequired
+  setActiveProject: PT.func.isRequired,
+  setSelectedProject: PT.func.isRequired
 }
 
 export default ProjectCard
