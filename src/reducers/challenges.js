@@ -77,17 +77,18 @@ export default function (state = initialState, action) {
         )
       }
     case LOAD_CHALLENGE_DETAILS_PENDING:
-      return { ...state, isLoading: true, attachments: [], challenge: null }
+      return { ...state, isLoading: true, attachments: [], challenge: null, failedToLoad: false }
     case LOAD_CHALLENGES_FAILURE:
       return { ...state, isLoading: false }
     case LOAD_CHALLENGE_DETAILS_FAILURE:
-      return { ...state, isLoading: false, attachments: [], challenge: null }
+      return { ...state, isLoading: false, attachments: [], challenge: null, failedToLoad: true }
     case LOAD_CHALLENGE_DETAILS_SUCCESS:
       return {
         ...state,
         challengeDetails: action.challengeDetails,
         isLoading: false,
-        attachments: _.has(action.challengeDetails, 'attachments') ? action.challengeDetails.attachments : []
+        attachments: _.has(action.challengeDetails, 'attachments') ? action.challengeDetails.attachments : [],
+        failedToLoad: false
       }
     case LOAD_CHALLENGE_METADATA_SUCCESS:
       return {
