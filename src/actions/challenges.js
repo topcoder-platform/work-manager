@@ -71,7 +71,8 @@ export function loadChallenges (projectId, status, filterChallengeName = null) {
       })
       return fetchChallenges(filters, {
         page,
-        perPage: PAGE_SIZE
+        perPage: PAGE_SIZE,
+        memberId: getState().auth.user ? getState().auth.user.userId : null
       }).then((res) => {
         if (res.data.length > 0) {
           fetchedChallenges = [
