@@ -116,7 +116,10 @@ export const CHALLENGE_PRIZE_TYPE = {
 
 export const ALLOWED_USER_ROLES = [
   'copilot',
-  'administrator'
+  'administrator',
+  'Connect Admin',
+  'Connect Manager',
+  'Connect Copilot'
 ]
 
 export const COMPETITION_TRACKS = {
