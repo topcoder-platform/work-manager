@@ -6,7 +6,7 @@ module.exports = {
   MEMBER_API_V3_URL: 'https://api.topcoder.com/v3/members',
   DEV_APP_URL: 'https://submission-review.topcoder.com',
   CHALLENGE_API_URL: 'https://api.topcoder.com/v4',
-  PROJECT_API_URL: 'https://api.topcoder.com/v3',
+  PROJECT_API_URL: 'https://api.topcoder.com/v4',
   API_V4_URL: 'https://api.topcoder-dev.com/v4',
   API_V3_URL: 'https://api.topcoder-dev.com/v3'
 }
