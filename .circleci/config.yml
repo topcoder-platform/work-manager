@@ -48,6 +48,8 @@ jobs:
     environment:
       DEPLOY_ENV: "DEV"
       LOGICAL_ENV: "dev"
+      NODE_ENV: "development"
+      BABEL_ENV: "development"
       APPNAME: "challenge-engine-ui"    
     steps: *builddeploy_steps
 
@@ -56,6 +58,8 @@ jobs:
     environment:
       DEPLOY_ENV: "PROD"
       LOGICAL_ENV: "prod"    
+      NODE_ENV: "production"
+      BABEL_ENV: "production"
       APPNAME: "challenge-engine-ui"  
     steps: *builddeploy_steps
 
