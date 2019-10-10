@@ -2,8 +2,10 @@
 set -eo pipefail
 APP_NAME=$1
 UPDATE_CACHE=""
-docker-compose -f docker/docker-compose.yml build $APP_NAME
-docker create --name app $APP_NAME:latest
+echo "NODE ENV: $NODE_ENV"
+echo "BABEL ENV: $BABEL_ENV"
+docker-compose -f docker/docker-compose.yml build --build-arg NODE_ENV=$NODE_ENV --build-arg BABEL_ENV=$BABEL_ENV $APP_NAME
+docker create --name app  $APP_NAME:latest
 
 if [ -d node_modules ]
 then
