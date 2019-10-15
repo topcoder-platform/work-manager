@@ -29,7 +29,7 @@ export async function fetchMemberChallenge (handle, challengeId) {
  * @returns {Promise<*>}
  */
 export async function fetchChallengeTypes () {
-  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challengeTypes?isActive=true`)
+  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challengetypes?isActive=true`)
   return _.get(response, 'data', [])
 }
 
@@ -60,7 +60,7 @@ export async function fetchGroups () {
  * @returns {Promise<*>}
  */
 export async function fetchTimelineTemplates () {
-  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/timelineTemplates`)
+  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/timelinetemplates`)
   return _.get(response, 'data', [])
 }
 
@@ -69,7 +69,7 @@ export async function fetchTimelineTemplates () {
  * @returns {Promise<*>}
  */
 export async function fetchChallengePhases () {
-  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challengePhases`)
+  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challengethases`)
   return _.get(response, 'data', [])
 }
 
