@@ -69,7 +69,7 @@ export async function fetchTimelineTemplates () {
  * @returns {Promise<*>}
  */
 export async function fetchChallengePhases () {
-  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challengethases`)
+  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challengephases`)
   return _.get(response, 'data', [])
 }
 
