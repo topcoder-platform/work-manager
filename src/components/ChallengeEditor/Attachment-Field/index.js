@@ -53,7 +53,7 @@ const AttachmentField = ({ challenge, removeAttachment, onUploadFile, token }) =
             <div className={styles.info}>
               <div>Drag & Drop files here</div>
               <div>or</div>
-              <div><span>click here</span> to browser</div>
+              <div><span>click here</span> to browse</div>
             </div>
           </label>
           <input {...getInputProps()} />

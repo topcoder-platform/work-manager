@@ -12,8 +12,9 @@ import {
   loadChallengeDetails,
   createAttachment,
   removeAttachment,
-  setFilterChallengeName
+  setFilterChallengeValue
 } from '../../actions/challenges'
+
 import { connect } from 'react-redux'
 
 class ChallengeEditor extends Component {
@@ -21,15 +22,12 @@ class ChallengeEditor extends Component {
     const {
       match,
       loadChallengeDetails,
-      setFilterChallengeName,
       loadTimelineTemplates,
       loadChallengePhases,
       loadChallengeTypes,
       loadChallengeTags,
       loadGroups
     } = this.props
-    // reset filter challenge name
-    setFilterChallengeName('')
     loadTimelineTemplates()
     loadChallengePhases()
     loadChallengeTypes()
@@ -91,7 +89,6 @@ ChallengeEditor.propTypes = {
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string,
   removeAttachment: PropTypes.func,
-  setFilterChallengeName: PropTypes.func,
   failedToLoad: PropTypes.bool
 }
 
@@ -113,7 +110,7 @@ const mapDispatchToProps = {
   loadGroups,
   createAttachment,
   removeAttachment,
-  setFilterChallengeName
+  setFilterChallengeValue
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChallengeEditor))

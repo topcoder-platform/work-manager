@@ -5,25 +5,6 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-
-  ul {
-    display: flex;
-    flex-direction: column;
-    background-color: $white;
-    padding: 0;
-    margin: 0;
-
-    li {
-      list-style: none;
-      height: 83px;
-      width: 100%;
-      border-top: 1px $gray solid;
-
-      a {
-        text-decoration: none;
-      }
-    }
-  }
 }
 
 .row {
@@ -74,5 +55,54 @@
     justify-content: flex-start;
     align-items: center;
     flex: 2;
+  }
+}
+
+@-moz-document url-prefix() {
+  .challengeInput {
+    &::-moz-placeholder { /* Mozilla Firefox 19+ */
+      line-height: 38px;
+    }
+    &::-webkit-input-placeholder { /* Webkit */
+      line-height: 38px;
+    }
+    &:-ms-input-placeholder { /* IE */
+      line-height: 38px;
+    }
+  }
+}
+
+.tabsContainer {
+  ul {
+    margin: 0;
+  }
+
+  :global {
+    .react-tabs__tab--selected {
+      background: $light-bg;
+
+      &:focus::after {
+        background: $light-bg;
+      }
+    }
+  }
+}
+
+.challengeList {
+  display: flex;
+  flex-direction: column;
+  background-color: $white;
+  padding: 0;
+  margin: 0;
+}
+
+.challengeItem {
+  list-style: none;
+  height: 83px;
+  width: 100%;
+  border-top: 1px $gray solid;
+
+  a {
+    text-decoration: none;
   }
 }

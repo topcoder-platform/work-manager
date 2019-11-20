@@ -16,14 +16,13 @@ import {
   UPLOAD_ATTACHMENT_SUCCESS,
   UPLOAD_ATTACHMENT_PENDING,
   REMOVE_ATTACHMENT,
-  SET_FILTER_CHALLENGE_NAME
+  SET_FILTER_CHALLENGE_VALUE
 } from '../config/constants'
 
 const initialState = {
   isLoading: true,
   challenges: [],
   metadata: {},
-  selectedProjectId: null,
   challengeDetails: {},
   isSuccess: false,
   isUploading: false,
@@ -71,7 +70,7 @@ export default function (state = initialState, action) {
           } : {}
         ),
         ...(
-          action.filterChallengeName ? {
+          !_.isNil(action.filterChallengeName) ? {
             filterChallengeName: action.filterChallengeName
           } : {}
         )
@@ -117,8 +116,8 @@ export default function (state = initialState, action) {
         }
       })
       return { ...state, attachments }
-    case SET_FILTER_CHALLENGE_NAME:
-      return { ...state, filterChallengeName: action.value }
+    case SET_FILTER_CHALLENGE_VALUE:
+      return { ...state, filterChallengeName: action.value.name, status: action.value.status }
     default:
       return state
   }

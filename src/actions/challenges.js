@@ -23,7 +23,7 @@ import {
   UPLOAD_ATTACHMENT_SUCCESS,
   REMOVE_ATTACHMENT,
   PAGE_SIZE,
-  SET_FILTER_CHALLENGE_NAME
+  SET_FILTER_CHALLENGE_VALUE
 } from '../config/constants'
 import { fetchProjectById, fetchProjectMembers } from '../services/projects'
 
@@ -36,11 +36,6 @@ import { fetchProjectById, fetchProjectMembers } from '../services/projects'
  */
 export function loadChallenges (projectId, status, filterChallengeName = null) {
   return (dispatch, getState) => {
-    const oldState = getState().challenges
-    if (oldState.status === status &&
-      filterChallengeName === oldState.filterChallengeName &&
-      `${projectId}` === oldState.projectId) return
-
     dispatch({
       type: LOAD_CHALLENGES_PENDING,
       challenges: [],
@@ -108,7 +103,6 @@ export function loadChallenges (projectId, status, filterChallengeName = null) {
  */
 export function loadChallengeDetails (projectId, challengeId) {
   return async (dispatch, getState) => {
-    const { selectedProjectId } = getState().challenges
     dispatch({
       type: LOAD_CHALLENGE_DETAILS_PENDING,
       challengeDetails: {}
@@ -132,22 +126,20 @@ export function loadChallengeDetails (projectId, challengeId) {
       })
     }
 
-    if (selectedProjectId !== projectId) {
-      const selectedProject = getState().sidebar.projects.length
-        ? getState().sidebar.projects.find(p => p.id === +projectId)
-        : await fetchProjectById(projectId)
-      if (!selectedProject) return
-      const projectMembers = selectedProject.members
-        .filter(m => m.role === 'manager' || m.role === 'copilot')
-        .map(m => m.userId)
-      const members = projectMembers.length
-        ? await fetchProjectMembers(projectMembers)
-        : []
-      dispatch({
-        type: LOAD_CHALLENGE_MEMBERS_SUCCESS,
-        members
-      })
-    }
+    const selectedProject = getState().sidebar.projects.length
+      ? getState().sidebar.projects.find(p => p.id === +projectId)
+      : await fetchProjectById(projectId)
+    if (!selectedProject) return
+    const projectMembers = selectedProject.members
+      .filter(m => m.role === 'manager' || m.role === 'copilot')
+      .map(m => m.userId)
+    const members = projectMembers.length
+      ? await fetchProjectMembers(projectMembers)
+      : []
+    dispatch({
+      type: LOAD_CHALLENGE_MEMBERS_SUCCESS,
+      members
+    })
   }
 }
 
@@ -243,13 +235,13 @@ export function removeAttachment (attachmentId) {
 }
 
 /**
- * Set filter challenge name
+ * Set filter challenge value
  * @param value
  */
-export function setFilterChallengeName (value) {
+export function setFilterChallengeValue (value) {
   return (dispatch) => {
     dispatch({
-      type: SET_FILTER_CHALLENGE_NAME,
+      type: SET_FILTER_CHALLENGE_VALUE,
       value
     })
   }

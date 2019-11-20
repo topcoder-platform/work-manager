@@ -158,20 +158,19 @@ class ChallengeCard extends React.Component {
     const { isLaunch, isConfirm, isSaving } = this.state
     const { challenge } = this.props
     const { phaseMessage, endTime } = getPhaseInfo(challenge)
-
     return (
       <div className={styles.item}>
         { isLaunch && !isConfirm && (
           <Modal theme={theme}>
             <div className={styles.contentContainer}>
               <div className={styles.title}>Launch Challenge Confirmation</div>
-              <span>Do you want to launch this challenge?</span>
+              <span>{`Do you want to launch ${challenge.type} challenge "${challenge.name}"?`}</span>
               <div className={styles.buttonGroup}>
                 <div className={styles.button}>
-                  <OutlineButton text={'Cancel'} type={'danger'} onClick={() => this.resetModal()} />
+                  <OutlineButton className={cn({ disabled: isSaving })} text={'Cancel'} type={'danger'} onClick={() => this.resetModal()} />
                 </div>
                 <div className={styles.button}>
-                  <PrimaryButton text={isSaving ? 'Saving...' : 'Confirm'} type={'info'} onClick={() => this.onLaunchChallenge()} />
+                  <PrimaryButton text={isSaving ? 'Launching...' : 'Confirm'} type={'info'} onClick={() => this.onLaunchChallenge()} />
                 </div>
               </div>
             </div>

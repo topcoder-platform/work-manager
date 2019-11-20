@@ -11,7 +11,7 @@ const ChallengeNameField = ({ challenge, onUpdateInput }) => {
           <label htmlFor='challengeName'>Challenge Name <span>*</span> :</label>
         </div>
         <div className={cn(styles.field, styles.col2)}>
-          <input id='name' name='name' type='text' placeholder='Challenge Name' value={challenge.name} maxLength='200' required onChange={onUpdateInput} />
+          <input className={styles.challengeName} id='name' name='name' type='text' placeholder='Challenge Name' value={challenge.name} maxLength='200' required onChange={onUpdateInput} />
         </div>
       </div>
       { challenge.submitTriggered && !challenge.name && <div className={styles.row}>

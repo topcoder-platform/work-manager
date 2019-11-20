@@ -13,6 +13,23 @@
   font-weight: 700;
   line-height: 29px;
   color: $challenges-title;
-  margin-top: 30px;
   text-align: center;
+}
+
+.titleContainer {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.buttonLaunchNew {
+  width: 135px;
+  height: 40px;
+  text-decoration: none;
+}
+
+.fakeLeftSpace {
+  width: 135px;
 }

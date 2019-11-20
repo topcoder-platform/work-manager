@@ -12,7 +12,7 @@ import Sidebar from './containers/Sidebar'
 import ChallengeList from './containers/Challenges'
 import ChallengeEditor from './containers/ChallengeEditor'
 import { getFreshToken } from 'tc-accounts'
-import { ACCOUNTS_APP_LOGIN_URL, SIDEBAR_MENU } from './config/constants'
+import { ACCOUNTS_APP_LOGIN_URL } from './config/constants'
 import { saveToken } from './actions/auth'
 import { connect } from 'react-redux'
 import { checkAllowedRoles } from './util/tc'
@@ -65,29 +65,23 @@ class Routes extends React.Component {
             <Sidebar />
           )()}
         />
-        <Route exact path='/projects/:projectId/challenges/active'
-          render={({ match }) => renderApp(
-            <ChallengeList menu={SIDEBAR_MENU.ACTIVE_CHALLENGES} projectId={match.params.projectId} />,
-            <TopBarContainer />,
-            <Sidebar projectId={match.params.projectId} menu={SIDEBAR_MENU.ACTIVE_CHALLENGES} />
-          )()} />
-        <Route exact path='/projects/:projectId/challenges/all'
-          render={({ match }) => renderApp(
-            <ChallengeList menu={SIDEBAR_MENU.ALL_CHALLENGES} projectId={match.params.projectId} />,
-            <TopBarContainer />,
-            <Sidebar projectId={match.params.projectId} menu={SIDEBAR_MENU.ALL_CHALLENGES} />
-          )()} />
         <Route exact path='/projects/:projectId/challenges/new'
           render={({ match }) => renderApp(
             <ChallengeEditor />,
             <TopBarContainer />,
-            <Sidebar projectId={match.params.projectId} menu={SIDEBAR_MENU.NEW_CHALLENGE} />
+            <Sidebar projectId={match.params.projectId} menu={'New Challenge'} />
           )()} />
         <Route exact path='/projects/:projectId/challenges/:challengeId/edit'
           render={({ match }) => renderApp(
             <ChallengeEditor />,
             <TopBarContainer />,
-            <Sidebar projectId={match.params.projectId} menu={SIDEBAR_MENU.NEW_CHALLENGE} />
+            <Sidebar projectId={match.params.projectId} menu={'New Challenge'} />
+          )()} />
+        <Route exact path='/projects/:projectId/challenges'
+          render={({ match }) => renderApp(
+            <ChallengeList projectId={match.params.projectId} />,
+            <TopBarContainer />,
+            <Sidebar projectId={match.params.projectId} />
           )()} />
         {/* If path is not defined redirect to landing page */}
         <Redirect to='/' />

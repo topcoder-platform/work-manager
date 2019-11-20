@@ -14,7 +14,7 @@
     svg{
     cursor: pointer;
   }
-    
+
     .icon {
       margin-top: 30px;
       margin-left: -20px;
@@ -24,6 +24,27 @@
   .chart {
     padding-top: 30px;
     width: 100%;
+
+
+    :global{
+      svg {
+        overflow: visible;
+
+        g:nth-of-type(4) {
+          path:first-child {
+            display: none;
+          }
+        }
+
+        g:nth-of-type(10) {
+          pointer-events: none;
+
+          rect {
+            width: 300px !important;
+          }
+        }
+      }
+    }
   }
 
   .row {

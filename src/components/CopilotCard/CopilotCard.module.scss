@@ -23,12 +23,12 @@
     border-color: $tc-blue-20;
 
     &:hover {
-      border-color: $tc-blue-20;      
+      border-color: $tc-blue-20;
     }
   }
 
   &:hover {
-    border-color: $tc-handle-gray;   
+    border-color: $tc-handle-gray;
   }
 
   img {
@@ -37,6 +37,7 @@
     width: 40px;
     height: 40px;
     margin-right: 10px;
+    object-fit: cover;
   }
 
   .handle {

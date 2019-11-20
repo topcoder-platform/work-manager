@@ -5,6 +5,13 @@
   display: flex;
   flex-direction: column;
   margin-bottom: 30px;
+  flex-shrink: 0;
+}
+
+@-moz-document url-prefix() {
+  .wrapper {
+    padding-bottom: 30px;
+  }
 }
 
 .title {
@@ -33,7 +40,6 @@
 
 .container {
   width: 100%;
-  overflow: auto;
 
   .formContainer {
     box-sizing: border-box;
@@ -209,6 +215,7 @@
   margin: 0px 30px;
   flex-direction: row;
   justify-content: flex-end;
+  flex-shrink: 0;
 
   .button {
     width: 135px;

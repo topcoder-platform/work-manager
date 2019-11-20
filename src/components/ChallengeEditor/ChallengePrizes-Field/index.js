@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import _ from 'lodash'
 import PropTypes from 'prop-types'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTrash, faAngleDown } from '@fortawesome/free-solid-svg-icons'
+import { faTrash } from '@fortawesome/free-solid-svg-icons'
 import PrizeInput from '../../PrizeInput'
 
 import styles from './ChallengePrizes-Field.module.scss'
@@ -15,16 +15,12 @@ class ChallengePrizesField extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      isEdit: true,
       currentPrizeIndex: -1
     }
     this.renderPrizes = this.renderPrizes.bind(this)
-    this.toggleEditMode = this.toggleEditMode.bind(this)
-    this.togglePrizeSelect = this.togglePrizeSelect.bind(this)
     this.addNewPrize = this.addNewPrize.bind(this)
     this.removePrize = this.removePrize.bind(this)
     this.getChallengePrize = this.getChallengePrize.bind(this)
-    this.onUpdateChallengePrizeType = this.onUpdateChallengePrizeType.bind(this)
     this.onUpdateInput = this.onUpdateInput.bind(this)
   }
 
@@ -45,11 +41,6 @@ class ChallengePrizesField extends Component {
     challengePrize.prizes[index].value = validateValue(value, VALIDATION_VALUE_TYPE.INTEGER)
     this.onUpdateValue(challengePrize)
   }
-  onUpdateChallengePrizeType (type, index) {
-    const challengePrize = this.getChallengePrize()
-    challengePrize.prizes[index].type = type
-    this.onUpdateValue(challengePrize)
-  }
 
   onUpdateValue (challengePrize) {
     const type = 'Challenge prizes'
@@ -58,92 +49,49 @@ class ChallengePrizesField extends Component {
     onUpdateOthers({ field: 'prizeSets', value: [...challenge.prizeSets.filter(p => p.type !== type), challengePrize] })
   }
 
-  toggleEditMode () {
-    const { isEdit } = this.state
-    this.setState({ isEdit: !isEdit })
-  }
-
-  togglePrizeSelect (index) {
-    if (this.state.currentPrizeIndex !== index) {
-      this.setState({ currentPrizeIndex: index })
-    }
-  }
-
   getChallengePrize () {
     const type = 'Challenge prizes'
     return this.props.challenge.prizeSets.find(p => p.type === type) || { type, prizes: [{ type: CHALLENGE_PRIZE_TYPE.MONEY, value: 0 }] }
   }
 
   renderPrizes () {
-    const { isEdit, currentPrizeIndex } = this.state
+    const { currentPrizeIndex } = this.state
 
-    if (isEdit) {
-      return _.map(this.getChallengePrize().prizes, (prize, index) => (
-        <div className={styles.row} key={`${index}-${prize.amount}-edit`}>
-          <div className={cn(styles.field, styles.col1)}>
-            <label htmlFor={`${index}-prize`}>Prize {index + 1}:</label>
-          </div>
-          <div className={cn(styles.field, styles.col2)}>
-            <PrizeInput
-              prize={prize}
-              isFocus={index === currentPrizeIndex}
-              onUpdateInput={this.onUpdateInput}
-              onUpdateChallengePrizeType={this.onUpdateChallengePrizeType}
-              index={index} activeIndex={currentPrizeIndex}
-              togglePrizeSelect={this.togglePrizeSelect} />
-            {
-              index > 0 && (
-                <div className={styles.icon} onClick={() => this.removePrize(index)}>
-                  <FontAwesomeIcon icon={faTrash} />
-                </div>
-              )
-            }
-          </div>
+    return _.map(this.getChallengePrize().prizes, (prize, index) => (
+      <div className={styles.row} key={`${index}-${prize.amount}-edit`}>
+        <div className={cn(styles.field, styles.col1)}>
+          <label htmlFor={`${index}-prize`}>Prize {index + 1}:</label>
         </div>
-      ))
-    }
-
-    return (
-      <div className={styles.row}>
-        {
-          _.map(this.getChallengePrize().prizes, (p, index) => {
-            if (p.value) {
-              return (
-                <div className={styles.item} key={`${index}-${p.value}-noedit`}>
-                  <span className={styles.order}>Prize {index + 1}</span>
-                  <span className={styles.value}>{p.value}</span>
-                </div>
-              )
-            }
-          })
-        }
+        <div className={cn(styles.field, styles.col2)}>
+          <PrizeInput
+            prize={prize}
+            isFocus={index === currentPrizeIndex}
+            onUpdateInput={this.onUpdateInput}
+            index={index} activeIndex={currentPrizeIndex} />
+          {
+            index > 0 && (
+              <div className={styles.icon} onClick={() => this.removePrize(index)}>
+                <FontAwesomeIcon icon={faTrash} />
+              </div>
+            )
+          }
+        </div>
       </div>
-    )
+    ))
   }
 
   render () {
-    const { isEdit } = this.state
     return (
       <div className={styles.container}>
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)}>
             <label htmlFor={`challengePrizes`}>Challenge Prizes :</label>
           </div>
-          <div className={cn(styles.field, styles.col2)} onClick={this.toggleEditMode}>
-            <div className={cn(styles.editButton, { [styles.active]: isEdit })}>
-              <span>Edit</span>
-              <FontAwesomeIcon className={cn(styles.icon, { [styles.active]: isEdit })} icon={faAngleDown} />
-            </div>
-          </div>
         </div>
         { this.renderPrizes() }
-        {
-          isEdit && (
-            <div className={styles.button} onClick={this.addNewPrize}>
-              <PrimaryButton text={'Add New Prize'} type={'info'} />
-            </div>
-          )
-        }
+        <div className={styles.button} onClick={this.addNewPrize}>
+          <PrimaryButton text={'Add New Prize'} type={'info'} />
+        </div>
       </div>
     )
   }

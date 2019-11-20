@@ -1,98 +1,91 @@
 /**
  * Container to render Challenges page
  */
-// import _ from 'lodash'
+import _ from 'lodash'
 import React, { Component } from 'react'
 // import { Redirect } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { SIDEBAR_MENU, CHALLENGE_STATUS } from '../../config/constants'
 import ChallengesComponent from '../../components/ChallengesComponent'
-import { loadChallenges, setFilterChallengeName } from '../../actions/challenges'
+import { loadChallenges, setFilterChallengeValue } from '../../actions/challenges'
 import { resetSidebarActiveParams } from '../../actions/sidebar'
+import {
+  CHALLENGE_STATUS
+} from '../../config/constants'
 
 class Challenges extends Component {
-  constructor (props) {
-    super(props)
-    this.state = {
-      projectChanged: false
-    }
-  }
   componentDidMount () {
-    const { activeMenu, activeProjectId, filterChallengeName, resetSidebarActiveParams, menu, projectId } = this.props
-    if (menu === 'NULL' && (activeMenu !== '' || activeProjectId !== -1)) {
+    const { activeProjectId, filterChallengeName, resetSidebarActiveParams, menu, projectId, challenges, status } = this.props
+    if (menu === 'NULL' && activeProjectId !== -1) {
       resetSidebarActiveParams()
     } else {
-      const status = menu === SIDEBAR_MENU.ACTIVE_CHALLENGES ? CHALLENGE_STATUS.ACTIVE : ''
       const id = activeProjectId > 0 ? activeProjectId : (projectId ? parseInt(projectId) : null)
-      this.props.loadChallenges(id, status, filterChallengeName)
+      // only load challenge if it's init state
+      if (challenges.length === 0 && !filterChallengeName && (status === CHALLENGE_STATUS.ACTIVE || !status)) {
+        this.props.loadChallenges(id, CHALLENGE_STATUS.ACTIVE, filterChallengeName)
+      }
     }
   }
 
   componentWillReceiveProps (nextProps) {
-    let resetFilterChallengeName = false
-    const { activeMenu, projectId, activeProjectId, filterChallengeName, setFilterChallengeName } = nextProps
-    const { activeMenu: oldActiveMenu, projectId: oldProjectId, activeProjectId: oldActiveProjectId, filterChallengeName: oldFilterChallengeName } = this.props
-    const status = activeMenu === SIDEBAR_MENU.ACTIVE_CHALLENGES ? CHALLENGE_STATUS.ACTIVE : ''
-    if (activeMenu !== oldActiveMenu || projectId !== oldProjectId || activeProjectId !== oldActiveProjectId || filterChallengeName !== oldFilterChallengeName) {
-      if (projectId !== oldProjectId) {
-        this.setState({ projectChanged: true })
-        resetFilterChallengeName = true
-      } else if (activeProjectId !== oldActiveProjectId) {
-        this.setState({ projectChanged: true })
-        resetFilterChallengeName = true
-      }
+    const { projectId, activeProjectId, filterChallengeName, status } = nextProps
+    const { projectId: oldProjectId, activeProjectId: oldActiveProjectId, filterChallengeName: oldFilterChallengeName, status: oldStatus } = this.props
 
-      if (activeMenu !== oldActiveMenu) resetFilterChallengeName = true
-
-      if (resetFilterChallengeName && filterChallengeName !== '') {
-        setFilterChallengeName('')
+    if (
+      projectId !== oldProjectId ||
+      activeProjectId !== oldActiveProjectId ||
+      filterChallengeName !== oldFilterChallengeName ||
+      status !== oldStatus
+    ) {
+      if (projectId !== oldProjectId || activeProjectId !== oldActiveProjectId) {
+        setFilterChallengeValue({ name: '', status: CHALLENGE_STATUS.ACTIVE })
+        this.props.loadChallenges(activeProjectId, CHALLENGE_STATUS.ACTIVE, '')
       } else {
         this.props.loadChallenges(activeProjectId, status, filterChallengeName)
       }
-    } else {
-      this.setState({ projectChanged: false })
     }
   }
 
   render () {
-    const { challenges, isLoading, activeMenu, warnMessage, setFilterChallengeName, filterChallengeName } = this.props
+    const { challenges, isLoading, warnMessage, setFilterChallengeValue, filterChallengeName, projects, activeProjectId, status } = this.props
     return (
       <ChallengesComponent
+        activeProject={_.find(projects, { id: activeProjectId })}
         warnMessage={warnMessage}
         challenges={challenges}
         isLoading={isLoading}
-        activeMenu={activeMenu}
-        setFilterChallengeName={setFilterChallengeName}
+        setFilterChallengeValue={setFilterChallengeValue}
         filterChallengeName={filterChallengeName}
+        status={status}
       />
     )
   }
 }
 
 Challenges.propTypes = {
+  projects: PropTypes.arrayOf(PropTypes.shape()),
   menu: PropTypes.string,
   challenges: PropTypes.arrayOf(PropTypes.object),
   isLoading: PropTypes.bool,
   loadChallenges: PropTypes.func,
-  activeMenu: PropTypes.string,
   projectId: PropTypes.string,
   activeProjectId: PropTypes.number,
   warnMessage: PropTypes.string,
   filterChallengeName: PropTypes.string,
-  setFilterChallengeName: PropTypes.func,
+  status: PropTypes.string,
+  setFilterChallengeValue: PropTypes.func,
   resetSidebarActiveParams: PropTypes.func
 }
 
 const mapStateToProps = ({ challenges, sidebar }) => ({
   ...challenges,
-  activeMenu: sidebar.activeMenu,
-  activeProjectId: sidebar.activeProjectId
+  activeProjectId: sidebar.activeProjectId,
+  projects: sidebar.projects
 })
 
 const mapDispatchToProps = {
   loadChallenges,
-  setFilterChallengeName,
+  setFilterChallengeValue,
   resetSidebarActiveParams
 }
 

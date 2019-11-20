@@ -5,11 +5,11 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styles from './NoChallenge.module.scss'
 
-const NoChallenge = ({ activeMenu }) => {
+const NoChallenge = ({ activeProject }) => {
   return (
     <div className={styles.noChallenge}>
       {
-        activeMenu !== ''
+        activeProject
           ? (<p>You have no challenges at the moment</p>) : (<p>Please select a project to view challenges</p>)
       }
     </div>
@@ -17,11 +17,14 @@ const NoChallenge = ({ activeMenu }) => {
 }
 
 NoChallenge.defaultProps = {
-  activeMenu: ''
+  activeProject: null
 }
 
 NoChallenge.propTypes = {
-  activeMenu: PropTypes.string
+  activeProject: PropTypes.shape({
+    id: PropTypes.number,
+    name: PropTypes.string
+  })
 }
 
 export default NoChallenge

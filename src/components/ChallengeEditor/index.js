@@ -62,7 +62,6 @@ class ChallengeEditor extends Component {
     this.resetPhase = this.resetPhase.bind(this)
     this.toggleLaunch = this.toggleLaunch.bind(this)
     this.onUpdateMultiSelect = this.onUpdateMultiSelect.bind(this)
-    this.onUpdateChallengePrizeType = this.onUpdateChallengePrizeType.bind(this)
     this.onUpdatePhase = this.onUpdatePhase.bind(this)
     this.resetChallengeData = this.resetChallengeData.bind(this)
     this.onUpdateDescription = this.onUpdateDescription.bind(this)
@@ -317,20 +316,6 @@ class ChallengeEditor extends Component {
     this.setState({ challenge: newChallenge })
   }
 
-  /**
-   * Update type of challenge prize
-   * @param type The type name e.g money or gift
-   * @param index The index of array
-   */
-  onUpdateChallengePrizeType (type, index) {
-    const { challenge: oldChallenge } = this.state
-    const newChallenge = { ...oldChallenge }
-    if (oldChallenge.prizes[index].type !== type) {
-      newChallenge.prizes[index].type = type
-      this.setState({ challenge: newChallenge })
-    }
-  }
-
   onUpdatePhase (newValue, property, index) {
     if (property === 'duration' && newValue < 0) newValue = 0
     let newChallenge = _.cloneDeep(this.state.challenge)
@@ -424,6 +409,18 @@ class ChallengeEditor extends Component {
         </div>
       )
     }
+
+    let { type } = challenge
+    if (!type) {
+      const { typeId } = challenge
+      if (typeId && metadata.challengeTypes) {
+        const selectedType = _.find(metadata.challengeTypes, { id: typeId })
+        if (selectedType) {
+          type = selectedType.name
+        }
+      }
+    }
+
     return (
       <div className={styles.wrapper}>
         <Helmet title={getTitle(isNew)} />
@@ -434,13 +431,13 @@ class ChallengeEditor extends Component {
             <Modal theme={theme}>
               <div className={styles.contentContainer}>
                 <div className={styles.title}>Launch Challenge Confirmation</div>
-                <span>Do you want to launch this challenge?</span>
+                <span>{`Do you want to launch ${type} challenge "${challenge.name}"?`}</span>
                 <div className={styles.buttonGroup}>
                   <div className={styles.button}>
-                    <OutlineButton text={'Cancel'} type={'danger'} onClick={() => this.resetModal()} />
+                    <OutlineButton className={cn({ disabled: this.state.isSaving })} text={'Cancel'} type={'danger'} onClick={() => this.resetModal()} />
                   </div>
                   <div className={styles.button}>
-                    <PrimaryButton text={this.state.isSaving ? 'Saving...' : 'Confirm'} type={'info'} onClick={() => this.onSubmitChallenge('Active')} />
+                    <PrimaryButton text={this.state.isSaving ? 'Launching...' : 'Confirm'} type={'info'} onClick={() => this.onSubmitChallenge('Active')} />
                   </div>
                 </div>
               </div>

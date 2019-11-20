@@ -3,7 +3,6 @@
  */
 import {
   SET_ACTIVE_PROJECT,
-  SET_ACTIVE_MENU,
   LOAD_PROJECTS_SUCCESS,
   LOAD_PROJECTS_PENDING,
   LOAD_PROJECTS_FAILURE,
@@ -12,7 +11,6 @@ import {
 
 const initialState = {
   activeProjectId: -1,
-  activeMenu: '',
   isLoading: true,
   projects: []
 }
@@ -21,8 +19,6 @@ export default function (state = initialState, action) {
   switch (action.type) {
     case SET_ACTIVE_PROJECT:
       return { ...state, activeProjectId: action.projectId }
-    case SET_ACTIVE_MENU:
-      return { ...state, activeMenu: action.menu }
     case LOAD_PROJECTS_SUCCESS:
       return { ...state, projects: action.projects, isLoading: false, isLoggedIn: true }
     case LOAD_PROJECTS_PENDING:
@@ -30,7 +26,7 @@ export default function (state = initialState, action) {
     case LOAD_PROJECTS_FAILURE:
       return { ...state, isLoading: false }
     case RESET_SIDEBAR_ACTIVE_PARAMS:
-      return { ...state, activeProjectId: -1, activeMenu: '' }
+      return { ...state, activeProjectId: -1 }
     default:
       return state
   }

@@ -27,9 +27,11 @@
   align-items: center;
   color: $white;
   height: 50px;
+  border-left: 2px solid transparent;
 
   &.selected {
     background-color: #1C3040;
+    border-left-color: $teal;
   }
 
   .name {

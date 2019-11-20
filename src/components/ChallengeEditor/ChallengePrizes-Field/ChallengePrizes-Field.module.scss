@@ -111,34 +111,6 @@
   cursor: pointer;
 }
 
-.editButton {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  color: $tc-gray-60;
-
-  cursor: pointer;
-
-  &.active {
-    color: $tc-blue-20;
-  }
-
-  span {
-    @include roboto-medium();
-
-    font-size: 16px;
-    font-weight: 400;
-    line-height: 19px;
-  }
-  .icon {
-    color: $tc-gray-60;
-
-    &.active {
-      color: $tc-blue-20;
-    }
-  }
-}
-
 .button {
   margin: 30px 0 0 30px;
   width: 151px;
