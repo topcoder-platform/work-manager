@@ -347,6 +347,7 @@ class ChallengeEditor extends Component {
     challenge.phases = challenge.phases.map(pick(['description', 'duration', 'id', 'isActive', 'name', 'predecessor']))
     challenge.timelineTemplateId = this.props.metadata.timelineTemplates[0].id
     challenge.projectId = this.props.projectId
+    challenge.endDate = challenge.startDate
     challenge.prizeSets = challenge.prizeSets.map(p => {
       const prizes = p.prizes.map(s => ({ ...s, value: convertDollarToInteger(s.value, '$') }))
       return { ...p, prizes }
