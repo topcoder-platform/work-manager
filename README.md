@@ -1,6 +1,6 @@
 # Topcoder - Challenge Creation App UI
 
-It contains UI of the app for creating challenges.
+This is the frontend application for creating and managing challenges.
 
 ### Development deployment status
 [![CircleCI](https://circleci.com/gh/topcoder-platform/challenge-engine-ui/tree/develop.svg?style=svg)](https://circleci.com/gh/topcoder-platform/challenge-engine-ui/tree/develop)
