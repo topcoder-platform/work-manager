@@ -2,7 +2,10 @@ import _ from 'lodash'
 import qs from 'qs'
 import { axiosInstance } from './axiosWithAuth'
 import FormData from 'form-data'
-import { MEMBER_API_URL, CHALLENGE_API_URL, PROJECT_API_URL, API_V3_URL, API_V4_URL } from '../config/constants'
+/* API_V3_URL never used
+import { MEMBER_API_URL, CHALLENGE_API_URL, PROJECT_API_URL, API_V3_URL, API_V4_URL, API_V5_URL } from '../config/constants'
+*/
+import { MEMBER_API_URL, CHALLENGE_API_URL, PROJECT_API_URL, API_V4_URL, API_V5_URL } from '../config/constants'
 
 /**
  * Api request for fetching member's active challenges
@@ -51,8 +54,8 @@ export async function fetchChallengeTags () {
  * @returns {Promise<*>}
  */
 export async function fetchGroups () {
-  const response = await axiosInstance.get(`${API_V3_URL}/groups`)
-  return _.get(response, 'data.result.content', [])
+  const response = await axiosInstance.get(`${API_V5_URL}/groups`)
+  return _.get(response, 'data.result', [])
 }
 
 /**

@@ -39,6 +39,7 @@ Development configuration is in `config/constants/development.js`
 -  `CHALLENGE_API_URL`: The challenge API URL
 -  `PROJECT_API_URL`: The project API URL
 -  `API_V3_URL`: The API v3 URL
+-  `API_V5_URL`: The API v5 URL
 
 ## Local Deployment
 

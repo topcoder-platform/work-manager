@@ -130,12 +130,19 @@ export function loadChallengeDetails (projectId, challengeId) {
       ? getState().sidebar.projects.find(p => p.id === +projectId)
       : await fetchProjectById(projectId)
     if (!selectedProject) return
+    /*
+      * The V4 Projects API was not returning member handles
+      * The V5 Projects API does return all the information needed
+      * No need to call /v4/members/_search to get all user information
     const projectMembers = selectedProject.members
       .filter(m => m.role === 'manager' || m.role === 'copilot')
       .map(m => m.userId)
+
     const members = projectMembers.length
       ? await fetchProjectMembers(projectMembers)
       : []
+      */
+    const members = fetchProjectMembers(projectId)
     dispatch({
       type: LOAD_CHALLENGE_MEMBERS_SUCCESS,
       members

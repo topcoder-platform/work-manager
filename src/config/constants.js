@@ -78,6 +78,7 @@ export const CHALLENGE_STATUS = {
 export const PROJECT_API_URL = process.env.PROJECT_API_URL
 export const API_V3_URL = process.env.API_V3_URL
 export const API_V4_URL = process.env.API_V4_URL
+export const API_V5_URL = process.env.API_V5_URL
 
 export const ACCOUNTS_APP_CONNECTOR_URL = process.env.ACCOUNTS_APP_CONNECTOR_URL
 export const ACCOUNTS_APP_LOGIN_URL = process.env.ACCOUNTS_APP_LOGIN_URL
