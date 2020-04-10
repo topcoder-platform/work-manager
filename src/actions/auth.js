@@ -1,10 +1,11 @@
 import { configureConnector, decodeToken } from 'tc-accounts'
 import { fetchProfile } from '../services/user'
 import {
-  ACCOUNTS_APP_CONNECTOR_URL,
   LOAD_USER_SUCCESS,
   SAVE_AUTH_TOKEN
 } from '../config/constants'
+
+const { ACCOUNTS_APP_CONNECTOR_URL } = process.env
 
 /**
  * Authentication and user related redux actions
