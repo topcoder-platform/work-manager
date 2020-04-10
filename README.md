@@ -13,11 +13,10 @@ This is the frontend application for creating and managing challenges.
 - UI for creating challenges
 
 ## Related repos
--  [Challenge API](https://github.com/topcoder-platform/challenge-api)
--  [ES Processor](https://github.com/topcoder-platform/challenge-processor-es) - Updates data in ElasticSearch
--  [Legacy Processor](https://github.com/topcoder-platform/legacy-challenge-processor) - Moves data from DynamoDB back to Informix
--  [Legacy Migration Script](https://github.com/topcoder-platform/legacy-challenge-migration-script) - Moves data from Informix to DynamoDB
--  [Accounts App](https://github.com/appirio-tech/accounts-app)
+- [Challenge API](https://github.com/topcoder-platform/challenge-api) - The API endpoint for challenges
+- [Resources API](https://github.com/topcoder-platform/resources-api) - The API endpoint for resources
+- [Challenge ES Processor](https://github.com/topcoder-platform/challenge-processor-es) - Updates challenge data in ElasticSearch
+- [Resource ES Processor](https://github.com/topcoder-platform/resource-processor-es) - Updates resource data in Elasticsearch
 
 ## Prerequisites
 -  [NodeJS](https://nodejs.org/en/) (v10.15+)
@@ -26,45 +25,35 @@ This is the frontend application for creating and managing challenges.
 
 ## Configuration
 
-You can see the configuration paramaters below.
 Production configuration is in `config/constants/production.js`
 Development configuration is in `config/constants/development.js`
 
--  `ACCOUNTS_APP_CONNECTOR_URL`: The url of Accounts app connector
--  `ACCOUNTS_APP_LOGIN_URL`: The url of Accounts app login page
--  `COMMUNITY_APP_URL`: The base url of community app
--  `MEMBER_API_URL`: The members api endpoint
--  `MEMBER_API_V3_URL`: v3 members api endpoint
--  `DEV_APP_URL`: (Development) The URL to start the app from (eg http://local.topcoder-dev.com)
--  `CHALLENGE_API_URL`: The challenge API URL
--  `PROJECT_API_URL`: The project API URL
--  `API_V3_URL`: The API v3 URL
+## Local Deployment Instructions
 
-## Local Deployment
+1. First install dependancies
 
-### Foreman Setup
+```bash
+npm install
+```
 
-To install foreman follow this [link](https://theforeman.org/manuals/1.24/#3.InstallingForeman)
+1. copy the environment file in docs/dev.env to /.env
 
-To know how to use foreman follow this [link](https://theforeman.org/manuals/1.24/#2.Quickstart)
+1. add `127.0.0.1 local.topcoder-dev.com` to your /etc/hosts file
 
-### Development
+1. If you are using local instances of the API's, change the DEV_API_HOSTNAME in configs/constants/development.js to match your local api endpoint.
+    - For example change it to 'http://localhost:3000/',
 
-To run the app in development mode run
+1. Run the app in development mode
 
 ```bash
 npm run dev
 ```
 
-You can access the app from [http://localhost:3000](http://localhost:3000)
+You can access the app from [http://local.topcoder-dev.com:3001/](http://local.topcoder-dev.com:3001/)
 
 The page will reload if you make edits.
 
 You will also see any lint errors in the console.
-
-`NOTE`: Redirection from login page doesn't work with localhost urls because account app doesn't allow it, in order to test it you can add `127.0.0.1 local.topcoder-dev.com` to your /etc/hosts file and access the app from
-
-[http://local.topcoder-dev.com:3000](http://local.topcoder-dev.com:3000) address
 
 ### Lint check
 

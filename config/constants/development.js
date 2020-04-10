@@ -1,4 +1,4 @@
-const DEV_API_HOSTNAME = 'https://api.topcoder-dev.com' // 'http://localhost:3000
+const DEV_API_HOSTNAME = 'https://api.topcoder-dev.com'
 
 module.exports = {
   ACCOUNTS_APP_CONNECTOR_URL: 'https://accounts.topcoder-dev.com/connector.html',
