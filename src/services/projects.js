@@ -1,13 +1,13 @@
 import _ from 'lodash'
 import { axiosInstance } from './axiosWithAuth'
-import { MEMBER_API_V3_URL, PROJECT_API_URL } from '../config/constants'
+const { MEMBER_API_V3_URL, PROJECT_API_URL } = process.env
 
 /**
  * Api request for fetching member's projects
  * @returns {Promise<*>}
  */
 export async function fetchMemberProjects () {
-  const response = await axiosInstance.get(`${PROJECT_API_URL}/projects?limit=1000`)
+  const response = await axiosInstance.get(`${PROJECT_API_URL}?limit=1000`)
   return _.get(response, 'data.result.content')
 }
 
@@ -17,7 +17,7 @@ export async function fetchMemberProjects () {
  * @returns {Promise<*>}
  */
 export async function fetchProjectById (id) {
-  const response = await axiosInstance.get(`${PROJECT_API_URL}/projects/${id}`)
+  const response = await axiosInstance.get(`${PROJECT_API_URL}/${id}`)
   return _.get(response, 'data.result.content')
 }
 

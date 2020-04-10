@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { axiosInstance } from './axiosWithAuth'
-import { MEMBER_API_V3_URL } from '../config/constants'
+const { MEMBER_API_V3_URL } = process.env
 
 /**
  * Api request for fetching user profile

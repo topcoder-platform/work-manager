@@ -1,7 +1,7 @@
 import axios from 'axios'
 import store from '../config/store'
 import { getFreshToken, isTokenExpired } from 'tc-accounts'
-import { ACCOUNTS_APP_LOGIN_URL } from '../config/constants'
+const { ACCOUNTS_APP_LOGIN_URL } = process.env
 
 /**
  * Create an axios instance that can make authenticated requests
