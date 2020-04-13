@@ -80,7 +80,15 @@ class ChallengeEditor extends Component {
   }
 
   async resetChallengeData (isNew, challengeId, challengeDetails, metadata, attachments) {
-    if (!isNew) {
+    if (isNew) {
+      this.setState({
+        challenge: {
+          ...dropdowns['newChallenge'],
+          startDate: moment().add(1, 'hour').format(),
+          phases: []
+        }
+      })
+    } else {
       try {
         this.setState({ isConfirm: false, isLaunch: false })
         const challengeData = this.updateAttachmentlist(challengeDetails, attachments)
@@ -88,12 +96,6 @@ class ChallengeEditor extends Component {
       } catch (e) {
         this.setState({ isLoading: true })
       }
-    } else {
-      this.setState({ challenge: {
-        ...dropdowns['newChallenge'],
-        startDate: moment().add(1, 'hour'),
-        phases: []
-      } })
     }
   }
 
@@ -190,10 +192,14 @@ class ChallengeEditor extends Component {
   onUpdateOthers (data) {
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge }
-    if (data.field === 'copilot' && data.value === newChallenge[data.field]) {
-      data.value = null
+    let { value, field } = data
+    if (field === 'copilot' && value === newChallenge[field]) {
+      value = null
     }
-    newChallenge[data.field] = data.value
+    if (field === 'phases') {
+      value = value && value.map(element => _.set(_.set({}, 'duration', element.duration), 'phaseId', element.id))
+    }
+    newChallenge[field] = value
     this.setState({ challenge: newChallenge })
   }
 
@@ -265,19 +271,13 @@ class ChallengeEditor extends Component {
    * Reset  challenge Phases
    */
   resetPhase (timeline) {
-    const validPhase = this.props.metadata.challengePhases.filter(p => {
-      return timeline.phases.map(p => p.name || p).indexOf(p.name) !== -1
+    const timelinePhaseIds = timeline.phases.map(timelinePhase => timelinePhase.phaseId || timelinePhase)
+    const validPhases = this.props.metadata.challengePhases.filter(challengePhase => {
+      return timelinePhaseIds.includes(challengePhase.id)
     })
-
-    const sorted = []
-
-    for (let i = 0; i < timeline.phases.length; i += 1) {
-      sorted.push(_.find(validPhase, p => p.name === timeline.phases[i]))
-    }
-
     this.onUpdateOthers({
       field: 'phases',
-      value: sorted
+      value: validPhases
     })
   }
 
@@ -344,10 +344,8 @@ class ChallengeEditor extends Component {
     if (this.state.isSaving) return
     const { challengeId, attachments } = this.props
     const challenge = pick(['phases', 'typeId', 'track', 'name', 'description', 'reviewType', 'tags', 'groups', 'prizeSets', 'startDate'], this.state.challenge)
-    challenge.phases = challenge.phases.map(pick(['description', 'duration', 'id', 'isActive', 'name', 'predecessor']))
     challenge.timelineTemplateId = this.props.metadata.timelineTemplates[0].id
     challenge.projectId = this.props.projectId
-    challenge.endDate = challenge.startDate
     challenge.prizeSets = challenge.prizeSets.map(p => {
       const prizes = p.prizes.map(s => ({ ...s, value: convertDollarToInteger(s.value, '$') }))
       return { ...p, prizes }

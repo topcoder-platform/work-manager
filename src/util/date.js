@@ -52,15 +52,17 @@ export const getRoundFormattedDuration = (duration) => {
 export const getPhaseEndDate = (index, challenge) => {
   const map = {}
   const alreadyCalculated = {}
-  _.each(challenge.phases, p => { map[p.id] = p.duration })
+  _.each(challenge.phases, p => { if (p) map[p.id] = p.duration })
   const finalDate = moment(challenge.startDate)
-  finalDate.add(challenge.phases[index].duration, 'hours')
+  if (challenge.phases[index]) {
+    finalDate.add(challenge.phases[index].duration, 'hours')
 
-  if (!challenge.phases[index].predecessor) {
-    return finalDate
+    if (!challenge.phases[index].predecessor) {
+      return finalDate
+    }
   }
 
-  for (let i = index; i >= 0; i -= 1) {
+  for (let i = index; i >= 0 && challenge.phases[i]; i -= 1) {
     const { predecessor } = challenge.phases[i]
     if (predecessor) {
       if (!alreadyCalculated[predecessor]) {

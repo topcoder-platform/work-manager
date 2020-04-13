@@ -2,34 +2,22 @@ import _ from 'lodash'
 import qs from 'qs'
 import { axiosInstance } from './axiosWithAuth'
 import FormData from 'form-data'
-import { MEMBER_API_URL, CHALLENGE_API_URL, PROJECT_API_URL, API_V3_URL, API_V4_URL } from '../config/constants'
-
-/**
- * Api request for fetching member's active challenges
- * @returns {Promise<*>}
- */
-export async function fetchMemberChallenges (handle) {
-  const response = await axiosInstance.get(`${MEMBER_API_URL}/${handle}/challenges?filter=status=ACTIVE`)
-  return _.get(response, 'data.result.content')
-}
-
-/**
- * Api request for fetching member's challenge (it includes member roles)
- * @param {String} handle
- * @param challengeId
- * @returns {Promise<*>}
- */
-export async function fetchMemberChallenge (handle, challengeId) {
-  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/members/${handle}/challenges?filter=id=${challengeId}`)
-  return _.get(response, 'data.result.content[0]')
-}
+const {
+  CHALLENGE_API_URL,
+  CHALLENGE_TYPES_URL,
+  CHALLENGE_TIMELINE_TEMPLATES_URL,
+  CHALLENGE_PHASES_URL,
+  GROUPS_API_URL,
+  PLATFORMS_V4_API_URL,
+  TECHNOLOGIES_V4_API_URL
+} = process.env
 
 /**
  * Api request for fetching challenge types
  * @returns {Promise<*>}
  */
 export async function fetchChallengeTypes () {
-  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challengetypes?isActive=true`)
+  const response = await axiosInstance.get(`${CHALLENGE_TYPES_URL}?isActive=true`)
   return _.get(response, 'data', [])
 }
 
@@ -38,8 +26,8 @@ export async function fetchChallengeTypes () {
  * @returns {Promise<*>}
  */
 export async function fetchChallengeTags () {
-  const platforms = await axiosInstance.get(`${API_V4_URL}/platforms`)
-  const technologies = await axiosInstance.get(`${API_V4_URL}/technologies`)
+  const platforms = await axiosInstance.get(PLATFORMS_V4_API_URL)
+  const technologies = await axiosInstance.get(TECHNOLOGIES_V4_API_URL)
   return [
     ..._.map(_.get(platforms, 'data.result.content', []), tag => _.pick(tag, 'name')),
     ..._.map(_.get(technologies, 'data.result.content', []), tag => _.pick(tag, 'name'))
@@ -51,8 +39,8 @@ export async function fetchChallengeTags () {
  * @returns {Promise<*>}
  */
 export async function fetchGroups () {
-  const response = await axiosInstance.get(`${API_V3_URL}/groups`)
-  return _.get(response, 'data.result.content', [])
+  const response = await axiosInstance.get(GROUPS_API_URL)
+  return _.get(response, 'data', [])
 }
 
 /**
@@ -60,7 +48,7 @@ export async function fetchGroups () {
  * @returns {Promise<*>}
  */
 export async function fetchTimelineTemplates () {
-  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/timelinetemplates`)
+  const response = await axiosInstance.get(CHALLENGE_TIMELINE_TEMPLATES_URL)
   return _.get(response, 'data', [])
 }
 
@@ -69,7 +57,7 @@ export async function fetchTimelineTemplates () {
  * @returns {Promise<*>}
  */
 export async function fetchChallengePhases () {
-  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challengephases`)
+  const response = await axiosInstance.get(CHALLENGE_PHASES_URL)
   return _.get(response, 'data', [])
 }
 
@@ -79,28 +67,8 @@ export async function fetchChallengePhases () {
  * @returns {Promise<*>}
  */
 export async function fetchChallenge (challengeId) {
-  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/challenges/${challengeId}`)
+  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/${challengeId}`)
   return _.get(response, 'data')
-}
-
-/**
- * Api request for fetching project's challenges
- * @param projectId Project id
- * @param status Challenge status
- * @returns {Promise<*>}
- */
-export async function fetchProjectChallenges (projectId, status) {
-  let filters = []
-  if (_.isEmpty(projectId)) {
-    status = 'ACTIVE'
-  } else {
-    filters.push(`projectId=${projectId}`)
-  }
-  if (!_.isEmpty(status)) {
-    filters.push(`status=${status}`)
-  }
-  const response = await axiosInstance.get(`${PROJECT_API_URL}/challenges${filters.length > 0 ? `?filter=${encodeURIComponent(filters.join('&'))}` : ''}`)
-  return _.get(response, 'data.result.content')
 }
 
 /**
@@ -109,7 +77,9 @@ export async function fetchProjectChallenges (projectId, status) {
  * @returns {Promise<*>}
  */
 export function createChallenge (challenge) {
-  return axiosInstance.post(`${CHALLENGE_API_URL}/challenges`, challenge)
+  // TODO: Delete the following line when the API is update to remove the legacyId. This is a temporary fix
+  let newChallenge = _.assign(challenge, { legacyId: 3000500 })
+  return axiosInstance.post(CHALLENGE_API_URL, newChallenge)
 }
 
 /**
@@ -119,13 +89,13 @@ export function createChallenge (challenge) {
  * @returns {Promise<*>}
  */
 export function updateChallenge (challenge, challengeId) {
-  return axiosInstance.put(`${CHALLENGE_API_URL}/challenges/${challengeId}`, challenge)
+  return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, challenge)
 }
 
 export function uploadAttachment (challengeId, file) {
   const data = new FormData()
   data.append('attachment', file)
-  return axiosInstance.post(`${CHALLENGE_API_URL}/challenges/${challengeId}/attachments`, data)
+  return axiosInstance.post(`${CHALLENGE_API_URL}/${challengeId}/attachments`, data)
 }
 
 /**
@@ -138,7 +108,7 @@ export function fetchChallenges (filters, params) {
     ...filters,
     ...params
   }
-  return axiosInstance.get(`${CHALLENGE_API_URL}/challenges?${qs.stringify(query, { encode: false })}`)
+  return axiosInstance.get(`${CHALLENGE_API_URL}?${qs.stringify(query, { encode: false })}`)
 }
 
 /**
@@ -147,5 +117,5 @@ export function fetchChallenges (filters, params) {
  * @param params
  */
 export function patchChallenge (challengeId, params) {
-  return axiosInstance.patch(`${CHALLENGE_API_URL}/challenges/${challengeId}`, params)
+  return axiosInstance.patch(`${CHALLENGE_API_URL}/${challengeId}`, params)
 }

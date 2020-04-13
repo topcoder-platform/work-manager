@@ -12,10 +12,11 @@ import Sidebar from './containers/Sidebar'
 import ChallengeList from './containers/Challenges'
 import ChallengeEditor from './containers/ChallengeEditor'
 import { getFreshToken } from 'tc-accounts'
-import { ACCOUNTS_APP_LOGIN_URL } from './config/constants'
 import { saveToken } from './actions/auth'
 import { connect } from 'react-redux'
 import { checkAllowedRoles } from './util/tc'
+
+const { ACCOUNTS_APP_LOGIN_URL } = process.env
 
 class Routes extends React.Component {
   componentWillMount () {
