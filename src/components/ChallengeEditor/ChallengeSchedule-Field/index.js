@@ -65,22 +65,26 @@ class ChallengeScheduleField extends Component {
 
   renderTimeLine () {
     const { challenge } = this.props
-    const timelines = []
-    if (challenge.phases) {
-      timelines.push(
-        [
-          { type: 'string', label: 'Task ID' },
-          { type: 'string', label: 'Task Name' },
-          { type: 'date', label: 'Start Date' },
-          { type: 'date', label: 'End Date' },
-          { type: 'number', label: 'Duration' },
-          { type: 'number', label: 'Percent Complete' },
-          { type: 'string', label: 'Dependencies' }
-        ]
-      )
+    if (_.isEmpty(challenge.phases) || typeof challenge.phases[0] === 'undefined') {
+      return null
+    }
 
-      var oneDay = 3600000 // = 1 hr
-      _.map(challenge.phases, (p, index) => {
+    const timelines = []
+    timelines.push(
+      [
+        { type: 'string', label: 'Task ID' },
+        { type: 'string', label: 'Task Name' },
+        { type: 'date', label: 'Start Date' },
+        { type: 'date', label: 'End Date' },
+        { type: 'number', label: 'Duration' },
+        { type: 'number', label: 'Percent Complete' },
+        { type: 'string', label: 'Dependencies' }
+      ]
+    )
+
+    var oneDay = 3600000 // = 1 hr
+    _.map(challenge.phases, (p, index) => {
+      if (p) {
         // the registration and submission phases need to be shown as concurrent
         var startDate = (index === 0 || index === 1) || !p.predecessor ? moment(challenge.startDate).toDate() : getPhaseEndDate(index - 1, challenge).toDate()
         var endDate = getPhaseEndDate(index, challenge).toDate()
@@ -104,8 +108,8 @@ class ChallengeScheduleField extends Component {
             p.predecessor ? challenge.phases.filter(ph => ph.id === p.predecessor)[0].name : null
           ]
         )
-      })
-    }
+      }
+    })
     return timelines
   }
 
@@ -219,8 +223,7 @@ class ChallengeScheduleField extends Component {
   render () {
     const { isEdit, currentTemplate } = this.state
     const { templates, resetPhase, challenge, onUpdateOthers } = this.props
-    const timelines = this.renderTimeLine()
-
+    const timelines = !isEdit ? this.renderTimeLine() : null
     return (
       <div className={styles.container}>
         <div className={styles.row}>
@@ -238,7 +241,7 @@ class ChallengeScheduleField extends Component {
           </div>
         </div>
         {
-          !isEdit && typeof challenge.phases !== 'undefined' && challenge.phases.length > 0 && (
+          timelines && (
             <div id='gantt-chart' className={styles.chart}>
               <Chart
                 width={'100%'}

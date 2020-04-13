@@ -40,7 +40,7 @@ export async function fetchChallengeTags () {
  */
 export async function fetchGroups () {
   const response = await axiosInstance.get(GROUPS_API_URL)
-  return _.get(response, 'data.result.content', [])
+  return _.get(response, 'data', [])
 }
 
 /**
@@ -77,7 +77,9 @@ export async function fetchChallenge (challengeId) {
  * @returns {Promise<*>}
  */
 export function createChallenge (challenge) {
-  return axiosInstance.post(CHALLENGE_API_URL, challenge)
+  // TODO: Delete the following line when the API is update to remove the legacyId. This is a temporary fix
+  let newChallenge = _.assign(challenge, { legacyId: 3000500 })
+  return axiosInstance.post(CHALLENGE_API_URL, newChallenge)
 }
 
 /**
@@ -106,7 +108,6 @@ export function fetchChallenges (filters, params) {
     ...filters,
     ...params
   }
-  console.log({ query })
   return axiosInstance.get(`${CHALLENGE_API_URL}?${qs.stringify(query, { encode: false })}`)
 }
 

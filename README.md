@@ -15,6 +15,7 @@ This is the frontend application for creating and managing challenges.
 ## Related repos
 - [Challenge API](https://github.com/topcoder-platform/challenge-api) - The API endpoint for challenges
 - [Resources API](https://github.com/topcoder-platform/resources-api) - The API endpoint for resources
+- [Projects API](?)
 - [Challenge ES Processor](https://github.com/topcoder-platform/challenge-processor-es) - Updates challenge data in ElasticSearch
 - [Resource ES Processor](https://github.com/topcoder-platform/resource-processor-es) - Updates resource data in Elasticsearch
 

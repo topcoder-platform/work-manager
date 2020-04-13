@@ -25,7 +25,7 @@ import {
   PAGE_SIZE,
   SET_FILTER_CHALLENGE_VALUE
 } from '../config/constants'
-import { fetchProjectById, fetchProjectMembers } from '../services/projects'
+import { fetchProjectById } from '../services/projects'
 
 /**
  * Member challenges related redux actions
@@ -130,12 +130,8 @@ export function loadChallengeDetails (projectId, challengeId) {
       ? getState().sidebar.projects.find(p => p.id === +projectId)
       : await fetchProjectById(projectId)
     if (!selectedProject) return
-    const projectMembers = selectedProject.members
+    const members = selectedProject.members
       .filter(m => m.role === 'manager' || m.role === 'copilot')
-      .map(m => m.userId)
-    const members = projectMembers.length
-      ? await fetchProjectMembers(projectMembers)
-      : []
     dispatch({
       type: LOAD_CHALLENGE_MEMBERS_SUCCESS,
       members
@@ -160,7 +156,7 @@ export function loadChallengePhases () {
     dispatch({
       type: LOAD_CHALLENGE_METADATA_SUCCESS,
       metadataKey: 'challengePhases',
-      metadataValue: challengePhases.filter(c => c.isActive)
+      metadataValue: challengePhases.filter(c => c.isOpen)
     })
   }
 }
