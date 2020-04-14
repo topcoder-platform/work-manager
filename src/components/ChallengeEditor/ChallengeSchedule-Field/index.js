@@ -26,6 +26,7 @@ class ChallengeScheduleField extends Component {
     }
     this.toggleEditMode = this.toggleEditMode.bind(this)
     this.renderTimeLine = this.renderTimeLine.bind(this)
+    this.getChallengePhase = this.getChallengePhase.bind(this)
   }
 
   componentDidMount () {
@@ -63,6 +64,11 @@ class ChallengeScheduleField extends Component {
     this.setState({ isEdit: !isEdit })
   }
 
+  getChallengePhase (phase) {
+    const { challengePhases } = this.props
+    return challengePhases.find(challengePhase => challengePhase.id === phase.phaseId)
+  }
+
   renderTimeLine () {
     const { challenge } = this.props
     if (_.isEmpty(challenge.phases) || typeof challenge.phases[0] === 'undefined') {
@@ -84,31 +90,32 @@ class ChallengeScheduleField extends Component {
 
     var oneDay = 3600000 // = 1 hr
     _.map(challenge.phases, (p, index) => {
-      if (p) {
-        // the registration and submission phases need to be shown as concurrent
-        var startDate = (index === 0 || index === 1) || !p.predecessor ? moment(challenge.startDate).toDate() : getPhaseEndDate(index - 1, challenge).toDate()
-        var endDate = getPhaseEndDate(index, challenge).toDate()
-        var currentTime = moment().valueOf()
-        var percentage = 0
-        if (startDate.getTime() > currentTime) {
-          percentage = 0
-        } else if (endDate.getTime() > currentTime) {
-          percentage = Math.round(((currentTime - startDate.getTime()) / (oneDay * p.duration)) * 100)
-        } else {
-          percentage = Math.round(((endDate.getTime() - startDate.getTime()) / (oneDay * p.duration)) * 100)
-        }
-        timelines.push(
-          [
-            p.name,
-            p.name,
-            startDate,
-            endDate,
-            null,
-            percentage,
-            p.predecessor ? challenge.phases.filter(ph => ph.id === p.predecessor)[0].name : null
-          ]
-        )
+      const phase = this.getChallengePhase(p)
+      // the registration and submission phases need to be shown as concurrent
+      var startDate = (index === 0 || index === 1) || !phase.predecessor ? moment(challenge.startDate).toDate() : getPhaseEndDate(index - 1, challenge, this.getChallengePhase).toDate()
+      var endDate = getPhaseEndDate(index, challenge, this.getChallengePhase).toDate()
+      var currentTime = moment().valueOf()
+      var percentage = 0
+      if (startDate.getTime() > currentTime) {
+        percentage = 0
+      } else if (endDate.getTime() > currentTime) {
+        percentage = Math.round(((currentTime - startDate.getTime()) / (oneDay * phase.duration)) * 100)
+      } else {
+        percentage = Math.round(((endDate.getTime() - startDate.getTime()) / (oneDay * phase.duration)) * 100)
       }
+      timelines.push(
+        [
+          phase.name,
+          phase.name,
+          startDate,
+          endDate,
+          null,
+          percentage,
+          phase.predecessor
+            ? this.getChallengePhase(challenge.phases.filter(ph => ph.phaseId === phase.predecessor)[0]).name
+            : null
+        ]
+      )
     })
     return timelines
   }
@@ -117,13 +124,13 @@ class ChallengeScheduleField extends Component {
     const { challenge, onUpdateSelect, onUpdatePhase, removePhase } = this.props
     return (
       _.map(challenge.phases, (p, index) => (
-        <div className={styles.PhaseRow} key={p.name}>
+        <div className={styles.PhaseRow} key={index}>
           <PhaseInput
-            phase={p}
+            phase={this.getChallengePhase(p)}
             withDuration
             onUpdateSelect={onUpdateSelect}
             onUpdatePhase={newValue => onUpdatePhase(newValue, 'duration', index)}
-            endDate={getPhaseEndDate(index, challenge)}
+            endDate={getPhaseEndDate(index, challenge, this.getChallengePhase)}
           />
 
           <div className={styles.icon} onClick={() => removePhase(index)}>
@@ -321,6 +328,7 @@ ChallengeScheduleField.defaultProps = {
 
 ChallengeScheduleField.propTypes = {
   templates: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+  challengePhases: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,
   removePhase: PropTypes.func.isRequired,
   resetPhase: PropTypes.func.isRequired,

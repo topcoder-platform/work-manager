@@ -20,6 +20,7 @@ const dateFormat = 'DD/MM/YYYY'
 class PhaseInput extends Component {
   render () {
     const { phase, onUpdateSelect, onUpdatePhase, withDates, withDuration, endDate } = this.props
+    if (_.isEmpty(phase)) return null
     const date = moment(phase.date).format(dateFormat)
     const time = moment(phase.date)
 

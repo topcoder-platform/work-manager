@@ -385,7 +385,7 @@ class ChallengeEditor extends Component {
     if (_.isEmpty(challenge)) {
       return <div>&nbsp;</div>
     }
-    if (isLoading) return <Loader />
+    if (isLoading || _.isEmpty(metadata.challengePhases)) return <Loader />
     if (failedToLoad) {
       return (
         <div className={styles.wrapper}>
@@ -482,7 +482,7 @@ class ChallengeEditor extends Component {
                     <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
                   </React.Fragment>
                 ) }
-                <ChallengeScheduleField templates={metadata.timelineTemplates} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} onUpdatePhase={this.onUpdatePhase} onUpdateOthers={this.onUpdateOthers} />
+                <ChallengeScheduleField templates={metadata.timelineTemplates} challengePhases={metadata.challengePhases} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} onUpdatePhase={this.onUpdatePhase} onUpdateOthers={this.onUpdateOthers} />
               </div>
               <div className={styles.group}>
                 <div className={styles.title}>Detailed Requirements</div>
