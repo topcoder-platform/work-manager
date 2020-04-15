@@ -8,6 +8,7 @@ import {
   loadChallengePhases,
   loadChallengeTypes,
   loadChallengeTags,
+  loadChallengeTerms,
   loadGroups,
   loadChallengeDetails,
   createAttachment,
@@ -26,12 +27,14 @@ class ChallengeEditor extends Component {
       loadChallengePhases,
       loadChallengeTypes,
       loadChallengeTags,
+      loadChallengeTerms,
       loadGroups
     } = this.props
     loadTimelineTemplates()
     loadChallengePhases()
     loadChallengeTypes()
     loadChallengeTags()
+    loadChallengeTerms()
     loadGroups()
     loadChallengeDetails(_.get(match.params, 'projectId', null), _.get(match.params, 'challengeId', null))
   }
@@ -78,6 +81,7 @@ ChallengeEditor.propTypes = {
   loadChallengePhases: PropTypes.func,
   loadChallengeTypes: PropTypes.func,
   loadChallengeTags: PropTypes.func,
+  loadChallengeTerms: PropTypes.func,
   loadGroups: PropTypes.func,
   loadChallengeDetails: PropTypes.func,
   challengeDetails: PropTypes.object,
@@ -110,6 +114,7 @@ const mapDispatchToProps = {
   loadGroups,
   createAttachment,
   removeAttachment,
+  loadChallengeTerms,
   setFilterChallengeValue
 }
 

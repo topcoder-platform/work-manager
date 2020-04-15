@@ -309,10 +309,13 @@ class ChallengeEditor extends Component {
    * @param field The challenge field
    */
   onUpdateMultiSelect (options, field) {
-    if (field === 'terms' && options.indexOf('Standard Topcoder Terms') === -1) return
     const { challenge } = this.state
-    const newChallenge = { ...challenge }
+    let newChallenge = { ...challenge }
     newChallenge[field] = options ? options.split(',') : []
+    if (field === 'termsIds') {
+      // backwards compatibily with v4 requires converting 'terms' field to 'termsIds'
+      delete newChallenge.terms
+    }
     this.setState({ challenge: newChallenge })
   }
 
@@ -343,7 +346,18 @@ class ChallengeEditor extends Component {
   async onSubmitChallenge (status = 'Active') {
     if (this.state.isSaving) return
     const { challengeId, attachments } = this.props
-    const challenge = pick(['phases', 'typeId', 'track', 'name', 'description', 'reviewType', 'tags', 'groups', 'prizeSets', 'startDate'], this.state.challenge)
+    const challenge = pick([
+      'phases',
+      'typeId',
+      'track',
+      'name',
+      'description',
+      'reviewType',
+      'tags',
+      'groups',
+      'prizeSets',
+      'startDate',
+      'termsIds'], this.state.challenge)
     challenge.timelineTemplateId = this.props.metadata.timelineTemplates[0].id
     challenge.projectId = this.props.projectId
     challenge.prizeSets = challenge.prizeSets.map(p => {
@@ -354,6 +368,7 @@ class ChallengeEditor extends Component {
     if (this.state.challenge.id) {
       challenge.attachmentIds = _.map(attachments, item => item.id)
     }
+    if (challenge.termsIds && challenge.termsIds.length === 0) delete challenge.termsIds
     delete challenge.attachments
     try {
       this.setState({ isSaving: true })
@@ -478,7 +493,7 @@ class ChallengeEditor extends Component {
                 </div>
                 { isOpenAdvanceSettings && (
                   <React.Fragment>
-                    <TermsField terms={dropdowns['terms']} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />
+                    <TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />
                     <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
                   </React.Fragment>
                 ) }

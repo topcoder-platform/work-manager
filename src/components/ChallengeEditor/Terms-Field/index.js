@@ -5,7 +5,8 @@ import cn from 'classnames'
 import styles from './Terms-Field.module.scss'
 
 const TermsField = ({ terms, challenge, onUpdateMultiSelect }) => {
-  const mapOps = item => ({ label: item, value: item })
+  const mapOps = item => ({ label: item.title, value: item.id })
+  const selectedTerms = challenge.terms ? challenge.terms.map(term => term.id) : challenge.termsIds
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
@@ -18,8 +19,8 @@ const TermsField = ({ terms, challenge, onUpdateMultiSelect }) => {
           multi
           options={terms.map(mapOps)}
           simpleValue
-          value={challenge.terms.join(',')}
-          onChange={(value) => onUpdateMultiSelect(value, 'terms')}
+          value={selectedTerms}
+          onChange={(value) => onUpdateMultiSelect(value, 'termsIds')}
         />
       </div>
     </div>
@@ -32,7 +33,7 @@ TermsField.defaultProps = {
 
 TermsField.propTypes = {
   challenge: PropTypes.shape().isRequired,
-  terms: PropTypes.arrayOf(PropTypes.string).isRequired,
+  terms: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   onUpdateMultiSelect: PropTypes.func.isRequired
 }
 

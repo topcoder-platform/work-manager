@@ -7,7 +7,8 @@ import {
   fetchChallengePhases,
   uploadAttachment,
   fetchChallenge,
-  fetchChallenges
+  fetchChallenges,
+  fetchChallengeTerms
 } from '../services/challenges'
 import {
   LOAD_CHALLENGE_DETAILS_PENDING,
@@ -239,6 +240,17 @@ export function setFilterChallengeValue (value) {
     dispatch({
       type: SET_FILTER_CHALLENGE_VALUE,
       value
+    })
+  }
+}
+
+export function loadChallengeTerms () {
+  return async (dispatch) => {
+    const challengeTerms = await fetchChallengeTerms()
+    dispatch({
+      type: LOAD_CHALLENGE_METADATA_SUCCESS,
+      metadataKey: 'challengeTerms',
+      metadataValue: challengeTerms
     })
   }
 }

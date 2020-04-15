@@ -56,7 +56,7 @@ export const getPhaseEndDate = (index, challenge, getChallengePhase) => {
   _.each(challenge.phases, p => {
     if (p) {
       const phase = getChallengePhase(p)
-      map[phase.id] = phase.duration
+      if (phase) map[phase.id] = phase.duration
     }
   })
   const finalDate = moment(challenge.startDate)
@@ -69,7 +69,8 @@ export const getPhaseEndDate = (index, challenge, getChallengePhase) => {
   }
 
   for (let i = index; i >= 0 && challenge.phases[i]; i -= 1) {
-    const { predecessor } = getChallengePhase(challenge.phases[i])
+    const challengePhase = getChallengePhase(challenge.phases[i])
+    const predecessor = challengePhase && challengePhase.predecessor
     if (predecessor) {
       if (!alreadyCalculated[predecessor]) {
         alreadyCalculated[predecessor] = true

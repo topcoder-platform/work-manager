@@ -13,6 +13,7 @@ module.exports = {
   CHALLENGE_PHASES_URL: `${DEV_API_HOSTNAME}/v5/challengephases`,
   PROJECT_API_URL: `${DEV_API_HOSTNAME}/v5/projects`,
   GROUPS_API_URL: `${DEV_API_HOSTNAME}/v5/groups`,
+  TERMS_API_URL: `${DEV_API_HOSTNAME}/v5/terms`,
   PLATFORMS_V4_API_URL: `${DEV_API_HOSTNAME}/v4/platforms`,
   TECHNOLOGIES_V4_API_URL: `${DEV_API_HOSTNAME}/v4/technologies`
 }

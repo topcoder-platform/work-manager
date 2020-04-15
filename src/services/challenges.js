@@ -9,7 +9,8 @@ const {
   CHALLENGE_PHASES_URL,
   GROUPS_API_URL,
   PLATFORMS_V4_API_URL,
-  TECHNOLOGIES_V4_API_URL
+  TECHNOLOGIES_V4_API_URL,
+  TERMS_API_URL
 } = process.env
 
 /**
@@ -68,7 +69,10 @@ export async function fetchChallengePhases () {
  */
 export async function fetchChallenge (challengeId) {
   const response = await axiosInstance.get(`${CHALLENGE_API_URL}/${challengeId}`)
-  return _.get(response, 'data')
+  const newResponse = _.get(response, 'data')
+  // TODO: Delete the following line. Currently the challenges API is adding extra fields to the phase objects when a challenge is created, when only phaseId and duration are allowed
+  newResponse.phases = newResponse.phases.map(p => ({ phaseId: p.phaseId, duration: p.duration }))
+  return newResponse
 }
 
 /**
@@ -78,7 +82,7 @@ export async function fetchChallenge (challengeId) {
  */
 export function createChallenge (challenge) {
   // TODO: Delete the following line when the API is update to remove the legacyId. This is a temporary fix
-  let newChallenge = _.assign(challenge, { legacyId: 3000500 })
+  const newChallenge = _.assign(challenge, { legacyId: 3000500 })
   return axiosInstance.post(CHALLENGE_API_URL, newChallenge)
 }
 
@@ -89,7 +93,9 @@ export function createChallenge (challenge) {
  * @returns {Promise<*>}
  */
 export function updateChallenge (challenge, challengeId) {
-  return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, challenge)
+  // TODO: Delete the following line when the API is update to remove the legacyId. This is a temporary fix
+  const newChallenge = _.assign(challenge, { legacyId: 3000500 })
+  return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, newChallenge)
 }
 
 export function uploadAttachment (challengeId, file) {
@@ -118,4 +124,16 @@ export function fetchChallenges (filters, params) {
  */
 export function patchChallenge (challengeId, params) {
   return axiosInstance.patch(`${CHALLENGE_API_URL}/${challengeId}`, params)
+}
+
+/**
+ * Api request for fetching challenge terms
+ * @returns {Promise<*>}
+ */
+export async function fetchChallengeTerms () {
+  const query = { page: 1, perPage: 10 }
+  const response = await axiosInstance.get(`${TERMS_API_URL}?${qs.stringify(query, { encode: false })}`)
+  const responseData = _.get(response, 'data', [])
+  const returnData = responseData.result.map(element => _.pick(element, ['id', 'title']))
+  return returnData
 }
