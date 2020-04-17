@@ -47,23 +47,30 @@ export const getRoundFormattedDuration = (duration) => {
  * Get phase end date
  * @param index  the phase index
  * @param challenge the challenge data
+ * @param getChallengePhase a function to get the challenge phase from the metadata for the specified phase
  * @returns {moment.Moment}
  */
-export const getPhaseEndDate = (index, challenge) => {
+export const getPhaseEndDate = (index, challenge, getChallengePhase) => {
   const map = {}
   const alreadyCalculated = {}
-  _.each(challenge.phases, p => { if (p) map[p.id] = p.duration })
+  _.each(challenge.phases, p => {
+    if (p) {
+      const phase = getChallengePhase(p)
+      if (phase) map[phase.id] = phase.duration
+    }
+  })
   const finalDate = moment(challenge.startDate)
-  if (challenge.phases[index]) {
-    finalDate.add(challenge.phases[index].duration, 'hours')
-
-    if (!challenge.phases[index].predecessor) {
+  const phase = challenge.phases[index] && getChallengePhase(challenge.phases[index])
+  if (phase) {
+    finalDate.add(phase.duration, 'hours')
+    if (!phase.predecessor) {
       return finalDate
     }
   }
 
   for (let i = index; i >= 0 && challenge.phases[i]; i -= 1) {
-    const { predecessor } = challenge.phases[i]
+    const challengePhase = getChallengePhase(challenge.phases[i])
+    const predecessor = challengePhase && challengePhase.predecessor
     if (predecessor) {
       if (!alreadyCalculated[predecessor]) {
         alreadyCalculated[predecessor] = true

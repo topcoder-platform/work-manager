@@ -7,7 +7,10 @@ import {
   fetchChallengePhases,
   uploadAttachment,
   fetchChallenge,
-  fetchChallenges
+  fetchChallenges,
+  fetchChallengeTerms,
+  fetchResources,
+  fetchResourceRoles
 } from '../services/challenges'
 import {
   LOAD_CHALLENGE_DETAILS_PENDING,
@@ -21,6 +24,9 @@ import {
   UPLOAD_ATTACHMENT_FAILURE,
   UPLOAD_ATTACHMENT_PENDING,
   UPLOAD_ATTACHMENT_SUCCESS,
+  LOAD_CHALLENGE_RESOURCES_PENDING,
+  LOAD_CHALLENGE_RESOURCES_SUCCESS,
+  LOAD_CHALLENGE_RESOURCES_FAILURE,
   REMOVE_ATTACHMENT,
   PAGE_SIZE,
   SET_FILTER_CHALLENGE_VALUE
@@ -239,6 +245,55 @@ export function setFilterChallengeValue (value) {
     dispatch({
       type: SET_FILTER_CHALLENGE_VALUE,
       value
+    })
+  }
+}
+
+export function loadChallengeTerms () {
+  return async (dispatch) => {
+    const challengeTerms = await fetchChallengeTerms()
+    dispatch({
+      type: LOAD_CHALLENGE_METADATA_SUCCESS,
+      metadataKey: 'challengeTerms',
+      metadataValue: challengeTerms
+    })
+  }
+}
+
+export function loadResources (challengeId) {
+  return async (dispatch) => {
+    dispatch({
+      type: LOAD_CHALLENGE_RESOURCES_PENDING,
+      challengeResources: {}
+    })
+
+    if (challengeId) {
+      fetchResources(challengeId).then((resources) => {
+        dispatch({
+          type: LOAD_CHALLENGE_RESOURCES_SUCCESS,
+          challengeResources: resources
+        })
+      }).catch(() => {
+        dispatch({
+          type: LOAD_CHALLENGE_RESOURCES_FAILURE
+        })
+      })
+    } else {
+      dispatch({
+        type: LOAD_CHALLENGE_RESOURCES_SUCCESS,
+        challengeResources: null
+      })
+    }
+  }
+}
+
+export function loadResourceRoles () {
+  return async (dispatch) => {
+    const resourceRoles = await fetchResourceRoles()
+    dispatch({
+      type: LOAD_CHALLENGE_METADATA_SUCCESS,
+      metadataKey: 'resourceRoles',
+      metadataValue: resourceRoles
     })
   }
 }

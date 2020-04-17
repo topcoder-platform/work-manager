@@ -7,6 +7,9 @@ import {
   LOAD_CHALLENGE_DETAILS_FAILURE,
   LOAD_CHALLENGE_DETAILS_PENDING,
   LOAD_CHALLENGE_DETAILS_SUCCESS,
+  LOAD_CHALLENGE_RESOURCES_FAILURE,
+  LOAD_CHALLENGE_RESOURCES_PENDING,
+  LOAD_CHALLENGE_RESOURCES_SUCCESS,
   LOAD_CHALLENGE_MEMBERS_SUCCESS,
   LOAD_CHALLENGE_METADATA_SUCCESS,
   LOAD_CHALLENGES_FAILURE,
@@ -24,6 +27,7 @@ const initialState = {
   challenges: [],
   metadata: {},
   challengeDetails: {},
+  challengeResources: [],
   isSuccess: false,
   isUploading: false,
   uploadingId: null,
@@ -87,6 +91,17 @@ export default function (state = initialState, action) {
         challengeDetails: action.challengeDetails,
         isLoading: false,
         attachments: _.has(action.challengeDetails, 'attachments') ? action.challengeDetails.attachments : [],
+        failedToLoad: false
+      }
+    case LOAD_CHALLENGE_RESOURCES_PENDING:
+      return { ...state, isLoading: true, failedToLoad: false }
+    case LOAD_CHALLENGE_RESOURCES_FAILURE:
+      return { ...state, isLoading: false, failedToLoad: true }
+    case LOAD_CHALLENGE_RESOURCES_SUCCESS:
+      return {
+        ...state,
+        challengeResources: action.challengeResources,
+        isLoading: false,
         failedToLoad: false
       }
     case LOAD_CHALLENGE_METADATA_SUCCESS:

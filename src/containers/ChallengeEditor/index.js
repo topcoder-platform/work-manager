@@ -8,11 +8,14 @@ import {
   loadChallengePhases,
   loadChallengeTypes,
   loadChallengeTags,
+  loadChallengeTerms,
   loadGroups,
   loadChallengeDetails,
   createAttachment,
   removeAttachment,
-  setFilterChallengeValue
+  setFilterChallengeValue,
+  loadResources,
+  loadResourceRoles
 } from '../../actions/challenges'
 
 import { connect } from 'react-redux'
@@ -26,14 +29,21 @@ class ChallengeEditor extends Component {
       loadChallengePhases,
       loadChallengeTypes,
       loadChallengeTags,
-      loadGroups
+      loadChallengeTerms,
+      loadGroups,
+      loadResources,
+      loadResourceRoles
     } = this.props
+    const challengeId = _.get(match.params, 'challengeId', null)
     loadTimelineTemplates()
     loadChallengePhases()
     loadChallengeTypes()
     loadChallengeTags()
+    loadChallengeTerms()
     loadGroups()
-    loadChallengeDetails(_.get(match.params, 'projectId', null), _.get(match.params, 'challengeId', null))
+    loadResources(challengeId)
+    loadResourceRoles()
+    loadChallengeDetails(_.get(match.params, 'projectId', null), challengeId)
   }
 
   componentWillReceiveProps (nextProps) {
@@ -47,11 +57,22 @@ class ChallengeEditor extends Component {
   }
 
   render () {
-    const { match, isLoading, challengeDetails, metadata, createAttachment, attachments, token, removeAttachment, failedToLoad } = this.props
+    const {
+      match,
+      isLoading,
+      challengeDetails,
+      challengeResources,
+      metadata,
+      createAttachment,
+      attachments,
+      token,
+      removeAttachment,
+      failedToLoad } = this.props
     return (
       <ChallengeEditorComponent
         isLoading={isLoading}
         challengeDetails={challengeDetails}
+        challengeResources={challengeResources}
         metadata={metadata}
         projectId={_.get(match.params, 'projectId', null)}
         challengeId={_.get(match.params, 'challengeId', null)}
@@ -78,8 +99,12 @@ ChallengeEditor.propTypes = {
   loadChallengePhases: PropTypes.func,
   loadChallengeTypes: PropTypes.func,
   loadChallengeTags: PropTypes.func,
+  loadChallengeTerms: PropTypes.func,
   loadGroups: PropTypes.func,
   loadChallengeDetails: PropTypes.func,
+  loadResources: PropTypes.func,
+  loadResourceRoles: PropTypes.func,
+  challengeResources: PropTypes.arrayOf(PropTypes.object),
   challengeDetails: PropTypes.object,
   metadata: PropTypes.shape({
     challengeTypes: PropTypes.array
@@ -92,8 +117,9 @@ ChallengeEditor.propTypes = {
   failedToLoad: PropTypes.bool
 }
 
-const mapStateToProps = ({ challenges: { challengeDetails, metadata, isLoading, attachments, failedToLoad }, auth: { token } }) => ({
+const mapStateToProps = ({ challenges: { challengeDetails, challengeResources, metadata, isLoading, attachments, failedToLoad }, auth: { token } }) => ({
   challengeDetails,
+  challengeResources,
   metadata,
   isLoading,
   attachments,
@@ -110,7 +136,10 @@ const mapDispatchToProps = {
   loadGroups,
   createAttachment,
   removeAttachment,
-  setFilterChallengeValue
+  loadChallengeTerms,
+  setFilterChallengeValue,
+  loadResources,
+  loadResourceRoles
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChallengeEditor))

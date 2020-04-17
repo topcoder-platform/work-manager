@@ -25,7 +25,7 @@ import ChallengeScheduleField from './ChallengeSchedule-Field'
 import { convertDollarToInteger, validateValue } from '../../util/input-check'
 import dropdowns from './mock-data/dropdowns'
 import styles from './ChallengeEditor.module.scss'
-import { createChallenge, updateChallenge } from '../../services/challenges'
+import { createChallenge, updateChallenge, createResource, deleteResource } from '../../services/challenges'
 
 const theme = {
   container: styles.modalContainer
@@ -92,6 +92,11 @@ class ChallengeEditor extends Component {
       try {
         this.setState({ isConfirm: false, isLaunch: false })
         const challengeData = this.updateAttachmentlist(challengeDetails, attachments)
+        if (this.state.challenge) {
+          const { copilot, reviewer } = this.state.challenge
+          if (copilot) challengeData.copilot = copilot
+          if (reviewer) challengeData.reviewer = reviewer
+        }
         this.setState({ challenge: { ...dropdowns['newChallenge'], ...challengeData }, isLoading: false })
       } catch (e) {
         this.setState({ isLoading: true })
@@ -102,11 +107,13 @@ class ChallengeEditor extends Component {
   resetModal () {
     this.setState({ isLoading: true, isConfirm: false, isLaunch: false })
   }
+
   onUpdateDescription (description) {
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge, description }
     this.setState({ challenge: newChallenge })
   }
+
   /**
    * Update Input value of challenge
    * @param e The input event
@@ -309,10 +316,13 @@ class ChallengeEditor extends Component {
    * @param field The challenge field
    */
   onUpdateMultiSelect (options, field) {
-    if (field === 'terms' && options.indexOf('Standard Topcoder Terms') === -1) return
     const { challenge } = this.state
-    const newChallenge = { ...challenge }
+    let newChallenge = { ...challenge }
     newChallenge[field] = options ? options.split(',') : []
+    if (field === 'termsIds') {
+      // backwards compatibily with v4 requires converting 'terms' field to 'termsIds'
+      delete newChallenge.terms
+    }
     this.setState({ challenge: newChallenge })
   }
 
@@ -340,10 +350,21 @@ class ChallengeEditor extends Component {
       this.onSubmitChallenge('Draft')
     }
   }
-  async onSubmitChallenge (status = 'Active') {
-    if (this.state.isSaving) return
-    const { challengeId, attachments } = this.props
-    const challenge = pick(['phases', 'typeId', 'track', 'name', 'description', 'reviewType', 'tags', 'groups', 'prizeSets', 'startDate'], this.state.challenge)
+
+  collectChallengeData (status) {
+    const { attachments } = this.props
+    const challenge = pick([
+      'phases',
+      'typeId',
+      'track',
+      'name',
+      'description',
+      'reviewType',
+      'tags',
+      'groups',
+      'prizeSets',
+      'startDate',
+      'termsIds'], this.state.challenge)
     challenge.timelineTemplateId = this.props.metadata.timelineTemplates[0].id
     challenge.projectId = this.props.projectId
     challenge.prizeSets = challenge.prizeSets.map(p => {
@@ -354,14 +375,45 @@ class ChallengeEditor extends Component {
     if (this.state.challenge.id) {
       challenge.attachmentIds = _.map(attachments, item => item.id)
     }
+    if (challenge.termsIds && challenge.termsIds.length === 0) delete challenge.termsIds
     delete challenge.attachments
+    return challenge
+  }
+
+  async onSubmitChallenge (status = 'Active') {
+    if (this.state.isSaving) return
+    const { challengeId } = this.props
+    const { copilot, reviewer } = this.state.challenge
+    const challenge = this.collectChallengeData(status)
     try {
       this.setState({ isSaving: true })
       const response = challengeId ? await updateChallenge(challenge, challengeId) : await createChallenge(challenge)
+      if (copilot) await this.updateResource(response.data.id, 'Copilot', copilot)
+      if (reviewer) await this.updateResource(response.data.id, 'Reviewer', reviewer)
       this.setState({ isLaunch: true, isConfirm: response.data.id, challenge: { ...this.state.challenge, ...challenge }, isSaving: false })
     } catch (e) {
       this.setState({ isSaving: false })
     }
+  }
+
+  getResourceRoleByName (name) {
+    const { resourceRoles } = this.props.metadata
+    return resourceRoles ? resourceRoles.find(role => role.name === name) : null
+  }
+
+  async updateResource (challengeId, name, value) {
+    let needToCreateResource = true
+    const newResource = {
+      challengeId,
+      memberHandle: value,
+      roleId: this.getResourceRoleByName(name).id
+    }
+    const currentResource = this.getResourceFromProps(name)
+    if (currentResource && value !== currentResource.memberHandle) {
+      const resource = _.pick(currentResource, ['challengeId', 'memberHandle', 'roleId'])
+      await deleteResource(resource)
+    } else needToCreateResource = false
+    if (needToCreateResource) await createResource(newResource)
   }
 
   updateAttachmentlist (challenge, attachments) {
@@ -379,13 +431,27 @@ class ChallengeEditor extends Component {
     return newChallenge
   }
 
+  getResourceFromProps (name) {
+    const { challengeResources } = this.props
+    const role = this.getResourceRoleByName(name)
+    return challengeResources && role && challengeResources.find(resource => resource.roleId === role.id)
+  }
+
   render () {
     const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings } = this.state
-    const { isNew, isDraft, isLoading, metadata, uploadAttachment, token, removeAttachment, failedToLoad } = this.props
+    const {
+      isNew,
+      isDraft,
+      isLoading,
+      metadata,
+      uploadAttachment,
+      token,
+      removeAttachment,
+      failedToLoad } = this.props
     if (_.isEmpty(challenge)) {
-      return <div>&nbsp;</div>
+      return <div>Error loading challenge</div>
     }
-    if (isLoading) return <Loader />
+    if (isLoading || _.isEmpty(metadata.challengePhases)) return <Loader />
     if (failedToLoad) {
       return (
         <div className={styles.wrapper}>
@@ -419,6 +485,12 @@ class ChallengeEditor extends Component {
         }
       }
     }
+
+    const copilotFromResources = this.getResourceFromProps('Copilot')
+    const selectedCopilot = copilotFromResources ? copilotFromResources.memberHandle : challenge.copilot
+    const reviewerFromResources = this.getResourceFromProps('Reviewer')
+    const selectedReviewer = reviewerFromResources ? reviewerFromResources.memberHandle
+      : challenge.reviewer ? challenge.reviewer : ''
 
     return (
       <div className={styles.wrapper}>
@@ -463,8 +535,8 @@ class ChallengeEditor extends Component {
                 <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
                 <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
                 <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
-                <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
-                <ReviewTypeField reviewers={metadata.members} challenge={challenge} onUpdateOthers={this.onUpdateOthers} onUpdateSelect={this.onUpdateSelect} />
+                <CopilotField challenge={challenge} copilots={metadata.members} selectedCopilot={selectedCopilot} onUpdateOthers={this.onUpdateOthers} />
+                <ReviewTypeField reviewers={metadata.members} challenge={challenge} selectedReviewer={selectedReviewer} onUpdateOthers={this.onUpdateOthers} onUpdateSelect={this.onUpdateSelect} />
                 <div className={styles.row}>
                   <div className={styles.tcCheckbox}>
                     <input name='isOpenAdvanceSettings' type='checkbox' id='isOpenAdvanceSettings' checked={isOpenAdvanceSettings} onChange={this.toggleAdvanceSettings} />
@@ -478,11 +550,11 @@ class ChallengeEditor extends Component {
                 </div>
                 { isOpenAdvanceSettings && (
                   <React.Fragment>
-                    <TermsField terms={dropdowns['terms']} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />
+                    <TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />
                     <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
                   </React.Fragment>
                 ) }
-                <ChallengeScheduleField templates={metadata.timelineTemplates} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} onUpdatePhase={this.onUpdatePhase} onUpdateOthers={this.onUpdateOthers} />
+                <ChallengeScheduleField templates={metadata.timelineTemplates} challengePhases={metadata.challengePhases} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} onUpdatePhase={this.onUpdatePhase} onUpdateOthers={this.onUpdateOthers} />
               </div>
               <div className={styles.group}>
                 <div className={styles.title}>Detailed Requirements</div>
@@ -525,11 +597,13 @@ class ChallengeEditor extends Component {
 ChallengeEditor.defaultProps = {
   challengeId: null,
   attachments: [],
-  failedToLoad: false
+  failedToLoad: false,
+  challengeResources: {}
 }
 
 ChallengeEditor.propTypes = {
   challengeDetails: PropTypes.object,
+  challengeResources: PropTypes.arrayOf(PropTypes.object),
   isNew: PropTypes.bool.isRequired,
   isDraft: PropTypes.bool.isRequired,
   projectId: PropTypes.string.isRequired,
