@@ -5,7 +5,7 @@ import cn from 'classnames'
 import _ from 'lodash'
 import CopilotCard from '../../CopilotCard'
 
-const CopilotField = ({ copilots, challenge, selectedCopilot, onUpdateOthers }) => {
+const CopilotField = ({ copilots, challenge, onUpdateOthers }) => {
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
@@ -14,7 +14,7 @@ const CopilotField = ({ copilots, challenge, selectedCopilot, onUpdateOthers }) 
       <div className={cn(styles.field, styles.col2)}>
         {
           _.map(copilots, copilot => (
-            <CopilotCard copilot={copilot} selectedCopilot={challenge.copilot ? challenge.copilot : selectedCopilot} key={copilot.handle} onUpdateOthers={onUpdateOthers} />))
+            <CopilotCard copilot={copilot} selectedCopilot={challenge.copilot} key={copilot.handle} onUpdateOthers={onUpdateOthers} />))
         }
       </div>
     </div>
@@ -28,8 +28,7 @@ CopilotField.defaultProps = {
 CopilotField.propTypes = {
   copilots: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,
-  onUpdateOthers: PropTypes.func.isRequired,
-  selectedCopilot: PropTypes.string.isRequired
+  onUpdateOthers: PropTypes.func.isRequired
 }
 
 export default CopilotField

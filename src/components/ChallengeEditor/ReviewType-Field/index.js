@@ -4,7 +4,7 @@ import Select from '../../Select'
 import cn from 'classnames'
 import styles from './ReviewType-Field.module.scss'
 
-const ReviewTypeField = ({ reviewers, challenge, selectedReviewer, onUpdateOthers, onUpdateSelect }) => {
+const ReviewTypeField = ({ reviewers, challenge, onUpdateOthers, onUpdateSelect }) => {
   const isCommunity = challenge.reviewType === 'community'
   const isInternal = challenge.reviewType === 'internal'
   return (
@@ -56,7 +56,7 @@ const ReviewTypeField = ({ reviewers, challenge, selectedReviewer, onUpdateOther
                   labelKey='handle'
                   valueKey='handle'
                   clearable={false}
-                  value={challenge.reviewer ? challenge.reviewer : selectedReviewer}
+                  value={challenge.reviewer}
                   onChange={(e) => onUpdateSelect(e.handle, false, 'reviewer')}
                   disabled={false}
                 />
@@ -76,7 +76,6 @@ ReviewTypeField.defaultProps = {
 ReviewTypeField.propTypes = {
   reviewers: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,
-  selectedReviewer: PropTypes.string.isRequired,
   onUpdateOthers: PropTypes.func.isRequired,
   onUpdateSelect: PropTypes.func.isRequired
 }

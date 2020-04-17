@@ -67,7 +67,7 @@ class ChallengeScheduleField extends Component {
   getChallengePhase (phase) {
     const { challengePhases } = this.props
     const challengePhase = challengePhases.find(challengePhase => challengePhase.id === phase.phaseId)
-    challengePhase.duration = phase.duration
+    if (challengePhase) challengePhase.duration = phase.duration
     return challengePhase
   }
 
