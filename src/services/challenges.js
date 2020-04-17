@@ -10,7 +10,9 @@ const {
   GROUPS_API_URL,
   PLATFORMS_V4_API_URL,
   TECHNOLOGIES_V4_API_URL,
-  TERMS_API_URL
+  TERMS_API_URL,
+  RESOURCES_API_URL,
+  RESOURCE_ROLES_API_URL
 } = process.env
 
 /**
@@ -136,4 +138,41 @@ export async function fetchChallengeTerms () {
   const responseData = _.get(response, 'data', [])
   const returnData = responseData.result.map(element => _.pick(element, ['id', 'title']))
   return returnData
+}
+
+/**
+ * Api request for creating new resource
+ * @param challenge challenge data
+ * @returns {Promise<*>}
+ */
+export function createResource (resource) {
+  return axiosInstance.post(RESOURCES_API_URL, resource)
+}
+
+/**
+ * Api request for fetching challenge resources
+ * @param challengeId Challenge id
+ * @returns {Promise<*>}
+ */
+export async function fetchResources (challengeId) {
+  const response = await axiosInstance.get(`${RESOURCES_API_URL}?challengeId=${challengeId}`)
+  return _.get(response, 'data', [])
+}
+
+/**
+* Api request for fetching resource roles
+* @returns {Promise<*>}
+*/
+export async function fetchResourceRoles () {
+  const response = await axiosInstance.get(RESOURCE_ROLES_API_URL)
+  return _.get(response, 'data', [])
+}
+
+/**
+ * Api request for deleting a resource
+ * @param {object} resource to delete
+ * @returns {Promise<*>}
+ */
+export function deleteResource (resource) {
+  return axiosInstance.delete(RESOURCES_API_URL, { data: resource })
 }

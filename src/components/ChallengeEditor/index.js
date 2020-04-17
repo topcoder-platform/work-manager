@@ -25,7 +25,7 @@ import ChallengeScheduleField from './ChallengeSchedule-Field'
 import { convertDollarToInteger, validateValue } from '../../util/input-check'
 import dropdowns from './mock-data/dropdowns'
 import styles from './ChallengeEditor.module.scss'
-import { createChallenge, updateChallenge } from '../../services/challenges'
+import { createChallenge, updateChallenge, createResource, deleteResource } from '../../services/challenges'
 
 const theme = {
   container: styles.modalContainer
@@ -92,6 +92,8 @@ class ChallengeEditor extends Component {
       try {
         this.setState({ isConfirm: false, isLaunch: false })
         const challengeData = this.updateAttachmentlist(challengeDetails, attachments)
+        challengeData.copilot = this.state.challenge.copilot
+        challengeData.reviewer = this.state.challenge.reviewer
         this.setState({ challenge: { ...dropdowns['newChallenge'], ...challengeData }, isLoading: false })
       } catch (e) {
         this.setState({ isLoading: true })
@@ -102,11 +104,13 @@ class ChallengeEditor extends Component {
   resetModal () {
     this.setState({ isLoading: true, isConfirm: false, isLaunch: false })
   }
+
   onUpdateDescription (description) {
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge, description }
     this.setState({ challenge: newChallenge })
   }
+
   /**
    * Update Input value of challenge
    * @param e The input event
@@ -343,9 +347,9 @@ class ChallengeEditor extends Component {
       this.onSubmitChallenge('Draft')
     }
   }
-  async onSubmitChallenge (status = 'Active') {
-    if (this.state.isSaving) return
-    const { challengeId, attachments } = this.props
+
+  collectChallengeData (status) {
+    const { attachments } = this.props
     const challenge = pick([
       'phases',
       'typeId',
@@ -370,13 +374,43 @@ class ChallengeEditor extends Component {
     }
     if (challenge.termsIds && challenge.termsIds.length === 0) delete challenge.termsIds
     delete challenge.attachments
+    return challenge
+  }
+
+  async onSubmitChallenge (status = 'Active') {
+    if (this.state.isSaving) return
+    const { challengeId } = this.props
+    const { copilot, reviewer } = this.state.challenge
+    const challenge = this.collectChallengeData(status)
     try {
       this.setState({ isSaving: true })
       const response = challengeId ? await updateChallenge(challenge, challengeId) : await createChallenge(challenge)
+      if (copilot) await this.updateResource(response.data.id, 'Copilot', copilot)
+      if (reviewer) await this.updateResource(response.data.id, 'Reviewer', reviewer)
       this.setState({ isLaunch: true, isConfirm: response.data.id, challenge: { ...this.state.challenge, ...challenge }, isSaving: false })
     } catch (e) {
       this.setState({ isSaving: false })
     }
+  }
+
+  getResourceRoleByName (name) {
+    const { resourceRoles } = this.props.metadata
+    return resourceRoles ? resourceRoles.find(role => role.name === name) : null
+  }
+
+  async updateResource (challengeId, name, value) {
+    let needToCreateResource = true
+    const newResource = {
+      challengeId,
+      memberHandle: value,
+      roleId: this.getResourceRoleByName(name).id
+    }
+    const currentResource = this.getResourceFromProps(name)
+    if (currentResource && value !== currentResource.memberHandle) {
+      const resource = _.pick(currentResource, ['challengeId', 'memberHandle', 'roleId'])
+      await deleteResource(resource)
+    } else needToCreateResource = false
+    if (needToCreateResource) await createResource(newResource)
   }
 
   updateAttachmentlist (challenge, attachments) {
@@ -394,9 +428,23 @@ class ChallengeEditor extends Component {
     return newChallenge
   }
 
+  getResourceFromProps (name) {
+    const { challengeResources } = this.props
+    const role = this.getResourceRoleByName(name)
+    return challengeResources && role && challengeResources.find(resource => resource.roleId === role.id)
+  }
+
   render () {
     const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings } = this.state
-    const { isNew, isDraft, isLoading, metadata, uploadAttachment, token, removeAttachment, failedToLoad } = this.props
+    const {
+      isNew,
+      isDraft,
+      isLoading,
+      metadata,
+      uploadAttachment,
+      token,
+      removeAttachment,
+      failedToLoad } = this.props
     if (_.isEmpty(challenge)) {
       return <div>&nbsp;</div>
     }
@@ -434,6 +482,11 @@ class ChallengeEditor extends Component {
         }
       }
     }
+
+    const copilotFromResources = this.getResourceFromProps('Copilot')
+    const selectedCopilot = copilotFromResources ? copilotFromResources.memberHandle : challenge.copilot
+    const reviewerFromResources = this.getResourceFromProps('Reviewer')
+    const selectedReviewer = reviewerFromResources ? reviewerFromResources.memberHandle : challenge.reviewer
 
     return (
       <div className={styles.wrapper}>
@@ -478,8 +531,8 @@ class ChallengeEditor extends Component {
                 <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
                 <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
                 <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
-                <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
-                <ReviewTypeField reviewers={metadata.members} challenge={challenge} onUpdateOthers={this.onUpdateOthers} onUpdateSelect={this.onUpdateSelect} />
+                <CopilotField challenge={challenge} copilots={metadata.members} selectedCopilot={selectedCopilot} onUpdateOthers={this.onUpdateOthers} />
+                <ReviewTypeField reviewers={metadata.members} challenge={challenge} selectedReviewer={selectedReviewer} onUpdateOthers={this.onUpdateOthers} onUpdateSelect={this.onUpdateSelect} />
                 <div className={styles.row}>
                   <div className={styles.tcCheckbox}>
                     <input name='isOpenAdvanceSettings' type='checkbox' id='isOpenAdvanceSettings' checked={isOpenAdvanceSettings} onChange={this.toggleAdvanceSettings} />
@@ -540,11 +593,13 @@ class ChallengeEditor extends Component {
 ChallengeEditor.defaultProps = {
   challengeId: null,
   attachments: [],
-  failedToLoad: false
+  failedToLoad: false,
+  challengeResources: {}
 }
 
 ChallengeEditor.propTypes = {
   challengeDetails: PropTypes.object,
+  challengeResources: PropTypes.arrayOf(PropTypes.object),
   isNew: PropTypes.bool.isRequired,
   isDraft: PropTypes.bool.isRequired,
   projectId: PropTypes.string.isRequired,
