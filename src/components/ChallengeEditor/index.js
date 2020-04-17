@@ -90,13 +90,20 @@ class ChallengeEditor extends Component {
       })
     } else {
       try {
+        const copilotResource = this.getResourceFromProps('Copilot')
+        const copilotFromResources = copilotResource ? copilotResource.memberHandle : ''
+        const reviewerResource = this.getResourceFromProps('Reviewer')
+        const reviewerFromResources = reviewerResource ? reviewerResource.memberHandle : ''
         this.setState({ isConfirm: false, isLaunch: false })
         const challengeData = this.updateAttachmentlist(challengeDetails, attachments)
-        if (this.state.challenge) {
-          const { copilot, reviewer } = this.state.challenge
-          if (copilot) challengeData.copilot = copilot
-          if (reviewer) challengeData.reviewer = reviewer
+        let copilot, reviewer
+        const challenge = this.state.challenge
+        if (challenge) {
+          copilot = challenge.copilot
+          reviewer = challenge.reviewer
         }
+        challengeData.copilot = copilot || copilotFromResources
+        challengeData.reviewer = reviewer || reviewerFromResources
         this.setState({ challenge: { ...dropdowns['newChallenge'], ...challengeData }, isLoading: false })
       } catch (e) {
         this.setState({ isLoading: true })
@@ -402,7 +409,7 @@ class ChallengeEditor extends Component {
   }
 
   async updateResource (challengeId, name, value) {
-    let needToCreateResource = true
+    let needToCreateResource = this.props.isNew
     const newResource = {
       challengeId,
       memberHandle: value,
@@ -410,9 +417,10 @@ class ChallengeEditor extends Component {
     }
     const currentResource = this.getResourceFromProps(name)
     if (currentResource && value !== currentResource.memberHandle) {
+      needToCreateResource = true
       const resource = _.pick(currentResource, ['challengeId', 'memberHandle', 'roleId'])
       await deleteResource(resource)
-    } else needToCreateResource = false
+    }
     if (needToCreateResource) await createResource(newResource)
   }
 
@@ -486,12 +494,6 @@ class ChallengeEditor extends Component {
       }
     }
 
-    const copilotFromResources = this.getResourceFromProps('Copilot')
-    const selectedCopilot = copilotFromResources ? copilotFromResources.memberHandle : challenge.copilot
-    const reviewerFromResources = this.getResourceFromProps('Reviewer')
-    const selectedReviewer = reviewerFromResources ? reviewerFromResources.memberHandle
-      : challenge.reviewer ? challenge.reviewer : ''
-
     return (
       <div className={styles.wrapper}>
         <Helmet title={getTitle(isNew)} />
@@ -535,8 +537,8 @@ class ChallengeEditor extends Component {
                 <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
                 <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
                 <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
-                <CopilotField challenge={challenge} copilots={metadata.members} selectedCopilot={selectedCopilot} onUpdateOthers={this.onUpdateOthers} />
-                <ReviewTypeField reviewers={metadata.members} challenge={challenge} selectedReviewer={selectedReviewer} onUpdateOthers={this.onUpdateOthers} onUpdateSelect={this.onUpdateSelect} />
+                <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
+                <ReviewTypeField reviewers={metadata.members} challenge={challenge} onUpdateOthers={this.onUpdateOthers} onUpdateSelect={this.onUpdateSelect} />
                 <div className={styles.row}>
                   <div className={styles.tcCheckbox}>
                     <input name='isOpenAdvanceSettings' type='checkbox' id='isOpenAdvanceSettings' checked={isOpenAdvanceSettings} onChange={this.toggleAdvanceSettings} />
