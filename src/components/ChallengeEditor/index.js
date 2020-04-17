@@ -92,8 +92,11 @@ class ChallengeEditor extends Component {
       try {
         this.setState({ isConfirm: false, isLaunch: false })
         const challengeData = this.updateAttachmentlist(challengeDetails, attachments)
-        challengeData.copilot = this.state.challenge.copilot
-        challengeData.reviewer = this.state.challenge.reviewer
+        if (this.state.challenge) {
+          const { copilot, reviewer } = this.state.challenge
+          if (copilot) challengeData.copilot = copilot
+          if (reviewer) challengeData.reviewer = reviewer
+        }
         this.setState({ challenge: { ...dropdowns['newChallenge'], ...challengeData }, isLoading: false })
       } catch (e) {
         this.setState({ isLoading: true })
@@ -446,7 +449,7 @@ class ChallengeEditor extends Component {
       removeAttachment,
       failedToLoad } = this.props
     if (_.isEmpty(challenge)) {
-      return <div>&nbsp;</div>
+      return <div>Error loading challenge</div>
     }
     if (isLoading || _.isEmpty(metadata.challengePhases)) return <Loader />
     if (failedToLoad) {
@@ -486,7 +489,8 @@ class ChallengeEditor extends Component {
     const copilotFromResources = this.getResourceFromProps('Copilot')
     const selectedCopilot = copilotFromResources ? copilotFromResources.memberHandle : challenge.copilot
     const reviewerFromResources = this.getResourceFromProps('Reviewer')
-    const selectedReviewer = reviewerFromResources ? reviewerFromResources.memberHandle : challenge.reviewer
+    const selectedReviewer = reviewerFromResources ? reviewerFromResources.memberHandle
+      : challenge.reviewer ? challenge.reviewer : ''
 
     return (
       <div className={styles.wrapper}>
