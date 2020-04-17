@@ -83,9 +83,7 @@ export async function fetchChallenge (challengeId) {
  * @returns {Promise<*>}
  */
 export function createChallenge (challenge) {
-  // TODO: Delete the following line when the API is update to remove the legacyId. This is a temporary fix
-  const newChallenge = _.assign(challenge, { legacyId: 3000500 })
-  return axiosInstance.post(CHALLENGE_API_URL, newChallenge)
+  return axiosInstance.post(CHALLENGE_API_URL, challenge)
 }
 
 /**
@@ -95,9 +93,7 @@ export function createChallenge (challenge) {
  * @returns {Promise<*>}
  */
 export function updateChallenge (challenge, challengeId) {
-  // TODO: Delete the following line when the API is update to remove the legacyId. This is a temporary fix
-  const newChallenge = _.assign(challenge, { legacyId: 3000500 })
-  return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, newChallenge)
+  return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, challenge)
 }
 
 export function uploadAttachment (challengeId, file) {
