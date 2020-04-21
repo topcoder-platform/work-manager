@@ -8,14 +8,14 @@ module.exports = {
   MEMBER_API_V3_URL: `${DEV_API_HOSTNAME}/v3/members`,
   DEV_APP_URL: 'http://local.topcoder-dev.com',
   CHALLENGE_API_URL: `${DEV_API_HOSTNAME}/v5/challenges`,
-  CHALLENGE_TIMELINE_TEMPLATES_URL: `${DEV_API_HOSTNAME}/v5/timelinetemplates`,
-  CHALLENGE_TYPES_URL: `${DEV_API_HOSTNAME}/v5/challengetypes`,
-  CHALLENGE_PHASES_URL: `${DEV_API_HOSTNAME}/v5/challengephases`,
+  CHALLENGE_TIMELINE_TEMPLATES_URL: `${DEV_API_HOSTNAME}/v5/timeline-templates`,
+  CHALLENGE_TYPES_URL: `${DEV_API_HOSTNAME}/v5/challenge-types`,
+  CHALLENGE_PHASES_URL: `${DEV_API_HOSTNAME}/v5/challenge-phases`,
   PROJECT_API_URL: `${DEV_API_HOSTNAME}/v5/projects`,
   GROUPS_API_URL: `${DEV_API_HOSTNAME}/v5/groups`,
   TERMS_API_URL: `${DEV_API_HOSTNAME}/v5/terms`,
   RESOURCES_API_URL: `${DEV_API_HOSTNAME}/v5/resources`,
-  RESOURCE_ROLES_API_URL: `${DEV_API_HOSTNAME}/v5/resourceroles`,
+  RESOURCE_ROLES_API_URL: `${DEV_API_HOSTNAME}/v5/resource-roles`,
   PLATFORMS_V4_API_URL: `${DEV_API_HOSTNAME}/v4/platforms`,
   TECHNOLOGIES_V4_API_URL: `${DEV_API_HOSTNAME}/v4/technologies`
 }
