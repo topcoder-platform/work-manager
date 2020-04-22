@@ -115,9 +115,9 @@ class ChallengeEditor extends Component {
     this.setState({ isLoading: true, isConfirm: false, isLaunch: false })
   }
 
-  onUpdateDescription (description) {
+  onUpdateDescription (description, fieldName) {
     const { challenge: oldChallenge } = this.state
-    const newChallenge = { ...oldChallenge, description }
+    const newChallenge = { ...oldChallenge, [fieldName]: description }
     this.setState({ challenge: newChallenge })
   }
 
@@ -366,6 +366,7 @@ class ChallengeEditor extends Component {
       'track',
       'name',
       'description',
+      'privateDescription',
       'reviewType',
       'tags',
       'groups',
@@ -559,7 +560,7 @@ class ChallengeEditor extends Component {
                 <ChallengeScheduleField templates={metadata.timelineTemplates} challengePhases={metadata.challengePhases} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} onUpdatePhase={this.onUpdatePhase} onUpdateOthers={this.onUpdateOthers} />
               </div>
               <div className={styles.group}>
-                <div className={styles.title}>Detailed Requirements</div>
+                <div className={styles.title}>Public specification</div>
                 <TextEditorField challengeTags={metadata.challengeTags} challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} onUpdateInput={this.onUpdateInput} onUpdateDescription={this.onUpdateDescription} onUpdateMultiSelect={this.onUpdateMultiSelect} />
                 { !isNew && (
                   <AttachmentField
