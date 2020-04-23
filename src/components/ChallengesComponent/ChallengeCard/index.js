@@ -158,6 +158,7 @@ class ChallengeCard extends React.Component {
     const { isLaunch, isConfirm, isSaving } = this.state
     const { challenge } = this.props
     const { phaseMessage, endTime } = getPhaseInfo(challenge)
+    const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.legacyId}`
     return (
       <div className={styles.item}>
         { isLaunch && !isConfirm && (
@@ -193,16 +194,16 @@ class ChallengeCard extends React.Component {
             </div>
           </Modal>
         ) }
-        <a className={styles.col1} href={`${COMMUNITY_APP_URL}/challenges/${challenge.id}`}>
+        <a className={styles.col1} href={communityAppUrl}>
           <div className={styles.name}>
             <span className={styles.block}>{challenge.name}</span>
             <ChallengeTag track={challenge.track} challengeType={challenge.type} />
           </div>
         </a>
-        <a className={styles.col2} href={`${COMMUNITY_APP_URL}/challenges/${challenge.id}`}>
+        <a className={styles.col2} href={communityAppUrl}>
           {renderStatus(challenge.status.toUpperCase())}
         </a>
-        <a className={styles.col3} href={`${COMMUNITY_APP_URL}/challenges/${challenge.id}`}>
+        <a className={styles.col3} href={communityAppUrl}>
           <span className={styles.block}>{phaseMessage}</span>
           <span className='block light-text'>{endTime}</span>
         </a>
