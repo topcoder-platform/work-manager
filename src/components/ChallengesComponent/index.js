@@ -12,6 +12,7 @@ import { PrimaryButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
 import Loader from '../Loader'
+import xss from 'xss'
 
 const ChallengesComponent = ({ challenges, isLoading, warnMessage, setFilterChallengeValue, filterChallengeName, activeProject, status }) => {
   return (
@@ -22,7 +23,7 @@ const ChallengesComponent = ({ challenges, isLoading, warnMessage, setFilterChal
           {activeProject ? (<a className={styles.buttonLaunchNew} href={`${CONNECT_APP_URL}/projects/${activeProject.id}`}>
             <PrimaryButton text={'View Project in Connect'} type={'info'} />
           </a>) : (<span />)}
-          <div className={styles.title}>{activeProject ? activeProject.name : ''}</div>
+          <div className={styles.title} dangerouslySetInnerHTML={{ __html: xss(activeProject ? activeProject.name : '') }} />
           {activeProject ? (<Link className={styles.buttonLaunchNew} to={`/projects/${activeProject.id}/challenges/new`}>
             <PrimaryButton text={'Launch New'} type={'info'} />
           </Link>) : (<span />)}
