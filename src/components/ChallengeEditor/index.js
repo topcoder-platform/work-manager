@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import * as queryString from 'query-string'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
@@ -25,6 +26,7 @@ import ChallengeScheduleField from './ChallengeSchedule-Field'
 import { convertDollarToInteger, validateValue } from '../../util/input-check'
 import dropdowns from './mock-data/dropdowns'
 import styles from './ChallengeEditor.module.scss'
+import { withRouter } from 'react-router-dom'
 import { createChallenge, updateChallenge, createResource, deleteResource } from '../../services/challenges'
 
 const theme = {
@@ -46,11 +48,16 @@ class ChallengeEditor extends Component {
       isLaunch: false,
       isConfirm: false,
       isClose: false,
-      challenge: null,
       isOpenAdvanceSettings: false,
       isLoading: false,
       isSaving: false,
-      hasValidationErrors: false
+      hasValidationErrors: false,
+      challenge: {
+        ...dropdowns['newChallenge'],
+        startDate: moment().add(1, 'hour').format(),
+        phases: []
+      },
+      draftChallenge: { data: { id: null } }
     }
     this.onUpdateInput = this.onUpdateInput.bind(this)
     this.onUpdateSelect = this.onUpdateSelect.bind(this)
@@ -66,8 +73,12 @@ class ChallengeEditor extends Component {
     this.resetChallengeData = this.resetChallengeData.bind(this)
     this.onUpdateDescription = this.onUpdateDescription.bind(this)
     this.onSubmitChallenge = this.onSubmitChallenge.bind(this)
-    this.saveDraft = this.saveDraft.bind(this)
     this.resetModal = this.resetModal.bind(this)
+    this.checkToCreateDraftChallenge = this.checkToCreateDraftChallenge.bind(this)
+    this.getCurrentChallengeId = this.getCurrentChallengeId.bind(this)
+    this.addQueryToUrl = this.addQueryToUrl.bind(this)
+    this.isValidChallenge = this.isValidChallenge.bind(this)
+    this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 1000)
   }
 
   componentDidMount () {
@@ -80,15 +91,7 @@ class ChallengeEditor extends Component {
   }
 
   async resetChallengeData (isNew, challengeId, challengeDetails, metadata, attachments) {
-    if (isNew) {
-      this.setState({
-        challenge: {
-          ...dropdowns['newChallenge'],
-          startDate: moment().add(1, 'hour').format(),
-          phases: []
-        }
-      })
-    } else {
+    if (!isNew) {
       try {
         const copilotResource = this.getResourceFromProps('Copilot')
         const copilotFromResources = copilotResource ? copilotResource.memberHandle : ''
@@ -118,7 +121,9 @@ class ChallengeEditor extends Component {
   onUpdateDescription (description) {
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge, description }
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled()
+    })
   }
 
   /**
@@ -171,7 +176,9 @@ class ChallengeEditor extends Component {
     }
 
     // calculate total cost of challenge
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled()
+    })
   }
 
   /**
@@ -195,7 +202,9 @@ class ChallengeEditor extends Component {
         }
       }
 
-      this.setState({ challenge: newChallenge })
+      this.setState({ challenge: newChallenge }, () => {
+        this.autoUpdateChallengeThrottled()
+      })
     }
   }
 
@@ -214,7 +223,10 @@ class ChallengeEditor extends Component {
       value = value && value.map(element => _.set(_.set({}, 'duration', element.duration), 'phaseId', element.id))
     }
     newChallenge[field] = value
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.checkToCreateDraftChallenge()
+      this.autoUpdateChallengeThrottled()
+    })
   }
 
   /**
@@ -252,7 +264,9 @@ class ChallengeEditor extends Component {
     } else {
       _.set(newChallenge, `${field}.${index}.check`, checked)
     }
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled()
+    })
   }
 
   toggleAdvanceSettings () {
@@ -266,7 +280,9 @@ class ChallengeEditor extends Component {
     const { attachments: oldAttachments } = challenge
     const newAttachments = _.remove(oldAttachments, att => att.fileName !== file)
     newChallenge.attachments = _.clone(newAttachments)
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled()
+    })
   }
 
   /**
@@ -279,7 +295,9 @@ class ChallengeEditor extends Component {
     const newPhaseList = _.cloneDeep(oldChallenge.phases)
     newPhaseList.splice(index, 1)
     newChallenge.phases = _.clone(newPhaseList)
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled()
+    })
   }
   /**
    * Reset  challenge Phases
@@ -301,20 +319,27 @@ class ChallengeEditor extends Component {
     }
   }
 
-  validateChallenge () {
+  isValidChallenge () {
     if (Object.values(pick(['track', 'typeId', 'name', 'description', 'tags', 'prizeSets'], this.state.challenge)).filter(v => !v.length).length) {
-      this.setState(prevState => ({
-        ...prevState,
-        challenge: {
-          ...prevState.challenge,
-          submitTriggered: true
-        }
-      }))
-      this.setState({ hasValidationErrors: true })
       return false
     }
-    this.setState({ hasValidationErrors: false })
     return true
+  }
+
+  validateChallenge () {
+    if (this.isValidChallenge()) {
+      this.setState({ hasValidationErrors: false })
+      return true
+    }
+    this.setState(prevState => ({
+      ...prevState,
+      challenge: {
+        ...prevState.challenge,
+        submitTriggered: true
+      }
+    }))
+    this.setState({ hasValidationErrors: true })
+    return false
   }
 
   /**
@@ -330,14 +355,18 @@ class ChallengeEditor extends Component {
       // backwards compatibily with v4 requires converting 'terms' field to 'termsIds'
       delete newChallenge.terms
     }
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled()
+    })
   }
 
   onUpdatePhase (newValue, property, index) {
     if (property === 'duration' && newValue < 0) newValue = 0
     let newChallenge = _.cloneDeep(this.state.challenge)
     newChallenge.phases[index][property] = newValue
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled()
+    })
   }
 
   onUploadFile (files) {
@@ -349,13 +378,9 @@ class ChallengeEditor extends Component {
         size: file.size
       })
     })
-    this.setState({ challenge: newChallenge })
-  }
-
-  saveDraft () {
-    if (this.validateChallenge()) {
-      this.onSubmitChallenge('Draft')
-    }
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled()
+    })
   }
 
   collectChallengeData (status) {
@@ -387,20 +412,107 @@ class ChallengeEditor extends Component {
     return challenge
   }
 
+  /**
+    * Append draft challenge id to url
+    * @param {Object} query query params object
+  */
+  addQueryToUrl (query) {
+    const { history } = this.props
+    const location = Object.assign({}, history.location)
+    history.push(`${location.pathname}?${queryString.stringify(query)}`)
+  };
+
+  async checkToCreateDraftChallenge () {
+    if (this.state.isSaving || !this.props.isNew || this.getCurrentChallengeId()) return
+    const challenge = this.collectChallengeData('Draft')
+    // can't create challenge without phases
+    if (!challenge.phases || !challenge.phases.length) return
+    // if (this.state) {
+    //   return
+    // }
+    this.setState({ isSaving: true })
+    if (!challenge.typeId) {
+      challenge.typeId = this.props.metadata.challengeTypes[0].id
+    }
+    if (!challenge.track) {
+      challenge.track = 'DEVELOP'
+    }
+    if (!challenge.name) {
+      challenge.name = 'Draft'
+    }
+    if (!challenge.description) {
+      challenge.description = 'Draft'
+    }
+    if (!challenge.prizeSets || !challenge.prizeSets.length) {
+      challenge.prizeSets = [
+        {
+          type: 'Challenge prizes',
+          prizes: [ {
+            type: 'money', value: '100' } ]
+        }
+      ]
+    }
+    if (!challenge.tags || !challenge.tags.length) {
+      challenge.tags = ['Heroku']
+    }
+
+    try {
+      const draftChallenge = await createChallenge(challenge)
+      this.addQueryToUrl({
+        challengeId: draftChallenge.data.id
+      })
+      this.setState({ isSaving: false, draftChallenge })
+    } catch (e) {
+      this.setState({ isSaving: false })
+    }
+  }
+
+  async autoUpdateChallenge () {
+    if (this.state.isSaving || !this.getCurrentChallengeId() || !this.isValidChallenge()) return
+    const challenge = this.collectChallengeData(this.getCurrentChallengeStatus())
+    await this.updateAllChallengeInfo(challenge)
+  }
+
+  getCurrentChallengeStatus () {
+    const { challenge } = this.state
+    if (challenge && challenge.status) {
+      return challenge.status
+    }
+    return 'Draft'
+  }
+
+  getCurrentChallengeId () {
+    let { challengeId } = this.props
+    if (!challengeId) {
+      challengeId = this.state.draftChallenge.data.id
+    }
+    if (!challengeId) {
+      const { history } = this.props
+      const queryParams = queryString.parse(history.location.search)
+      challengeId = queryParams.challengeId
+    }
+    return challengeId
+  }
+
   async onSubmitChallenge (status = 'Active') {
     if (this.state.isSaving) return
-    const { challengeId } = this.props
-    const { copilot, reviewer } = this.state.challenge
     const challenge = this.collectChallengeData(status)
     try {
       this.setState({ isSaving: true })
-      const response = challengeId ? await updateChallenge(challenge, challengeId) : await createChallenge(challenge)
-      if (copilot) await this.updateResource(response.data.id, 'Copilot', copilot)
-      if (reviewer) await this.updateResource(response.data.id, 'Reviewer', reviewer)
+      const response = await this.updateAllChallengeInfo(challenge)
       this.setState({ isLaunch: true, isConfirm: response.data.id, challenge: { ...this.state.challenge, ...challenge }, isSaving: false })
     } catch (e) {
       this.setState({ isSaving: false })
     }
+  }
+
+  async updateAllChallengeInfo (challenge) {
+    const challengeId = this.getCurrentChallengeId()
+    const response = await updateChallenge(challenge, challengeId)
+    const { copilot, reviewer } = this.state.challenge
+    if (copilot) await this.updateResource(response.data.id, 'Copilot', copilot)
+    if (reviewer) await this.updateResource(response.data.id, 'Reviewer', reviewer)
+    return response
   }
 
   getResourceRoleByName (name) {
@@ -582,11 +694,6 @@ class ChallengeEditor extends Component {
           <div className={styles.button}>
             <OutlineButton text={'Cancel'} type={'danger'} link={'/'} />
           </div>
-          { (isNew || isDraft) && (
-            <div className={styles.button}>
-              <OutlineButton text={this.state.isSaving ? 'Saving...' : 'Save as Draft'} type={'success'} onClick={this.saveDraft} />
-            </div>
-          ) }
           <div className={styles.button}>
             <PrimaryButton text={(isNew || isDraft) ? 'Launch' : 'Update'} type={'info'} onClick={this.toggleLaunch} />
           </div>
@@ -616,7 +723,8 @@ ChallengeEditor.propTypes = {
   removeAttachment: PropTypes.func.isRequired,
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string.isRequired,
-  failedToLoad: PropTypes.bool
+  failedToLoad: PropTypes.bool,
+  history: PropTypes.any.isRequired
 }
 
-export default ChallengeEditor
+export default withRouter(ChallengeEditor)
