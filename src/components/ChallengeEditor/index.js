@@ -425,11 +425,10 @@ class ChallengeEditor extends Component {
   async checkToCreateDraftChallenge () {
     if (this.state.isSaving || !this.props.isNew || this.getCurrentChallengeId()) return
     const challenge = this.collectChallengeData('Draft')
-    // can't create challenge without phases
+    // can't create challenge without empty project
+    // we added fake data to make sure create challenge success
+    // but we only need challenge id
     if (!challenge.phases || !challenge.phases.length) return
-    // if (this.state) {
-    //   return
-    // }
     this.setState({ isSaving: true })
     if (!challenge.typeId) {
       challenge.typeId = this.props.metadata.challengeTypes[0].id
