@@ -426,7 +426,7 @@ class ChallengeEditor extends Component {
     if (this.state.isSaving || !this.props.isNew || this.getCurrentChallengeId()) return
     const challenge = this.collectChallengeData('Draft')
     // can't create challenge without empty project
-    // we added fake data to make sure create challenge success
+    // I add fake data to make sure create challenge success
     // but we only need challenge id
     if (!challenge.phases || !challenge.phases.length) return
     this.setState({ isSaving: true })
