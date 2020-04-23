@@ -15,7 +15,11 @@ const AttachmentField = ({ challenge, removeAttachment, onUploadFile, token }) =
     })
   }, [])
 
-  const { getRootProps, getInputProps } = useDropzone({ onDrop })
+  const {
+    getRootProps,
+    getInputProps,
+    isDragActive
+  } = useDropzone({ onDrop })
 
   const renderAttachments = (attachments) => (
     _.map(attachments, (att, index) => (
@@ -45,7 +49,7 @@ const AttachmentField = ({ challenge, removeAttachment, onUploadFile, token }) =
         </div>
       </div>
       <div className={styles.row}>
-        <div {...getRootProps({ className: styles.uploadPanel })}>
+        <div {...getRootProps({ className: `${styles.uploadPanel} ${isDragActive ? styles.isActive : ''}` })}>
           <label htmlFor='uploadFile'>
             <div className={styles.icon}>
               <FontAwesomeIcon icon={faCloudUploadAlt} size='5x' />

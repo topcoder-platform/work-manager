@@ -78,7 +78,7 @@ class ChallengeEditor extends Component {
     this.getCurrentChallengeId = this.getCurrentChallengeId.bind(this)
     this.addQueryToUrl = this.addQueryToUrl.bind(this)
     this.isValidChallenge = this.isValidChallenge.bind(this)
-    this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 2000)
+    this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 1000)
   }
 
   componentDidMount () {
@@ -604,6 +604,7 @@ class ChallengeEditor extends Component {
         }
       }
     }
+    const currentChallengeId = this.getCurrentChallengeId()
 
     return (
       <div className={styles.wrapper}>
@@ -672,9 +673,9 @@ class ChallengeEditor extends Component {
               <div className={styles.group}>
                 <div className={styles.title}>Detailed Requirements</div>
                 <TextEditorField challengeTags={metadata.challengeTags} challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} onUpdateInput={this.onUpdateInput} onUpdateDescription={this.onUpdateDescription} onUpdateMultiSelect={this.onUpdateMultiSelect} />
-                { !isNew && (
+                { currentChallengeId && (
                   <AttachmentField
-                    challenge={challenge}
+                    challenge={{ ...challenge, id: currentChallengeId }}
                     onUploadFile={uploadAttachment}
                     token={token}
                     removeAttachment={removeAttachment}
