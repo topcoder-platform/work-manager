@@ -78,7 +78,7 @@ class ChallengeEditor extends Component {
     this.getCurrentChallengeId = this.getCurrentChallengeId.bind(this)
     this.addQueryToUrl = this.addQueryToUrl.bind(this)
     this.isValidChallenge = this.isValidChallenge.bind(this)
-    this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 1000)
+    this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 2000)
   }
 
   componentDidMount () {
