@@ -447,7 +447,7 @@ class ChallengeEditor extends Component {
         {
           type: 'Challenge prizes',
           prizes: [ {
-            type: 'money', value: '100' } ]
+            type: 'money', value: '1' } ]
         }
       ]
     }
