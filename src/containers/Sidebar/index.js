@@ -6,6 +6,14 @@ import Sidebar from '../../components/Sidebar'
 import { loadProjects, setActiveProject, resetSidebarActiveParams } from '../../actions/sidebar'
 
 class SidebarContainer extends Component {
+  constructor (props) {
+    super(props)
+    this.state = {
+      searchProjectName: ''
+    }
+    this.updateProjectName = this.updateProjectName.bind(this)
+  }
+
   componentDidMount () {
     this.props.loadProjects()
 
@@ -16,15 +24,32 @@ class SidebarContainer extends Component {
     }
   }
 
+  updateProjectName (val) {
+    this.setState({ searchProjectName: val })
+  }
+
+  filterProjectsList (val) {
+    const { projects } = this.props
+    if (val) {
+      return projects.filter(p => p.name.indexOf(val) > -1)
+    }
+    return projects
+  }
+
   render () {
-    const { projects, isLoading, setActiveProject, projectId, resetSidebarActiveParams } = this.props
+    const { isLoading, setActiveProject, projectId, resetSidebarActiveParams } = this.props
+    const { searchProjectName } = this.state
+    const filteredProjects = this.filterProjectsList(searchProjectName)
+
     return (
       <Sidebar
-        projects={_.sortBy(projects, ['name'])}
+        projects={_.sortBy(filteredProjects, ['name'])}
         isLoading={isLoading}
         setActiveProject={setActiveProject}
         projectId={projectId}
         resetSidebarActiveParams={resetSidebarActiveParams}
+        updateProjectsList={this.updateProjectName}
+        searchProjectName={searchProjectName}
       />
     )
   }
