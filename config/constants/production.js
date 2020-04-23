@@ -18,5 +18,6 @@ module.exports = {
   RESOURCES_API_URL: `${PROD_API_HOSTNAME}/v5/resources`,
   RESOURCE_ROLES_API_URL: `${PROD_API_HOSTNAME}/v5/resource-roles`,
   PLATFORMS_V4_API_URL: `${PROD_API_HOSTNAME}/v4/platforms`,
-  TECHNOLOGIES_V4_API_URL: `${PROD_API_HOSTNAME}/v4/technologies`
+  TECHNOLOGIES_V4_API_URL: `${PROD_API_HOSTNAME}/v4/technologies`,
+  CONNECT_APP_URL: 'https://connect.topcoder.com'
 }

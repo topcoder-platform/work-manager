@@ -25,9 +25,15 @@
 }
 
 .buttonLaunchNew {
-  width: 135px;
+  min-width: 135px;
   height: 40px;
   text-decoration: none;
+
+  :global {
+    span {
+      margin: 0 20px;
+    }
+  }
 }
 
 .fakeLeftSpace {
