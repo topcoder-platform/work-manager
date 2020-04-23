@@ -11,6 +11,7 @@ import { PrimaryButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
 import Loader from '../Loader'
+import xss from 'xss'
 
 const ChallengesComponent = ({ challenges, isLoading, warnMessage, setFilterChallengeValue, filterChallengeName, activeProject, status }) => {
   return (
@@ -19,7 +20,7 @@ const ChallengesComponent = ({ challenges, isLoading, warnMessage, setFilterChal
         <Helmet title={activeProject ? activeProject.name : ''} />
         <div className={styles.titleContainer}>
           <span className={styles.fakeLeftSpace} />
-          <div className={styles.title}>{activeProject ? activeProject.name : ''}</div>
+          <div className={styles.title} dangerouslySetInnerHTML={{ __html: xss(activeProject ? activeProject.name : '') }} />
           {activeProject ? (<Link className={styles.buttonLaunchNew} to={`/projects/${activeProject.id}/challenges/new`}>
             <PrimaryButton text={'Launch New'} type={'info'} />
           </Link>) : (<span />)}
