@@ -1,5 +1,16 @@
 @import "../../../styles/includes";
 
+.title {
+  @include roboto-bold();
+
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 29px;
+  color: $challenges-title;
+  margin-top: 30px;
+  text-align: center;
+}
+
 .container {
   display: flex;
   flex-direction: column;
@@ -15,7 +26,7 @@
     flex-direction: row;
     align-content: space-between;
     justify-content: flex-start;
-    margin-top: 30px;
+    margin-top: 25px;
 
     .field {
       @include upto-sm {

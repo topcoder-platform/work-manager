@@ -70,6 +70,10 @@
       border-radius: 6px;
       height: 227px;
 
+      &.isActive {
+        outline: auto 5px -webkit-focus-ring-color;
+      }
+
       label {
         height: 100%;
         display: flex;

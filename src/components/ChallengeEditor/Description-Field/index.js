@@ -10,15 +10,16 @@ class DescriptionField extends Component {
   }
 
   componentDidMount () {
-    const { challenge, onUpdateDescription } = this.props
-    this.simplemde = new SimpleMDE({ element: this.ref.current, initialValue: challenge.description })
-    this.simplemde.codemirror.on('change', () => onUpdateDescription(this.simplemde.value()))
+    const { challenge, onUpdateDescription, type } = this.props
+    this.simplemde = new SimpleMDE({ element: this.ref.current, initialValue: challenge[type] })
+    this.simplemde.codemirror.on('change', () => onUpdateDescription(this.simplemde.value(), type))
   }
 
   render () {
+    const { type } = this.props
     return <div className={styles.editor}>
       <textarea
-        ref={this.ref} id='description' name='description'
+        ref={this.ref} id={type} name={type}
         placeholder='Enter challenge description' />
     </div>
   }
@@ -26,6 +27,7 @@ class DescriptionField extends Component {
 
 DescriptionField.propTypes = {
   challenge: PropTypes.shape().isRequired,
-  onUpdateDescription: PropTypes.func.isRequired
+  onUpdateDescription: PropTypes.func.isRequired,
+  type: PropTypes.string.isRequired
 }
 export default DescriptionField
