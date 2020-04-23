@@ -20,7 +20,11 @@ class TextEditorField extends Component {
     return (
       <div className={styles.container}>
         <div className={styles.row}>
-          <DescriptionField challenge={challenge} onUpdateDescription={onUpdateDescription} />
+          <DescriptionField challenge={challenge} onUpdateDescription={onUpdateDescription} type='description' />
+        </div>
+        <div className={styles.title}>Private specification</div>
+        <div className={styles.row}>
+          <DescriptionField challenge={challenge} onUpdateDescription={onUpdateDescription} type='privateDescription' />
         </div>
         { challenge.submitTriggered && !challenge.description && <div className={styles.error}>Description is required field</div> }
         <TagsField challengeTags={challengeTagsFiltered} challenge={challenge} onUpdateMultiSelect={onUpdateMultiSelect} />
