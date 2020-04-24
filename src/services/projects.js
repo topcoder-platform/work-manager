@@ -1,5 +1,6 @@
 import _ from 'lodash'
 import { axiosInstance } from './axiosWithAuth'
+import * as queryString from 'query-string'
 const { PROJECT_API_URL } = process.env
 
 /**
@@ -7,7 +8,11 @@ const { PROJECT_API_URL } = process.env
  * @returns {Promise<*>}
  */
 export async function fetchMemberProjects () {
-  const response = await axiosInstance.get(`${PROJECT_API_URL}`)
+  const params = {
+    'status': 'active',
+    'sort': 'lastActivityAt'
+  }
+  const response = await axiosInstance.get(`${PROJECT_API_URL}?${queryString.stringify(params)}`)
   return _.get(response, 'data')
 }
 
