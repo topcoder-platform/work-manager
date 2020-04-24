@@ -132,9 +132,7 @@ export function loadChallengeDetails (projectId, challengeId) {
       })
     }
 
-    const selectedProject = getState().sidebar.projects.length
-      ? getState().sidebar.projects.find(p => p.id === +projectId)
-      : await fetchProjectById(projectId)
+    const selectedProject = await fetchProjectById(projectId)
     if (!selectedProject) return
     const members = selectedProject.members
       .filter(m => m.role === 'manager' || m.role === 'copilot')
