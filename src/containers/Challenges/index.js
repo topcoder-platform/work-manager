@@ -8,6 +8,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import ChallengesComponent from '../../components/ChallengesComponent'
 import { loadChallenges, setFilterChallengeValue } from '../../actions/challenges'
+import { loadProject } from '../../actions/projects'
 import { resetSidebarActiveParams } from '../../actions/sidebar'
 import {
   CHALLENGE_STATUS
@@ -24,6 +25,8 @@ class Challenges extends Component {
       if (challenges.length === 0 && !filterChallengeName && (status === CHALLENGE_STATUS.ACTIVE || !status)) {
         this.props.loadChallenges(id, CHALLENGE_STATUS.ACTIVE, filterChallengeName)
       }
+
+      this.props.loadProject(id)
     }
   }
 
@@ -47,10 +50,15 @@ class Challenges extends Component {
   }
 
   render () {
-    const { challenges, isLoading, warnMessage, setFilterChallengeValue, filterChallengeName, projects, activeProjectId, status } = this.props
+    const { challenges, isLoading, warnMessage, setFilterChallengeValue, filterChallengeName, projects, activeProjectId, status, projectDetail: reduxProjectInfo } = this.props
+    const projectInfo = _.find(projects, { id: activeProjectId }) || {}
+
     return (
       <ChallengesComponent
-        activeProject={_.find(projects, { id: activeProjectId })}
+        activeProject={({
+          ...projectInfo,
+          ...((reduxProjectInfo && reduxProjectInfo.id === activeProjectId) ? reduxProjectInfo : {})
+        })}
         warnMessage={warnMessage}
         challenges={challenges}
         isLoading={isLoading}
@@ -66,8 +74,10 @@ Challenges.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.shape()),
   menu: PropTypes.string,
   challenges: PropTypes.arrayOf(PropTypes.object),
+  projectDetail: PropTypes.object,
   isLoading: PropTypes.bool,
   loadChallenges: PropTypes.func,
+  loadProject: PropTypes.func.isRequired,
   projectId: PropTypes.string,
   activeProjectId: PropTypes.number,
   warnMessage: PropTypes.string,
@@ -77,16 +87,19 @@ Challenges.propTypes = {
   resetSidebarActiveParams: PropTypes.func
 }
 
-const mapStateToProps = ({ challenges, sidebar }) => ({
+const mapStateToProps = ({ challenges, sidebar, projects }) => ({
   ...challenges,
   activeProjectId: sidebar.activeProjectId,
-  projects: sidebar.projects
+  projects: sidebar.projects,
+  projectDetail: projects.projectDetail
+
 })
 
 const mapDispatchToProps = {
   loadChallenges,
   setFilterChallengeValue,
-  resetSidebarActiveParams
+  resetSidebarActiveParams,
+  loadProject
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Challenges)
