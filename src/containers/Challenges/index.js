@@ -16,7 +16,7 @@ import {
 
 class Challenges extends Component {
   componentDidMount () {
-    const { activeProjectId, filterChallengeName, resetSidebarActiveParams, menu, projectId, challenges, status } = this.props
+    const { activeProjectId, filterChallengeName, resetSidebarActiveParams, menu, projectId, challenges, status, projectDetail: reduxProjectInfo } = this.props
     if (menu === 'NULL' && activeProjectId !== -1) {
       resetSidebarActiveParams()
     } else {
@@ -25,8 +25,9 @@ class Challenges extends Component {
       if (challenges.length === 0 && !filterChallengeName && (status === CHALLENGE_STATUS.ACTIVE || !status)) {
         this.props.loadChallenges(id, CHALLENGE_STATUS.ACTIVE, filterChallengeName)
       }
-
-      this.props.loadProject(id)
+      if (!reduxProjectInfo || reduxProjectInfo.id !== id) {
+        this.props.loadProject(id)
+      }
     }
   }
 
