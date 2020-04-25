@@ -6,11 +6,13 @@ import PropTypes from 'prop-types'
 import Sticky from 'react-stickynode'
 import { Helmet } from 'react-helmet'
 import { Link } from 'react-router-dom'
+import { CONNECT_APP_URL } from '../../config/constants'
 
 import { PrimaryButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
 import Loader from '../Loader'
+import xss from 'xss'
 
 const ChallengesComponent = ({ challenges, isLoading, warnMessage, setFilterChallengeValue, filterChallengeName, activeProject, status }) => {
   return (
@@ -18,8 +20,10 @@ const ChallengesComponent = ({ challenges, isLoading, warnMessage, setFilterChal
       <div>
         <Helmet title={activeProject ? activeProject.name : ''} />
         <div className={styles.titleContainer}>
-          <span className={styles.fakeLeftSpace} />
-          <div className={styles.title}>{activeProject ? activeProject.name : ''}</div>
+          {activeProject ? (<a className={styles.buttonLaunchNew} href={`${CONNECT_APP_URL}/projects/${activeProject.id}`} target={'_blank'}>
+            <PrimaryButton text={'View Project in Connect'} type={'info'} />
+          </a>) : (<span />)}
+          <div className={styles.title} dangerouslySetInnerHTML={{ __html: xss(activeProject ? activeProject.name : '') }} />
           {activeProject ? (<Link className={styles.buttonLaunchNew} to={`/projects/${activeProject.id}/challenges/new`}>
             <PrimaryButton text={'Launch New'} type={'info'} />
           </Link>) : (<span />)}
