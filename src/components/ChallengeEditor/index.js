@@ -434,9 +434,10 @@ class ChallengeEditor extends Component {
     if (!challenge.typeId) {
       challenge.typeId = this.props.metadata.challengeTypes[0].id
     }
-    if (!challenge.track) {
-      challenge.track = 'DEVELOP'
-    }
+    // if (!challenge.track) {
+    //   challenge.legacy.track = 'DEVELOP'
+    // }
+
     if (!challenge.name) {
       challenge.name = 'Draft'
     }
@@ -496,7 +497,8 @@ class ChallengeEditor extends Component {
 
   async onSubmitChallenge (status = 'Active') {
     if (this.state.isSaving) return
-    const challenge = this.collectChallengeData(status)
+    let challenge = this.collectChallengeData(status)
+    challenge = this.addLegacyObj(challenge)
     try {
       this.setState({ isSaving: true })
       const response = await this.updateAllChallengeInfo(challenge)
@@ -504,6 +506,17 @@ class ChallengeEditor extends Component {
     } catch (e) {
       this.setState({ isSaving: false })
     }
+  }
+
+  addLegacyObj (challenge) {
+    challenge.legacy = {
+      track: `${challenge.track}`,
+      reviewType: `${challenge.reviewType}`
+    }
+
+    delete challenge.track
+    delete challenge.reviewType
+    return challenge
   }
 
   async updateAllChallengeInfo (challenge) {

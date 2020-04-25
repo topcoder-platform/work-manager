@@ -22,11 +22,11 @@ const TrackField = ({ challenge, onUpdateOthers }) => {
         </div>
         <div className={cn(styles.field, styles.col2)}>
           {
-            _.map(CHALLENGE_TRACKS, track => renderTracks(track, challenge.track))
+            _.map(CHALLENGE_TRACKS, track => renderTracks(track, challenge.legacy ? challenge.legacy.track : challenge.track))
           }
         </div>
       </div>
-      { challenge.submitTriggered && !challenge.track && <div className={styles.row}>
+      { challenge.submitTriggered && !(challenge.legacy ? challenge.legacy.track : challenge.track) && <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)} />
         <div className={cn(styles.field, styles.col2, styles.error)}>
           Track is required field

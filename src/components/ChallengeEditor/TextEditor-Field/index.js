@@ -12,7 +12,7 @@ import DescriptionField from '../Description-Field'
 class TextEditorField extends Component {
   render () {
     const { challengeTags, challenge, onUpdateCheckbox, onUpdateInput, onUpdateDescription, onUpdateMultiSelect } = this.props
-    const challengeTrack = challenge.track
+    const challengeTrack = challenge.legacy ? challenge.legacy.track : challenge.track
     const challengeTagsFiltered = challengeTags.map(function (tag) {
       return { id: tag.name, name: tag.name }
     })
