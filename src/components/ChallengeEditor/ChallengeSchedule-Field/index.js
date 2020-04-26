@@ -12,6 +12,7 @@ import Select from '../../Select'
 import { parseSVG } from '../../../util/svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDown, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { getPhaseEndDate } from '../../../util/date'
 
 const GANTT_ROW_HEIGHT = 45
 const GANTT_FOOTER_HEIGHT = 40
@@ -93,8 +94,19 @@ class ChallengeScheduleField extends Component {
     _.map(challenge.phases, (p, index) => {
       const phase = this.getChallengePhase(p)
       if (phase) {
-        var startDate = moment(p.scheduledStartDate).toDate()
-        var endDate = moment(p.scheduledEndDate).toDate()
+        var startDate
+        if (p.scheduledStartDate) {
+          startDate = moment(p.scheduledStartDate).toDate()
+        } else {
+          startDate = (index === 0 || index === 1) || !phase.predecessor ? moment(challenge.startDate).toDate() : getPhaseEndDate(index - 1, challenge, this.getChallengePhase).toDate()
+        }
+        var endDate
+        if (p.scheduledEndDate) {
+          endDate = moment(p.scheduledEndDate).toDate()
+        } else {
+          endDate = getPhaseEndDate(index, challenge, this.getChallengePhase).toDate()
+        }
+
         var currentTime = moment().valueOf()
         var percentage = 30
         if (startDate.getTime() > currentTime) {
