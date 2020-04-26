@@ -536,7 +536,8 @@ class ChallengeEditor extends Component {
 
   async onSubmitChallenge (status = 'Active') {
     if (this.state.isSaving) return
-    const challenge = this.collectChallengeData(status)
+    let challenge = this.collectChallengeData(status)
+    challenge = this.addLegacyObj(challenge)
     try {
       this.setState({ isSaving: true })
       const response = await this.updateAllChallengeInfo(challenge)
@@ -544,6 +545,17 @@ class ChallengeEditor extends Component {
     } catch (e) {
       this.setState({ isSaving: false })
     }
+  }
+
+  addLegacyObj (challenge) {
+    challenge.legacy = {
+      track: `${challenge.track}`,
+      reviewType: `${challenge.reviewType}`
+    }
+
+    delete challenge.track
+    delete challenge.reviewType
+    return challenge
   }
 
   async updateAllChallengeInfo (challenge) {
