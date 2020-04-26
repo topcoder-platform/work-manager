@@ -7,11 +7,11 @@ const { PROJECT_API_URL } = process.env
  * Api request for fetching member's projects
  * @returns {Promise<*>}
  */
-export async function fetchMemberProjects () {
+export async function fetchMemberProjects (filters) {
   const params = {
-    'status': 'active',
-    'sort': 'lastActivityAt'
+    ...filters
   }
+
   const response = await axiosInstance.get(`${PROJECT_API_URL}?${queryString.stringify(params)}`)
   return _.get(response, 'data')
 }
