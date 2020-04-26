@@ -73,7 +73,20 @@ export async function fetchChallenge (challengeId) {
   const response = await axiosInstance.get(`${CHALLENGE_API_URL}/${challengeId}`)
   const newResponse = _.get(response, 'data')
   // TODO: Delete the following line. Currently the challenges API is adding extra fields to the phase objects when a challenge is created, when only phaseId and duration are allowed
-  newResponse.phases = newResponse.phases.map(p => ({ phaseId: p.phaseId, duration: p.duration }))
+  newResponse.phases = newResponse.phases.map(p => ({
+    phaseId: p.phaseId ? p.phaseId : p.id, ...p
+  }))
+  if (newResponse.legacy) {
+    if (newResponse.legacy.track) {
+      newResponse.track = newResponse.legacy.track.trim()
+    }
+    if (newResponse.legacy.reviewType) {
+      newResponse.reviewType = newResponse.legacy.reviewType
+    }
+    if (newResponse.legacy.forumId) {
+      newResponse.forumId = newResponse.legacy.forumId
+    }
+  }
   return newResponse
 }
 

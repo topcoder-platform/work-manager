@@ -68,7 +68,7 @@ class ChallengeScheduleField extends Component {
     const { challengePhases } = this.props
     const challengePhase = challengePhases.find(challengePhase => challengePhase.id === phase.phaseId)
     if (challengePhase) challengePhase.duration = phase.duration
-    return challengePhase
+    return challengePhase || phase
   }
 
   renderTimeLine () {
@@ -89,18 +89,23 @@ class ChallengeScheduleField extends Component {
         { type: 'string', label: 'Dependencies' }
       ]
     )
-
     var oneDay = 3600000 // = 1 hr
     _.map(challenge.phases, (p, index) => {
       const phase = this.getChallengePhase(p)
       if (phase) {
         // the registration and submission phases need to be shown as concurrent
         var startDate = (index === 0 || index === 1) || !phase.predecessor ? moment(challenge.startDate).toDate() : getPhaseEndDate(index - 1, challenge, this.getChallengePhase).toDate()
+        if (phase.actualStartTime) {
+          startDate = moment(phase.actualStartTime).toDate()
+        }
         var endDate = getPhaseEndDate(index, challenge, this.getChallengePhase).toDate()
+        if (phase.actualEndTime) {
+          endDate = moment(phase.actualEndTime).toDate()
+        }
         var currentTime = moment().valueOf()
-        var percentage = 0
+        var percentage = 30
         if (startDate.getTime() > currentTime) {
-          percentage = 0
+          percentage = 30
         } else if (endDate.getTime() > currentTime) {
           percentage = Math.round(((currentTime - startDate.getTime()) / (oneDay * phase.duration)) * 100)
         } else {
@@ -108,8 +113,8 @@ class ChallengeScheduleField extends Component {
         }
         timelines.push(
           [
-            phase.name,
-            phase.name,
+            phase.name || '',
+            phase.name || '',
             startDate,
             endDate,
             null,

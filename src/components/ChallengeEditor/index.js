@@ -91,6 +91,7 @@ class ChallengeEditor extends Component {
   }
 
   async resetChallengeData (isNew, challengeId, challengeDetails, metadata, attachments) {
+    console.log('totest resetChallengeData', challengeDetails)
     if (!isNew) {
       try {
         const copilotResource = this.getResourceFromProps('Copilot')
@@ -99,6 +100,7 @@ class ChallengeEditor extends Component {
         const reviewerFromResources = reviewerResource ? reviewerResource.memberHandle : ''
         this.setState({ isConfirm: false, isLaunch: false })
         const challengeData = this.updateAttachmentlist(challengeDetails, attachments)
+        console.log('totest challengeData', challengeData)
         let copilot, reviewer
         const challenge = this.state.challenge
         if (challenge) {
@@ -121,6 +123,7 @@ class ChallengeEditor extends Component {
   onUpdateDescription (description, fieldName) {
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge, [fieldName]: description }
+    console.log('totest newChallenge', newChallenge)
     this.setState({ challenge: newChallenge }, () => {
       this.autoUpdateChallengeThrottled()
     })
@@ -176,6 +179,7 @@ class ChallengeEditor extends Component {
     }
 
     // calculate total cost of challenge
+    console.log('totest newChallenge', newChallenge)
     this.setState({ challenge: newChallenge }, () => {
       this.autoUpdateChallengeThrottled()
     })
@@ -202,6 +206,7 @@ class ChallengeEditor extends Component {
         }
       }
 
+      console.log('totest newChallenge', newChallenge)
       this.setState({ challenge: newChallenge }, () => {
         this.autoUpdateChallengeThrottled()
       })
@@ -223,6 +228,7 @@ class ChallengeEditor extends Component {
       value = value && value.map(element => _.set(_.set({}, 'duration', element.duration), 'phaseId', element.id))
     }
     newChallenge[field] = value
+    console.log('totest newChallenge', newChallenge)
     this.setState({ challenge: newChallenge }, () => {
       this.checkToCreateDraftChallenge()
       this.autoUpdateChallengeThrottled()
@@ -264,6 +270,7 @@ class ChallengeEditor extends Component {
     } else {
       _.set(newChallenge, `${field}.${index}.check`, checked)
     }
+    console.log('totest newChallenge', newChallenge)
     this.setState({ challenge: newChallenge }, () => {
       this.autoUpdateChallengeThrottled()
     })
@@ -280,6 +287,7 @@ class ChallengeEditor extends Component {
     const { attachments: oldAttachments } = challenge
     const newAttachments = _.remove(oldAttachments, att => att.fileName !== file)
     newChallenge.attachments = _.clone(newAttachments)
+    console.log('totest newChallenge', newChallenge)
     this.setState({ challenge: newChallenge }, () => {
       this.autoUpdateChallengeThrottled()
     })
@@ -295,6 +303,7 @@ class ChallengeEditor extends Component {
     const newPhaseList = _.cloneDeep(oldChallenge.phases)
     newPhaseList.splice(index, 1)
     newChallenge.phases = _.clone(newPhaseList)
+    console.log('totest newChallenge', newChallenge)
     this.setState({ challenge: newChallenge }, () => {
       this.autoUpdateChallengeThrottled()
     })
@@ -355,6 +364,7 @@ class ChallengeEditor extends Component {
       // backwards compatibily with v4 requires converting 'terms' field to 'termsIds'
       delete newChallenge.terms
     }
+    console.log('totest newChallenge', newChallenge)
     this.setState({ challenge: newChallenge }, () => {
       this.autoUpdateChallengeThrottled()
     })
@@ -364,6 +374,7 @@ class ChallengeEditor extends Component {
     if (property === 'duration' && newValue < 0) newValue = 0
     let newChallenge = _.cloneDeep(this.state.challenge)
     newChallenge.phases[index][property] = newValue
+    console.log('totest newChallenge', newChallenge)
     this.setState({ challenge: newChallenge }, () => {
       this.autoUpdateChallengeThrottled()
     })
@@ -378,6 +389,7 @@ class ChallengeEditor extends Component {
         size: file.size
       })
     })
+    console.log('totest newChallenge', newChallenge)
     this.setState({ challenge: newChallenge }, () => {
       this.autoUpdateChallengeThrottled()
     })
@@ -398,6 +410,10 @@ class ChallengeEditor extends Component {
       'prizeSets',
       'startDate',
       'termsIds'], this.state.challenge)
+    challenge.legacy = {
+      reviewType: challenge.reviewType,
+      track: challenge.track
+    }
     challenge.timelineTemplateId = this.props.metadata.timelineTemplates[0].id
     challenge.projectId = this.props.projectId
     challenge.prizeSets = challenge.prizeSets.map(p => {
@@ -408,6 +424,10 @@ class ChallengeEditor extends Component {
     if (this.state.challenge.id) {
       challenge.attachmentIds = _.map(attachments, item => item.id)
     }
+    challenge.phases = challenge.phases.map((p) => pick([
+      'duration',
+      'phaseId'
+    ], p))
     if (challenge.termsIds && challenge.termsIds.length === 0) delete challenge.termsIds
     delete challenge.attachments
     return challenge
@@ -434,14 +454,19 @@ class ChallengeEditor extends Component {
     if (!challenge.typeId) {
       challenge.typeId = this.props.metadata.challengeTypes[0].id
     }
-    if (!challenge.track) {
-      challenge.track = 'DEVELOP'
-    }
     if (!challenge.name) {
       challenge.name = 'Draft'
     }
     if (!challenge.description) {
       challenge.description = 'Draft'
+    }
+    if (!challenge.legacy) {
+      challenge.legacy = {
+        reviewType: 'INTERNAL'
+      }
+    }
+    if (!challenge.legacy.track) {
+      challenge.legacy.track = 'DEVELOP'
     }
     if (!challenge.prizeSets || !challenge.prizeSets.length) {
       challenge.prizeSets = [
@@ -457,7 +482,22 @@ class ChallengeEditor extends Component {
     }
 
     try {
-      const draftChallenge = await createChallenge(challenge)
+      const draftChallenge = await createChallenge(pick([
+        'phases',
+        'typeId',
+        'name',
+        'description',
+        'privateDescription',
+        'tags',
+        'groups',
+        'prizeSets',
+        'legacy',
+        'startDate',
+        'timelineTemplateId',
+        'projectId',
+        'status'
+      ], challenge))
+      console.log('totest draftChallenge', draftChallenge)
       this.addQueryToUrl({
         challengeId: draftChallenge.data.id
       })
