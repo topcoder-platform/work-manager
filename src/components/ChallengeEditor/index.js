@@ -398,6 +398,10 @@ class ChallengeEditor extends Component {
       'prizeSets',
       'startDate',
       'termsIds'], this.state.challenge)
+    challenge.legacy = {
+      reviewType: challenge.reviewType,
+      track: challenge.track
+    }
     challenge.timelineTemplateId = this.props.metadata.timelineTemplates[0].id
     challenge.projectId = this.props.projectId
     challenge.prizeSets = challenge.prizeSets.map(p => {
@@ -408,8 +412,14 @@ class ChallengeEditor extends Component {
     if (this.state.challenge.id) {
       challenge.attachmentIds = _.map(attachments, item => item.id)
     }
+    challenge.phases = challenge.phases.map((p) => pick([
+      'duration',
+      'phaseId'
+    ], p))
     if (challenge.termsIds && challenge.termsIds.length === 0) delete challenge.termsIds
     delete challenge.attachments
+    delete challenge.track
+    delete challenge.reviewType
     return challenge
   }
 
@@ -434,15 +444,19 @@ class ChallengeEditor extends Component {
     if (!challenge.typeId) {
       challenge.typeId = this.props.metadata.challengeTypes[0].id
     }
-    // if (!challenge.track) {
-    //   challenge.legacy.track = 'DEVELOP'
-    // }
-
     if (!challenge.name) {
       challenge.name = 'Draft'
     }
     if (!challenge.description) {
       challenge.description = 'Draft'
+    }
+    if (!challenge.legacy) {
+      challenge.legacy = {
+        reviewType: 'INTERNAL'
+      }
+    }
+    if (!challenge.legacy.track) {
+      challenge.legacy.track = 'DEVELOP'
     }
     if (!challenge.prizeSets || !challenge.prizeSets.length) {
       challenge.prizeSets = [
@@ -458,7 +472,21 @@ class ChallengeEditor extends Component {
     }
 
     try {
-      const draftChallenge = await createChallenge(challenge)
+      const draftChallenge = await createChallenge(pick([
+        'phases',
+        'typeId',
+        'name',
+        'description',
+        'privateDescription',
+        'tags',
+        'groups',
+        'prizeSets',
+        'legacy',
+        'startDate',
+        'timelineTemplateId',
+        'projectId',
+        'status'
+      ], challenge))
       this.addQueryToUrl({
         challengeId: draftChallenge.data.id
       })
@@ -708,9 +736,9 @@ class ChallengeEditor extends Component {
           <div className={styles.button}>
             <OutlineButton text={'Cancel'} type={'danger'} link={'/'} />
           </div>
-          <div className={styles.button}>
-            <PrimaryButton text={(isNew || isDraft) ? 'Launch' : 'Update'} type={'info'} onClick={this.toggleLaunch} />
-          </div>
+          {(isNew || isDraft) && (<div className={styles.button}>
+            <PrimaryButton text={'Launch'} type={'info'} onClick={this.toggleLaunch} />
+          </div>)}
         </div>}
       </div>
     )
