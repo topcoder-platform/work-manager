@@ -7,13 +7,15 @@ import PropTypes from 'prop-types'
 import cn from 'classnames'
 import _ from 'lodash'
 import ProjectCard from '../ProjectCard'
+import { DebounceInput } from 'react-debounce-input'
 import Loader from '../Loader'
 import TopcoderLogo from '../../assets/images/topcoder-logo.png'
 import styles from './Sidebar.module.scss'
 
 const Sidebar = ({
   projects, isLoading, setActiveProject,
-  projectId, resetSidebarActiveParams
+  projectId, resetSidebarActiveParams,
+  updateProjectsList, searchProjectName
 }) => {
   const projectComponents = projects.map(p => (
     <li key={p.id}>
@@ -42,6 +44,13 @@ const Sidebar = ({
           Active challenges
         </div>
       </Link>
+      <DebounceInput
+        minLength={2}
+        debounceTimeout={300}
+        placeholder='Search projects'
+        onChange={(e) => updateProjectsList(e.target.value)}
+        value={searchProjectName}
+      />
       {
         isLoading ? <Loader /> : (
           <ul>
@@ -58,7 +67,9 @@ Sidebar.propTypes = {
   isLoading: PropTypes.bool,
   setActiveProject: PropTypes.func,
   projectId: PropTypes.string,
-  resetSidebarActiveParams: PropTypes.func
+  resetSidebarActiveParams: PropTypes.func,
+  searchProjectName: PropTypes.string,
+  updateProjectsList: PropTypes.func
 }
 
 export default Sidebar

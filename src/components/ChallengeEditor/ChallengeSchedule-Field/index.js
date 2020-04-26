@@ -9,10 +9,10 @@ import jstz from 'jstimezonedetect'
 import PhaseInput from '../../PhaseInput'
 import Chart from 'react-google-charts'
 import Select from '../../Select'
-import { getPhaseEndDate } from '../../../util/date'
 import { parseSVG } from '../../../util/svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDown, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { getPhaseEndDate } from '../../../util/date'
 
 const GANTT_ROW_HEIGHT = 45
 const GANTT_FOOTER_HEIGHT = 40
@@ -68,7 +68,7 @@ class ChallengeScheduleField extends Component {
     const { challengePhases } = this.props
     const challengePhase = challengePhases.find(challengePhase => challengePhase.id === phase.phaseId)
     if (challengePhase) challengePhase.duration = phase.duration
-    return challengePhase
+    return challengePhase || phase
   }
 
   renderTimeLine () {
@@ -90,26 +90,36 @@ class ChallengeScheduleField extends Component {
       ]
     )
 
-    var oneDay = 3600000 // = 1 hr
+    var secondToMilisecond = 1000 // = 1 second
     _.map(challenge.phases, (p, index) => {
       const phase = this.getChallengePhase(p)
       if (phase) {
-        // the registration and submission phases need to be shown as concurrent
-        var startDate = (index === 0 || index === 1) || !phase.predecessor ? moment(challenge.startDate).toDate() : getPhaseEndDate(index - 1, challenge, this.getChallengePhase).toDate()
-        var endDate = getPhaseEndDate(index, challenge, this.getChallengePhase).toDate()
-        var currentTime = moment().valueOf()
-        var percentage = 0
-        if (startDate.getTime() > currentTime) {
-          percentage = 0
-        } else if (endDate.getTime() > currentTime) {
-          percentage = Math.round(((currentTime - startDate.getTime()) / (oneDay * phase.duration)) * 100)
+        var startDate
+        if (p.scheduledStartDate) {
+          startDate = moment(p.scheduledStartDate).toDate()
         } else {
-          percentage = Math.round(((endDate.getTime() - startDate.getTime()) / (oneDay * phase.duration)) * 100)
+          startDate = (index === 0 || index === 1) || !phase.predecessor ? moment(challenge.startDate).toDate() : getPhaseEndDate(index - 1, challenge, this.getChallengePhase).toDate()
+        }
+        var endDate
+        if (p.scheduledEndDate) {
+          endDate = moment(p.scheduledEndDate).toDate()
+        } else {
+          endDate = getPhaseEndDate(index, challenge, this.getChallengePhase).toDate()
+        }
+
+        var currentTime = moment().valueOf()
+        var percentage = 30
+        if (startDate.getTime() > currentTime) {
+          percentage = 30
+        } else if (endDate.getTime() > currentTime) {
+          percentage = Math.round(((currentTime - startDate.getTime()) / (secondToMilisecond * p.duration)) * 100)
+        } else {
+          percentage = Math.round(((endDate.getTime() - startDate.getTime()) / (secondToMilisecond * p.duration)) * 100)
         }
         timelines.push(
           [
-            phase.name,
-            phase.name,
+            phase.name || '',
+            phase.name || '',
             startDate,
             endDate,
             null,
@@ -134,7 +144,7 @@ class ChallengeScheduleField extends Component {
             withDuration
             onUpdateSelect={onUpdateSelect}
             onUpdatePhase={newValue => onUpdatePhase(newValue, 'duration', index)}
-            endDate={getPhaseEndDate(index, challenge, this.getChallengePhase)}
+            endDate={moment(p.scheduledEndDate).toDate()}
           />
           {index !== 0 &&
           <div className={styles.icon} onClick={() => removePhase(index)}>
