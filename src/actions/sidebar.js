@@ -3,6 +3,7 @@
  */
 import { fetchMemberProjects } from '../services/projects'
 import { SET_ACTIVE_PROJECT, LOAD_PROJECTS_FAILURE, LOAD_PROJECTS_PENDING, LOAD_PROJECTS_SUCCESS, RESET_SIDEBAR_ACTIVE_PARAMS } from '../config/constants'
+import _ from 'lodash'
 
 /**
  * Set active project
@@ -20,13 +21,20 @@ export function setActiveProject (projectId) {
 /**
  * Loads projects of the authenticated user
  */
-export function loadProjects () {
+export function loadProjects (filterProjectName = '') {
   return (dispatch) => {
     dispatch({
       type: LOAD_PROJECTS_PENDING
     })
 
-    fetchMemberProjects().then(projects => dispatch({
+    const filters = {}
+    if (!_.isEmpty(filterProjectName)) {
+      filters['name'] = filterProjectName
+    }
+    filters['status'] = 'active'
+    filters['sort'] = 'lastActivityAt'
+
+    fetchMemberProjects(filters).then(projects => dispatch({
       type: LOAD_PROJECTS_SUCCESS,
       projects
     })).catch(() => dispatch({

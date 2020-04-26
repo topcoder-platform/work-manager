@@ -33,7 +33,7 @@ const Sidebar = ({
       <img src={TopcoderLogo} className={styles.logo} />
       <div className={styles.title}>Challenge Editor</div>
       {
-        !isLoading && _.get(projectComponents, 'length', 0) === 0 && (
+        !isLoading && !searchProjectName && _.get(projectComponents, 'length', 0) === 0 && (
           <div className={styles.noProjects}>
             You don't have any active projects yet!
           </div>
