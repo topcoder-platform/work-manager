@@ -29,7 +29,7 @@ export function loadProjects (filterProjectName = '') {
 
     const filters = {}
     if (!_.isEmpty(filterProjectName)) {
-      filters['name'] = filterProjectName
+      filters['name'] = `*${filterProjectName}*`
     }
     filters['status'] = 'active'
     filters['sort'] = 'lastActivityAt'
