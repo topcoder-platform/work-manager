@@ -13,7 +13,6 @@ import {
   loadChallengeDetails,
   createAttachment,
   removeAttachment,
-  setFilterChallengeValue,
   loadResources,
   loadResourceRoles
 } from '../../actions/challenges'
@@ -137,7 +136,6 @@ const mapDispatchToProps = {
   createAttachment,
   removeAttachment,
   loadChallengeTerms,
-  setFilterChallengeValue,
   loadResources,
   loadResourceRoles
 }

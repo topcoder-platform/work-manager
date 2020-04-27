@@ -7,7 +7,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import ChallengesComponent from '../../components/ChallengesComponent'
-import { loadChallenges, setFilterChallengeValue } from '../../actions/challenges'
+import { loadChallengesByPage } from '../../actions/challenges'
 import { loadProject } from '../../actions/projects'
 import { resetSidebarActiveParams } from '../../actions/sidebar'
 import {
@@ -22,8 +22,14 @@ class Challenges extends Component {
     } else {
       const id = activeProjectId > 0 ? activeProjectId : (projectId ? parseInt(projectId) : null)
       // only load challenge if it's init state
-      if (challenges.length === 0 && !filterChallengeName && (status === CHALLENGE_STATUS.ACTIVE || !status)) {
-        this.props.loadChallenges(id, CHALLENGE_STATUS.ACTIVE, filterChallengeName)
+      if (
+        challenges.length === 0 ||
+        status !== CHALLENGE_STATUS.ACTIVE ||
+        filterChallengeName ||
+        `${activeProjectId}` !== `${projectId}`
+      ) {
+        // load first page for challenges
+        this.props.loadChallengesByPage(1, id, CHALLENGE_STATUS.ACTIVE, '')
       }
       if (!reduxProjectInfo || reduxProjectInfo.id !== id) {
         this.props.loadProject(id)
@@ -31,29 +37,22 @@ class Challenges extends Component {
     }
   }
 
-  componentWillReceiveProps (nextProps) {
-    const { projectId, activeProjectId, filterChallengeName, status } = nextProps
-    const { projectId: oldProjectId, activeProjectId: oldActiveProjectId, filterChallengeName: oldFilterChallengeName, status: oldStatus } = this.props
-
-    if (
-      projectId !== oldProjectId ||
-      activeProjectId !== oldActiveProjectId ||
-      filterChallengeName !== oldFilterChallengeName ||
-      status !== oldStatus
-    ) {
-      if (projectId !== oldProjectId || activeProjectId !== oldActiveProjectId) {
-        setFilterChallengeValue({ name: '', status: CHALLENGE_STATUS.ACTIVE })
-        this.props.loadChallenges(activeProjectId, CHALLENGE_STATUS.ACTIVE, '')
-      } else {
-        this.props.loadChallenges(activeProjectId, status, filterChallengeName)
-      }
-    }
-  }
-
   render () {
-    const { challenges, isLoading, warnMessage, setFilterChallengeValue, filterChallengeName, projects, activeProjectId, status, projectDetail: reduxProjectInfo } = this.props
+    const {
+      challenges,
+      isLoading,
+      warnMessage,
+      filterChallengeName,
+      projects,
+      activeProjectId,
+      status,
+      projectDetail: reduxProjectInfo,
+      loadChallengesByPage,
+      page,
+      perPage,
+      totalChallenges
+    } = this.props
     const projectInfo = _.find(projects, { id: activeProjectId }) || {}
-
     return (
       <ChallengesComponent
         activeProject={({
@@ -63,9 +62,13 @@ class Challenges extends Component {
         warnMessage={warnMessage}
         challenges={challenges}
         isLoading={isLoading}
-        setFilterChallengeValue={setFilterChallengeValue}
         filterChallengeName={filterChallengeName}
         status={status}
+        activeProjectId={activeProjectId}
+        loadChallengesByPage={loadChallengesByPage}
+        page={page}
+        perPage={perPage}
+        totalChallenges={totalChallenges}
       />
     )
   }
@@ -77,15 +80,17 @@ Challenges.propTypes = {
   challenges: PropTypes.arrayOf(PropTypes.object),
   projectDetail: PropTypes.object,
   isLoading: PropTypes.bool,
-  loadChallenges: PropTypes.func,
+  loadChallengesByPage: PropTypes.func,
   loadProject: PropTypes.func.isRequired,
   projectId: PropTypes.string,
   activeProjectId: PropTypes.number,
   warnMessage: PropTypes.string,
   filterChallengeName: PropTypes.string,
   status: PropTypes.string,
-  setFilterChallengeValue: PropTypes.func,
-  resetSidebarActiveParams: PropTypes.func
+  resetSidebarActiveParams: PropTypes.func,
+  page: PropTypes.number.isRequired,
+  perPage: PropTypes.number.isRequired,
+  totalChallenges: PropTypes.number.isRequired
 }
 
 const mapStateToProps = ({ challenges, sidebar, projects }) => ({
@@ -97,8 +102,7 @@ const mapStateToProps = ({ challenges, sidebar, projects }) => ({
 })
 
 const mapDispatchToProps = {
-  loadChallenges,
-  setFilterChallengeValue,
+  loadChallengesByPage,
   resetSidebarActiveParams,
   loadProject
 }
