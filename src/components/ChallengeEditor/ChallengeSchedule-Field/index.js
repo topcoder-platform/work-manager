@@ -99,7 +99,7 @@ class ChallengeScheduleField extends Component {
       ]
     )
 
-    var secondToMilisecond = 1000 // = 1 second
+    var hourToMilisecond = 60 * 60 * 1000 // = 1 hour
     _.map(allPhases, (p, index) => {
       const phase = this.getChallengePhase(p)
       if (phase && timelines) {
@@ -117,15 +117,14 @@ class ChallengeScheduleField extends Component {
           timelines = null
           return
         }
-
         var currentTime = moment().valueOf()
-        var percentage = 30
+        var percentage = 0
         if (startDate.getTime() > currentTime) {
-          percentage = 30
+          percentage = 0
         } else if (endDate.getTime() > currentTime) {
-          percentage = Math.round(((currentTime - startDate.getTime()) / (secondToMilisecond * p.duration)) * 100)
+          percentage = Math.round(((currentTime - startDate.getTime()) / (hourToMilisecond * p.duration)) * 100)
         } else {
-          percentage = Math.round(((endDate.getTime() - startDate.getTime()) / (secondToMilisecond * p.duration)) * 100)
+          percentage = Math.round(((endDate.getTime() - startDate.getTime()) / (hourToMilisecond * p.duration)) * 100)
         }
         timelines.push(
           [
