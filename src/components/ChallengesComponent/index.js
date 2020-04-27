@@ -20,11 +20,11 @@ const ChallengesComponent = ({ challenges, isLoading, warnMessage, setFilterChal
       <div>
         <Helmet title={activeProject ? activeProject.name : ''} />
         <div className={styles.titleContainer}>
-          {activeProject ? (<a className={styles.buttonLaunchNew} href={`${CONNECT_APP_URL}/projects/${activeProject.id}`} target={'_blank'}>
+          {(activeProject && activeProject.id) ? (<a className={styles.buttonLaunchNew} href={`${CONNECT_APP_URL}/projects/${activeProject.id}`} target={'_blank'}>
             <PrimaryButton text={'View Project in Connect'} type={'info'} />
           </a>) : (<span />)}
           <div className={styles.title} dangerouslySetInnerHTML={{ __html: xss(activeProject ? activeProject.name : '') }} />
-          {activeProject ? (<Link className={styles.buttonLaunchNew} to={`/projects/${activeProject.id}/challenges/new`}>
+          {(activeProject && activeProject.id) ? (<Link className={styles.buttonLaunchNew} to={`/projects/${activeProject.id}/challenges/new`}>
             <PrimaryButton text={'Launch New'} type={'info'} />
           </Link>) : (<span />)}
         </div>
