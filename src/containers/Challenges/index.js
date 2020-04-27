@@ -16,23 +16,29 @@ import {
 
 class Challenges extends Component {
   componentDidMount () {
-    const { activeProjectId, filterChallengeName, resetSidebarActiveParams, menu, projectId, challenges, status, projectDetail: reduxProjectInfo } = this.props
+    const { activeProjectId, resetSidebarActiveParams, menu, projectId } = this.props
     if (menu === 'NULL' && activeProjectId !== -1) {
       resetSidebarActiveParams()
     } else {
-      const id = activeProjectId > 0 ? activeProjectId : (projectId ? parseInt(projectId) : null)
-      // only load challenge if it's init state
-      if (
-        challenges.length === 0 ||
-        status !== CHALLENGE_STATUS.ACTIVE ||
-        filterChallengeName ||
-        `${activeProjectId}` !== `${projectId}`
-      ) {
-        // load first page for challenges
-        this.props.loadChallengesByPage(1, id, CHALLENGE_STATUS.ACTIVE, '')
+      this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, CHALLENGE_STATUS.ACTIVE, '')
+      if (projectId) {
+        this.props.loadProject(projectId)
       }
-      if (!reduxProjectInfo || reduxProjectInfo.id !== id) {
-        this.props.loadProject(id)
+    }
+  }
+
+  componentWillReceiveProps (nextProps) {
+    this.reloadChallenges(nextProps)
+  }
+
+  reloadChallenges (props) {
+    const { activeProjectId, projectDetail: reduxProjectInfo, projectId, challengeProjectId, loadProject } = props
+    if (activeProjectId !== challengeProjectId) {
+      this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, CHALLENGE_STATUS.ACTIVE, '')
+      if (
+        (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId)
+      ) {
+        loadProject(projectId)
       }
     }
   }
@@ -94,7 +100,8 @@ Challenges.propTypes = {
 }
 
 const mapStateToProps = ({ challenges, sidebar, projects }) => ({
-  ...challenges,
+  ..._.omit(challenges, ['projectId']),
+  challengeProjectId: challenges.projectId,
   activeProjectId: sidebar.activeProjectId,
   projects: sidebar.projects,
   projectDetail: projects.projectDetail
