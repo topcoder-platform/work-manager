@@ -37,7 +37,8 @@ const initialState = {
   status: '',
   perPage: 0,
   page: 1,
-  totalChallenges: 0
+  totalChallenges: 0,
+  projectId: -1
 }
 
 function toastrSuccess (title, message) {

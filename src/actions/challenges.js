@@ -44,7 +44,7 @@ export function loadChallengesByPage (page, projectId, status, filterChallengeNa
     dispatch({
       type: LOAD_CHALLENGES_PENDING,
       challenges: [],
-      projectId: projectId ? `${projectId}` : '',
+      projectId: projectId,
       status,
       filterChallengeName,
       perPage: PAGE_SIZE,
