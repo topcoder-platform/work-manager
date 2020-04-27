@@ -131,7 +131,7 @@ class ChallengeList extends Component {
             <div className={styles.header}>
               <div className={styles.col1}>Challenges Name</div>
               <div className={styles.col2}>Status</div>
-              <div className={styles.col3}>Current phase</div>
+              {(selectedTab === 0) && (<div className={styles.col3}>Current phase</div>)}
               <div className={styles.col4}>&nbsp;</div>
             </div>
           )
@@ -141,7 +141,7 @@ class ChallengeList extends Component {
             <ul className={styles.challengeList}>
               {
                 map(challenges, (c) => {
-                  return <li className={styles.challengeItem} key={`challenge-card-${c.id}`}><ChallengeCard challenge={c} /></li>
+                  return <li className={styles.challengeItem} key={`challenge-card-${c.id}`}><ChallengeCard shouldShowCurrentPhase={selectedTab === 0} challenge={c} /></li>
                 })
               }
             </ul>
