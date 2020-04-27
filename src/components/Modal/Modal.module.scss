@@ -19,6 +19,19 @@
   z-index: 998;
 }
 
+.childrenwrapper {
+  position: relative;
+}
+
+.closebtn {
+  position: absolute;
+  right: 0px;
+  top: -7px;
+  font-size: 27px;
+  opacity: 1;
+  color: black;
+}
+
 .container {
   background: #fff;
   box-shadow: 0 0 14px 1px rgba(38, 38, 40, 0.15);

@@ -162,7 +162,7 @@ class ChallengeCard extends React.Component {
     return (
       <div className={styles.item}>
         { isLaunch && !isConfirm && (
-          <Modal theme={theme}>
+          <Modal theme={theme} onCancel={() => this.resetModal()}>
             <div className={styles.contentContainer}>
               <div className={styles.title}>Launch Challenge Confirmation</div>
               <span>{`Do you want to launch ${challenge.type} challenge "${challenge.name}"?`}</span>
@@ -179,13 +179,13 @@ class ChallengeCard extends React.Component {
         )
         }
         { isLaunch && isConfirm && (
-          <Modal theme={theme}>
+          <Modal theme={theme} onCancel={() => this.resetModal()}>
             <div className={cn(styles.contentContainer, styles.confirm)}>
               <div className={styles.title}>Success</div>
               <span>Your challenge is saved as active</span>
               <div className={styles.buttonGroup}>
                 <div className={styles.buttonSizeA}>
-                  <PrimaryButton text={'Back to Dashboard'} type={'info'} link={'/'} />
+                  <PrimaryButton text={'Close'} type={'info'} link={'/'} />
                 </div>
                 <div className={styles.buttonSizeA} onClick={() => this.resetModal()}>
                   <OutlineButton text={'View Challenge'} type={'success'} link={`/projects/${challenge.projectId}/challenges/${isConfirm}/edit`} />
