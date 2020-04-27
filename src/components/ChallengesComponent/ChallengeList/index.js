@@ -6,15 +6,19 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { DebounceInput } from 'react-debounce-input'
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
+import Pagination from 'react-js-pagination'
 
 import 'react-tabs/style/react-tabs.css'
 import styles from './ChallengeList.module.scss'
 import NoChallenge from '../NoChallenge'
 import ChallengeCard from '../ChallengeCard'
 import Message from '../Message'
+
 import {
   CHALLENGE_STATUS
 } from '../../../config/constants'
+
+require('bootstrap/scss/bootstrap.scss')
 
 class ChallengeList extends Component {
   constructor (props) {
@@ -23,6 +27,7 @@ class ChallengeList extends Component {
       searchText: this.props.filterChallengeName
     }
     this.directUpdateSearchParam = this.updateSearchParam.bind(this) // update search param without debounce
+    this.handlePageChange = this.handlePageChange.bind(this) // update search param without debounce
     this.updateSearchParam = debounce(this.updateSearchParam.bind(this), 1000)
   }
 
@@ -32,17 +37,36 @@ class ChallengeList extends Component {
    * @param {String} projectStatus project status
    */
   updateSearchParam (searchText, projectStatus) {
-    this.setState({ searchText })
-    const { setFilterChallengeValue } = this.props
-    setFilterChallengeValue({
-      name: searchText,
-      status: projectStatus
+    const { status, filterChallengeName, loadChallengesByPage, activeProjectId } = this.props
+    this.setState({ searchText }, () => {
+      if (status !== projectStatus || searchText !== filterChallengeName) {
+        loadChallengesByPage(1, activeProjectId, projectStatus, searchText)
+      }
     })
+  }
+
+  /**
+   * Update filter for getting project by pagination
+   * @param {Number} pageNumber page numer
+   */
+  handlePageChange (pageNumber) {
+    const { searchText } = this.state
+    const { page, loadChallengesByPage, activeProjectId, status } = this.props
+    if (page !== pageNumber) {
+      loadChallengesByPage(pageNumber, activeProjectId, status, searchText)
+    }
   }
 
   render () {
     const { searchText } = this.state
-    const { activeProject, warnMessage, challenges, status } = this.props
+    const {
+      activeProject,
+      warnMessage,
+      challenges,
+      status,
+      page,
+      perPage,
+      totalChallenges } = this.props
     if (warnMessage) {
       return <Message warnMessage={warnMessage} />
     }
@@ -107,7 +131,7 @@ class ChallengeList extends Component {
             <div className={styles.header}>
               <div className={styles.col1}>Challenges Name</div>
               <div className={styles.col2}>Status</div>
-              <div className={styles.col3}>Current phase</div>
+              {(selectedTab === 0) && (<div className={styles.col3}>Current phase</div>)}
               <div className={styles.col4}>&nbsp;</div>
             </div>
           )
@@ -117,12 +141,23 @@ class ChallengeList extends Component {
             <ul className={styles.challengeList}>
               {
                 map(challenges, (c) => {
-                  return <li className={styles.challengeItem} key={`challenge-card-${c.id}`}><ChallengeCard challenge={c} /></li>
+                  return <li className={styles.challengeItem} key={`challenge-card-${c.id}`}><ChallengeCard shouldShowCurrentPhase={selectedTab === 0} challenge={c} /></li>
                 })
               }
             </ul>
           )
         }
+        <div className={styles.paginationContainer}>
+          <Pagination
+            activePage={page}
+            itemsCountPerPage={perPage}
+            totalItemsCount={totalChallenges}
+            pageRangeDisplayed={5}
+            onChange={this.handlePageChange}
+            itemClass='page-item'
+            linkClass='page-link'
+          />
+        </div>
       </div>
     )
   }
@@ -138,9 +173,13 @@ ChallengeList.propTypes = {
     name: PropTypes.string
   }),
   warnMessage: PropTypes.string,
-  setFilterChallengeValue: PropTypes.func,
   filterChallengeName: PropTypes.string,
-  status: PropTypes.string
+  status: PropTypes.string,
+  activeProjectId: PropTypes.number,
+  loadChallengesByPage: PropTypes.func.isRequired,
+  page: PropTypes.number.isRequired,
+  perPage: PropTypes.number.isRequired,
+  totalChallenges: PropTypes.number.isRequired
 }
 
 export default ChallengeList

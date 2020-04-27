@@ -7,7 +7,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import ChallengesComponent from '../../components/ChallengesComponent'
-import { loadChallenges, setFilterChallengeValue } from '../../actions/challenges'
+import { loadChallengesByPage } from '../../actions/challenges'
 import { loadProject } from '../../actions/projects'
 import { resetSidebarActiveParams } from '../../actions/sidebar'
 import {
@@ -16,44 +16,49 @@ import {
 
 class Challenges extends Component {
   componentDidMount () {
-    const { activeProjectId, filterChallengeName, resetSidebarActiveParams, menu, projectId, challenges, status, projectDetail: reduxProjectInfo } = this.props
+    const { activeProjectId, resetSidebarActiveParams, menu, projectId } = this.props
     if (menu === 'NULL' && activeProjectId !== -1) {
       resetSidebarActiveParams()
     } else {
-      const id = activeProjectId > 0 ? activeProjectId : (projectId ? parseInt(projectId) : null)
-      // only load challenge if it's init state
-      if (challenges.length === 0 && !filterChallengeName && (status === CHALLENGE_STATUS.ACTIVE || !status)) {
-        this.props.loadChallenges(id, CHALLENGE_STATUS.ACTIVE, filterChallengeName)
-      }
-      if (!reduxProjectInfo || reduxProjectInfo.id !== id) {
-        this.props.loadProject(id)
+      this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, CHALLENGE_STATUS.ACTIVE, '')
+      if (projectId) {
+        this.props.loadProject(projectId)
       }
     }
   }
 
   componentWillReceiveProps (nextProps) {
-    const { projectId, activeProjectId, filterChallengeName, status } = nextProps
-    const { projectId: oldProjectId, activeProjectId: oldActiveProjectId, filterChallengeName: oldFilterChallengeName, status: oldStatus } = this.props
+    this.reloadChallenges(nextProps)
+  }
 
-    if (
-      projectId !== oldProjectId ||
-      activeProjectId !== oldActiveProjectId ||
-      filterChallengeName !== oldFilterChallengeName ||
-      status !== oldStatus
-    ) {
-      if (projectId !== oldProjectId || activeProjectId !== oldActiveProjectId) {
-        setFilterChallengeValue({ name: '', status: CHALLENGE_STATUS.ACTIVE })
-        this.props.loadChallenges(activeProjectId, CHALLENGE_STATUS.ACTIVE, '')
-      } else {
-        this.props.loadChallenges(activeProjectId, status, filterChallengeName)
+  reloadChallenges (props) {
+    const { activeProjectId, projectDetail: reduxProjectInfo, projectId, challengeProjectId, loadProject } = props
+    if (activeProjectId !== challengeProjectId) {
+      this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, CHALLENGE_STATUS.ACTIVE, '')
+      if (
+        (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId)
+      ) {
+        loadProject(projectId)
       }
     }
   }
 
   render () {
-    const { challenges, isLoading, warnMessage, setFilterChallengeValue, filterChallengeName, projects, activeProjectId, status, projectDetail: reduxProjectInfo } = this.props
+    const {
+      challenges,
+      isLoading,
+      warnMessage,
+      filterChallengeName,
+      projects,
+      activeProjectId,
+      status,
+      projectDetail: reduxProjectInfo,
+      loadChallengesByPage,
+      page,
+      perPage,
+      totalChallenges
+    } = this.props
     const projectInfo = _.find(projects, { id: activeProjectId }) || {}
-
     return (
       <ChallengesComponent
         activeProject={({
@@ -63,9 +68,13 @@ class Challenges extends Component {
         warnMessage={warnMessage}
         challenges={challenges}
         isLoading={isLoading}
-        setFilterChallengeValue={setFilterChallengeValue}
         filterChallengeName={filterChallengeName}
         status={status}
+        activeProjectId={activeProjectId}
+        loadChallengesByPage={loadChallengesByPage}
+        page={page}
+        perPage={perPage}
+        totalChallenges={totalChallenges}
       />
     )
   }
@@ -77,19 +86,22 @@ Challenges.propTypes = {
   challenges: PropTypes.arrayOf(PropTypes.object),
   projectDetail: PropTypes.object,
   isLoading: PropTypes.bool,
-  loadChallenges: PropTypes.func,
+  loadChallengesByPage: PropTypes.func,
   loadProject: PropTypes.func.isRequired,
   projectId: PropTypes.string,
   activeProjectId: PropTypes.number,
   warnMessage: PropTypes.string,
   filterChallengeName: PropTypes.string,
   status: PropTypes.string,
-  setFilterChallengeValue: PropTypes.func,
-  resetSidebarActiveParams: PropTypes.func
+  resetSidebarActiveParams: PropTypes.func,
+  page: PropTypes.number.isRequired,
+  perPage: PropTypes.number.isRequired,
+  totalChallenges: PropTypes.number.isRequired
 }
 
 const mapStateToProps = ({ challenges, sidebar, projects }) => ({
-  ...challenges,
+  ..._.omit(challenges, ['projectId']),
+  challengeProjectId: challenges.projectId,
   activeProjectId: sidebar.activeProjectId,
   projects: sidebar.projects,
   projectDetail: projects.projectDetail
@@ -97,8 +109,7 @@ const mapStateToProps = ({ challenges, sidebar, projects }) => ({
 })
 
 const mapDispatchToProps = {
-  loadChallenges,
-  setFilterChallengeValue,
+  loadChallengesByPage,
   resetSidebarActiveParams,
   loadProject
 }

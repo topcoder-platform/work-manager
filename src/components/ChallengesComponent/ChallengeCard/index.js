@@ -156,7 +156,7 @@ class ChallengeCard extends React.Component {
 
   render () {
     const { isLaunch, isConfirm, isSaving } = this.state
-    const { challenge } = this.props
+    const { challenge, shouldShowCurrentPhase } = this.props
     const { phaseMessage, endTime } = getPhaseInfo(challenge)
     const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.legacyId}`
     return (
@@ -203,10 +203,10 @@ class ChallengeCard extends React.Component {
         <a className={styles.col2} href={communityAppUrl}>
           {renderStatus(challenge.status.toUpperCase())}
         </a>
-        <a className={styles.col3} href={communityAppUrl}>
+        {shouldShowCurrentPhase && (<a className={styles.col3} href={communityAppUrl}>
           <span className={styles.block}>{phaseMessage}</span>
           <span className='block light-text'>{endTime}</span>
-        </a>
+        </a>)}
         <div className={cn(styles.col4, styles.editingContainer)}>
           {hoverComponents(challenge, this.onUpdateLaunch)}
         </div>
@@ -225,8 +225,13 @@ class ChallengeCard extends React.Component {
   }
 }
 
+ChallengeCard.defaultPrps = {
+  shouldShowCurrentPhase: true
+}
+
 ChallengeCard.propTypes = {
-  challenge: PropTypes.object
+  challenge: PropTypes.object,
+  shouldShowCurrentPhase: PropTypes.bool
 }
 
 export default withRouter(ChallengeCard)

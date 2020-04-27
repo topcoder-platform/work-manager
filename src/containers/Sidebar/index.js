@@ -26,24 +26,16 @@ class SidebarContainer extends Component {
 
   updateProjectName (val) {
     this.setState({ searchProjectName: val })
-  }
-
-  filterProjectsList (val) {
-    const { projects } = this.props
-    if (val) {
-      return projects.filter(p => p.name.indexOf(val) > -1)
-    }
-    return projects
+    this.props.loadProjects(val)
   }
 
   render () {
-    const { isLoading, setActiveProject, projectId, resetSidebarActiveParams } = this.props
+    const { isLoading, setActiveProject, projectId, resetSidebarActiveParams, projects } = this.props
     const { searchProjectName } = this.state
-    const filteredProjects = this.filterProjectsList(searchProjectName)
 
     return (
       <Sidebar
-        projects={_.sortBy(filteredProjects, ['name'])}
+        projects={_.sortBy(projects, ['name'])}
         isLoading={isLoading}
         setActiveProject={setActiveProject}
         projectId={projectId}

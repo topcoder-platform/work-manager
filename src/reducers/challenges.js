@@ -34,7 +34,11 @@ const initialState = {
   attachments: [],
   challenge: null,
   filterChallengeName: '',
-  status: ''
+  status: '',
+  perPage: 0,
+  page: 1,
+  totalChallenges: 0,
+  projectId: -1
 }
 
 function toastrSuccess (title, message) {
@@ -53,31 +57,22 @@ export default function (state = initialState, action) {
   let attachments
   switch (action.type) {
     case LOAD_CHALLENGES_SUCCESS:
-      return { ...state, challenges: action.challenges, isLoading: false }
+      return {
+        ...state,
+        challenges: action.challenges,
+        isLoading: false,
+        totalChallenges: action.totalChallenges
+      }
     case LOAD_CHALLENGES_PENDING:
       return {
         ...state,
         isLoading: true,
-        ...(
-          action.challenges ? {
-            challenges: action.challenges
-          } : {}
-        ),
-        ...(
-          action.projectId ? {
-            projectId: action.projectId
-          } : {}
-        ),
-        ...(
-          action.status ? {
-            status: action.status
-          } : {}
-        ),
-        ...(
-          !_.isNil(action.filterChallengeName) ? {
-            filterChallengeName: action.filterChallengeName
-          } : {}
-        )
+        challenges: action.challenges,
+        projectId: action.projectId,
+        status: action.status,
+        filterChallengeName: action.filterChallengeName,
+        perPage: action.perPage,
+        page: action.page
       }
     case LOAD_CHALLENGE_DETAILS_PENDING:
       return { ...state, isLoading: true, attachments: [], challenge: null, failedToLoad: false }
