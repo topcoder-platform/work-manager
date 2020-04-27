@@ -27,7 +27,7 @@ import { convertDollarToInteger, validateValue } from '../../util/input-check'
 import dropdowns from './mock-data/dropdowns'
 import styles from './ChallengeEditor.module.scss'
 import { withRouter } from 'react-router-dom'
-import { createChallenge, updateChallenge, createResource, deleteResource } from '../../services/challenges'
+import { createChallenge, updateChallenge, createResource, deleteResource, fetchChallenge } from '../../services/challenges'
 
 const theme = {
   container: styles.modalContainer
@@ -434,7 +434,21 @@ class ChallengeEditor extends Component {
   };
 
   async checkToCreateDraftChallenge () {
-    if (this.state.isSaving || !this.props.isNew || this.getCurrentChallengeId()) return
+    if (this.state.isSaving || !this.props.isNew) return
+
+    if (this.getCurrentChallengeId()) {
+      if (!this.state.draftChallenge.data.id) {
+        // retreive draft challenge
+        this.setState({ isSaving: true })
+        try {
+          const draftChallenge = await fetchChallenge(this.getCurrentChallengeId())
+          this.setState({ isSaving: false, draftChallenge: { data: draftChallenge } })
+        } catch (e) {
+          this.setState({ isSaving: false })
+        }
+      }
+      return
+    }
     const challenge = this.collectChallengeData('Draft')
     // can't create challenge without empty project
     // I add fake data to make sure create challenge success
@@ -499,7 +513,12 @@ class ChallengeEditor extends Component {
   async autoUpdateChallenge () {
     if (this.state.isSaving || !this.getCurrentChallengeId() || !this.isValidChallenge()) return
     const challenge = this.collectChallengeData(this.getCurrentChallengeStatus())
-    await this.updateAllChallengeInfo(challenge)
+    try {
+      const draftChallenge = await this.updateAllChallengeInfo(challenge)
+      this.setState({ draftChallenge })
+    } catch (e) {
+      this.setState({ isSaving: false })
+    }
   }
 
   getCurrentChallengeStatus () {
@@ -587,7 +606,7 @@ class ChallengeEditor extends Component {
   }
 
   render () {
-    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings } = this.state
+    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, draftChallenge } = this.state
     const {
       isNew,
       isDraft,
@@ -635,7 +654,6 @@ class ChallengeEditor extends Component {
       }
     }
     const currentChallengeId = this.getCurrentChallengeId()
-
     return (
       <div className={styles.wrapper}>
         <Helmet title={getTitle(isNew)} />
@@ -698,7 +716,17 @@ class ChallengeEditor extends Component {
                     <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
                   </React.Fragment>
                 ) }
-                <ChallengeScheduleField templates={metadata.timelineTemplates} challengePhases={metadata.challengePhases} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} onUpdatePhase={this.onUpdatePhase} onUpdateOthers={this.onUpdateOthers} />
+                <ChallengeScheduleField
+                  templates={metadata.timelineTemplates}
+                  challengePhases={metadata.challengePhases}
+                  removePhase={this.removePhase}
+                  resetPhase={this.resetPhase}
+                  challenge={challenge}
+                  onUpdateSelect={this.onUpdateSelect}
+                  onUpdatePhase={this.onUpdatePhase}
+                  onUpdateOthers={this.onUpdateOthers}
+                  allPhases={draftChallenge.data.phases}
+                />
               </div>
               <div className={styles.group}>
                 <div className={styles.title}>Public specification</div>
