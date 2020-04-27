@@ -32,7 +32,7 @@ const ChallengesComponent = ({
       <div>
         <Helmet title={activeProject ? activeProject.name : ''} />
         <div className={styles.titleContainer}>
-          {activeProject ? (
+          {(activeProject && activeProject.id) ? (
             <a
               className={styles.buttonLaunchNew}
               href={`${CONNECT_APP_URL}/projects/${activeProject.id}`}
@@ -49,7 +49,7 @@ const ChallengesComponent = ({
               __html: xss(activeProject ? activeProject.name : '')
             }}
           />
-          {activeProject ? (
+          {(activeProject && activeProject.id) ? (
             <Link
               className={styles.buttonLaunchNew}
               to={`/projects/${activeProject.id}/challenges/new`}
