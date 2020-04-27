@@ -4,6 +4,7 @@ import _ from 'lodash'
 import React from 'react'
 import ReactDom from 'react-dom'
 import PT from 'prop-types'
+import cn from 'classnames'
 import { themr } from 'react-css-super-themr'
 
 import defaultStyle from './Modal.module.scss'
@@ -39,7 +40,12 @@ class BaseModal extends React.Component {
             className={theme.container}
             onWheel={event => event.stopPropagation()}
           >
-            {children}
+            <div className={theme.childrenwrapper}>
+              {children}
+              <button className={cn(theme.closebtn, 'close')} onClick={() => onCancel()} type='button' aria-label='Close'>
+                <span aria-hidden='true'>&times;</span>
+              </button>
+            </div>
           </div>
           <button
             onClick={() => onCancel()}

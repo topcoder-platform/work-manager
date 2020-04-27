@@ -643,7 +643,7 @@ class ChallengeEditor extends Component {
         <div className={styles.textRequired}>* Required</div>
         <div className={styles.container}>
           { isLaunch && !isConfirm && (
-            <Modal theme={theme}>
+            <Modal theme={theme} onCancel={() => this.resetModal()}>
               <div className={styles.contentContainer}>
                 <div className={styles.title}>Launch Challenge Confirmation</div>
                 <span>{`Do you want to launch ${type} challenge "${challenge.name}"?`}</span>
@@ -658,13 +658,13 @@ class ChallengeEditor extends Component {
               </div>
             </Modal>
           ) } { isLaunch && isConfirm && (
-            <Modal theme={theme}>
+            <Modal theme={theme} onCancel={() => this.resetModal()}>
               <div className={cn(styles.contentContainer, styles.confirm)}>
                 <div className={styles.title}>Success</div>
                 <span>{ challenge.status === 'Draft' ? 'Your challenge is saved as draft' : 'We have scheduled your challenge and processed the payment'}</span>
                 <div className={styles.buttonGroup}>
                   <div className={styles.buttonSizeA}>
-                    <PrimaryButton text={'Back to Dashboard'} type={'info'} link={'/'} />
+                    <PrimaryButton text={'Close'} type={'info'} link={'/'} />
                   </div>
                   <div className={styles.buttonSizeA} onClick={() => this.resetModal()}>
                     <OutlineButton text={'View Challenge'} type={'success'} link={`/projects/${this.props.projectId}/challenges/${isConfirm}/edit`} />
