@@ -12,7 +12,6 @@ import Select from '../../Select'
 import { parseSVG } from '../../../util/svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDown, faTrash } from '@fortawesome/free-solid-svg-icons'
-import { getPhaseEndDate } from '../../../util/date'
 
 const GANTT_ROW_HEIGHT = 45
 const GANTT_FOOTER_HEIGHT = 40
@@ -27,6 +26,7 @@ class ChallengeScheduleField extends Component {
     this.toggleEditMode = this.toggleEditMode.bind(this)
     this.renderTimeLine = this.renderTimeLine.bind(this)
     this.getChallengePhase = this.getChallengePhase.bind(this)
+    this.getAllPhases = this.getAllPhases.bind(this)
   }
 
   componentDidMount () {
@@ -71,13 +71,22 @@ class ChallengeScheduleField extends Component {
     return challengePhase || phase
   }
 
+  getAllPhases () {
+    const { allPhases, challenge } = this.props
+    if (allPhases && allPhases.length) {
+      return allPhases
+    }
+    return challenge.phases
+  }
+
   renderTimeLine () {
     const { challenge } = this.props
-    if (_.isEmpty(challenge.phases) || typeof challenge.phases[0] === 'undefined') {
+    const allPhases = this.getAllPhases()
+    if (_.isEmpty(allPhases) || typeof allPhases[0] === 'undefined') {
       return null
     }
 
-    const timelines = []
+    let timelines = []
     timelines.push(
       [
         { type: 'string', label: 'Task ID' },
@@ -91,20 +100,22 @@ class ChallengeScheduleField extends Component {
     )
 
     var secondToMilisecond = 1000 // = 1 second
-    _.map(challenge.phases, (p, index) => {
+    _.map(allPhases, (p, index) => {
       const phase = this.getChallengePhase(p)
-      if (phase) {
+      if (phase && timelines) {
         var startDate
         if (p.scheduledStartDate) {
           startDate = moment(p.scheduledStartDate).toDate()
         } else {
-          startDate = (index === 0 || index === 1) || !phase.predecessor ? moment(challenge.startDate).toDate() : getPhaseEndDate(index - 1, challenge, this.getChallengePhase).toDate()
+          timelines = null
+          return
         }
         var endDate
         if (p.scheduledEndDate) {
           endDate = moment(p.scheduledEndDate).toDate()
         } else {
-          endDate = getPhaseEndDate(index, challenge, this.getChallengePhase).toDate()
+          timelines = null
+          return
         }
 
         var currentTime = moment().valueOf()
@@ -266,7 +277,7 @@ class ChallengeScheduleField extends Component {
             <div id='gantt-chart' className={styles.chart}>
               <Chart
                 width={'100%'}
-                height={`${(challenge.phases.length * GANTT_ROW_HEIGHT) + GANTT_FOOTER_HEIGHT}px`}
+                height={`${(this.getAllPhases().length * GANTT_ROW_HEIGHT) + GANTT_FOOTER_HEIGHT}px`}
                 chartType='Gantt'
                 loader={<div>Loading Timelines</div>}
                 data={timelines}
@@ -337,11 +348,13 @@ class ChallengeScheduleField extends Component {
 }
 
 ChallengeScheduleField.defaultProps = {
-  templates: []
+  templates: [],
+  allPhases: []
 }
 
 ChallengeScheduleField.propTypes = {
   templates: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+  allPhases: PropTypes.arrayOf(PropTypes.shape()),
   challengePhases: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,
   removePhase: PropTypes.func.isRequired,
