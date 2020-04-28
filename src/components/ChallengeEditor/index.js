@@ -201,9 +201,9 @@ class ChallengeEditor extends Component {
           newChallenge[field][index][option.key] = option.name
         }
       }
-
+      const prevValue = oldChallenge[field]
       this.setState({ challenge: newChallenge }, () => {
-        this.autoUpdateChallengeThrottled()
+        this.autoUpdateChallengeThrottled(field, prevValue)
       })
     }
   }
@@ -223,9 +223,10 @@ class ChallengeEditor extends Component {
       value = value && value.map(element => _.set(_.set({}, 'duration', element.duration), 'phaseId', element.id))
     }
     newChallenge[field] = value
+    const prevValue = oldChallenge[field]
     this.setState({ challenge: newChallenge }, () => {
       this.checkToCreateDraftChallenge()
-      this.autoUpdateChallengeThrottled()
+      this.autoUpdateChallengeThrottled(field, prevValue)
     })
   }
 
@@ -510,7 +511,16 @@ class ChallengeEditor extends Component {
     }
   }
 
-  async autoUpdateChallenge () {
+  async autoUpdateChallenge (resourceField = null, prevValue = null) {
+    const challengeId = this.state.draftChallenge.data.id || this.props.challengeId
+    switch (resourceField) {
+      case 'copilot':
+        await this.updateResource(challengeId, 'Copilot', this.state.challenge.copilot, prevValue)
+        break
+      case 'reviewer':
+        await this.updateResource(challengeId, 'Reviewer', this.state.challenge.reviewer, prevValue)
+        break
+    }
     if (this.state.isSaving || !this.getCurrentChallengeId() || !this.isValidChallenge()) return
     const challenge = this.collectChallengeData(this.getCurrentChallengeStatus())
     try {
@@ -556,11 +566,7 @@ class ChallengeEditor extends Component {
 
   async updateAllChallengeInfo (challenge) {
     const challengeId = this.getCurrentChallengeId()
-    const response = await updateChallenge(challenge, challengeId)
-    const { copilot, reviewer } = this.state.challenge
-    if (copilot) await this.updateResource(response.data.id, 'Copilot', copilot)
-    if (reviewer) await this.updateResource(response.data.id, 'Reviewer', reviewer)
-    return response
+    return updateChallenge(challenge, challengeId)
   }
 
   getResourceRoleByName (name) {
@@ -568,20 +574,18 @@ class ChallengeEditor extends Component {
     return resourceRoles ? resourceRoles.find(role => role.name === name) : null
   }
 
-  async updateResource (challengeId, name, value) {
-    let needToCreateResource = this.props.isNew
+  async updateResource (challengeId, name, value, prevValue) {
     const newResource = {
       challengeId,
       memberHandle: value,
       roleId: this.getResourceRoleByName(name).id
     }
-    const currentResource = this.getResourceFromProps(name)
-    if (currentResource && value !== currentResource.memberHandle) {
-      needToCreateResource = true
-      const resource = _.pick(currentResource, ['challengeId', 'memberHandle', 'roleId'])
-      await deleteResource(resource)
+    if (prevValue) {
+      const oldResource = _.pick(newResource, ['challengeId', 'roleId'])
+      oldResource.memberHandle = prevValue
+      await deleteResource(oldResource)
     }
-    if (needToCreateResource) await createResource(newResource)
+    await createResource(newResource)
   }
 
   updateAttachmentlist (challenge, attachments) {
@@ -750,7 +754,7 @@ class ChallengeEditor extends Component {
         {!isLoading && this.state.hasValidationErrors && <div className={styles.error}>Please fix the errors before saving</div>}
         {!isLoading && <div className={styles.buttonContainer}>
           <div className={styles.button}>
-            <OutlineButton text={'Cancel'} type={'danger'} link={'/'} />
+            <OutlineButton text={'Save as Draft'} type={'success'} link={'/'} />
           </div>
           {(isNew || isDraft) && (<div className={styles.button}>
             <PrimaryButton text={'Launch'} type={'info'} onClick={this.toggleLaunch} />
