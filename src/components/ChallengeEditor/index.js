@@ -7,6 +7,8 @@ import cn from 'classnames'
 import moment from 'moment'
 import { pick } from 'lodash/fp'
 import Modal from '../Modal'
+import { withRouter } from 'react-router-dom'
+
 import { VALIDATION_VALUE_TYPE } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
@@ -25,8 +27,8 @@ import Loader from '../Loader'
 import ChallengeScheduleField from './ChallengeSchedule-Field'
 import { convertDollarToInteger, validateValue } from '../../util/input-check'
 import dropdowns from './mock-data/dropdowns'
+import LastSavedDisplay from './LastSaved-Display'
 import styles from './ChallengeEditor.module.scss'
-import { withRouter } from 'react-router-dom'
 import { createChallenge, updateChallenge, createResource, deleteResource, fetchChallenge } from '../../services/challenges'
 
 const theme = {
@@ -57,7 +59,8 @@ class ChallengeEditor extends Component {
         startDate: moment().add(1, 'hour').format(),
         phases: []
       },
-      draftChallenge: { data: { id: null } }
+      draftChallenge: { data: { id: null } },
+      timeLastSaved: moment().format('MMMM Do YYYY, h:mm:ss a')
     }
     this.onUpdateInput = this.onUpdateInput.bind(this)
     this.onUpdateSelect = this.onUpdateSelect.bind(this)
@@ -564,9 +567,15 @@ class ChallengeEditor extends Component {
     }
   }
 
+  updateTimeLastSaved () {
+    this.setState({ timeLastSaved: moment().format('MMMM Do YYYY, h:mm:ss a') })
+  }
+
   async updateAllChallengeInfo (challenge) {
     const challengeId = this.getCurrentChallengeId()
-    return updateChallenge(challenge, challengeId)
+    const response = await updateChallenge(challenge, challengeId)
+    this.updateTimeLastSaved()
+    return response
   }
 
   getResourceRoleByName (name) {
@@ -585,7 +594,9 @@ class ChallengeEditor extends Component {
       oldResource.memberHandle = prevValue
       await deleteResource(oldResource)
     }
+
     await createResource(newResource)
+    this.updateTimeLastSaved()
   }
 
   updateAttachmentlist (challenge, attachments) {
@@ -610,7 +621,7 @@ class ChallengeEditor extends Component {
   }
 
   render () {
-    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, draftChallenge } = this.state
+    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, draftChallenge, timeLastSaved } = this.state
     const {
       isNew,
       isDraft,
@@ -752,14 +763,17 @@ class ChallengeEditor extends Component {
           </div>
         </div>
         {!isLoading && this.state.hasValidationErrors && <div className={styles.error}>Please fix the errors before saving</div>}
-        {!isLoading && <div className={styles.buttonContainer}>
-          <div className={styles.button}>
-            <OutlineButton text={'Save as Draft'} type={'success'} link={'/'} />
-          </div>
-          {(isNew || isDraft) && (<div className={styles.button}>
-            <PrimaryButton text={'Launch'} type={'info'} onClick={this.toggleLaunch} />
-          </div>)}
-        </div>}
+        <div className={styles.bottomContainer}>
+          {!isLoading && <LastSavedDisplay timeLastSaved={timeLastSaved} />}
+          {!isLoading && <div className={styles.buttonContainer}>
+            <div className={styles.button}>
+              <OutlineButton text={'Save as Draft'} type={'success'} link={'/'} />
+            </div>
+            {(isNew || isDraft) && (<div className={styles.button}>
+              <PrimaryButton text={'Launch'} type={'info'} onClick={this.toggleLaunch} />
+            </div>)}
+          </div>}
+        </div>
       </div>
     )
   }
