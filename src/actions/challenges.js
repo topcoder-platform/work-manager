@@ -51,7 +51,10 @@ export function loadChallengesByPage (page, projectId, status, filterChallengeNa
       page
     })
 
-    const filters = {}
+    const filters = {
+      sortBy: 'updated',
+      sortOrder: 'desc'
+    }
     if (!_.isEmpty(filterChallengeName)) {
       filters['name'] = filterChallengeName
     }
