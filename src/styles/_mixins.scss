@@ -153,6 +153,11 @@
   }
 }
 
+@mixin form-container-common {
+  margin-bottom: 30px;
+  border: 1px solid $lighter-gray;
+}
+
 @mixin form-row {
   .row {
     width: 100%;
