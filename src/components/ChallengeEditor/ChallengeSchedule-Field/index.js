@@ -20,43 +20,12 @@ class ChallengeScheduleField extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      isEdit: false,
-      currentTemplate: ''
+      isEdit: false
     }
     this.toggleEditMode = this.toggleEditMode.bind(this)
     this.renderTimeLine = this.renderTimeLine.bind(this)
     this.getChallengePhase = this.getChallengePhase.bind(this)
     this.getAllPhases = this.getAllPhases.bind(this)
-  }
-
-  componentDidMount () {
-    this._ismounted = true
-  }
-
-  componentWillUnmount () {
-    this._ismounted = false
-  }
-
-  componentWillReceiveProps (nextProps) {
-    const { currentTemplate } = this.state
-    const { templates, resetPhase } = nextProps
-    const { challenge } = this.props
-    if (!currentTemplate && templates.length > 0 && this._ismounted && challenge.phases.length === 0) {
-      // select first default templates for phases
-      this.setState({
-        currentTemplate: templates[0]
-      }, () => {
-        const interval = setInterval(() => {
-          // use interval to make sure resetPhase work
-          const { challenge } = this.props
-          if (challenge && challenge.phases.length === 0 && this._ismounted) {
-            resetPhase(templates[0])
-          } else if (!this._ismounted || (challenge && challenge.phases.length > 0)) {
-            clearInterval(interval)
-          }
-        }, 1000)
-      })
-    }
   }
 
   toggleEditMode () {
@@ -257,11 +226,49 @@ class ChallengeScheduleField extends Component {
   }
 
   render () {
-    const { isEdit, currentTemplate } = this.state
+    const { isEdit } = this.state
+    const { currentTemplate } = this.props
     const { templates, resetPhase, challenge, onUpdateOthers } = this.props
     const timelines = !isEdit ? this.renderTimeLine() : null
     return (
       <div className={styles.container}>
+        <div className={cn(styles.row, styles.flexStart)}>
+          <div className={cn(styles.field, styles.col1)}>
+            <label htmlFor={'notitle'}>Timeline template <span className={styles.red}>*</span> :</label>
+          </div>
+          <div className={cn(styles.field, styles.col2)}>
+            <div className={styles.templates}>
+              <Select
+                name='template'
+                options={templates}
+                placeholder='Select'
+                labelKey='name'
+                valueKey='name'
+                clearable={false}
+                value={currentTemplate}
+                onChange={(e) => resetPhase(e)}
+              />
+            </div>
+          </div>
+        </div>
+        { challenge.submitTriggered && _.isEmpty(currentTemplate) && <div className={styles.row}>
+          <div className={cn(styles.field, styles.col1, styles.error)}>
+            Select a Timeline template
+          </div>
+        </div> }
+        <div className={styles.PhaseRow}>
+          <PhaseInput
+            withDates
+            phase={{
+              name: 'Start Date',
+              date: challenge.startDate
+            }}
+            onUpdatePhase={newValue => onUpdateOthers({
+              field: 'startDate',
+              value: newValue.format()
+            })}
+          />
+        </div>
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1, styles.title)}>
             <label htmlFor={`challengeSchedule`}>Challenge Schedule :</label>
@@ -302,48 +309,6 @@ class ChallengeScheduleField extends Component {
           )
         }
         {
-          isEdit && (
-            <React.Fragment>
-              <div className={cn(styles.row, styles.flexStart)}>
-                <div className={cn(styles.field, styles.col1)}>
-                  <label htmlFor={'notitle'}>Timeline template :</label>
-                </div>
-                <div className={cn(styles.field, styles.col2)}>
-                  <div className={styles.templates}>
-                    <Select
-                      name='template'
-                      options={templates}
-                      placeholder='Import Timeline from Templates'
-                      labelKey='name'
-                      valueKey='name'
-                      clearable={false}
-                      value={currentTemplate}
-                      onChange={(e) => this.setState({
-                        currentTemplate: e
-                      }, () => resetPhase(e))}
-                    />
-                  </div>
-                </div>
-              </div>
-            </React.Fragment>
-          )
-        }
-        { isEdit && (
-          <div className={styles.PhaseRow}>
-            <PhaseInput
-              withDates
-              phase={{
-                name: 'Start Date',
-                date: challenge.startDate
-              }}
-              onUpdatePhase={newValue => onUpdateOthers({
-                field: 'startDate',
-                value: newValue.format()
-              })}
-            />
-          </div>
-        ) }
-        {
           isEdit && this.renderPhaseEditor()
         }
       </div>
@@ -352,7 +317,8 @@ class ChallengeScheduleField extends Component {
 }
 
 ChallengeScheduleField.defaultProps = {
-  templates: []
+  templates: [],
+  currentTemplate: null
 }
 
 ChallengeScheduleField.propTypes = {
@@ -363,7 +329,8 @@ ChallengeScheduleField.propTypes = {
   resetPhase: PropTypes.func.isRequired,
   onUpdateSelect: PropTypes.func.isRequired,
   onUpdatePhase: PropTypes.func.isRequired,
-  onUpdateOthers: PropTypes.func.isRequired
+  onUpdateOthers: PropTypes.func.isRequired,
+  currentTemplate: PropTypes.shape()
 }
 
 export default ChallengeScheduleField

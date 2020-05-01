@@ -61,12 +61,11 @@ class ChallengeEditor extends Component {
       isSaving: false,
       hasValidationErrors: false,
       challenge: {
-        ...dropdowns['newChallenge'],
-        startDate: moment().add(1, 'hour').format(),
-        phases: []
+        ...dropdowns['newChallenge']
       },
       draftChallenge: { data: { id: null } },
-      timeLastSaved: moment().format('MMMM Do YYYY, h:mm:ss a')
+      timeLastSaved: moment().format('MMMM Do YYYY, h:mm:ss a'),
+      currentTemplate: null
     }
     this.onUpdateInput = this.onUpdateInput.bind(this)
     this.onUpdateSelect = this.onUpdateSelect.bind(this)
@@ -321,6 +320,9 @@ class ChallengeEditor extends Component {
       if (!phase.scheduledStartDate) phase.scheduledStartDate = challengeStartDate
       if (!phase.scheduledEndDate) phase.scheduledEndDate = moment(challengeStartDate).add(1, 'days')
     })
+    this.setState({
+      currentTemplate: timeline
+    })
     this.onUpdateOthers({
       field: 'phases',
       value: validPhases
@@ -350,8 +352,8 @@ class ChallengeEditor extends Component {
       const { name } = this.state.challenge
       return !!name // TODO && track)
     }
-    return !Object.values(pick(['track', 'typeId', 'name', 'description', 'tags', 'prizeSets'],
-      this.state.challenge)).filter(v => !v.length).length
+    return !(Object.values(pick(['track', 'typeId', 'name', 'description', 'tags', 'prizeSets'],
+      this.state.challenge)).filter(v => !v.length).length || _.isEmpty(this.state.currentTemplate))
   }
 
   validateChallenge () {
@@ -589,7 +591,7 @@ class ChallengeEditor extends Component {
   }
 
   render () {
-    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, timeLastSaved } = this.state
+    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, timeLastSaved, currentTemplate } = this.state
     const {
       isNew,
       isLoading,
@@ -746,7 +748,7 @@ class ChallengeEditor extends Component {
               onUpdateSelect={this.onUpdateSelect}
               onUpdatePhase={this.onUpdatePhase}
               onUpdateOthers={this.onUpdateOthers}
-              allPhases={challenge.phases}
+              currentTemplate={currentTemplate}
             />
           </div>
           <div className={styles.group}>
