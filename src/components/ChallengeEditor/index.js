@@ -347,8 +347,8 @@ class ChallengeEditor extends Component {
 
   isValidChallenge () {
     if (this.props.isNew) {
-      const { name } = this.state.challenge
-      return !!name // TODO && track)
+      const { name, track } = this.state.challenge
+      return !!(name && track)
     }
     return !Object.values(pick(['track', 'typeId', 'name', 'description', 'tags', 'prizeSets'],
       this.state.challenge)).filter(v => !v.length).length
@@ -471,13 +471,16 @@ class ChallengeEditor extends Component {
   async createNewChallenge () {
     if (!this.props.isNew) return
 
-    const { name } = this.state.challenge
+    const { name, track } = this.state.challenge
     const newChallenge = {
       status: 'New',
       projectId: this.props.projectId,
       name: name,
-      startDate: moment().add(1, 'days').format()
-      // TODO track: track
+      startDate: moment().add(1, 'days').format(),
+      legacy: {
+        track: track,
+        reviewType: 'INTERNAL'
+      }
     }
     try {
       const draftChallenge = await createChallenge(newChallenge)
@@ -699,14 +702,14 @@ class ChallengeEditor extends Component {
       ? (
         <form name='challenge-new-form' noValidate autoComplete='off'>
           <div className={styles.newFormContainer}>
-            {/* TODO <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers} /> */}
+            <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
           </div>
         </form>
       ) : (
         <form name='challenge-info-form' noValidate autoComplete='off'>
           <div className={styles.group}>
-            <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers /* TODO () => null */} /> {/* Disable changes */}
+            <TrackField challenge={challenge} onUpdateOthers={() => null} /> {/* Disable changes */}
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
