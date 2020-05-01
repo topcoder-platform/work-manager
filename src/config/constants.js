@@ -69,6 +69,7 @@ export const MARATHON_MATCH_SUBTRACKS = [
 
 export const CHALLENGE_STATUS = {
   ACTIVE: 'ACTIVE',
+  NEW: 'NEW',
   DRAFT: 'DRAFT',
   COMPLETED: 'COMPLETED'
 }

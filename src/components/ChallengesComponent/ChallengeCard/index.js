@@ -106,6 +106,7 @@ const hoverComponents = (challenge, onUpdateLaunch) => {
 const renderStatus = (status) => {
   switch (status) {
     case CHALLENGE_STATUS.ACTIVE:
+    case CHALLENGE_STATUS.NEW:
     case CHALLENGE_STATUS.DRAFT:
     case CHALLENGE_STATUS.COMPLETED:
       return (<ChallengeStatus status={status} />)
@@ -197,7 +198,7 @@ class ChallengeCard extends React.Component {
         <a className={styles.col1} href={communityAppUrl}>
           <div className={styles.name}>
             <span className={styles.block}>{challenge.name}</span>
-            <ChallengeTag track={challenge.legacy.track} challengeType={challenge.type} />
+            <ChallengeTag track={challenge.legacy && challenge.legacy.track} challengeType={challenge.type} />
           </div>
         </a>
         <a className={styles.col2} href={communityAppUrl}>
