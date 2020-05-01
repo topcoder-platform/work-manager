@@ -458,7 +458,6 @@ class ChallengeEditor extends Component {
     this.setState({ isSaving: true })
     try {
       const draftChallenge = await this.updateAllChallengeInfo(challenge)
-      console.log({ draftChallenge })
       this.setState({ isConfirm: draftChallenge.data.id, challenge: draftChallenge })
     } catch (e) {
       this.setState({ isSaving: false })
