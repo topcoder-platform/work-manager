@@ -73,11 +73,14 @@ class ChallengeList extends Component {
 
     let selectedTab = 0
     switch (status) {
-      case CHALLENGE_STATUS.DRAFT:
+      case CHALLENGE_STATUS.NEW:
         selectedTab = 1
         break
-      case CHALLENGE_STATUS.COMPLETED:
+      case CHALLENGE_STATUS.DRAFT:
         selectedTab = 2
+        break
+      case CHALLENGE_STATUS.COMPLETED:
+        selectedTab = 3
         break
     }
 
@@ -103,10 +106,14 @@ class ChallengeList extends Component {
                 break
               }
               case 1: {
-                this.directUpdateSearchParam(searchText, CHALLENGE_STATUS.DRAFT)
+                this.directUpdateSearchParam(searchText, CHALLENGE_STATUS.NEW)
                 break
               }
               case 2: {
+                this.directUpdateSearchParam(searchText, CHALLENGE_STATUS.DRAFT)
+                break
+              }
+              case 3: {
                 this.directUpdateSearchParam(searchText, CHALLENGE_STATUS.COMPLETED)
                 break
               }
@@ -114,6 +121,7 @@ class ChallengeList extends Component {
           }}>
           <TabList>
             <Tab>Active</Tab>
+            <Tab>New</Tab>
             <Tab>Draft</Tab>
             <Tab>Completed</Tab>
           </TabList>
