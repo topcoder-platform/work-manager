@@ -72,10 +72,7 @@ class ChallengeScheduleField extends Component {
   }
 
   getAllPhases () {
-    const { allPhases, challenge } = this.props
-    if (allPhases && allPhases.length) {
-      return allPhases
-    }
+    const { challenge } = this.props
     return challenge.phases
   }
 
@@ -153,7 +150,7 @@ class ChallengeScheduleField extends Component {
             phase={this.getChallengePhase(p)}
             withDuration
             onUpdateSelect={onUpdateSelect}
-            onUpdatePhase={newValue => onUpdatePhase(newValue, 'duration', index)}
+            onUpdatePhase={newValue => onUpdatePhase(parseInt(newValue), 'duration', index)}
             endDate={moment(p.scheduledEndDate).toDate()}
           />
           {index !== 0 &&
@@ -341,7 +338,7 @@ class ChallengeScheduleField extends Component {
               }}
               onUpdatePhase={newValue => onUpdateOthers({
                 field: 'startDate',
-                value: newValue
+                value: newValue.format()
               })}
             />
           </div>
@@ -355,13 +352,11 @@ class ChallengeScheduleField extends Component {
 }
 
 ChallengeScheduleField.defaultProps = {
-  templates: [],
-  allPhases: []
+  templates: []
 }
 
 ChallengeScheduleField.propTypes = {
   templates: PropTypes.arrayOf(PropTypes.shape()).isRequired,
-  allPhases: PropTypes.arrayOf(PropTypes.shape()),
   challengePhases: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,
   removePhase: PropTypes.func.isRequired,

@@ -8,7 +8,6 @@ import moment from 'moment'
 import { pick } from 'lodash/fp'
 import Modal from '../Modal'
 import { withRouter } from 'react-router-dom'
-import Diff from 'deep-diff'
 
 import { VALIDATION_VALUE_TYPE } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
@@ -56,7 +55,6 @@ class ChallengeEditor extends Component {
     this.state = {
       isLaunch: false,
       isConfirm: false,
-      isResetting: false,
       isClose: false,
       isOpenAdvanceSettings: false,
       isLoading: false,
@@ -96,28 +94,8 @@ class ChallengeEditor extends Component {
   componentDidUpdate (prevProps, prevState) {
     const { isNew: prevIsNew, challengeDetails: prevChallengeDetails } = prevProps
     const { isNew, challengeId, challengeDetails, metadata, attachments } = this.props
-    if (prevIsNew !== isNew || !_.isEqual(prevChallengeDetails, challengeDetails)) {
+    if (prevIsNew !== isNew || (_.isEmpty(prevChallengeDetails) && !_.isEmpty(challengeDetails))) {
       this.resetChallengeData(isNew, challengeId, challengeDetails, metadata, attachments)
-    } else {
-      const stateChanges = Diff(prevState.challenge, this.state.challenge)
-      if (stateChanges) {
-        const changedField = stateChanges[0].path[0]
-        if (_.includes(['name', 'description', 'privateDescription', 'prizeSets'], changedField)) {
-          this.autoUpdateChallengeThrottled(stateChanges)
-        } else {
-          if (_.includes(['tags', 'termsIds', 'groups'], changedField)) {
-            // stateChanges will not contain proper lhs and rhs data for multi-select changes. Create the diff object manually
-            const newDiffObject = {
-              path: [changedField],
-              kind: 'E',
-              rhs: [...this.state.challenge[changedField]]
-            }
-            this.autoUpdateChallenge([newDiffObject])
-          } else {
-            this.autoUpdateChallenge(stateChanges)
-          }
-        }
-      }
     }
   }
 
@@ -138,7 +116,7 @@ class ChallengeEditor extends Component {
         }
         challengeData.copilot = copilot || copilotFromResources
         challengeData.reviewer = reviewer || reviewerFromResources
-        this.setState({ challenge: { ...dropdowns['newChallenge'], ...challengeData }, isResetting: true })
+        this.setState({ challenge: { ...dropdowns['newChallenge'], ...challengeData }, isLoading: false })
       } catch (e) {
         this.setState({ isLoading: true })
       }
@@ -152,7 +130,9 @@ class ChallengeEditor extends Component {
   onUpdateDescription (description, fieldName) {
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge, [fieldName]: description }
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled(fieldName)
+    })
   }
 
   /**
@@ -166,6 +146,7 @@ class ChallengeEditor extends Component {
   onUpdateInput (e, isSub = false, field = null, index = -1, valueType = null) {
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge }
+    let fieldChanged = null
     if (!isSub) {
       switch (e.target.name) {
         case 'reviewCost':
@@ -176,6 +157,7 @@ class ChallengeEditor extends Component {
           newChallenge[e.target.name] = e.target.value
           break
       }
+      fieldChanged = e.target.name
     } else {
       switch (field) {
         case 'checkpointPrizes':
@@ -202,10 +184,13 @@ class ChallengeEditor extends Component {
           newChallenge[field][e.target.name] = e.target.value
           break
       }
+      fieldChanged = field
     }
 
     // calculate total cost of challenge
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled(fieldChanged)
+    })
   }
 
   /**
@@ -228,7 +213,10 @@ class ChallengeEditor extends Component {
           newChallenge[field][index][option.key] = option.name
         }
       }
-      this.setState({ challenge: newChallenge })
+      const prevValue = oldChallenge[field]
+      this.setState({ challenge: newChallenge }, () => {
+        this.autoUpdateChallengeThrottled(field, prevValue)
+      })
     }
   }
 
@@ -247,7 +235,10 @@ class ChallengeEditor extends Component {
       value = value && value.map(element => _.set(_.set({}, 'duration', element.duration), 'phaseId', element.id))
     }
     newChallenge[field] = value
-    this.setState({ challenge: newChallenge })
+    const prevValue = oldChallenge[field]
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled(field, prevValue)
+    })
   }
 
   /**
@@ -285,7 +276,9 @@ class ChallengeEditor extends Component {
     } else {
       _.set(newChallenge, `${field}.${index}.check`, checked)
     }
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled(field)
+    })
   }
 
   toggleAdvanceSettings () {
@@ -299,7 +292,9 @@ class ChallengeEditor extends Component {
     const { attachments: oldAttachments } = challenge
     const newAttachments = _.remove(oldAttachments, att => att.fileName !== file)
     newChallenge.attachments = _.clone(newAttachments)
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled('attachments')
+    })
   }
 
   /**
@@ -312,7 +307,9 @@ class ChallengeEditor extends Component {
     const newPhaseList = _.cloneDeep(oldChallenge.phases)
     newPhaseList.splice(index, 1)
     newChallenge.phases = _.clone(newPhaseList)
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled('phases')
+    })
   }
   /**
    * Reset  challenge Phases
@@ -348,7 +345,8 @@ class ChallengeEditor extends Component {
 
   isValidChallenge () {
     if (this.props.isNew) {
-      return !!(this.state.challenge.name && this.state.challenge.name.length)
+      const { name } = this.state.challenge
+      return !!name // TODO && track)
     }
     return !Object.values(pick(['track', 'typeId', 'name', 'description', 'tags', 'prizeSets'],
       this.state.challenge)).filter(v => !v.length).length
@@ -379,18 +377,19 @@ class ChallengeEditor extends Component {
     const { challenge } = this.state
     let newChallenge = { ...challenge }
     newChallenge[field] = options ? options.split(',') : []
-    if (field === 'termsIds') {
-      // backwards compatibily with v4 requires converting 'terms' field to 'termsIds'
-      delete newChallenge.terms
-    }
-    this.setState({ challenge: newChallenge })
+
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled(field)
+    })
   }
 
   onUpdatePhase (newValue, property, index) {
     if (property === 'duration' && newValue < 0) newValue = 0
     let newChallenge = _.cloneDeep(this.state.challenge)
     newChallenge.phases[index][property] = newValue
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled('phases')
+    })
   }
 
   onUploadFile (files) {
@@ -402,7 +401,9 @@ class ChallengeEditor extends Component {
         size: file.size
       })
     })
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled('attachments')
+    })
   }
 
   collectChallengeData (status) {
@@ -419,7 +420,7 @@ class ChallengeEditor extends Component {
       'groups',
       'prizeSets',
       'startDate',
-      'termsIds'], this.state.challenge)
+      'terms'], this.state.challenge)
     challenge.legacy = {
       reviewType: challenge.reviewType,
       track: challenge.track
@@ -438,7 +439,7 @@ class ChallengeEditor extends Component {
       'duration',
       'phaseId'
     ], p))
-    if (challenge.termsIds && challenge.termsIds.length === 0) delete challenge.termsIds
+    if (challenge.terms && challenge.terms.length === 0) delete challenge.terms
     delete challenge.attachments
     delete challenge.track
     delete challenge.reviewType
@@ -469,10 +470,12 @@ class ChallengeEditor extends Component {
   async createNewChallenge () {
     if (!this.props.isNew) return
 
+    const { name } = this.state.challenge
     const newChallenge = {
       status: 'New',
       projectId: this.props.projectId,
-      name: this.state.challenge.name
+      name: name
+      // TODO track: track
     }
     try {
       const draftChallenge = await createChallenge(newChallenge)
@@ -483,37 +486,23 @@ class ChallengeEditor extends Component {
     }
   }
 
-  async autoUpdateChallenge (changes) {
-    if (this.state.isResetting) {
-      this.setState({ isResetting: false, isLoading: false })
-      return
-    }
+  async autoUpdateChallenge (changedField, prevValue) {
     if (this.state.isSaving || this.state.isLoading || !this.getCurrentChallengeId()) return
     const challengeId = this.state.draftChallenge.data.id || this.props.challengeId
-    const changedField = changes[0].path[0]
     if (_.includes(['copilot', 'reviewer'], changedField)) {
       switch (changedField) {
         case 'copilot':
-          await this.updateResource(challengeId, 'Copilot', changes[0].rhs, changes[0].lhs)
+          await this.updateResource(challengeId, 'Copilot', this.state.challenge.copilot, prevValue)
           break
         case 'reviewer':
-          await this.updateResource(challengeId, 'Reviewer', changes[0].rhs, changes[0].lhs)
+          await this.updateResource(challengeId, 'Reviewer', this.state.challenge.reviewer, prevValue)
           break
       }
     } else {
-      const patchObject = changes.reduce((acc, curVal) => {
-        if (curVal.kind === 'A' && curVal.item.kind === 'N') { // A change ocurred within an array and a new element was added
-          const key = curVal.path[0]
-          if (!_.has(acc, key)) {
-            _.set(acc, key, [])
-          }
-          acc[key].push(curVal.item.rhs)
-        }
-        if (curVal.kind === 'E') { // a property/element was edited
-          _.set(acc, curVal.path[0], curVal.rhs)
-        }
-        return acc
-      }, {})
+      const patchObject = (changedField === 'reviewType')
+        ? { legacy: { reviewType: this.state.challenge[changedField] } }
+        : { [changedField]: this.state.challenge[changedField] }
+
       await patchChallenge(challengeId, patchObject)
     }
   }
@@ -708,13 +697,14 @@ class ChallengeEditor extends Component {
       ? (
         <form name='challenge-new-form' noValidate autoComplete='off'>
           <div className={styles.newFormContainer}>
+            {/* TODO <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers} /> */}
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
           </div>
         </form>
       ) : (
         <form name='challenge-info-form' noValidate autoComplete='off'>
           <div className={styles.group}>
-            <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
+            <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers /* TODO () => null */} /> {/* Disable changes */}
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />

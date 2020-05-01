@@ -11,7 +11,7 @@ const CopilotFeeField = ({ challenge, onUpdateOthers }) => {
   const value = copilotFee.prizes[0].value
 
   function onChange (e) {
-    const value = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER, '$')
+    const value = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER)
     copilotFee.prizes = [{ type, value }]
     onUpdateOthers({ field: 'prizeSets', value: [...challenge.prizeSets.filter(p => p.type !== type), copilotFee] })
   }
