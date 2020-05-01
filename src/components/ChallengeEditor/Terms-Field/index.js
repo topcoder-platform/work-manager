@@ -6,7 +6,6 @@ import styles from './Terms-Field.module.scss'
 
 const TermsField = ({ terms, challenge, onUpdateMultiSelect }) => {
   const mapOps = item => ({ label: item.title, value: item.id })
-  const selectedTerms = challenge.terms ? challenge.terms.map(term => term.id) : challenge.termsIds
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
@@ -19,8 +18,8 @@ const TermsField = ({ terms, challenge, onUpdateMultiSelect }) => {
           multi
           options={terms.map(mapOps)}
           simpleValue
-          value={selectedTerms}
-          onChange={(value) => onUpdateMultiSelect(value, 'termsIds')}
+          value={challenge.terms}
+          onChange={(value) => onUpdateMultiSelect(value, 'terms')}
         />
       </div>
     </div>
