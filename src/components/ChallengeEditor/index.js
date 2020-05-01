@@ -231,9 +231,6 @@ class ChallengeEditor extends Component {
     if (field === 'copilot' && value === newChallenge[field]) {
       value = null
     }
-    if (field === 'phases') {
-      value = value && value.map(element => _.set(_.set({}, 'duration', element.duration), 'phaseId', element.id))
-    }
     newChallenge[field] = value
     const prevValue = oldChallenge[field]
     this.setState({ challenge: newChallenge }, () => {
@@ -318,6 +315,11 @@ class ChallengeEditor extends Component {
     const timelinePhaseIds = timeline.phases.map(timelinePhase => timelinePhase.phaseId || timelinePhase)
     const validPhases = this.props.metadata.challengePhases.filter(challengePhase => {
       return timelinePhaseIds.includes(challengePhase.id)
+    })
+    const challengeStartDate = this.state.challenge.startDate
+    validPhases.forEach(phase => {
+      if (!phase.scheduledStartDate) phase.scheduledStartDate = challengeStartDate
+      if (!phase.scheduledEndDate) phase.scheduledEndDate = moment(challengeStartDate).add(1, 'days')
     })
     this.onUpdateOthers({
       field: 'phases',
@@ -473,7 +475,8 @@ class ChallengeEditor extends Component {
     const newChallenge = {
       status: 'New',
       projectId: this.props.projectId,
-      name: name
+      name: name,
+      startDate: moment().add(1, 'days').format()
       // TODO track: track
     }
     try {
