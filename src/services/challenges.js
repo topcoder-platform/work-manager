@@ -85,8 +85,7 @@ export async function fetchChallenge (challengeId) {
       newResponse.forumId = newResponse.legacy.forumId
     }
   }
-
-  convertChallengePhaseFromSecondsToHours(newResponse.phrases)
+  convertChallengePhaseFromSecondsToHours(newResponse.phases)
   return newResponse
 }
 

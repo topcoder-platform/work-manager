@@ -51,7 +51,7 @@ export const convertChallengePhaseFromSecondsToHours = (phases) => {
   if (phases) {
     const hourToSecond = 60 * 60
     _.forEach(phases, (p) => {
-      p.duration = p.duration / hourToSecond
+      p.duration = Math.round(p.duration / hourToSecond)
     })
   }
 }
