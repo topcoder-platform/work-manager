@@ -329,7 +329,8 @@ class ChallengeEditor extends Component {
     })
   }
 
-  toggleLaunch () {
+  toggleLaunch (e) {
+    e.preventDefault()
     if (this.validateChallenge()) {
       this.setState({ isLaunch: true })
     }
@@ -341,7 +342,8 @@ class ChallengeEditor extends Component {
     }
   }
 
-  createChallengeHandler () {
+  createChallengeHandler (e) {
+    e.preventDefault()
     if (this.validateChallenge()) {
       this.createNewChallenge()
     }
@@ -698,17 +700,44 @@ class ChallengeEditor extends Component {
       )
     }
 
+    const actionButtons = <React.Fragment>
+      {!isLoading && this.state.hasValidationErrors && <div className={styles.error}>Please fix the errors before saving</div>}
+      {
+        isNew
+          ? (
+            <div className={styles.buttonContainer}>
+              <div className={styles.button}>
+                <OutlineButton text={'Create Challenge'} type={'success'} submit />
+              </div>
+            </div>
+          ) : (
+            <div className={styles.bottomContainer}>
+              {!isLoading && <LastSavedDisplay timeLastSaved={timeLastSaved} />}
+              {!isLoading && <div className={styles.buttonContainer}>
+                <div className={styles.button}>
+                  <OutlineButton text={'Launch as Draft'} type={'success'} onClick={this.createDraftHandler} />
+                </div>
+                {!isLoading && (<div className={styles.button}>
+                  <PrimaryButton text={'Launch as Active'} type={'info'} submit />
+                </div>)}
+              </div>}
+            </div>
+          )
+      }
+    </React.Fragment>
+
     const currentChallengeId = this.getCurrentChallengeId()
     const challengeForm = isNew
       ? (
-        <form name='challenge-new-form' noValidate autoComplete='off'>
+        <form name='challenge-new-form' noValidate autoComplete='off' onSubmit={this.createChallengeHandler}>
           <div className={styles.newFormContainer}>
             <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
           </div>
+          { actionButtons }
         </form>
       ) : (
-        <form name='challenge-info-form' noValidate autoComplete='off'>
+        <form name='challenge-info-form' noValidate autoComplete='off' onSubmit={this.toggleLaunch}>
           <div className={styles.group}>
             <TrackField challenge={challenge} onUpdateOthers={() => null} /> {/* Disable changes */}
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
@@ -777,28 +806,8 @@ class ChallengeEditor extends Component {
             { this.state.hasValidationErrors && !challenge.prizeSets.length &&
               <div className={styles.error}>Should have at-least 1 prize value</div> }
           </div>
+          { actionButtons }
         </form>
-      )
-
-    const actionButtons = isNew
-      ? (
-        <div className={styles.buttonContainer}>
-          <div className={styles.button}>
-            <OutlineButton text={'Create Challenge'} type={'success'} onClick={this.createChallengeHandler} />
-          </div>
-        </div>
-      ) : (
-        <div className={styles.bottomContainer}>
-          {!isLoading && <LastSavedDisplay timeLastSaved={timeLastSaved} />}
-          {!isLoading && <div className={styles.buttonContainer}>
-            <div className={styles.button}>
-              <OutlineButton text={'Launch as Draft'} type={'success'} onClick={this.createDraftHandler} />
-            </div>
-            {!isLoading && (<div className={styles.button}>
-              <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
-            </div>)}
-          </div>}
-        </div>
       )
 
     return (
@@ -813,8 +822,6 @@ class ChallengeEditor extends Component {
             { challengeForm }
           </div>
         </div>
-        {!isLoading && this.state.hasValidationErrors && <div className={styles.error}>Please fix the errors before saving</div>}
-        { actionButtons }
       </div>
     )
   }
