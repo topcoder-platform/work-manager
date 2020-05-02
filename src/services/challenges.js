@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import qs from 'qs'
 import { axiosInstance } from './axiosWithAuth'
+import { updateChallengePhaseBeforeSendRequest, convertChallengePhaseFromSecondsToHours } from '../util/date'
 import FormData from 'form-data'
 const {
   CHALLENGE_API_URL,
@@ -61,6 +62,7 @@ export async function fetchTimelineTemplates () {
  */
 export async function fetchChallengePhases () {
   const response = await axiosInstance.get(CHALLENGE_PHASES_URL)
+  convertChallengePhaseFromSecondsToHours(response.data)
   return _.get(response, 'data', [])
 }
 
@@ -83,6 +85,8 @@ export async function fetchChallenge (challengeId) {
       newResponse.forumId = newResponse.legacy.forumId
     }
   }
+
+  convertChallengePhaseFromSecondsToHours(newResponse.phrases)
   return newResponse
 }
 
@@ -102,7 +106,7 @@ export function createChallenge (challenge) {
  * @returns {Promise<*>}
  */
 export function updateChallenge (challenge, challengeId) {
-  return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, challenge)
+  return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(challenge))
 }
 
 export function uploadAttachment (challengeId, file) {
@@ -130,7 +134,7 @@ export function fetchChallenges (filters, params) {
  * @param params
  */
 export function patchChallenge (challengeId, params) {
-  return axiosInstance.patch(`${CHALLENGE_API_URL}/${challengeId}`, params)
+  return axiosInstance.patch(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(params))
 }
 
 /**
