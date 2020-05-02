@@ -506,10 +506,9 @@ class ChallengeEditor extends Component {
           break
       }
     } else {
-      const patchObject = (changedField === 'reviewType')
+      let patchObject = (changedField === 'reviewType')
         ? { legacy: { reviewType: this.state.challenge[changedField] } }
         : { [changedField]: this.state.challenge[changedField] }
-
       await patchChallenge(challengeId, patchObject)
     }
   }
