@@ -321,16 +321,22 @@ class ChallengeEditor extends Component {
       if (!phase.scheduledEndDate) phase.scheduledEndDate = moment(challengeStartDate).add(phase.duration || 24, 'hours').format()
       delete Object.assign(phase, { phaseId: phase.id }).id
     })
+
+    const { challenge: oldChallenge } = this.state
+    const newChallenge = { ...oldChallenge }
+    newChallenge.timelineTemplateId = timeline.id
     this.setState({
-      currentTemplate: timeline
-    })
-    this.onUpdateOthers({
-      field: 'timelineTemplateId',
-      value: timeline.id
-    })
-    this.onUpdateOthers({
-      field: 'phases',
-      value: validPhases
+      currentTemplate: timeline,
+      challenge: newChallenge
+    }, () => {
+      this.onUpdateOthers({
+        field: 'timelineTemplateId',
+        value: timeline.id
+      })
+      this.onUpdateOthers({
+        field: 'phases',
+        value: validPhases
+      })
     })
   }
 
