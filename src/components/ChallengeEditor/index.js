@@ -325,6 +325,10 @@ class ChallengeEditor extends Component {
       currentTemplate: timeline
     })
     this.onUpdateOthers({
+      field: 'timelineTemplateId',
+      value: timeline.id
+    })
+    this.onUpdateOthers({
       field: 'phases',
       value: validPhases
     })
@@ -512,6 +516,10 @@ class ChallengeEditor extends Component {
       let patchObject = (changedField === 'reviewType')
         ? { legacy: { reviewType: this.state.challenge[changedField] } }
         : { [changedField]: this.state.challenge[changedField] }
+      if (changedField === 'phases') {
+        // need timelineTemplateId for updating phase
+        patchObject.timelineTemplateId = this.state.challenge.timelineTemplateId
+      }
       await patchChallenge(challengeId, patchObject)
     }
   }
