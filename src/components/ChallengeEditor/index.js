@@ -321,12 +321,22 @@ class ChallengeEditor extends Component {
       if (!phase.scheduledEndDate) phase.scheduledEndDate = moment(challengeStartDate).add(phase.duration || 24, 'hours').format()
       delete Object.assign(phase, { phaseId: phase.id }).id
     })
+
+    const { challenge: oldChallenge } = this.state
+    const newChallenge = { ...oldChallenge }
+    newChallenge.timelineTemplateId = timeline.id
     this.setState({
-      currentTemplate: timeline
-    })
-    this.onUpdateOthers({
-      field: 'phases',
-      value: validPhases
+      currentTemplate: timeline,
+      challenge: newChallenge
+    }, () => {
+      this.onUpdateOthers({
+        field: 'timelineTemplateId',
+        value: timeline.id
+      })
+      this.onUpdateOthers({
+        field: 'phases',
+        value: validPhases
+      })
     })
   }
 
@@ -512,6 +522,10 @@ class ChallengeEditor extends Component {
       let patchObject = (changedField === 'reviewType')
         ? { legacy: { reviewType: this.state.challenge[changedField] } }
         : { [changedField]: this.state.challenge[changedField] }
+      if (changedField === 'phases') {
+        // need timelineTemplateId for updating phase
+        patchObject.timelineTemplateId = this.state.challenge.timelineTemplateId
+      }
       await patchChallenge(challengeId, patchObject)
     }
   }
