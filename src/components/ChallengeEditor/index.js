@@ -318,7 +318,8 @@ class ChallengeEditor extends Component {
     const challengeStartDate = this.state.challenge.startDate
     validPhases.forEach(phase => {
       if (!phase.scheduledStartDate) phase.scheduledStartDate = challengeStartDate
-      if (!phase.scheduledEndDate) phase.scheduledEndDate = moment(challengeStartDate).add(1, 'days')
+      if (!phase.scheduledEndDate) phase.scheduledEndDate = moment(challengeStartDate).add(phase.duration || 24, 'hours').format()
+      delete Object.assign(phase, { phaseId: phase.id }).id
     })
     this.setState({
       currentTemplate: timeline
