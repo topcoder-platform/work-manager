@@ -9,7 +9,7 @@ import { pick } from 'lodash/fp'
 import Modal from '../Modal'
 import { withRouter } from 'react-router-dom'
 
-import { VALIDATION_VALUE_TYPE } from '../../config/constants'
+import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
 import TypeField from './Type-Field'
@@ -230,6 +230,9 @@ class ChallengeEditor extends Component {
     let { value, field } = data
     if (field === 'copilot' && value === newChallenge[field]) {
       value = null
+    }
+    if (field === 'prizeSets') {
+      value = value.filter(val => PRIZE_SETS_TYPE.includes(val.type))
     }
     newChallenge[field] = value
     const prevValue = oldChallenge[field]
