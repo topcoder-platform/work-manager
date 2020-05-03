@@ -54,10 +54,9 @@
 
     .group {
       @include form-container-default();
+      @include form-container-common();
       background-color: $white;
       width: 100%;
-      margin-bottom: 30px;
-      border: 1px solid $lighter-gray;
       border-radius: 6px;
       box-sizing: border-box;
 
@@ -200,7 +199,10 @@
       margin-bottom: 0;
     }
 
-
+    .newFormContainer {
+      @include form-container-common();
+      padding-bottom: 30px;
+    }
   }
 }
 
@@ -218,9 +220,12 @@
   flex-shrink: 0;
 
   .button {
-    width: 135px;
     height: 40px;
     margin-right: 30px;
+
+    span {
+      padding: 0 20px;
+    }
   }
 
   .button:nth-of-type(3) {
@@ -342,5 +347,11 @@
       }
     }
   }
+}
+
+.bottomContainer {
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
 }
 

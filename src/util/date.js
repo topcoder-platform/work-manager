@@ -2,8 +2,8 @@
  * Provides date related utility methods
  */
 import moment from 'moment'
-import 'moment-duration-format'
 import _ from 'lodash'
+import 'moment-duration-format'
 
 const HOUR_MS = 60 * 60 * 1000
 const DAY_MS = 24 * HOUR_MS
@@ -44,40 +44,29 @@ export const getRoundFormattedDuration = (duration) => {
 }
 
 /**
- * Get phase end date
- * @param index  the phase index
- * @param challenge the challenge data
- * @param getChallengePhase a function to get the challenge phase from the metadata for the specified phase
- * @returns {moment.Moment}
+ * Convert challenge phases from seconds to hours
+ * @param {Array} phases challenge phares
  */
-export const getPhaseEndDate = (index, challenge, getChallengePhase) => {
-  const map = {}
-  const alreadyCalculated = {}
-  _.each(challenge.phases, p => {
-    if (p) {
-      const phase = getChallengePhase(p)
-      if (phase) map[phase.id] = phase.duration
-    }
-  })
-  const finalDate = moment(challenge.startDate)
-  const phase = challenge.phases[index] && getChallengePhase(challenge.phases[index])
-  if (phase) {
-    finalDate.add(phase.duration, 'hours')
-    if (!phase.predecessor) {
-      return finalDate
-    }
+export const convertChallengePhaseFromSecondsToHours = (phases) => {
+  if (phases) {
+    const hourToSecond = 60 * 60
+    _.forEach(phases, (p) => {
+      p.duration = Math.round(p.duration / hourToSecond)
+    })
   }
+}
 
-  for (let i = index; i >= 0 && challenge.phases[i]; i -= 1) {
-    const challengePhase = getChallengePhase(challenge.phases[i])
-    const predecessor = challengePhase && challengePhase.predecessor
-    if (predecessor) {
-      if (!alreadyCalculated[predecessor]) {
-        alreadyCalculated[predecessor] = true
-        finalDate.add(map[predecessor], 'hours')
-      }
-    }
+/**
+ * Convert challenge phase from hours to second and remove unnessesary field
+ * @param {Object} challengeDetail challenge detail
+ */
+export const updateChallengePhaseBeforeSendRequest = (challengeDetail) => {
+  const hourToSecond = 60 * 60
+  if (challengeDetail.phases) {
+    challengeDetail.phases = challengeDetail.phases.map((p) => ({
+      duration: p.duration * hourToSecond,
+      phaseId: p.phaseId
+    }))
   }
-
-  return finalDate
+  return challengeDetail
 }

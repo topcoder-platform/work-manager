@@ -6,12 +6,12 @@ import cn from 'classnames'
 
 import styles from './PrimaryButton.module.scss'
 
-const PrimaryButton = ({ type, text, link, onClick }) => {
+const PrimaryButton = ({ type, text, link, onClick, submit }) => {
   if (_.isEmpty(link)) {
     return (
-      <div className={cn(styles.container, styles[type])} onClick={onClick}>
+      <button type={submit ? 'submit' : 'button'} className={cn(styles.container, styles[type])} onClick={submit ? null : onClick}>
         <span>{text}</span>
-      </div>
+      </button>
     )
   }
   return (
@@ -25,7 +25,8 @@ PrimaryButton.propTypes = {
   type: PropTypes.string.isRequired,
   text: PropTypes.string.isRequired,
   link: PropTypes.string,
-  onClick: PropTypes.func
+  onClick: PropTypes.func,
+  submit: PropTypes.bool
 }
 
 export default PrimaryButton

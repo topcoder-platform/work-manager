@@ -77,6 +77,10 @@
         white-space: nowrap;
         display: flex;
         align-items: center;
+
+        .red {
+          color: $tc-red;
+        }
       }
 
       &.title {
@@ -87,6 +91,11 @@
           color: $gray;
           font-size: 15px;
         }
+      }
+
+      &.col1.error {
+        color: $tc-red;
+        margin-top: -25px;
       }
 
       &.col2 {

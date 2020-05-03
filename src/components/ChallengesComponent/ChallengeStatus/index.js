@@ -12,6 +12,7 @@ import styles from './ChallengeStatus.module.scss'
 
 const statuses = {
   [CHALLENGE_STATUS.ACTIVE]: styles.green,
+  [CHALLENGE_STATUS.NEW]: styles.yellow,
   [CHALLENGE_STATUS.DRAFT]: styles.gray,
   [CHALLENGE_STATUS.COMPLETED]: styles.blue
 }

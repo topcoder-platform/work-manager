@@ -12,7 +12,6 @@ import Select from '../../Select'
 import { parseSVG } from '../../../util/svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDown, faTrash } from '@fortawesome/free-solid-svg-icons'
-import { getPhaseEndDate } from '../../../util/date'
 
 const GANTT_ROW_HEIGHT = 45
 const GANTT_FOOTER_HEIGHT = 40
@@ -21,42 +20,12 @@ class ChallengeScheduleField extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      isEdit: false,
-      currentTemplate: ''
+      isEdit: false
     }
     this.toggleEditMode = this.toggleEditMode.bind(this)
     this.renderTimeLine = this.renderTimeLine.bind(this)
     this.getChallengePhase = this.getChallengePhase.bind(this)
-  }
-
-  componentDidMount () {
-    this._ismounted = true
-  }
-
-  componentWillUnmount () {
-    this._ismounted = false
-  }
-
-  componentWillReceiveProps (nextProps) {
-    const { currentTemplate } = this.state
-    const { templates, resetPhase } = nextProps
-    const { challenge } = this.props
-    if (!currentTemplate && templates.length > 0 && this._ismounted && challenge.phases.length === 0) {
-      // select first default templates for phases
-      this.setState({
-        currentTemplate: templates[0]
-      }, () => {
-        const interval = setInterval(() => {
-          // use interval to make sure resetPhase work
-          const { challenge } = this.props
-          if (challenge && challenge.phases.length === 0 && this._ismounted) {
-            resetPhase(templates[0])
-          } else if (!this._ismounted || (challenge && challenge.phases.length > 0)) {
-            clearInterval(interval)
-          }
-        }, 1000)
-      })
-    }
+    this.getAllPhases = this.getAllPhases.bind(this)
   }
 
   toggleEditMode () {
@@ -71,13 +40,19 @@ class ChallengeScheduleField extends Component {
     return challengePhase || phase
   }
 
+  getAllPhases () {
+    const { challenge } = this.props
+    return challenge.phases
+  }
+
   renderTimeLine () {
     const { challenge } = this.props
-    if (_.isEmpty(challenge.phases) || typeof challenge.phases[0] === 'undefined') {
+    const allPhases = this.getAllPhases()
+    if (_.isEmpty(allPhases) || typeof allPhases[0] === 'undefined') {
       return null
     }
 
-    const timelines = []
+    let timelines = []
     timelines.push(
       [
         { type: 'string', label: 'Task ID' },
@@ -90,31 +65,32 @@ class ChallengeScheduleField extends Component {
       ]
     )
 
-    var secondToMilisecond = 1000 // = 1 second
-    _.map(challenge.phases, (p, index) => {
+    var hourToMilisecond = 60 * 60 * 1000 // = 1 hour
+    _.map(allPhases, (p, index) => {
       const phase = this.getChallengePhase(p)
-      if (phase) {
+      if (phase && timelines) {
         var startDate
         if (p.scheduledStartDate) {
           startDate = moment(p.scheduledStartDate).toDate()
         } else {
-          startDate = (index === 0 || index === 1) || !phase.predecessor ? moment(challenge.startDate).toDate() : getPhaseEndDate(index - 1, challenge, this.getChallengePhase).toDate()
+          timelines = null
+          return
         }
         var endDate
         if (p.scheduledEndDate) {
           endDate = moment(p.scheduledEndDate).toDate()
         } else {
-          endDate = getPhaseEndDate(index, challenge, this.getChallengePhase).toDate()
+          timelines = null
+          return
         }
-
         var currentTime = moment().valueOf()
-        var percentage = 30
+        var percentage = 0
         if (startDate.getTime() > currentTime) {
-          percentage = 30
+          percentage = 0
         } else if (endDate.getTime() > currentTime) {
-          percentage = Math.round(((currentTime - startDate.getTime()) / (secondToMilisecond * p.duration)) * 100)
+          percentage = Math.round(((currentTime - startDate.getTime()) / (hourToMilisecond * p.duration)) * 100)
         } else {
-          percentage = Math.round(((endDate.getTime() - startDate.getTime()) / (secondToMilisecond * p.duration)) * 100)
+          percentage = Math.round(((endDate.getTime() - startDate.getTime()) / (hourToMilisecond * p.duration)) * 100)
         }
         timelines.push(
           [
@@ -143,7 +119,7 @@ class ChallengeScheduleField extends Component {
             phase={this.getChallengePhase(p)}
             withDuration
             onUpdateSelect={onUpdateSelect}
-            onUpdatePhase={newValue => onUpdatePhase(newValue, 'duration', index)}
+            onUpdatePhase={newValue => onUpdatePhase(parseInt(newValue), 'duration', index)}
             endDate={moment(p.scheduledEndDate).toDate()}
           />
           {index !== 0 &&
@@ -175,6 +151,14 @@ class ChallengeScheduleField extends Component {
       textProgressContainer = $('#gantt-chart > div svg > g').eq(9)
     }
 
+    let finishDate = 0
+    _.forEach(timelines, (t) => {
+      const dateTmp = moment(t[3])
+      if (dateTmp > finishDate) {
+        finishDate = dateTmp
+      }
+    })
+
     // bold and add date for last x label
     const lastText = xAxisLabelContainer.find('text').last()
     lastText.css('font-weight', 'bold')
@@ -185,15 +169,13 @@ class ChallengeScheduleField extends Component {
       xAxisLabelContainer.append(lastDateText)
       const lastDateTextValue = lastDateText.text()
       // check and show last timeline
-      const lastTimeline = timelines[timelines.length - 1]
-      const startDate = moment(lastTimeline[2])
       let increasingDate = 0
       // increaseing date until match with the last label
-      while (startDate.format('ddd') !== lastDateTextValue && increasingDate < 8) {
+      while (finishDate.format('ddd') !== lastDateTextValue && increasingDate < 8) {
         increasingDate += 1
-        startDate.add(1, 'days')
+        finishDate.add(1, 'days')
       }
-      lastDateText.html(startDate.format('MM/DD'))
+      lastDateText.html(finishDate.format('MM/DD'))
       lastDateText.attr('dx', parseFloat(lastDateText.attr('dx')) - (parseFloat(lastDateText[0].getBBox().width) - parseFloat(lastText[0].getBBox().width)) / 2)
     }
 
@@ -205,7 +187,7 @@ class ChallengeScheduleField extends Component {
         textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" x="${$(element).attr('x')}" y="-5") - 3}">${moment(selectedTimeline[2]).format('MMM DD YYYY, hh:mm')}</text>`))
       } else if (index === timelines.length - 2) {
         // finish date
-        textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" text-anchor="end" x="${parseFloat($(element).attr('x')) + parseFloat($(element).attr('width'))}" y="-5">${moment(selectedTimeline[3]).format('MMM DD YYYY, hh:mm')}</text>`))
+        textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" text-anchor="end" x="${parseFloat($(element).attr('x')) + parseFloat($(element).attr('width'))}" y="-5">${finishDate.format('MMM DD YYYY, hh:mm')}</text>`))
       }
     })
 
@@ -217,12 +199,14 @@ class ChallengeScheduleField extends Component {
       checkingProgressContainer.mouseover(() => {
         const popupContainer = popupContainerElement()
         const textElement = popupContainer.find('text').eq(0)
+        const bgElement = popupContainer.find('rect').eq(0)
         if (textElement) {
           _.forEach(timelines, (timeline, index) => {
             if (index > 0) {
               if ((textElement.text()).indexOf(timeline[0] + ':') >= 0) {
                 // update grantt chart popup content
                 textElement.html(`<tspan dx="0">${timeline[0]}:</tspan><tspan x="${textElement.attr('x')}" dy="18">${moment(timeline[2]).format('MMM DD YYYY, hh:mm')} - ${moment(timeline[3]).format('MMM DD YYYY, hh:mm')}</tspan>`)
+                bgElement.attr('width', '310')
               }
             }
           })
@@ -242,11 +226,49 @@ class ChallengeScheduleField extends Component {
   }
 
   render () {
-    const { isEdit, currentTemplate } = this.state
+    const { isEdit } = this.state
+    const { currentTemplate } = this.props
     const { templates, resetPhase, challenge, onUpdateOthers } = this.props
     const timelines = !isEdit ? this.renderTimeLine() : null
     return (
       <div className={styles.container}>
+        <div className={cn(styles.row, styles.flexStart)}>
+          <div className={cn(styles.field, styles.col1)}>
+            <label htmlFor={'notitle'}>Timeline template <span className={styles.red}>*</span> :</label>
+          </div>
+          <div className={cn(styles.field, styles.col2)}>
+            <div className={styles.templates}>
+              <Select
+                name='template'
+                options={templates}
+                placeholder='Select'
+                labelKey='name'
+                valueKey='name'
+                clearable={false}
+                value={currentTemplate}
+                onChange={(e) => resetPhase(e)}
+              />
+            </div>
+          </div>
+        </div>
+        { challenge.submitTriggered && _.isEmpty(currentTemplate) && <div className={styles.row}>
+          <div className={cn(styles.field, styles.col1, styles.error)}>
+            Select a Timeline template
+          </div>
+        </div> }
+        <div className={styles.PhaseRow}>
+          <PhaseInput
+            withDates
+            phase={{
+              name: 'Start Date',
+              date: challenge.startDate
+            }}
+            onUpdatePhase={newValue => onUpdateOthers({
+              field: 'startDate',
+              value: newValue.format()
+            })}
+          />
+        </div>
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1, styles.title)}>
             <label htmlFor={`challengeSchedule`}>Challenge Schedule :</label>
@@ -266,7 +288,7 @@ class ChallengeScheduleField extends Component {
             <div id='gantt-chart' className={styles.chart}>
               <Chart
                 width={'100%'}
-                height={`${(challenge.phases.length * GANTT_ROW_HEIGHT) + GANTT_FOOTER_HEIGHT}px`}
+                height={`${(this.getAllPhases().length * GANTT_ROW_HEIGHT) + GANTT_FOOTER_HEIGHT}px`}
                 chartType='Gantt'
                 loader={<div>Loading Timelines</div>}
                 data={timelines}
@@ -287,48 +309,6 @@ class ChallengeScheduleField extends Component {
           )
         }
         {
-          isEdit && (
-            <React.Fragment>
-              <div className={cn(styles.row, styles.flexStart)}>
-                <div className={cn(styles.field, styles.col1)}>
-                  <label htmlFor={'notitle'}>Timeline template :</label>
-                </div>
-                <div className={cn(styles.field, styles.col2)}>
-                  <div className={styles.templates}>
-                    <Select
-                      name='template'
-                      options={templates}
-                      placeholder='Import Timeline from Templates'
-                      labelKey='name'
-                      valueKey='name'
-                      clearable={false}
-                      value={currentTemplate}
-                      onChange={(e) => this.setState({
-                        currentTemplate: e
-                      }, () => resetPhase(e))}
-                    />
-                  </div>
-                </div>
-              </div>
-            </React.Fragment>
-          )
-        }
-        { isEdit && (
-          <div className={styles.PhaseRow}>
-            <PhaseInput
-              withDates
-              phase={{
-                name: 'Start Date',
-                date: challenge.startDate
-              }}
-              onUpdatePhase={newValue => onUpdateOthers({
-                field: 'startDate',
-                value: newValue
-              })}
-            />
-          </div>
-        ) }
-        {
           isEdit && this.renderPhaseEditor()
         }
       </div>
@@ -337,7 +317,8 @@ class ChallengeScheduleField extends Component {
 }
 
 ChallengeScheduleField.defaultProps = {
-  templates: []
+  templates: [],
+  currentTemplate: null
 }
 
 ChallengeScheduleField.propTypes = {
@@ -348,7 +329,8 @@ ChallengeScheduleField.propTypes = {
   resetPhase: PropTypes.func.isRequired,
   onUpdateSelect: PropTypes.func.isRequired,
   onUpdatePhase: PropTypes.func.isRequired,
-  onUpdateOthers: PropTypes.func.isRequired
+  onUpdateOthers: PropTypes.func.isRequired,
+  currentTemplate: PropTypes.shape()
 }
 
 export default ChallengeScheduleField

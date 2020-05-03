@@ -7,6 +7,8 @@ import cn from 'classnames'
 import moment from 'moment'
 import { pick } from 'lodash/fp'
 import Modal from '../Modal'
+import { withRouter } from 'react-router-dom'
+
 import { VALIDATION_VALUE_TYPE } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
@@ -25,9 +27,15 @@ import Loader from '../Loader'
 import ChallengeScheduleField from './ChallengeSchedule-Field'
 import { convertDollarToInteger, validateValue } from '../../util/input-check'
 import dropdowns from './mock-data/dropdowns'
+import LastSavedDisplay from './LastSaved-Display'
 import styles from './ChallengeEditor.module.scss'
-import { withRouter } from 'react-router-dom'
-import { createChallenge, updateChallenge, createResource, deleteResource } from '../../services/challenges'
+import {
+  createChallenge,
+  updateChallenge,
+  createResource,
+  deleteResource,
+  patchChallenge
+} from '../../services/challenges'
 
 const theme = {
   container: styles.modalContainer
@@ -53,11 +61,11 @@ class ChallengeEditor extends Component {
       isSaving: false,
       hasValidationErrors: false,
       challenge: {
-        ...dropdowns['newChallenge'],
-        startDate: moment().add(1, 'hour').format(),
-        phases: []
+        ...dropdowns['newChallenge']
       },
-      draftChallenge: { data: { id: null } }
+      draftChallenge: { data: { id: null } },
+      timeLastSaved: moment().format('MMMM Do YYYY, h:mm:ss a'),
+      currentTemplate: null
     }
     this.onUpdateInput = this.onUpdateInput.bind(this)
     this.onUpdateSelect = this.onUpdateSelect.bind(this)
@@ -74,20 +82,21 @@ class ChallengeEditor extends Component {
     this.onUpdateDescription = this.onUpdateDescription.bind(this)
     this.onSubmitChallenge = this.onSubmitChallenge.bind(this)
     this.resetModal = this.resetModal.bind(this)
-    this.checkToCreateDraftChallenge = this.checkToCreateDraftChallenge.bind(this)
+    this.createNewChallenge = this.createNewChallenge.bind(this)
     this.getCurrentChallengeId = this.getCurrentChallengeId.bind(this)
-    this.addQueryToUrl = this.addQueryToUrl.bind(this)
     this.isValidChallenge = this.isValidChallenge.bind(this)
-    this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 1000)
+    this.createChallengeHandler = this.createChallengeHandler.bind(this)
+    this.createDraftHandler = this.createDraftHandler.bind(this)
+    this.getCurrentTemplate = this.getCurrentTemplate.bind(this)
+    this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000)
   }
 
-  componentDidMount () {
-    this.resetChallengeData(this.props.isNew, this.props.challengeId, this.props.challengeDetails, this.props.metadata, this.props.attachments)
-  }
-
-  componentWillReceiveProps (nextProps) {
-    const { isNew: newValue, challengeId, challengeDetails, metadata, attachments } = nextProps
-    this.resetChallengeData(newValue, challengeId, challengeDetails, metadata, attachments)
+  componentDidUpdate (prevProps, prevState) {
+    const { isNew: prevIsNew, challengeDetails: prevChallengeDetails } = prevProps
+    const { isNew, challengeId, challengeDetails, metadata, attachments } = this.props
+    if (prevIsNew !== isNew || (_.isEmpty(prevChallengeDetails) && !_.isEmpty(challengeDetails))) {
+      this.resetChallengeData(isNew, challengeId, challengeDetails, metadata, attachments)
+    }
   }
 
   async resetChallengeData (isNew, challengeId, challengeDetails, metadata, attachments) {
@@ -122,7 +131,7 @@ class ChallengeEditor extends Component {
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge, [fieldName]: description }
     this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled()
+      this.autoUpdateChallengeThrottled(fieldName)
     })
   }
 
@@ -137,6 +146,7 @@ class ChallengeEditor extends Component {
   onUpdateInput (e, isSub = false, field = null, index = -1, valueType = null) {
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge }
+    let fieldChanged = null
     if (!isSub) {
       switch (e.target.name) {
         case 'reviewCost':
@@ -147,6 +157,7 @@ class ChallengeEditor extends Component {
           newChallenge[e.target.name] = e.target.value
           break
       }
+      fieldChanged = e.target.name
     } else {
       switch (field) {
         case 'checkpointPrizes':
@@ -173,11 +184,12 @@ class ChallengeEditor extends Component {
           newChallenge[field][e.target.name] = e.target.value
           break
       }
+      fieldChanged = field
     }
 
     // calculate total cost of challenge
     this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled()
+      this.autoUpdateChallengeThrottled(fieldChanged)
     })
   }
 
@@ -201,9 +213,9 @@ class ChallengeEditor extends Component {
           newChallenge[field][index][option.key] = option.name
         }
       }
-
+      const prevValue = oldChallenge[field]
       this.setState({ challenge: newChallenge }, () => {
-        this.autoUpdateChallengeThrottled()
+        this.autoUpdateChallengeThrottled(field, prevValue)
       })
     }
   }
@@ -219,13 +231,10 @@ class ChallengeEditor extends Component {
     if (field === 'copilot' && value === newChallenge[field]) {
       value = null
     }
-    if (field === 'phases') {
-      value = value && value.map(element => _.set(_.set({}, 'duration', element.duration), 'phaseId', element.id))
-    }
     newChallenge[field] = value
+    const prevValue = oldChallenge[field]
     this.setState({ challenge: newChallenge }, () => {
-      this.checkToCreateDraftChallenge()
-      this.autoUpdateChallengeThrottled()
+      this.autoUpdateChallengeThrottled(field, prevValue)
     })
   }
 
@@ -265,7 +274,7 @@ class ChallengeEditor extends Component {
       _.set(newChallenge, `${field}.${index}.check`, checked)
     }
     this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled()
+      this.autoUpdateChallengeThrottled(field)
     })
   }
 
@@ -281,7 +290,7 @@ class ChallengeEditor extends Component {
     const newAttachments = _.remove(oldAttachments, att => att.fileName !== file)
     newChallenge.attachments = _.clone(newAttachments)
     this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled()
+      this.autoUpdateChallengeThrottled('attachments')
     })
   }
 
@@ -296,7 +305,7 @@ class ChallengeEditor extends Component {
     newPhaseList.splice(index, 1)
     newChallenge.phases = _.clone(newPhaseList)
     this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled()
+      this.autoUpdateChallengeThrottled('phases')
     })
   }
   /**
@@ -307,23 +316,58 @@ class ChallengeEditor extends Component {
     const validPhases = this.props.metadata.challengePhases.filter(challengePhase => {
       return timelinePhaseIds.includes(challengePhase.id)
     })
-    this.onUpdateOthers({
-      field: 'phases',
-      value: validPhases
+    const challengeStartDate = this.state.challenge.startDate
+    validPhases.forEach(phase => {
+      if (!phase.scheduledStartDate) phase.scheduledStartDate = challengeStartDate
+      if (!phase.scheduledEndDate) phase.scheduledEndDate = moment(challengeStartDate).add(phase.duration || 24, 'hours').format()
+      delete Object.assign(phase, { phaseId: phase.id }).id
+    })
+
+    const { challenge: oldChallenge } = this.state
+    const newChallenge = { ...oldChallenge }
+    newChallenge.timelineTemplateId = timeline.id
+    this.setState({
+      currentTemplate: timeline,
+      challenge: newChallenge
+    }, () => {
+      this.onUpdateOthers({
+        field: 'timelineTemplateId',
+        value: timeline.id
+      })
+      this.onUpdateOthers({
+        field: 'phases',
+        value: validPhases
+      })
     })
   }
 
-  toggleLaunch () {
+  toggleLaunch (e) {
+    e.preventDefault()
     if (this.validateChallenge()) {
       this.setState({ isLaunch: true })
     }
   }
 
-  isValidChallenge () {
-    if (Object.values(pick(['track', 'typeId', 'name', 'description', 'tags', 'prizeSets'], this.state.challenge)).filter(v => !v.length).length) {
-      return false
+  createDraftHandler () {
+    if (this.validateChallenge()) {
+      this.saveDraft()
     }
-    return true
+  }
+
+  createChallengeHandler (e) {
+    e.preventDefault()
+    if (this.validateChallenge()) {
+      this.createNewChallenge()
+    }
+  }
+
+  isValidChallenge () {
+    if (this.props.isNew) {
+      const { name, track } = this.state.challenge
+      return !!(name && track)
+    }
+    return !(Object.values(pick(['track', 'typeId', 'name', 'description', 'tags', 'prizeSets'],
+      this.state.challenge)).filter(v => !v.length).length || _.isEmpty(this.state.currentTemplate))
   }
 
   validateChallenge () {
@@ -351,12 +395,9 @@ class ChallengeEditor extends Component {
     const { challenge } = this.state
     let newChallenge = { ...challenge }
     newChallenge[field] = options ? options.split(',') : []
-    if (field === 'termsIds') {
-      // backwards compatibily with v4 requires converting 'terms' field to 'termsIds'
-      delete newChallenge.terms
-    }
+
     this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled()
+      this.autoUpdateChallengeThrottled(field)
     })
   }
 
@@ -365,7 +406,7 @@ class ChallengeEditor extends Component {
     let newChallenge = _.cloneDeep(this.state.challenge)
     newChallenge.phases[index][property] = newValue
     this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled()
+      this.autoUpdateChallengeThrottled('phases')
     })
   }
 
@@ -379,7 +420,7 @@ class ChallengeEditor extends Component {
       })
     })
     this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled()
+      this.autoUpdateChallengeThrottled('attachments')
     })
   }
 
@@ -397,7 +438,7 @@ class ChallengeEditor extends Component {
       'groups',
       'prizeSets',
       'startDate',
-      'termsIds'], this.state.challenge)
+      'terms'], this.state.challenge)
     challenge.legacy = {
       reviewType: challenge.reviewType,
       track: challenge.track
@@ -416,98 +457,78 @@ class ChallengeEditor extends Component {
       'duration',
       'phaseId'
     ], p))
-    if (challenge.termsIds && challenge.termsIds.length === 0) delete challenge.termsIds
+    if (challenge.terms && challenge.terms.length === 0) delete challenge.terms
     delete challenge.attachments
     delete challenge.track
     delete challenge.reviewType
     return challenge
   }
 
-  /**
-    * Append draft challenge id to url
-    * @param {Object} query query params object
-  */
-  addQueryToUrl (query) {
+  goToEdit (challengeID) {
     const { history } = this.props
-    const location = Object.assign({}, history.location)
-    history.push(`${location.pathname}?${queryString.stringify(query)}`)
+    const newPath = history.location.pathname.replace('/new', `/${challengeID}`) + '/edit'
+    history.push(newPath)
   };
 
-  async checkToCreateDraftChallenge () {
-    if (this.state.isSaving || !this.props.isNew || this.getCurrentChallengeId()) return
+  async saveDraft () {
     const challenge = this.collectChallengeData('Draft')
-    // can't create challenge without empty project
-    // I add fake data to make sure create challenge success
-    // but we only need challenge id
-    if (!challenge.phases || !challenge.phases.length) return
+
     this.setState({ isSaving: true })
-    if (!challenge.typeId) {
-      challenge.typeId = this.props.metadata.challengeTypes[0].id
+    try {
+      const draftChallenge = await this.updateAllChallengeInfo(challenge)
+      this.setState({ isConfirm: draftChallenge.data.id, challenge: draftChallenge })
+    } catch (e) {
+      this.setState({ isSaving: false })
+    } finally {
+      this.setState({ isSaving: false })
     }
-    if (!challenge.name) {
-      challenge.name = 'Draft'
-    }
-    if (!challenge.description) {
-      challenge.description = 'Draft'
-    }
-    if (!challenge.legacy) {
-      challenge.legacy = {
+  }
+
+  async createNewChallenge () {
+    if (!this.props.isNew) return
+
+    const { name, track } = this.state.challenge
+    const newChallenge = {
+      status: 'New',
+      projectId: this.props.projectId,
+      name: name,
+      startDate: moment().add(1, 'days').format(),
+      legacy: {
+        track: track,
         reviewType: 'INTERNAL'
       }
     }
-    if (!challenge.legacy.track) {
-      challenge.legacy.track = 'DEVELOP'
-    }
-    if (!challenge.prizeSets || !challenge.prizeSets.length) {
-      challenge.prizeSets = [
-        {
-          type: 'Challenge prizes',
-          prizes: [ {
-            type: 'money', value: '1' } ]
-        }
-      ]
-    }
-    if (!challenge.tags || !challenge.tags.length) {
-      challenge.tags = ['Heroku']
-    }
-
     try {
-      const draftChallenge = await createChallenge(pick([
-        'phases',
-        'typeId',
-        'name',
-        'description',
-        'privateDescription',
-        'tags',
-        'groups',
-        'prizeSets',
-        'legacy',
-        'startDate',
-        'timelineTemplateId',
-        'projectId',
-        'status'
-      ], challenge))
-      this.addQueryToUrl({
-        challengeId: draftChallenge.data.id
-      })
+      const draftChallenge = await createChallenge(newChallenge)
+      this.goToEdit(draftChallenge.data.id)
       this.setState({ isSaving: false, draftChallenge })
     } catch (e) {
       this.setState({ isSaving: false })
     }
   }
 
-  async autoUpdateChallenge () {
-    if (this.state.isSaving || !this.getCurrentChallengeId() || !this.isValidChallenge()) return
-    const challenge = this.collectChallengeData(this.getCurrentChallengeStatus())
-    await this.updateAllChallengeInfo(challenge)
-  }
-
-  getCurrentChallengeStatus () {
-    const { challenge } = this.state
-    if (challenge && challenge.status) {
-      return challenge.status
+  async autoUpdateChallenge (changedField, prevValue) {
+    if (this.state.isSaving || this.state.isLoading || !this.getCurrentChallengeId()) return
+    const challengeId = this.state.draftChallenge.data.id || this.props.challengeId
+    if (_.includes(['copilot', 'reviewer'], changedField)) {
+      switch (changedField) {
+        case 'copilot':
+          await this.updateResource(challengeId, 'Copilot', this.state.challenge.copilot, prevValue)
+          break
+        case 'reviewer':
+          await this.updateResource(challengeId, 'Reviewer', this.state.challenge.reviewer, prevValue)
+          break
+      }
+    } else {
+      let patchObject = (changedField === 'reviewType')
+        ? { legacy: { reviewType: this.state.challenge[changedField] } }
+        : { [changedField]: this.state.challenge[changedField] }
+      if (changedField === 'phases') {
+        // need timelineTemplateId for updating phase
+        patchObject.timelineTemplateId = this.state.challenge.timelineTemplateId
+      }
+      await patchChallenge(challengeId, patchObject)
     }
-    return 'Draft'
   }
 
   getCurrentChallengeId () {
@@ -535,12 +556,14 @@ class ChallengeEditor extends Component {
     }
   }
 
+  updateTimeLastSaved () {
+    this.setState({ timeLastSaved: moment().format('MMMM Do YYYY, h:mm:ss a') })
+  }
+
   async updateAllChallengeInfo (challenge) {
     const challengeId = this.getCurrentChallengeId()
     const response = await updateChallenge(challenge, challengeId)
-    const { copilot, reviewer } = this.state.challenge
-    if (copilot) await this.updateResource(response.data.id, 'Copilot', copilot)
-    if (reviewer) await this.updateResource(response.data.id, 'Reviewer', reviewer)
+    this.updateTimeLastSaved()
     return response
   }
 
@@ -549,20 +572,21 @@ class ChallengeEditor extends Component {
     return resourceRoles ? resourceRoles.find(role => role.name === name) : null
   }
 
-  async updateResource (challengeId, name, value) {
-    let needToCreateResource = this.props.isNew
+  async updateResource (challengeId, name, value, prevValue) {
+    const resourceRole = this.getResourceRoleByName(name)
     const newResource = {
       challengeId,
       memberHandle: value,
-      roleId: this.getResourceRoleByName(name).id
+      roleId: resourceRole ? resourceRole.id : null
     }
-    const currentResource = this.getResourceFromProps(name)
-    if (currentResource && value !== currentResource.memberHandle) {
-      needToCreateResource = true
-      const resource = _.pick(currentResource, ['challengeId', 'memberHandle', 'roleId'])
-      await deleteResource(resource)
+    if (prevValue) {
+      const oldResource = _.pick(newResource, ['challengeId', 'roleId'])
+      oldResource.memberHandle = prevValue
+      await deleteResource(oldResource)
     }
-    if (needToCreateResource) await createResource(newResource)
+
+    await createResource(newResource)
+    this.updateTimeLastSaved()
   }
 
   updateAttachmentlist (challenge, attachments) {
@@ -586,11 +610,22 @@ class ChallengeEditor extends Component {
     return challengeResources && role && challengeResources.find(resource => resource.roleId === role.id)
   }
 
+  getCurrentTemplate () {
+    const { currentTemplate, challenge } = this.state
+    if (currentTemplate) {
+      return currentTemplate
+    }
+    const { metadata } = this.props
+    if (!challenge) {
+      return null
+    }
+    return _.find(metadata.timelineTemplates, { id: challenge.timelineTemplateId })
+  }
+
   render () {
-    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings } = this.state
+    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, timeLastSaved } = this.state
     const {
       isNew,
-      isDraft,
       isLoading,
       metadata,
       uploadAttachment,
@@ -624,6 +659,9 @@ class ChallengeEditor extends Component {
       )
     }
 
+    let activateModal = null
+    let draftModal = null
+
     let { type } = challenge
     if (!type) {
       const { typeId } = challenge
@@ -634,7 +672,171 @@ class ChallengeEditor extends Component {
         }
       }
     }
+
+    if (!isNew && isLaunch && !isConfirm) {
+      activateModal = (
+        <Modal theme={theme} onCancel={() => this.resetModal()}>
+          <div className={styles.contentContainer}>
+            <div className={styles.title}>Launch Challenge Confirmation</div>
+            <span>{`Do you want to launch ${type} challenge "${challenge.name}"?`}</span>
+            <div className={styles.buttonGroup}>
+              <div className={styles.button}>
+                <OutlineButton
+                  className={cn({ disabled: this.state.isSaving })}
+                  text={'Cancel'}
+                  type={'danger'}
+                  onClick={() => this.resetModal()}
+                />
+              </div>
+              <div className={styles.button}>
+                <PrimaryButton
+                  text={this.state.isSaving ? 'Launching...' : 'Confirm'}
+                  type={'info'}
+                  onClick={() => this.onSubmitChallenge('Active')}
+                />
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )
+    }
+
+    if (!isNew && isLaunch && isConfirm) {
+      draftModal = (
+        <Modal theme={theme} onCancel={() => this.resetModal()}>
+          <div className={cn(styles.contentContainer, styles.confirm)}>
+            <div className={styles.title}>Success</div>
+            <span>{
+              challenge.status === 'Draft'
+                ? 'Your challenge is saved as draft'
+                : 'We have scheduled your challenge and processed the payment'
+            }</span>
+            <div className={styles.buttonGroup}>
+              <div className={styles.buttonSizeA}>
+                <PrimaryButton text={'Close'} type={'info'} link={'/'} />
+              </div>
+              <div className={styles.buttonSizeA} onClick={() => this.resetModal()}>
+                <OutlineButton
+                  text={'View Challenge'}
+                  type={'success'}
+                  link={`/projects/${this.props.projectId}/challenges/${isConfirm}/edit`}
+                />
+              </div>
+            </div>
+          </div>
+        </Modal>
+      )
+    }
+
+    const actionButtons = <React.Fragment>
+      {!isLoading && this.state.hasValidationErrors && <div className={styles.error}>Please fix the errors before saving</div>}
+      {
+        isNew
+          ? (
+            <div className={styles.buttonContainer}>
+              <div className={styles.button}>
+                <OutlineButton text={'Create Challenge'} type={'success'} submit />
+              </div>
+            </div>
+          ) : (
+            <div className={styles.bottomContainer}>
+              {!isLoading && <LastSavedDisplay timeLastSaved={timeLastSaved} />}
+              {!isLoading && <div className={styles.buttonContainer}>
+                <div className={styles.button}>
+                  <OutlineButton text={'Launch as Draft'} type={'success'} onClick={this.createDraftHandler} />
+                </div>
+                {!isLoading && (<div className={styles.button}>
+                  <PrimaryButton text={'Launch as Active'} type={'info'} submit />
+                </div>)}
+              </div>}
+            </div>
+          )
+      }
+    </React.Fragment>
+
     const currentChallengeId = this.getCurrentChallengeId()
+    const challengeForm = isNew
+      ? (
+        <form name='challenge-new-form' noValidate autoComplete='off' onSubmit={this.createChallengeHandler}>
+          <div className={styles.newFormContainer}>
+            <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
+            <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
+          </div>
+          { actionButtons }
+        </form>
+      ) : (
+        <form name='challenge-info-form' noValidate autoComplete='off' onSubmit={this.toggleLaunch}>
+          <div className={styles.group}>
+            <TrackField challenge={challenge} onUpdateOthers={() => null} /> {/* Disable changes */}
+            <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
+            <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
+            <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
+            <ReviewTypeField
+              reviewers={metadata.members}
+              challenge={challenge}
+              onUpdateOthers={this.onUpdateOthers}
+              onUpdateSelect={this.onUpdateSelect}
+            />
+            <div className={styles.row}>
+              <div className={styles.tcCheckbox}>
+                <input
+                  name='isOpenAdvanceSettings'
+                  type='checkbox'
+                  id='isOpenAdvanceSettings'
+                  checked={isOpenAdvanceSettings}
+                  onChange={this.toggleAdvanceSettings}
+                />
+                <label htmlFor='isOpenAdvanceSettings'>
+                  <div>View Advance Settings</div>
+                  <input type='hidden' />
+                </label>
+              </div>
+            </div>
+            { isOpenAdvanceSettings && (
+              <React.Fragment>
+                <TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />
+                <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
+              </React.Fragment>
+            )}
+            <ChallengeScheduleField
+              templates={metadata.timelineTemplates}
+              challengePhases={metadata.challengePhases}
+              removePhase={this.removePhase}
+              resetPhase={this.resetPhase}
+              challenge={challenge}
+              onUpdateSelect={this.onUpdateSelect}
+              onUpdatePhase={this.onUpdatePhase}
+              onUpdateOthers={this.onUpdateOthers}
+              currentTemplate={this.getCurrentTemplate()}
+            />
+          </div>
+          <div className={styles.group}>
+            <div className={styles.title}>Public specification</div>
+            <TextEditorField
+              challengeTags={metadata.challengeTags}
+              challenge={challenge}
+              onUpdateCheckbox={this.onUpdateCheckbox}
+              onUpdateInput={this.onUpdateInput}
+              onUpdateDescription={this.onUpdateDescription}
+              onUpdateMultiSelect={this.onUpdateMultiSelect}
+            />
+            { currentChallengeId && (
+              <AttachmentField
+                challenge={{ ...challenge, id: currentChallengeId }}
+                onUploadFile={uploadAttachment}
+                token={token}
+                removeAttachment={removeAttachment}
+              />
+            )}
+            <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
+            <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
+            <ChallengeTotalField challenge={challenge} />
+            { this.state.hasValidationErrors && !challenge.prizeSets.length &&
+              <div className={styles.error}>Should have at-least 1 prize value</div> }
+          </div>
+          { actionButtons }
+        </form>
+      )
 
     return (
       <div className={styles.wrapper}>
@@ -642,92 +844,12 @@ class ChallengeEditor extends Component {
         <div className={styles.title}>{getTitle(isNew)}</div>
         <div className={styles.textRequired}>* Required</div>
         <div className={styles.container}>
-          { isLaunch && !isConfirm && (
-            <Modal theme={theme}>
-              <div className={styles.contentContainer}>
-                <div className={styles.title}>Launch Challenge Confirmation</div>
-                <span>{`Do you want to launch ${type} challenge "${challenge.name}"?`}</span>
-                <div className={styles.buttonGroup}>
-                  <div className={styles.button}>
-                    <OutlineButton className={cn({ disabled: this.state.isSaving })} text={'Cancel'} type={'danger'} onClick={() => this.resetModal()} />
-                  </div>
-                  <div className={styles.button}>
-                    <PrimaryButton text={this.state.isSaving ? 'Launching...' : 'Confirm'} type={'info'} onClick={() => this.onSubmitChallenge('Active')} />
-                  </div>
-                </div>
-              </div>
-            </Modal>
-          ) } { isLaunch && isConfirm && (
-            <Modal theme={theme}>
-              <div className={cn(styles.contentContainer, styles.confirm)}>
-                <div className={styles.title}>Success</div>
-                <span>{ challenge.status === 'Draft' ? 'Your challenge is saved as draft' : 'We have scheduled your challenge and processed the payment'}</span>
-                <div className={styles.buttonGroup}>
-                  <div className={styles.buttonSizeA}>
-                    <PrimaryButton text={'Back to Dashboard'} type={'info'} link={'/'} />
-                  </div>
-                  <div className={styles.buttonSizeA} onClick={() => this.resetModal()}>
-                    <OutlineButton text={'View Challenge'} type={'success'} link={`/projects/${this.props.projectId}/challenges/${isConfirm}/edit`} />
-                  </div>
-                </div>
-              </div>
-            </Modal>
-          ) }
+          { activateModal }
+          { draftModal }
           <div className={styles.formContainer}>
-            <form name='challenge-info-form' noValidate autoComplete='off'>
-              <div className={styles.group}>
-                <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
-                <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
-                <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
-                <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
-                <ReviewTypeField reviewers={metadata.members} challenge={challenge} onUpdateOthers={this.onUpdateOthers} onUpdateSelect={this.onUpdateSelect} />
-                <div className={styles.row}>
-                  <div className={styles.tcCheckbox}>
-                    <input name='isOpenAdvanceSettings' type='checkbox' id='isOpenAdvanceSettings' checked={isOpenAdvanceSettings} onChange={this.toggleAdvanceSettings} />
-                    <label htmlFor='isOpenAdvanceSettings'>
-                      <div>
-                        View Advance Settings
-                      </div>
-                      <input type='hidden' />
-                    </label>
-                  </div>
-                </div>
-                { isOpenAdvanceSettings && (
-                  <React.Fragment>
-                    <TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />
-                    <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
-                  </React.Fragment>
-                ) }
-                <ChallengeScheduleField templates={metadata.timelineTemplates} challengePhases={metadata.challengePhases} removePhase={this.removePhase} resetPhase={this.resetPhase} challenge={challenge} onUpdateSelect={this.onUpdateSelect} onUpdatePhase={this.onUpdatePhase} onUpdateOthers={this.onUpdateOthers} />
-              </div>
-              <div className={styles.group}>
-                <div className={styles.title}>Public specification</div>
-                <TextEditorField challengeTags={metadata.challengeTags} challenge={challenge} onUpdateCheckbox={this.onUpdateCheckbox} onUpdateInput={this.onUpdateInput} onUpdateDescription={this.onUpdateDescription} onUpdateMultiSelect={this.onUpdateMultiSelect} />
-                { currentChallengeId && (
-                  <AttachmentField
-                    challenge={{ ...challenge, id: currentChallengeId }}
-                    onUploadFile={uploadAttachment}
-                    token={token}
-                    removeAttachment={removeAttachment}
-                  />
-                )}
-                <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
-                <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
-                <ChallengeTotalField challenge={challenge} />
-                { this.state.hasValidationErrors && !challenge.prizeSets.length && <div className={styles.error}>Should have at-least 1 prize value</div> }
-              </div>
-            </form>
+            { challengeForm }
           </div>
         </div>
-        {!isLoading && this.state.hasValidationErrors && <div className={styles.error}>Please fix the errors before saving</div>}
-        {!isLoading && <div className={styles.buttonContainer}>
-          <div className={styles.button}>
-            <OutlineButton text={'Cancel'} type={'danger'} link={'/'} />
-          </div>
-          {(isNew || isDraft) && (<div className={styles.button}>
-            <PrimaryButton text={'Launch'} type={'info'} onClick={this.toggleLaunch} />
-          </div>)}
-        </div>}
       </div>
     )
   }
@@ -744,7 +866,6 @@ ChallengeEditor.propTypes = {
   challengeDetails: PropTypes.object,
   challengeResources: PropTypes.arrayOf(PropTypes.object),
   isNew: PropTypes.bool.isRequired,
-  isDraft: PropTypes.bool.isRequired,
   projectId: PropTypes.string.isRequired,
   challengeId: PropTypes.string,
   metadata: PropTypes.object.isRequired,

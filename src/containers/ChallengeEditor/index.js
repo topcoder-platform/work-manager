@@ -76,7 +76,6 @@ class ChallengeEditor extends Component {
         projectId={_.get(match.params, 'projectId', null)}
         challengeId={_.get(match.params, 'challengeId', null)}
         isNew={!_.has(match.params, 'challengeId')}
-        isDraft={_.get(challengeDetails, 'status') === 'Draft'}
         uploadAttachment={createAttachment}
         attachments={attachments}
         token={token}
