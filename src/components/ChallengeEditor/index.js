@@ -87,6 +87,7 @@ class ChallengeEditor extends Component {
     this.isValidChallenge = this.isValidChallenge.bind(this)
     this.createChallengeHandler = this.createChallengeHandler.bind(this)
     this.createDraftHandler = this.createDraftHandler.bind(this)
+    this.getCurrentTemplate = this.getCurrentTemplate.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000)
   }
 
@@ -609,8 +610,20 @@ class ChallengeEditor extends Component {
     return challengeResources && role && challengeResources.find(resource => resource.roleId === role.id)
   }
 
+  getCurrentTemplate () {
+    const { currentTemplate, challenge } = this.state
+    if (currentTemplate) {
+      return currentTemplate
+    }
+    const { metadata } = this.props
+    if (!challenge) {
+      return null
+    }
+    return _.find(metadata.timelineTemplates, { id: challenge.timelineTemplateId })
+  }
+
   render () {
-    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, timeLastSaved, currentTemplate } = this.state
+    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, timeLastSaved } = this.state
     const {
       isNew,
       isLoading,
@@ -794,7 +807,7 @@ class ChallengeEditor extends Component {
               onUpdateSelect={this.onUpdateSelect}
               onUpdatePhase={this.onUpdatePhase}
               onUpdateOthers={this.onUpdateOthers}
-              currentTemplate={currentTemplate}
+              currentTemplate={this.getCurrentTemplate()}
             />
           </div>
           <div className={styles.group}>
