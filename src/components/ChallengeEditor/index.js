@@ -8,6 +8,7 @@ import moment from 'moment'
 import { pick } from 'lodash/fp'
 import Modal from '../Modal'
 import { withRouter } from 'react-router-dom'
+import { toastr } from 'react-redux-toastr'
 
 import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
@@ -528,8 +529,16 @@ class ChallengeEditor extends Component {
         // need timelineTemplateId for updating phase
         patchObject.timelineTemplateId = this.state.challenge.timelineTemplateId
       }
-      const draftChallenge = await patchChallenge(challengeId, patchObject)
-      this.setState({ draftChallenge })
+      try {
+        const draftChallenge = await patchChallenge(challengeId, patchObject)
+        this.setState({ draftChallenge })
+      } catch (error) {
+        if (changedField === 'groups') {
+          toastr.error('Error', `You don't have access to the ${patchObject.groups[0]} group`)
+          const newGroups = this.state.challenge.groups.filter(group => group !== patchObject.groups[0])
+          this.setState({ challenge: { ...this.state.challenge, groups: newGroups } })
+        }
+      }
     }
   }
 
