@@ -110,6 +110,7 @@ class ChallengeEditor extends Component {
         const reviewerFromResources = reviewerResource ? reviewerResource.memberHandle : ''
         this.setState({ isConfirm: false, isLaunch: false })
         const challengeData = this.updateAttachmentlist(challengeDetails, attachments)
+        const currentTemplate = _.find(metadata.timelineTemplates, { id: challengeData.timelineTemplateId })
         let copilot, reviewer
         const challenge = this.state.challenge
         if (challenge) {
@@ -118,7 +119,11 @@ class ChallengeEditor extends Component {
         }
         challengeData.copilot = copilot || copilotFromResources
         challengeData.reviewer = reviewer || reviewerFromResources
-        this.setState({ challenge: { ...dropdowns['newChallenge'], ...challengeData }, isLoading: false })
+        this.setState({
+          challenge: { ...dropdowns['newChallenge'], ...challengeData },
+          isLoading: false,
+          currentTemplate
+        })
       } catch (e) {
         this.setState({ isLoading: true })
       }
