@@ -35,18 +35,23 @@ class ChallengeScheduleField extends Component {
 
   getChallengePhase (phase) {
     const { challengePhases } = this.props
+    if (!phase) {
+      return phase
+    }
     const challengePhase = challengePhases.find(challengePhase => challengePhase.id === phase.phaseId)
     if (challengePhase) challengePhase.duration = phase.duration
     return challengePhase || phase
   }
 
   getAllPhases () {
-    const { challenge } = this.props
+    const { challenge, challengePhasesWithCorrectTimeline } = this.props
+    if (challengePhasesWithCorrectTimeline && challengePhasesWithCorrectTimeline.length) {
+      return challengePhasesWithCorrectTimeline
+    }
     return challenge.phases
   }
 
   renderTimeLine () {
-    const { challenge } = this.props
     const allPhases = this.getAllPhases()
     if (_.isEmpty(allPhases) || typeof allPhases[0] === 'undefined') {
       return null
@@ -92,6 +97,7 @@ class ChallengeScheduleField extends Component {
         } else {
           percentage = Math.round(((endDate.getTime() - startDate.getTime()) / (hourToMilisecond * p.duration)) * 100)
         }
+        const predecessorPhase = phase.predecessor ? this.getChallengePhase(allPhases.filter(ph => ph.phaseId === phase.predecessor)[0]) : null
         timelines.push(
           [
             phase.name || '',
@@ -100,8 +106,8 @@ class ChallengeScheduleField extends Component {
             endDate,
             null,
             percentage,
-            phase.predecessor
-              ? this.getChallengePhase(challenge.phases.filter(ph => ph.phaseId === phase.predecessor)[0]).name
+            predecessorPhase
+              ? predecessorPhase.name
               : null
           ]
         )
@@ -318,12 +324,14 @@ class ChallengeScheduleField extends Component {
 
 ChallengeScheduleField.defaultProps = {
   templates: [],
-  currentTemplate: null
+  currentTemplate: null,
+  challengePhasesWithCorrectTimeline: []
 }
 
 ChallengeScheduleField.propTypes = {
   templates: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challengePhases: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+  challengePhasesWithCorrectTimeline: PropTypes.arrayOf(PropTypes.shape()),
   challenge: PropTypes.shape().isRequired,
   removePhase: PropTypes.func.isRequired,
   resetPhase: PropTypes.func.isRequired,
