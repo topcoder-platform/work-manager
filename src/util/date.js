@@ -63,10 +63,12 @@ export const convertChallengePhaseFromSecondsToHours = (phases) => {
 export const updateChallengePhaseBeforeSendRequest = (challengeDetail) => {
   const hourToSecond = 60 * 60
   if (challengeDetail.phases) {
-    challengeDetail.phases = challengeDetail.phases.map((p) => ({
+    const challengeDetailTmp = _.cloneDeep(challengeDetail)
+    challengeDetailTmp.phases = challengeDetailTmp.phases.map((p) => ({
       duration: p.duration * hourToSecond,
       phaseId: p.phaseId
     }))
+    return challengeDetailTmp
   }
   return challengeDetail
 }

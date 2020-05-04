@@ -8,8 +8,9 @@ import moment from 'moment'
 import { pick } from 'lodash/fp'
 import Modal from '../Modal'
 import { withRouter } from 'react-router-dom'
+import { toastr } from 'react-redux-toastr'
 
-import { VALIDATION_VALUE_TYPE } from '../../config/constants'
+import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
 import TypeField from './Type-Field'
@@ -88,6 +89,7 @@ class ChallengeEditor extends Component {
     this.createChallengeHandler = this.createChallengeHandler.bind(this)
     this.createDraftHandler = this.createDraftHandler.bind(this)
     this.getCurrentTemplate = this.getCurrentTemplate.bind(this)
+    this.getBackendChallengePhases = this.getBackendChallengePhases.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000)
   }
 
@@ -108,6 +110,7 @@ class ChallengeEditor extends Component {
         const reviewerFromResources = reviewerResource ? reviewerResource.memberHandle : ''
         this.setState({ isConfirm: false, isLaunch: false })
         const challengeData = this.updateAttachmentlist(challengeDetails, attachments)
+        const currentTemplate = _.find(metadata.timelineTemplates, { id: challengeData.timelineTemplateId })
         let copilot, reviewer
         const challenge = this.state.challenge
         if (challenge) {
@@ -116,7 +119,11 @@ class ChallengeEditor extends Component {
         }
         challengeData.copilot = copilot || copilotFromResources
         challengeData.reviewer = reviewer || reviewerFromResources
-        this.setState({ challenge: { ...dropdowns['newChallenge'], ...challengeData }, isLoading: false })
+        this.setState({
+          challenge: { ...dropdowns['newChallenge'], ...challengeData },
+          isLoading: false,
+          currentTemplate
+        })
       } catch (e) {
         this.setState({ isLoading: true })
       }
@@ -231,6 +238,9 @@ class ChallengeEditor extends Component {
     if (field === 'copilot' && value === newChallenge[field]) {
       value = null
     }
+    if (field === 'prizeSets') {
+      value = value.filter(val => PRIZE_SETS_TYPE.includes(val.type))
+    }
     newChallenge[field] = value
     const prevValue = oldChallenge[field]
     this.setState({ challenge: newChallenge }, () => {
@@ -316,10 +326,7 @@ class ChallengeEditor extends Component {
     const validPhases = this.props.metadata.challengePhases.filter(challengePhase => {
       return timelinePhaseIds.includes(challengePhase.id)
     })
-    const challengeStartDate = this.state.challenge.startDate
     validPhases.forEach(phase => {
-      if (!phase.scheduledStartDate) phase.scheduledStartDate = challengeStartDate
-      if (!phase.scheduledEndDate) phase.scheduledEndDate = moment(challengeStartDate).add(phase.duration || 24, 'hours').format()
       delete Object.assign(phase, { phaseId: phase.id }).id
     })
 
@@ -527,7 +534,16 @@ class ChallengeEditor extends Component {
         // need timelineTemplateId for updating phase
         patchObject.timelineTemplateId = this.state.challenge.timelineTemplateId
       }
-      await patchChallenge(challengeId, patchObject)
+      try {
+        const draftChallenge = await patchChallenge(challengeId, patchObject)
+        this.setState({ draftChallenge })
+      } catch (error) {
+        if (changedField === 'groups') {
+          toastr.error('Error', `You don't have access to the ${patchObject.groups[0]} group`)
+          const newGroups = this.state.challenge.groups.filter(group => group !== patchObject.groups[0])
+          this.setState({ challenge: { ...this.state.challenge, groups: newGroups } })
+        }
+      }
     }
   }
 
@@ -564,6 +580,7 @@ class ChallengeEditor extends Component {
     const challengeId = this.getCurrentChallengeId()
     const response = await updateChallenge(challenge, challengeId)
     this.updateTimeLastSaved()
+    this.setState({ draftChallenge: response })
     return response
   }
 
@@ -620,6 +637,14 @@ class ChallengeEditor extends Component {
       return null
     }
     return _.find(metadata.timelineTemplates, { id: challenge.timelineTemplateId })
+  }
+
+  getBackendChallengePhases () {
+    const { draftChallenge } = this.state
+    if (!draftChallenge.data.id) {
+      return []
+    }
+    return draftChallenge.data.phases
   }
 
   render () {
@@ -787,7 +812,7 @@ class ChallengeEditor extends Component {
                   onChange={this.toggleAdvanceSettings}
                 />
                 <label htmlFor='isOpenAdvanceSettings'>
-                  <div>View Advance Settings</div>
+                  <div>View Advanced Settings</div>
                   <input type='hidden' />
                 </label>
               </div>
@@ -804,6 +829,7 @@ class ChallengeEditor extends Component {
               removePhase={this.removePhase}
               resetPhase={this.resetPhase}
               challenge={challenge}
+              challengePhasesWithCorrectTimeline={this.getBackendChallengePhases()}
               onUpdateSelect={this.onUpdateSelect}
               onUpdatePhase={this.onUpdatePhase}
               onUpdateOthers={this.onUpdateOthers}

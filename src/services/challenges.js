@@ -95,7 +95,10 @@ export async function fetchChallenge (challengeId) {
  * @returns {Promise<*>}
  */
 export function createChallenge (challenge) {
-  return axiosInstance.post(CHALLENGE_API_URL, challenge)
+  return axiosInstance.post(CHALLENGE_API_URL, challenge).then(rs => {
+    convertChallengePhaseFromSecondsToHours(rs.data.phases)
+    return rs
+  })
 }
 
 /**
@@ -105,7 +108,10 @@ export function createChallenge (challenge) {
  * @returns {Promise<*>}
  */
 export function updateChallenge (challenge, challengeId) {
-  return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(challenge))
+  return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(challenge)).then(rs => {
+    convertChallengePhaseFromSecondsToHours(rs.data.phases)
+    return rs
+  })
 }
 
 export function uploadAttachment (challengeId, file) {
@@ -133,7 +139,10 @@ export function fetchChallenges (filters, params) {
  * @param params
  */
 export function patchChallenge (challengeId, params) {
-  return axiosInstance.patch(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(params))
+  return axiosInstance.patch(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(params)).then(rs => {
+    convertChallengePhaseFromSecondsToHours(rs.data.phases)
+    return rs
+  })
 }
 
 /**
