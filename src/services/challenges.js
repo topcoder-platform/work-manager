@@ -95,7 +95,10 @@ export async function fetchChallenge (challengeId) {
  * @returns {Promise<*>}
  */
 export function createChallenge (challenge) {
-  return axiosInstance.post(CHALLENGE_API_URL, challenge)
+  return axiosInstance.post(CHALLENGE_API_URL, challenge).then(rs => {
+    convertChallengePhaseFromSecondsToHours(rs.data.phases)
+    return rs
+  })
 }
 
 /**
