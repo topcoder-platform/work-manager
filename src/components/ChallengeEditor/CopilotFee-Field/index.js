@@ -7,7 +7,7 @@ import { VALIDATION_VALUE_TYPE } from '../../../config/constants'
 
 const CopilotFeeField = ({ challenge, onUpdateOthers }) => {
   const type = 'Copilot payment'
-  const copilotFee = challenge.prizeSets.find(p => p.type === type) || { type, prizes: [{ type, value: 0 }] }
+  const copilotFee = (challenge.prizeSets && challenge.prizeSets.find(p => p.type === type)) || { type, prizes: [{ type, value: 0 }] }
   const value = copilotFee.prizes[0].value
 
   function onChange (e) {
