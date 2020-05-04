@@ -798,7 +798,7 @@ class ChallengeEditor extends Component {
                   onChange={this.toggleAdvanceSettings}
                 />
                 <label htmlFor='isOpenAdvanceSettings'>
-                  <div>View Advance Settings</div>
+                  <div>View Advanced Settings</div>
                   <input type='hidden' />
                 </label>
               </div>
