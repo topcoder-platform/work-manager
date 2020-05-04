@@ -88,6 +88,7 @@ class ChallengeEditor extends Component {
     this.createChallengeHandler = this.createChallengeHandler.bind(this)
     this.createDraftHandler = this.createDraftHandler.bind(this)
     this.getCurrentTemplate = this.getCurrentTemplate.bind(this)
+    this.getBackendChallengePhases = this.getBackendChallengePhases.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000)
   }
 
@@ -319,10 +320,7 @@ class ChallengeEditor extends Component {
     const validPhases = this.props.metadata.challengePhases.filter(challengePhase => {
       return timelinePhaseIds.includes(challengePhase.id)
     })
-    const challengeStartDate = this.state.challenge.startDate
     validPhases.forEach(phase => {
-      if (!phase.scheduledStartDate) phase.scheduledStartDate = challengeStartDate
-      if (!phase.scheduledEndDate) phase.scheduledEndDate = moment(challengeStartDate).add(phase.duration || 24, 'hours').format()
       delete Object.assign(phase, { phaseId: phase.id }).id
     })
 
@@ -530,7 +528,8 @@ class ChallengeEditor extends Component {
         // need timelineTemplateId for updating phase
         patchObject.timelineTemplateId = this.state.challenge.timelineTemplateId
       }
-      await patchChallenge(challengeId, patchObject)
+      const draftChallenge = await patchChallenge(challengeId, patchObject)
+      this.setState({ draftChallenge })
     }
   }
 
@@ -567,6 +566,7 @@ class ChallengeEditor extends Component {
     const challengeId = this.getCurrentChallengeId()
     const response = await updateChallenge(challenge, challengeId)
     this.updateTimeLastSaved()
+    this.setState({ draftChallenge: response })
     return response
   }
 
@@ -623,6 +623,14 @@ class ChallengeEditor extends Component {
       return null
     }
     return _.find(metadata.timelineTemplates, { id: challenge.timelineTemplateId })
+  }
+
+  getBackendChallengePhases () {
+    const { draftChallenge } = this.state
+    if (!draftChallenge.data.id) {
+      return []
+    }
+    return draftChallenge.data.phases
   }
 
   render () {
@@ -807,6 +815,7 @@ class ChallengeEditor extends Component {
               removePhase={this.removePhase}
               resetPhase={this.resetPhase}
               challenge={challenge}
+              challengePhasesWithCorrectTimeline={this.getBackendChallengePhases()}
               onUpdateSelect={this.onUpdateSelect}
               onUpdatePhase={this.onUpdatePhase}
               onUpdateOthers={this.onUpdateOthers}
