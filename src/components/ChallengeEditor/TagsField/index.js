@@ -19,7 +19,7 @@ const TagsField = ({ challengeTags, challenge, onUpdateMultiSelect }) => {
             multi
             options={challengeTags.map(mapOps)}
             simpleValue
-            value={challenge.tags.join(',')}
+            value={(challenge.tags && challenge.tags.length) ? challenge.tags.join(',') : ''}
             onChange={(value) => onUpdateMultiSelect(value, 'tags')}
           />
         </div>

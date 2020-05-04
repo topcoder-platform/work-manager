@@ -51,7 +51,7 @@ class ChallengePrizesField extends Component {
 
   getChallengePrize () {
     const type = 'Challenge prizes'
-    return this.props.challenge.prizeSets.find(p => p.type === type) || { type, prizes: [{ type: CHALLENGE_PRIZE_TYPE.MONEY, value: 0 }] }
+    return (this.props.challenge.prizeSets && this.props.challenge.prizeSets.length && this.props.challenge.prizeSets.find(p => p.type === type)) || { type, prizes: [{ type: CHALLENGE_PRIZE_TYPE.MONEY, value: 0 }] }
   }
 
   renderPrizes () {

@@ -6,11 +6,14 @@ import cn from 'classnames'
 import { convertDollarToInteger } from '../../../util/input-check'
 
 const ChallengeTotalField = ({ challenge }) => {
-  const challengeTotal = _.flatten(challenge.prizeSets.map(p => p.prizes))
-    .map(p => p.value)
-    .map(v => convertDollarToInteger(v, '$'))
-    .map(v => +v)
-    .reduce((prev, next) => prev + next, 0)
+  let challengeTotal = null
+  if (challenge.prizeSets) {
+    challengeTotal = _.flatten(challenge.prizeSets.map(p => p.prizes))
+      .map(p => p.value)
+      .map(v => convertDollarToInteger(v, '$'))
+      .map(v => +v)
+      .reduce((prev, next) => prev + next, 0)
+  }
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
