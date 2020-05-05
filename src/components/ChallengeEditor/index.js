@@ -370,8 +370,8 @@ class ChallengeEditor extends Component {
 
   isValidChallenge () {
     if (this.props.isNew) {
-      const { name, track } = this.state.challenge
-      return !!(name && track)
+      const { name, track, typeId } = this.state.challenge
+      return !!name && !!track && !!typeId
     }
     return !(Object.values(pick(['track', 'typeId', 'name', 'description', 'tags', 'prizeSets'],
       this.state.challenge)).filter(v => !v.length).length || _.isEmpty(this.state.currentTemplate))
@@ -494,14 +494,15 @@ class ChallengeEditor extends Component {
   async createNewChallenge () {
     if (!this.props.isNew) return
 
-    const { name, track } = this.state.challenge
+    const { name, track, typeId } = this.state.challenge
     const newChallenge = {
       status: 'New',
       projectId: this.props.projectId,
-      name: name,
+      name,
+      typeId,
       startDate: moment().add(1, 'days').format(),
       legacy: {
-        track: track,
+        track,
         reviewType: 'INTERNAL'
       }
     }
@@ -785,6 +786,7 @@ class ChallengeEditor extends Component {
         <form name='challenge-new-form' noValidate autoComplete='off' onSubmit={this.createChallengeHandler}>
           <div className={styles.newFormContainer}>
             <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
+            <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
           </div>
           { actionButtons }
