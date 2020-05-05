@@ -5,7 +5,7 @@ import cn from 'classnames'
 import styles from './ReviewType-Field.module.scss'
 
 const ReviewTypeField = ({ reviewers, challenge, onUpdateOthers, onUpdateSelect }) => {
-  const reviewType = challenge.legacy ? challenge.legacy.reviewType.toLowerCase() : 'community'
+  const reviewType = challenge.reviewType ? challenge.reviewType.toLowerCase() : 'community'
   const isCommunity = reviewType === 'community'
   const isInternal = reviewType === 'internal'
   return (

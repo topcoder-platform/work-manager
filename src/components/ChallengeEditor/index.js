@@ -483,7 +483,7 @@ class ChallengeEditor extends Component {
     this.setState({ isSaving: true })
     try {
       const draftChallenge = await this.updateAllChallengeInfo(challenge)
-      this.setState({ isConfirm: draftChallenge.data.id, challenge: draftChallenge })
+      this.setState({ isConfirm: draftChallenge.data.id })
     } catch (e) {
       this.setState({ isSaving: false })
     } finally {
