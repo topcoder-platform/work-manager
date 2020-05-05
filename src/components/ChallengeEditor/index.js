@@ -81,7 +81,7 @@ class ChallengeEditor extends Component {
     this.onUpdatePhase = this.onUpdatePhase.bind(this)
     this.resetChallengeData = this.resetChallengeData.bind(this)
     this.onUpdateDescription = this.onUpdateDescription.bind(this)
-    this.onSubmitChallenge = this.onSubmitChallenge.bind(this)
+    this.onActiveChallenge = this.onActiveChallenge.bind(this)
     this.resetModal = this.resetModal.bind(this)
     this.createNewChallenge = this.createNewChallenge.bind(this)
     this.getCurrentChallengeId = this.getCurrentChallengeId.bind(this)
@@ -477,20 +477,6 @@ class ChallengeEditor extends Component {
     history.push(newPath)
   };
 
-  async saveDraft () {
-    const challenge = this.collectChallengeData('Draft')
-
-    this.setState({ isSaving: true })
-    try {
-      const draftChallenge = await this.updateAllChallengeInfo(challenge)
-      this.setState({ isConfirm: draftChallenge.data.id })
-    } catch (e) {
-      this.setState({ isSaving: false })
-    } finally {
-      this.setState({ isSaving: false })
-    }
-  }
-
   async createNewChallenge () {
     if (!this.props.isNew) return
 
@@ -561,13 +547,32 @@ class ChallengeEditor extends Component {
     return challengeId
   }
 
-  async onSubmitChallenge (status = 'Active') {
+  async onActiveChallenge () {
     if (this.state.isSaving) return
-    let challenge = this.collectChallengeData(status)
+    this.setState({ isSaving: true })
+    const status = 'Active'
+    let newChallenge = _.cloneDeep(this.state.challenge)
+    newChallenge.status = status
     try {
-      this.setState({ isSaving: true })
-      const response = await this.updateAllChallengeInfo(challenge)
-      this.setState({ isLaunch: true, isConfirm: response.data.id, challenge: { ...this.state.challenge, ...challenge }, isSaving: false })
+      const draftChallenge = await patchChallenge(newChallenge.id, {
+        status
+      })
+      this.setState({ isLaunch: true, isConfirm: newChallenge.id, draftChallenge, challenge: newChallenge, isSaving: false })
+    } catch (e) {
+      this.setState({ isSaving: false })
+    }
+  }
+
+  async saveDraft () {
+    this.setState({ isSaving: true })
+    try {
+      const status = 'Draft'
+      let newChallenge = _.cloneDeep(this.state.challenge)
+      newChallenge.status = status
+      const draftChallenge = await patchChallenge(newChallenge.id, {
+        status
+      })
+      this.setState({ isConfirm: newChallenge.id, draftChallenge, challenge: newChallenge, isSaving: false })
     } catch (e) {
       this.setState({ isSaving: false })
     }
@@ -701,7 +706,7 @@ class ChallengeEditor extends Component {
 
     if (!isNew && isLaunch && !isConfirm) {
       activateModal = (
-        <Modal theme={theme} onCancel={() => this.resetModal()}>
+        <Modal theme={theme} onCancel={this.resetModal}>
           <div className={styles.contentContainer}>
             <div className={styles.title}>Launch Challenge Confirmation</div>
             <span>{`Do you want to launch ${type} challenge "${challenge.name}"?`}</span>
@@ -711,14 +716,14 @@ class ChallengeEditor extends Component {
                   className={cn({ disabled: this.state.isSaving })}
                   text={'Cancel'}
                   type={'danger'}
-                  onClick={() => this.resetModal()}
+                  onClick={this.resetModal}
                 />
               </div>
               <div className={styles.button}>
                 <PrimaryButton
                   text={this.state.isSaving ? 'Launching...' : 'Confirm'}
                   type={'info'}
-                  onClick={() => this.onSubmitChallenge('Active')}
+                  onClick={this.onActiveChallenge}
                 />
               </div>
             </div>
@@ -739,13 +744,17 @@ class ChallengeEditor extends Component {
             }</span>
             <div className={styles.buttonGroup}>
               <div className={styles.buttonSizeA}>
-                <PrimaryButton text={'Close'} type={'info'} link={'/'} />
+                <PrimaryButton
+                  text={'Close'}
+                  type={'info'}
+                  link={'/'}
+                />
               </div>
-              <div className={styles.buttonSizeA} onClick={() => this.resetModal()}>
+              <div className={styles.buttonSizeA}>
                 <OutlineButton
                   text={'View Challenge'}
                   type={'success'}
-                  link={`/projects/${this.props.projectId}/challenges/${isConfirm}/edit`}
+                  onClick={this.resetModal}
                 />
               </div>
             </div>
