@@ -7,10 +7,10 @@ import styles from './Track-Field.module.scss'
 import { CHALLENGE_TRACKS } from '../../../config/constants'
 import Track from '../../Track'
 
-const TrackField = ({ challenge, onUpdateOthers }) => {
+const TrackField = ({ challenge, onUpdateOthers, disabled }) => {
   const renderTracks = (track, currentTrack) => {
     return (
-      <Track type={track} isActive={track === currentTrack} key={track} onUpdateOthers={onUpdateOthers} />
+      <Track disabled={disabled} type={track} isActive={track === currentTrack} key={track} onUpdateOthers={onUpdateOthers} />
     )
   }
 
@@ -36,9 +36,14 @@ const TrackField = ({ challenge, onUpdateOthers }) => {
   )
 }
 
+TrackField.defaultProps = {
+  disabled: false
+}
+
 TrackField.propTypes = {
   challenge: PropTypes.shape().isRequired,
-  onUpdateOthers: PropTypes.func.isRequired
+  onUpdateOthers: PropTypes.func.isRequired,
+  disabled: PropTypes.bool
 }
 
 export default TrackField
