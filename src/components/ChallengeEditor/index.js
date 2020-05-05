@@ -483,7 +483,7 @@ class ChallengeEditor extends Component {
     this.setState({ isSaving: true })
     try {
       const draftChallenge = await this.updateAllChallengeInfo(challenge)
-      this.setState({ isConfirm: draftChallenge.data.id, challenge: draftChallenge })
+      this.setState({ isConfirm: draftChallenge.data.id })
     } catch (e) {
       this.setState({ isSaving: false })
     } finally {
@@ -794,8 +794,8 @@ class ChallengeEditor extends Component {
       ) : (
         <form name='challenge-info-form' noValidate autoComplete='off' onSubmit={this.toggleLaunch}>
           <div className={styles.group}>
-            <TrackField challenge={challenge} onUpdateOthers={() => null} /> {/* Disable changes */}
-            <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
+            <TrackField disabled challenge={challenge} onUpdateOthers={() => null} /> {/* Disable changes */}
+            <TypeField disabled types={metadata.challengeTypes} onUpdateSelect={() => null} challenge={challenge} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
             <ReviewTypeField

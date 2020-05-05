@@ -4,14 +4,14 @@ import Select from '../../Select'
 import cn from 'classnames'
 import styles from './Type-Field.module.scss'
 
-const TypeField = ({ types, onUpdateSelect, challenge }) => {
+const TypeField = ({ types, onUpdateSelect, challenge, disabled }) => {
   return (
     <>
       <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)}>
           <label htmlFor='type'>Type <span>*</span> :</label>
         </div>
-        <div className={cn(styles.field, styles.col2)}>
+        <div className={cn(styles.field, styles.col2, { [styles.disabled]: disabled })}>
           <Select
             name='track'
             options={types}
@@ -21,7 +21,7 @@ const TypeField = ({ types, onUpdateSelect, challenge }) => {
             valueKey='id'
             clearable={false}
             onChange={(e) => onUpdateSelect(e.id, false, 'typeId')}
-            disabled={false}
+            disabled={disabled}
           />
         </div>
       </div>
@@ -36,14 +36,16 @@ const TypeField = ({ types, onUpdateSelect, challenge }) => {
 }
 
 TypeField.defaultProps = {
-  types: []
+  types: [],
+  disabled: false
 }
 
 TypeField.propTypes = {
   // currentType: PropTypes.string.isRequired,
   types: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,
-  onUpdateSelect: PropTypes.func.isRequired
+  onUpdateSelect: PropTypes.func.isRequired,
+  disabled: PropTypes.bool
 }
 
 export default TypeField

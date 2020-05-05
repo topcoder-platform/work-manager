@@ -7,7 +7,7 @@ import styles from './Track.module.scss'
 
 const assets = require.context('../../assets/images/tracks', false, /svg/)
 
-const Track = ({ type, isActive, onUpdateOthers }) => {
+const Track = ({ type, isActive, onUpdateOthers, disabled }) => {
   const icon = `./${type.toLowerCase()}.svg`
   const getName = (type) => {
     switch (type.toUpperCase()) {
@@ -25,7 +25,7 @@ const Track = ({ type, isActive, onUpdateOthers }) => {
   }
 
   return (
-    <div className={cn(styles.container, { [styles.active]: isActive })} onClick={() => onUpdateOthers({ field: 'track', value: type })}>
+    <div className={cn(styles.container, { [styles.active]: isActive, [styles.disabled]: disabled })} onClick={() => onUpdateOthers({ field: 'track', value: type })}>
       <div className={styles.icon}>
         { assets && assets.keys().includes(icon) ? <ReactSVG path={assets(`${icon}`)} /> : '' }
       </div>
@@ -35,12 +35,14 @@ const Track = ({ type, isActive, onUpdateOthers }) => {
 }
 
 Track.defaultProps = {
-  isActive: false
+  isActive: false,
+  disabled: false
 }
 
 Track.propTypes = {
   type: PropTypes.string.isRequired,
   isActive: PropTypes.bool,
+  disabled: PropTypes.bool,
   onUpdateOthers: PropTypes.func.isRequired
 }
 
