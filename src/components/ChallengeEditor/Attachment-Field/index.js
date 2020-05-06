@@ -1,26 +1,15 @@
 import _ from 'lodash'
-import React, { useCallback } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
-import { useDropzone } from 'react-dropzone'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { downloadAttachmentURL } from '../../../config/constants'
-import { faCloudUploadAlt, faTrash } from '@fortawesome/free-solid-svg-icons'
+import FilestackFilePicker from './FilestackFilePicker'
+
+import { faTrash } from '@fortawesome/free-solid-svg-icons'
 import styles from './Attachment-Field.module.scss'
 import cn from 'classnames'
 
 const AttachmentField = ({ challenge, removeAttachment, onUploadFile, token }) => {
-  const onDrop = useCallback(acceptedFiles => {
-    _.forEach(acceptedFiles, item => {
-      onUploadFile(challenge.id, item)
-    })
-  }, [])
-
-  const {
-    getRootProps,
-    getInputProps,
-    isDragActive
-  } = useDropzone({ onDrop })
-
   const renderAttachments = (attachments) => (
     _.map(attachments, (att, index) => (
       <div className={styles.fileRow} key={`${index}-${att.fileName}`}>
@@ -49,19 +38,11 @@ const AttachmentField = ({ challenge, removeAttachment, onUploadFile, token }) =
         </div>
       </div>
       <div className={styles.row}>
-        <div {...getRootProps({ className: `${styles.uploadPanel} ${isDragActive ? styles.isActive : ''}` })}>
-          <label htmlFor='uploadFile'>
-            <div className={styles.icon}>
-              <FontAwesomeIcon icon={faCloudUploadAlt} size='5x' />
-            </div>
-            <div className={styles.info}>
-              <div>Drag & Drop files here</div>
-              <div>or</div>
-              <div><span>click here</span> to browse</div>
-            </div>
-          </label>
-          <input {...getInputProps()} />
-        </div>
+        <FilestackFilePicker
+          mandatory
+          title={''}
+          challengeId={challenge.id}
+        />
       </div>
       {
         _.has(challenge, 'attachments') && challenge.attachments.length > 0 && (
