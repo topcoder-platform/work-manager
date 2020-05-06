@@ -39,8 +39,6 @@ const AttachmentField = ({ challenge, removeAttachment, onUploadFile, token }) =
       </div>
       <div className={styles.row}>
         <FilestackFilePicker
-          mandatory
-          title={''}
           challengeId={challenge.id}
         />
       </div>

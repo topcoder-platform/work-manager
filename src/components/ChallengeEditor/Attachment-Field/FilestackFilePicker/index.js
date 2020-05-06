@@ -33,6 +33,7 @@ class FilestackFilePicker extends React.Component {
     this.fireErrorMessage = this.fireErrorMessage.bind(this)
     this.setUploadProgress = this.setUploadProgress.bind(this)
     this.setDragged = this.setDragged.bind(this)
+    this.generateFilePath = this.generateFilePath.bind(this)
 
     this.state = {
       inputUrl: '',
@@ -60,7 +61,7 @@ class FilestackFilePicker extends React.Component {
   }
 
   /* Called when a file is successfully stored in the S3 container */
-  onSuccess (file, filePath) {
+  onSuccess (file) {
     const {
       mimetype,
       size,
@@ -78,7 +79,7 @@ class FilestackFilePicker extends React.Component {
     const fileUrl =
       source === 'url'
         ? originalPath
-        : `https://s3.amazonaws.com/${cont}/${filePath}`
+        : `https://s3.amazonaws.com/${key}`
 
     const fileStackData = {
       challengeId,
@@ -97,7 +98,6 @@ class FilestackFilePicker extends React.Component {
 
     if (this.isValidUrl(inputUrl)) {
       this.setState({ invalidUrl: false })
-      const path = this.generateFilePath()
       const filename = inputUrl.substring(inputUrl.lastIndexOf('/') + 1)
       this.setDragged(false)
       this.onSuccess(
@@ -108,8 +108,7 @@ class FilestackFilePicker extends React.Component {
           size: 0,
           key: '',
           originalPath: inputUrl
-        },
-        path
+        }
       )
     } else {
       this.setState({ invalidUrl: true })
@@ -137,24 +136,22 @@ class FilestackFilePicker extends React.Component {
     const { challengeId } = this.props
     let fileNameTmp = fileName
     if (!fileNameTmp) {
-      fileNameTmp = `-ATTACHMENT-${Date.now()}.zip`
+      return `${challengeId}/`
     }
     return `${challengeId}/${fileNameTmp}`
   }
 
   render () {
     const {
-      title,
       mandatory
     } = this.props
 
     const { error, uploadProgress, dragged } = this.state
     return (
       <div className={styles.container}>
-        <div className={styles.desc}>
-          <p>{title}</p>
-          {mandatory && <p className={styles.mandatory}>*mandatory</p>}
-        </div>
+        {mandatory && (<div className={styles.desc}>
+          <p className={styles.mandatory}>*mandatory</p>
+        </div>)}
         <div
           className={`${styles['file-picker']} ${error ? styles.error : ''} ${dragged ? styles.drag : ''}`}
         >
@@ -190,7 +187,7 @@ class FilestackFilePicker extends React.Component {
                   onFileUploadFailed: () => this.setDragged(false),
                   onFileUploadFinished: (file) => {
                     this.setDragged(false)
-                    this.onSuccess(file, path)
+                    this.onSuccess(file)
                   },
                   startUploadingWhenMaxFilesReached: true,
                   storeTo: {
@@ -217,7 +214,7 @@ class FilestackFilePicker extends React.Component {
                   onFileUploadFailed: () => this.setDragged(false),
                   onFileUploadFinished: (file) => {
                     this.setDragged(false)
-                    this.onSuccess(file, path)
+                    this.onSuccess(file)
                   },
                   startUploadingWhenMaxFilesReached: true,
                   storeTo: {
@@ -251,7 +248,7 @@ class FilestackFilePicker extends React.Component {
                     region: FILESTACK.REGION
                   }
                 )
-                .then((file) => this.onSuccess(file, path))
+                .then((file) => this.onSuccess(file))
               return undefined
             }}
             role='tab'
@@ -267,8 +264,7 @@ class FilestackFilePicker extends React.Component {
 }
 
 FilestackFilePicker.defaultProps = {
-  mandatory: false,
-  title: ''
+  mandatory: false
 }
 
 /**
@@ -276,7 +272,6 @@ FilestackFilePicker.defaultProps = {
  */
 FilestackFilePicker.propTypes = {
   challengeId: PT.string.isRequired,
-  title: PT.string,
   mandatory: PT.bool
 }
 
