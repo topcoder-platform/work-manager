@@ -341,10 +341,6 @@ class ChallengeEditor extends Component {
       challenge: newChallenge
     }, () => {
       this.onUpdateOthers({
-        field: 'timelineTemplateId',
-        value: timeline.id
-      })
-      this.onUpdateOthers({
         field: 'phases',
         value: validPhases
       })
