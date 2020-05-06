@@ -94,7 +94,9 @@
     "webpack": "4.19.1",
     "webpack-dev-server": "3.1.14",
     "webpack-manifest-plugin": "2.0.4",
-    "xss": "^1.0.6"
+    "xss": "^1.0.6",
+    "filestack-js": "^1.7.7",
+    "filestack-react": "^2.0.0"
   },
   "scripts": {
     "start": "node server.js",

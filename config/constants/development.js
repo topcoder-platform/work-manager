@@ -18,5 +18,12 @@ module.exports = {
   RESOURCE_ROLES_API_URL: `${DEV_API_HOSTNAME}/v5/resource-roles`,
   PLATFORMS_V4_API_URL: `${DEV_API_HOSTNAME}/v4/platforms`,
   TECHNOLOGIES_V4_API_URL: `${DEV_API_HOSTNAME}/v4/technologies`,
-  CONNECT_APP_URL: 'https://connect.topcoder-dev.com'
+  CONNECT_APP_URL: 'https://connect.topcoder-dev.com',
+  /* Filestack configuration for uploading attachments
+   * These are for the development back end */
+  FILESTACK: {
+    API_KEY: 'AzFINuQoqTmqw0QEoaw9az',
+    REGION: 'us-east-1',
+    SUBMISSION_CONTAINER: 'topcoder-dev-submissions-dmz'
+  }
 }
