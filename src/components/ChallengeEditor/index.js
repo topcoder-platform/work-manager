@@ -866,7 +866,7 @@ class ChallengeEditor extends Component {
               onUpdateDescription={this.onUpdateDescription}
               onUpdateMultiSelect={this.onUpdateMultiSelect}
             />
-            { currentChallengeId && (
+            { false && (
               <AttachmentField
                 challenge={{ ...challenge, id: currentChallengeId }}
                 onUploadFile={uploadAttachment}
