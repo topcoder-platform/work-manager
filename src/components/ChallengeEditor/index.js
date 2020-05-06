@@ -95,9 +95,10 @@ class ChallengeEditor extends Component {
   }
 
   componentDidUpdate (prevProps, prevState) {
-    const { isNew: prevIsNew, challengeDetails: prevChallengeDetails } = prevProps
     const { isNew, challengeId, challengeDetails, metadata, attachments } = this.props
-    if (prevIsNew !== isNew || (_.isEmpty(prevChallengeDetails) && !_.isEmpty(challengeDetails))) {
+    if (
+      this.state.challenge.id !== challengeDetails.id &&
+      challengeDetails.id) {
       this.resetChallengeData(isNew, challengeId, challengeDetails, metadata, attachments)
     }
   }
@@ -667,6 +668,12 @@ class ChallengeEditor extends Component {
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
     }
+    let isActive = false
+    let isCompleted = false
+    if (challenge.status) {
+      isActive = challenge.status.toLowerCase() === 'active'
+      isCompleted = challenge.status.toLowerCase() === 'completed'
+    }
     if (isLoading || _.isEmpty(metadata.challengePhases)) return <Loader />
     if (failedToLoad) {
       return (
@@ -767,26 +774,28 @@ class ChallengeEditor extends Component {
     const actionButtons = <React.Fragment>
       {!isLoading && this.state.hasValidationErrors && <div className={styles.error}>Please fix the errors before saving</div>}
       {
-        isNew
-          ? (
-            <div className={styles.buttonContainer}>
+        isNew && (
+          <div className={styles.buttonContainer}>
+            <div className={styles.button}>
+              <OutlineButton text={'Create Challenge'} type={'success'} submit />
+            </div>
+          </div>
+        )
+      }
+      {
+        (!isNew) && (!isActive) && (!isCompleted) && (
+          <div className={styles.bottomContainer}>
+            {!isLoading && <LastSavedDisplay timeLastSaved={timeLastSaved} />}
+            {!isLoading && <div className={styles.buttonContainer}>
               <div className={styles.button}>
-                <OutlineButton text={'Create Challenge'} type={'success'} submit />
+                <OutlineButton text={'Launch as Draft'} type={'success'} onClick={this.createDraftHandler} />
               </div>
-            </div>
-          ) : (
-            <div className={styles.bottomContainer}>
-              {!isLoading && <LastSavedDisplay timeLastSaved={timeLastSaved} />}
-              {!isLoading && <div className={styles.buttonContainer}>
-                <div className={styles.button}>
-                  <OutlineButton text={'Launch as Draft'} type={'success'} onClick={this.createDraftHandler} />
-                </div>
-                {!isLoading && (<div className={styles.button}>
-                  <PrimaryButton text={'Launch as Active'} type={'info'} submit />
-                </div>)}
-              </div>}
-            </div>
-          )
+              {!isLoading && (<div className={styles.button}>
+                <PrimaryButton text={'Launch as Active'} type={'info'} submit />
+              </div>)}
+            </div>}
+          </div>
+        )
       }
     </React.Fragment>
     const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
