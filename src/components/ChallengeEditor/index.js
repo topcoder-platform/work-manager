@@ -490,7 +490,7 @@ class ChallengeEditor extends Component {
       startDate: moment().add(1, 'days').format(),
       legacy: {
         track,
-        reviewType: 'INTERNAL'
+        reviewType: 'community'
       }
     }
     try {
