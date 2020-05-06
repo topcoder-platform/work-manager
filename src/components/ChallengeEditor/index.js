@@ -573,7 +573,7 @@ class ChallengeEditor extends Component {
       const draftChallenge = await patchChallenge(newChallenge.id, {
         status
       })
-      this.setState({ isConfirm: newChallenge.id, draftChallenge, challenge: newChallenge, isSaving: false })
+      this.setState({ isLaunch: true, isConfirm: newChallenge.id, draftChallenge, challenge: newChallenge, isSaving: false })
     } catch (e) {
       this.setState({ isSaving: false })
     }
