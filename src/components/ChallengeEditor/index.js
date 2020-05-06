@@ -70,7 +70,6 @@ class ChallengeEditor extends Component {
       currentTemplate: null
     }
     this.onUpdateInput = this.onUpdateInput.bind(this)
-    this.onBlurDescription = this.onBlurDescription.bind(this)
     this.onUpdateSelect = this.onUpdateSelect.bind(this)
     this.onUpdateOthers = this.onUpdateOthers.bind(this)
     this.onUpdateCheckbox = this.onUpdateCheckbox.bind(this)
@@ -135,21 +134,13 @@ class ChallengeEditor extends Component {
   }
 
   resetModal () {
-    this.setState({ isLoading: true, isConfirm: false, isLaunch: false })
+    this.setState({ isLoading: false, isConfirm: false, isLaunch: false })
   }
 
-  onUpdateDescription (description, fieldName, cb = null) {
+  onUpdateDescription (description, fieldName) {
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge, [fieldName]: description }
     this.setState({ challenge: newChallenge }, () => {
-      if (cb) {
-        cb(fieldName)
-      }
-    })
-  }
-
-  onBlurDescription (description, fieldName) {
-    this.onUpdateDescription(description, fieldName, (fieldName) => {
       this.autoUpdateChallengeThrottled(fieldName)
     })
   }
@@ -349,10 +340,6 @@ class ChallengeEditor extends Component {
       currentTemplate: timeline,
       challenge: newChallenge
     }, () => {
-      this.onUpdateOthers({
-        field: 'timelineTemplateId',
-        value: timeline.id
-      })
       this.onUpdateOthers({
         field: 'phases',
         value: validPhases
@@ -883,7 +870,6 @@ class ChallengeEditor extends Component {
               onUpdateCheckbox={this.onUpdateCheckbox}
               onUpdateInput={this.onUpdateInput}
               onUpdateDescription={this.onUpdateDescription}
-              onBlurDescription={this.onBlurDescription}
               onUpdateMultiSelect={this.onUpdateMultiSelect}
             />
             { false && (

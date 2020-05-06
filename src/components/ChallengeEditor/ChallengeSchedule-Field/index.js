@@ -158,10 +158,18 @@ class ChallengeScheduleField extends Component {
     }
 
     let finishDate = 0
-    _.forEach(timelines, (t) => {
+    let startDate = -1
+    _.forEach(timelines, (t, i) => {
+      if (i === 0) {
+        return
+      }
       const dateTmp = moment(t[3])
+      const startDateTmp = moment(t[2])
       if (dateTmp > finishDate) {
         finishDate = dateTmp
+      }
+      if (startDateTmp < startDate || startDate === -1) {
+        startDate = startDateTmp
       }
     })
 
@@ -187,13 +195,12 @@ class ChallengeScheduleField extends Component {
 
     // show start/end time in progress bar
     progressContainer.find('rect').each((index, element) => {
-      const selectedTimeline = timelines[index + 1]
       if (index === 0) {
         // start date
-        textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" x="${$(element).attr('x')}" y="-5") - 3}">${moment(selectedTimeline[2]).format('MMM DD YYYY, hh:mm')}</text>`))
+        textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" x="${$(element).attr('x')}" y="-5") - 3}">${startDate.format('MMM DD YYYY, HH:mm')}</text>`))
       } else if (index === timelines.length - 2) {
         // finish date
-        textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" text-anchor="end" x="${parseFloat($(element).attr('x')) + parseFloat($(element).attr('width'))}" y="-5">${finishDate.format('MMM DD YYYY, hh:mm')}</text>`))
+        textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" text-anchor="end" x="${parseFloat($(element).attr('x')) + parseFloat($(element).attr('width'))}" y="-5">${finishDate.format('MMM DD YYYY, HH:mm')}</text>`))
       }
     })
 
@@ -211,7 +218,7 @@ class ChallengeScheduleField extends Component {
             if (index > 0) {
               if ((textElement.text()).indexOf(timeline[0] + ':') >= 0) {
                 // update grantt chart popup content
-                textElement.html(`<tspan dx="0">${timeline[0]}:</tspan><tspan x="${textElement.attr('x')}" dy="18">${moment(timeline[2]).format('MMM DD YYYY, hh:mm')} - ${moment(timeline[3]).format('MMM DD YYYY, hh:mm')}</tspan>`)
+                textElement.html(`<tspan dx="0">${timeline[0]}:</tspan><tspan x="${textElement.attr('x')}" dy="18">${moment(timeline[2]).format('MMM DD YYYY, HH:mm')} - ${moment(timeline[3]).format('MMM DD YYYY, HH:mm')}</tspan>`)
                 bgElement.attr('width', '310')
               }
             }
