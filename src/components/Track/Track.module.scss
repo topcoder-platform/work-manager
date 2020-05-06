@@ -16,13 +16,7 @@
   }
 
   &.disabled {
-    background:  $tc-gray-10;
-    cursor: not-allowed;
-
-    &.active {
-      background:  $tc-gray-30;
-      border: 1px solid $tc-gray-60;
-    }
+    cursor: auto;
   }
 }
 

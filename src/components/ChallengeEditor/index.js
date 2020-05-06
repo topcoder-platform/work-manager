@@ -30,6 +30,7 @@ import { convertDollarToInteger, validateValue } from '../../util/input-check'
 import dropdowns from './mock-data/dropdowns'
 import LastSavedDisplay from './LastSaved-Display'
 import styles from './ChallengeEditor.module.scss'
+import Track from '../Track'
 import {
   createChallenge,
   updateChallenge,
@@ -788,7 +789,7 @@ class ChallengeEditor extends Component {
           )
       }
     </React.Fragment>
-
+    const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
     const currentChallengeId = this.getCurrentChallengeId()
     const challengeForm = isNew
       ? (
@@ -803,8 +804,16 @@ class ChallengeEditor extends Component {
       ) : (
         <form name='challenge-info-form' noValidate autoComplete='off' onSubmit={this.toggleLaunch}>
           <div className={styles.group}>
-            <TrackField disabled challenge={challenge} onUpdateOthers={() => null} /> {/* Disable changes */}
-            <TypeField disabled types={metadata.challengeTypes} onUpdateSelect={() => null} challenge={challenge} />
+
+            <div className={styles.row}>
+              <div className={styles.col}>
+                <span className={styles.fieldTitle}>Track:</span>
+                <Track disabled type={challenge.track} isActive key={challenge.track} onUpdateOthers={() => {}} />
+              </div>
+              <div className={styles.col}>
+                <span><span className={styles.fieldTitle}>Type:</span> {selectedType ? selectedType.name : ''}</span>
+              </div>
+            </div>
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
             <ReviewTypeField
