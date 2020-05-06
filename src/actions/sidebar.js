@@ -33,7 +33,6 @@ export function loadProjects (filterProjectName = '') {
     }
     filters['status'] = 'active'
     filters['sort'] = 'lastActivityAt'
-    filters['memberOnly'] = 'true'
 
     fetchMemberProjects(filters).then(projects => dispatch({
       type: LOAD_PROJECTS_SUCCESS,
