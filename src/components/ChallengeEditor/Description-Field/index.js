@@ -12,25 +12,31 @@ class DescriptionField extends Component {
     this.state = {
       isChanged: false
     }
-    this.blurTheFieldThrottled = _.throttle(this.blurTheField.bind(this), 10000) // 10s
+    this.blurTheField = this.blurTheField.bind(this)
+    this.updateDescriptionThrottled = _.throttle(this.updateDescription.bind(this), 10000) // 10s
   }
 
   blurTheField () {
-    const { onBlurDescription, type } = this.props
-    onBlurDescription(this.simplemde.value(), type)
+    const { onUpdateDescription, type } = this.props
+    onUpdateDescription(this.simplemde.value(), type)
+  }
+
+  updateDescription () {
+    const { onUpdateDescription, type } = this.props
+    onUpdateDescription(this.simplemde.value(), type)
   }
 
   componentDidMount () {
-    const { challenge, onUpdateDescription, type } = this.props
+    const { challenge, type } = this.props
     this.simplemde = new SimpleMDE({ element: this.ref.current, initialValue: challenge[type] })
     this.simplemde.codemirror.on('change', () => {
       this.setState({ isChanged: true })
-      onUpdateDescription(this.simplemde.value(), type)
+      this.updateDescriptionThrottled(this.simplemde.value(), type)
     })
     this.simplemde.codemirror.on('blur', () => {
       if (this.state.isChanged) {
         this.setState({ isChanged: false })
-        this.blurTheFieldThrottled()
+        this.blurTheField()
       }
     })
   }
@@ -46,14 +52,12 @@ class DescriptionField extends Component {
 }
 
 DescriptionField.defaultProps = {
-  isPrivate: false,
-  onBlurDescription: () => {}
+  isPrivate: false
 }
 
 DescriptionField.propTypes = {
   challenge: PropTypes.shape().isRequired,
   onUpdateDescription: PropTypes.func.isRequired,
-  onBlurDescription: PropTypes.func,
   type: PropTypes.string.isRequired,
   isPrivate: PropTypes.bool
 }
