@@ -30,6 +30,7 @@ class TextEditorField extends Component {
       onUpdateCheckbox,
       onUpdateInput,
       onUpdateDescription,
+      onBlurDescription,
       onUpdateMultiSelect
     } = this.props
     const { addedNewPrivateDescription } = this.state
@@ -47,6 +48,7 @@ class TextEditorField extends Component {
           <DescriptionField
             challenge={challenge}
             onUpdateDescription={onUpdateDescription}
+            onBlurDescription={onBlurDescription}
             type='description'
           />
         </div>)}
@@ -66,6 +68,7 @@ class TextEditorField extends Component {
               isPrivate
               challenge={challenge}
               onUpdateDescription={onUpdateDescription}
+              onBlurDescription={onBlurDescription}
               type='privateDescription'
             />
           </div>
@@ -105,7 +108,8 @@ class TextEditorField extends Component {
 }
 
 TextEditorField.defaultProps = {
-  challengeTags: []
+  challengeTags: [],
+  onBlurDescription: () => {}
 }
 
 TextEditorField.propTypes = {
@@ -114,6 +118,7 @@ TextEditorField.propTypes = {
   onUpdateCheckbox: PropTypes.func.isRequired,
   onUpdateInput: PropTypes.func.isRequired,
   onUpdateDescription: PropTypes.func.isRequired,
+  onBlurDescription: PropTypes.func,
   onUpdateMultiSelect: PropTypes.func.isRequired
 }
 

@@ -70,6 +70,7 @@ class ChallengeEditor extends Component {
       currentTemplate: null
     }
     this.onUpdateInput = this.onUpdateInput.bind(this)
+    this.onBlurDescription = this.onBlurDescription.bind(this)
     this.onUpdateSelect = this.onUpdateSelect.bind(this)
     this.onUpdateOthers = this.onUpdateOthers.bind(this)
     this.onUpdateCheckbox = this.onUpdateCheckbox.bind(this)
@@ -91,14 +92,15 @@ class ChallengeEditor extends Component {
     this.createDraftHandler = this.createDraftHandler.bind(this)
     this.getCurrentTemplate = this.getCurrentTemplate.bind(this)
     this.getBackendChallengePhases = this.getBackendChallengePhases.bind(this)
-    this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000)
+    this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000) // 3s
   }
 
   componentDidUpdate (prevProps, prevState) {
     const { isNew, challengeId, challengeDetails, metadata, attachments } = this.props
     if (
-      this.state.challenge.id !== challengeDetails.id &&
-      challengeDetails.id) {
+      challengeDetails &&
+      challengeDetails.id &&
+      (!this.state.challenge || this.state.challenge.id !== challengeDetails.id)) {
       this.resetChallengeData(isNew, challengeId, challengeDetails, metadata, attachments)
     }
   }
@@ -136,10 +138,18 @@ class ChallengeEditor extends Component {
     this.setState({ isLoading: true, isConfirm: false, isLaunch: false })
   }
 
-  onUpdateDescription (description, fieldName) {
+  onUpdateDescription (description, fieldName, cb = null) {
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge, [fieldName]: description }
     this.setState({ challenge: newChallenge }, () => {
+      if (cb) {
+        cb(fieldName)
+      }
+    })
+  }
+
+  onBlurDescription (description, fieldName) {
+    this.onUpdateDescription(description, fieldName, (fieldName) => {
       this.autoUpdateChallengeThrottled(fieldName)
     })
   }
@@ -873,6 +883,7 @@ class ChallengeEditor extends Component {
               onUpdateCheckbox={this.onUpdateCheckbox}
               onUpdateInput={this.onUpdateInput}
               onUpdateDescription={this.onUpdateDescription}
+              onBlurDescription={this.onBlurDescription}
               onUpdateMultiSelect={this.onUpdateMultiSelect}
             />
             { false && (
