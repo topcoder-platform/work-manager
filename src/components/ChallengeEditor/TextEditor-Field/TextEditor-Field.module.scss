@@ -1,4 +1,4 @@
-@import "../../../styles/includes";
+@import '../../../styles/includes';
 
 .title {
   @include roboto-bold();
@@ -9,17 +9,23 @@
   color: $challenges-title;
   margin-top: 30px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+
+  i {
+    font-weight: 400;
+    font-size: 14px;
+  }
 }
 
 .container {
   display: flex;
   flex-direction: column;
 
-
-   .error {
-      color: $tc-red;
-      margin-left: 25px;
-   }
+  .error {
+    color: $tc-red;
+    margin-left: 25px;
+  }
   .row {
     box-sizing: border-box;
     display: flex;
@@ -126,4 +132,9 @@
   }
 }
 
-
+.button {
+  margin: 30px 0 0 30px;
+  min-width: 212px;
+  height: 40px;
+  align-self: flex-start;
+}
