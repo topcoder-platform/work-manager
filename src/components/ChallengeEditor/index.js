@@ -134,7 +134,7 @@ class ChallengeEditor extends Component {
   }
 
   resetModal () {
-    this.setState({ isLoading: true, isConfirm: false, isLaunch: false })
+    this.setState({ isLoading: false, isConfirm: false, isLaunch: false })
   }
 
   onUpdateDescription (description, fieldName) {
