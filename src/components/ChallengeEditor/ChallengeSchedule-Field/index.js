@@ -126,7 +126,7 @@ class ChallengeScheduleField extends Component {
             withDuration
             onUpdateSelect={onUpdateSelect}
             onUpdatePhase={newValue => onUpdatePhase(parseInt(newValue), 'duration', index)}
-            endDate={moment(p.scheduledEndDate).toDate()}
+            endDate={moment(p.scheduledEndDate)}
           />
           {index !== 0 &&
           <div className={styles.icon} onClick={() => removePhase(index)}>
