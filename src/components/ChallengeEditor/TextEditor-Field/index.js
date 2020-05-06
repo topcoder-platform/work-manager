@@ -8,11 +8,34 @@ import { CHALLENGE_TRACKS } from '../../../config/constants'
 import styles from './TextEditor-Field.module.scss'
 import PropTypes from 'prop-types'
 import DescriptionField from '../Description-Field'
+import { PrimaryButton } from '../../Buttons'
 
 class TextEditorField extends Component {
+  constructor (props) {
+    super(props)
+    this.state = {
+      addedNewPrivateDescription: false
+    }
+    this.addNewPrivateDescription = this.addNewPrivateDescription.bind(this)
+  }
+
+  addNewPrivateDescription () {
+    this.setState({ addedNewPrivateDescription: true })
+  }
+
   render () {
-    const { challengeTags, challenge, onUpdateCheckbox, onUpdateInput, onUpdateDescription, onUpdateMultiSelect } = this.props
-    const challengeTrack = challenge.legacy ? challenge.legacy.track : challenge.track
+    const {
+      challengeTags,
+      challenge,
+      onUpdateCheckbox,
+      onUpdateInput,
+      onUpdateDescription,
+      onUpdateMultiSelect
+    } = this.props
+    const { addedNewPrivateDescription } = this.state
+    const challengeTrack = challenge.legacy
+      ? challenge.legacy.track
+      : challenge.track
     const challengeTagsFiltered = challengeTags.map(function (tag) {
       return { id: tag.name, name: tag.name }
     })
@@ -20,24 +43,63 @@ class TextEditorField extends Component {
     return (
       <div className={styles.container}>
         <div className={styles.row}>
-          {challenge.id && (<DescriptionField challenge={challenge} onUpdateDescription={onUpdateDescription} type='description' />)}
+          {challenge.id && (
+            <DescriptionField
+              challenge={challenge}
+              onUpdateDescription={onUpdateDescription}
+              type='description'
+            />
+          )}
         </div>
-        <div className={styles.title}>Private specification</div>
+        <div className={styles.title}>
+          <span>Private specification</span>
+          <i>
+            This text will only be visible to Topcoder members that have
+            registered for this challenge
+          </i>
+        </div>
+        <div className={styles.button} onClick={this.addNewPrivateDescription}>
+          <PrimaryButton text={'Add private specification'} type={'info'} />
+        </div>
         <div className={styles.row}>
-          {challenge.id && (<DescriptionField challenge={challenge} onUpdateDescription={onUpdateDescription} type='privateDescription' />)}
+          {addedNewPrivateDescription && challenge.id && (
+            <DescriptionField
+              isPrivate
+              challenge={challenge}
+              onUpdateDescription={onUpdateDescription}
+              type='privateDescription'
+            />
+          )}
         </div>
-        { challenge.submitTriggered && !challenge.description && <div className={styles.error}>Description is required field</div> }
-        <TagsField challengeTags={challengeTagsFiltered} challenge={challenge} onUpdateMultiSelect={onUpdateMultiSelect} />
-        {
-          challengeTrack && challengeTrack === CHALLENGE_TRACKS.DESIGN && (
-            <React.Fragment>
-              <FinalDeliverablesField challenge={challenge} onUpdateCheckbox={onUpdateCheckbox} />
-              <StockArtsField challenge={challenge} onUpdateCheckbox={onUpdateCheckbox} />
-              <SubmssionVisibility challenge={challenge} onUpdateCheckbox={onUpdateCheckbox} />
-              <MaximumSubmissionsField challenge={challenge} onUpdateCheckbox={onUpdateCheckbox} onUpdateInput={onUpdateInput} />
-            </React.Fragment>
-          )
-        }
+        {challenge.submitTriggered && !challenge.description && (
+          <div className={styles.error}>Description is required field</div>
+        )}
+        <TagsField
+          challengeTags={challengeTagsFiltered}
+          challenge={challenge}
+          onUpdateMultiSelect={onUpdateMultiSelect}
+        />
+        {challengeTrack && challengeTrack === CHALLENGE_TRACKS.DESIGN && (
+          <React.Fragment>
+            <FinalDeliverablesField
+              challenge={challenge}
+              onUpdateCheckbox={onUpdateCheckbox}
+            />
+            <StockArtsField
+              challenge={challenge}
+              onUpdateCheckbox={onUpdateCheckbox}
+            />
+            <SubmssionVisibility
+              challenge={challenge}
+              onUpdateCheckbox={onUpdateCheckbox}
+            />
+            <MaximumSubmissionsField
+              challenge={challenge}
+              onUpdateCheckbox={onUpdateCheckbox}
+              onUpdateInput={onUpdateInput}
+            />
+          </React.Fragment>
+        )}
       </div>
     )
   }

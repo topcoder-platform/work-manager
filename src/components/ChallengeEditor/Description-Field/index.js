@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import styles from './Description-Field.module.scss'
 import PropTypes from 'prop-types'
 import SimpleMDE from 'simplemde'
+import cn from 'classnames'
 
 class DescriptionField extends Component {
   constructor (props) {
@@ -16,8 +17,8 @@ class DescriptionField extends Component {
   }
 
   render () {
-    const { type } = this.props
-    return <div className={styles.editor}>
+    const { type, isPrivate } = this.props
+    return <div className={cn(styles.editor, { [styles.isPrivate]: isPrivate })}>
       <textarea
         ref={this.ref} id={type} name={type}
         placeholder='Enter challenge description' />
@@ -25,9 +26,14 @@ class DescriptionField extends Component {
   }
 }
 
+DescriptionField.defaultProps = {
+  isPrivate: false
+}
+
 DescriptionField.propTypes = {
   challenge: PropTypes.shape().isRequired,
   onUpdateDescription: PropTypes.func.isRequired,
-  type: PropTypes.string.isRequired
+  type: PropTypes.string.isRequired,
+  isPrivate: PropTypes.bool
 }
 export default DescriptionField
