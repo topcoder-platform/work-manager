@@ -490,7 +490,7 @@ class ChallengeEditor extends Component {
       startDate: moment().add(1, 'days').format(),
       legacy: {
         track,
-        reviewType: 'INTERNAL'
+        reviewType: 'community'
       }
     }
     try {
@@ -866,7 +866,7 @@ class ChallengeEditor extends Component {
               onUpdateDescription={this.onUpdateDescription}
               onUpdateMultiSelect={this.onUpdateMultiSelect}
             />
-            { currentChallengeId && (
+            { false && (
               <AttachmentField
                 challenge={{ ...challenge, id: currentChallengeId }}
                 onUploadFile={uploadAttachment}

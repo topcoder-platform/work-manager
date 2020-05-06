@@ -84,13 +84,14 @@ const getPhaseInfo = (c) => {
  * @returns {*}
  */
 const hoverComponents = (challenge, onUpdateLaunch) => {
+  const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.legacyId}`
   switch (challenge.status.toUpperCase()) {
     case CHALLENGE_STATUS.DRAFT:
     case CHALLENGE_STATUS.ACTIVE:
     default:
       return (
         <div className={styles.linkGroup}>
-          <Link className={styles.link} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`}>Edit</Link>
+          <a className={styles.link} href={communityAppUrl}>View Challenge</a>
           {
             challenge.status === 'Draft' && (
               <button className={styles.activateButton} onClick={() => onUpdateLaunch()}>
@@ -159,7 +160,6 @@ class ChallengeCard extends React.Component {
     const { isLaunch, isConfirm, isSaving } = this.state
     const { challenge, shouldShowCurrentPhase } = this.props
     const { phaseMessage, endTime } = getPhaseInfo(challenge)
-    const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.legacyId}`
     return (
       <div className={styles.item}>
         { isLaunch && !isConfirm && (
@@ -195,19 +195,20 @@ class ChallengeCard extends React.Component {
             </div>
           </Modal>
         ) }
-        <a className={styles.col1} href={communityAppUrl}>
+
+        <Link className={styles.col1} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`}>
           <div className={styles.name}>
             <span className={styles.block}>{challenge.name}</span>
             <ChallengeTag track={challenge.legacy && challenge.legacy.track} challengeType={challenge.type} />
           </div>
-        </a>
-        <a className={styles.col2} href={communityAppUrl}>
+        </Link>
+        <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`}>
           {renderStatus(challenge.status.toUpperCase())}
-        </a>
-        {shouldShowCurrentPhase && (<a className={styles.col3} href={communityAppUrl}>
+        </Link>
+        {shouldShowCurrentPhase && (<Link className={styles.col3} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`}>
           <span className={styles.block}>{phaseMessage}</span>
           <span className='block light-text'>{endTime}</span>
-        </a>)}
+        </Link>)}
         <div className={cn(styles.col4, styles.editingContainer)}>
           {hoverComponents(challenge, this.onUpdateLaunch)}
         </div>
