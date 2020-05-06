@@ -39,38 +39,37 @@ class TextEditorField extends Component {
     const challengeTagsFiltered = challengeTags.map(function (tag) {
       return { id: tag.name, name: tag.name }
     })
+    const showShowPrivateDescriptionField = addedNewPrivateDescription || (challenge.privateDescription !== null && challenge.privateDescription !== undefined)
 
     return (
       <div className={styles.container}>
-        <div className={styles.row}>
-          {challenge.id && (
-            <DescriptionField
-              challenge={challenge}
-              onUpdateDescription={onUpdateDescription}
-              type='description'
-            />
-          )}
-        </div>
-        <div className={styles.title}>
+        {challenge.id && (<div className={styles.row}>
+          <DescriptionField
+            challenge={challenge}
+            onUpdateDescription={onUpdateDescription}
+            type='description'
+          />
+        </div>)}
+        {!showShowPrivateDescriptionField && (<div className={styles.button} onClick={this.addNewPrivateDescription}>
+          <PrimaryButton text={'Add private specification'} type={'info'} />
+        </div>)}
+        {showShowPrivateDescriptionField && (<div className={styles.title}>
           <span>Private specification</span>
           <i>
             This text will only be visible to Topcoder members that have
             registered for this challenge
           </i>
-        </div>
-        <div className={styles.button} onClick={this.addNewPrivateDescription}>
-          <PrimaryButton text={'Add private specification'} type={'info'} />
-        </div>
-        <div className={styles.row}>
-          {addedNewPrivateDescription && challenge.id && (
+        </div>)}
+        {showShowPrivateDescriptionField && challenge.id && (
+          <div className={styles.row}>
             <DescriptionField
               isPrivate
               challenge={challenge}
               onUpdateDescription={onUpdateDescription}
               type='privateDescription'
             />
-          )}
-        </div>
+          </div>
+        )}
         {challenge.submitTriggered && !challenge.description && (
           <div className={styles.error}>Description is required field</div>
         )}
