@@ -40,10 +40,12 @@ export async function fetchChallengeTags () {
 
 /**
  * Api request for fetching Groups
+ *
+ * @param filters
  * @returns {Promise<*>}
  */
-export async function fetchGroups () {
-  const response = await axiosInstance.get(GROUPS_API_URL)
+export async function fetchGroups (filters) {
+  const response = await axiosInstance.get(`${GROUPS_API_URL}?${qs.stringify(filters, { encode: false })}`)
   return _.get(response, 'data', [])
 }
 

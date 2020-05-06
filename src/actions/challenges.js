@@ -235,8 +235,11 @@ export function loadChallengeTags () {
 }
 
 export function loadGroups () {
-  return async (dispatch) => {
-    const groups = await fetchGroups()
+  return async (dispatch, getState) => {
+    const groups = await fetchGroups({
+      membershipType: 'user',
+      memberId: getState().auth.user ? getState().auth.user.userId : null
+    })
     dispatch({
       type: LOAD_CHALLENGE_METADATA_SUCCESS,
       metadataKey: 'groups',
