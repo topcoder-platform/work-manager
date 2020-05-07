@@ -314,7 +314,19 @@ class ChallengeEditor extends Component {
     }
     if (existingMetadata.name === 'submissionLimit') {
       const submissionLimit = JSON.parse(existingMetadata.value)
+      _.forOwn(submissionLimit, (value, key) => {
+        if (value === 'true') {
+          submissionLimit[key] = 'false'
+        }
+      })
       submissionLimit[path] = `${value}`
+      if (path === 'count') {
+        submissionLimit.limit = 'true'
+        submissionLimit.unlimited = 'false'
+      } else if (path === 'unlimited' && value) {
+        submissionLimit.limit = 'false'
+        submissionLimit.count = ''
+      }
       existingMetadata.value = JSON.stringify(submissionLimit)
     } else {
       existingMetadata.value = `${value}`
