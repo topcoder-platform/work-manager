@@ -31,6 +31,7 @@ import {
   PAGE_SIZE
 } from '../config/constants'
 import { fetchProjectById } from '../services/projects'
+import { loadProject } from './projects'
 
 /**
  * Member challenges related redux actions
@@ -167,6 +168,10 @@ export function loadChallengeDetails (projectId, challengeId) {
           type: LOAD_CHALLENGE_DETAILS_SUCCESS,
           challengeDetails: challenge
         })
+
+        if (challenge.projectId) {
+          loadProject(challenge.projectId)(dispatch, getState)
+        }
       }).catch(() => {
         dispatch({
           type: LOAD_CHALLENGE_DETAILS_FAILURE
@@ -177,16 +182,19 @@ export function loadChallengeDetails (projectId, challengeId) {
         type: LOAD_CHALLENGE_DETAILS_SUCCESS,
         challengeDetails: null
       })
-    }
 
-    const selectedProject = await fetchProjectById(projectId)
-    if (!selectedProject) return
-    const members = selectedProject.members
-      .filter(m => m.role === 'manager' || m.role === 'copilot')
-    dispatch({
-      type: LOAD_CHALLENGE_MEMBERS_SUCCESS,
-      members
-    })
+      if (projectId) {
+        fetchProjectById(projectId).then((selectedProject) => {
+          if (!selectedProject) return
+          const members = selectedProject.members
+            .filter(m => m.role === 'manager' || m.role === 'copilot')
+          dispatch({
+            type: LOAD_CHALLENGE_MEMBERS_SUCCESS,
+            members
+          })
+        })
+      }
+    }
   }
 }
 
