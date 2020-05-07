@@ -15,7 +15,7 @@ import 'rc-time-picker/assets/index.css'
 import Select from '../Select'
 
 const timeFormat = 'HH:mm'
-const dateFormat = 'DD/MM/YYYY'
+const dateFormat = 'MM/DD/YYYY'
 
 class PhaseInput extends Component {
   render () {

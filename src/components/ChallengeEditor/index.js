@@ -523,6 +523,7 @@ class ChallengeEditor extends Component {
       try {
         const draftChallenge = await patchChallenge(challengeId, patchObject)
         this.setState({ draftChallenge })
+        this.updateTimeLastSaved()
       } catch (error) {
         if (changedField === 'groups') {
           toastr.error('Error', `You don't have access to the ${patchObject.groups[0]} group`)
@@ -661,7 +662,9 @@ class ChallengeEditor extends Component {
       uploadAttachment,
       token,
       removeAttachment,
-      failedToLoad } = this.props
+      failedToLoad,
+      projectDetail
+    } = this.props
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
     }
@@ -780,10 +783,10 @@ class ChallengeEditor extends Component {
         )
       }
       {
-        (!isNew) && (!isActive) && (!isCompleted) && (
+        !isNew && (
           <div className={styles.bottomContainer}>
             {!isLoading && <LastSavedDisplay timeLastSaved={timeLastSaved} />}
-            {!isLoading && <div className={styles.buttonContainer}>
+            {!isLoading && (!isActive) && (!isCompleted) && <div className={styles.buttonContainer}>
               <div className={styles.button}>
                 <OutlineButton text={'Launch as Draft'} type={'success'} onClick={this.createDraftHandler} />
               </div>
@@ -812,6 +815,9 @@ class ChallengeEditor extends Component {
           <div className={styles.group}>
 
             <div className={styles.row}>
+              <div className={styles.col}>
+                <span><span className={styles.fieldTitle}>Project:</span> {projectDetail ? projectDetail.name : ''}</span>
+              </div>
               <div className={styles.col}>
                 <span className={styles.fieldTitle}>Track:</span>
                 <Track disabled type={challenge.track} isActive key={challenge.track} onUpdateOthers={() => {}} />
@@ -911,11 +917,13 @@ ChallengeEditor.defaultProps = {
   challengeId: null,
   attachments: [],
   failedToLoad: false,
-  challengeResources: {}
+  challengeResources: {},
+  projectDetail: {}
 }
 
 ChallengeEditor.propTypes = {
   challengeDetails: PropTypes.object,
+  projectDetail: PropTypes.object,
   challengeResources: PropTypes.arrayOf(PropTypes.object),
   isNew: PropTypes.bool.isRequired,
   projectId: PropTypes.string.isRequired,
