@@ -7,7 +7,24 @@ import styles from './MaximumSubmissions-Field.module.scss'
 
 class MaximumSubmissionsField extends Component {
   render () {
-    const { challenge, onUpdateCheckbox, onUpdateInput } = this.props
+    const { challenge, onUpdateMetadata } = this.props
+    const metadata = challenge.metadata || {}
+    let existingData = _.find(metadata, { name: 'submissionLimit' })
+    let isUnlimited = false
+    let isLimited = false
+    let count = ''
+    if (existingData) {
+      const value = JSON.parse(existingData.value)
+      if (value.unlimited === 'true') {
+        isUnlimited = true
+      }
+      if (value.limit === 'true') {
+        isLimited = true
+      }
+      if (value.count) {
+        count = value.count
+      }
+    }
     return (
       <React.Fragment>
         <div className={styles.row}>
@@ -23,8 +40,8 @@ class MaximumSubmissionsField extends Component {
                   name='unlimited'
                   id='unlimited'
                   type='checkbox'
-                  checked={_.get(challenge, 'maximumSubmissions.unlimited')}
-                  onChange={(e) => onUpdateCheckbox('unlimited', e.target.checked, 'maximumSubmissions')}
+                  checked={isUnlimited}
+                  onChange={(e) => onUpdateMetadata('submissionLimit', e.target.checked, 'unlimited')}
                 />
                 <label htmlFor='unlimited'>
                   <div className={styles.checkboxLabel}>
@@ -42,8 +59,8 @@ class MaximumSubmissionsField extends Component {
                   name='limit'
                   id='limit'
                   type='checkbox'
-                  checked={_.get(challenge, 'maximumSubmissions.limit')}
-                  onChange={(e) => onUpdateCheckbox('limit', e.target.checked, 'maximumSubmissions')}
+                  checked={isLimited}
+                  onChange={(e) => onUpdateMetadata('submissionLimit', e.target.checked, 'limit')}
                 />
                 <label htmlFor='limit'>
                   <div className={styles.checkboxLabel}>
@@ -52,7 +69,15 @@ class MaximumSubmissionsField extends Component {
                   <input type='hidden' />
                 </label>
               </div>
-              <input id='count' name='count' type='text' placeholder='' value={_.get(challenge, 'maximumSubmissions.count')} maxLength='200' onChange={(e) => onUpdateInput(e, true, 'maximumSubmissions')} />
+              <input
+                id='count'
+                name='count'
+                type='text'
+                placeholder=''
+                value={count}
+                maxLength='200'
+                onChange={(e) => onUpdateMetadata('submissionLimit', e.target.value, 'count')}
+              />
             </div>
           </div>
         </div>
@@ -61,10 +86,13 @@ class MaximumSubmissionsField extends Component {
   }
 }
 
+MaximumSubmissionsField.defaultProps = {
+  onUpdateMetadata: () => {}
+}
+
 MaximumSubmissionsField.propTypes = {
   challenge: PropTypes.shape().isRequired,
-  onUpdateCheckbox: PropTypes.func.isRequired,
-  onUpdateInput: PropTypes.func.isRequired
+  onUpdateMetadata: PropTypes.func
 }
 
 export default MaximumSubmissionsField

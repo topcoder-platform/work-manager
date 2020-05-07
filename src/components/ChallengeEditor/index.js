@@ -91,6 +91,7 @@ class ChallengeEditor extends Component {
     this.createDraftHandler = this.createDraftHandler.bind(this)
     this.getCurrentTemplate = this.getCurrentTemplate.bind(this)
     this.getBackendChallengePhases = this.getBackendChallengePhases.bind(this)
+    this.onUpdateMetadata = this.onUpdateMetadata.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000) // 3s
   }
 
@@ -288,6 +289,38 @@ class ChallengeEditor extends Component {
     }
     this.setState({ challenge: newChallenge }, () => {
       this.autoUpdateChallengeThrottled(field)
+    })
+  }
+
+  /**
+   * Update Metadata
+   * @param name Name of data
+   * @param value The value
+   * @param path Path of value
+   */
+  onUpdateMetadata (name, value, path) {
+    const { challenge: oldChallenge } = this.state
+    const newChallenge = { ...oldChallenge }
+    if (!newChallenge.metadata) {
+      newChallenge.metadata = []
+    }
+    let existingMetadata = _.find(newChallenge.metadata, { name })
+    if (!existingMetadata) {
+      existingMetadata = { name }
+      newChallenge.metadata.push(existingMetadata)
+      if (name === 'submissionLimit') {
+        existingMetadata.value = '{}'
+      }
+    }
+    if (existingMetadata.name === 'submissionLimit') {
+      const submissionLimit = JSON.parse(existingMetadata.value)
+      submissionLimit[path] = `${value}`
+      existingMetadata.value = JSON.stringify(submissionLimit)
+    } else {
+      existingMetadata.value = `${value}`
+    }
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled('metadata')
     })
   }
 
@@ -877,6 +910,7 @@ class ChallengeEditor extends Component {
               onUpdateInput={this.onUpdateInput}
               onUpdateDescription={this.onUpdateDescription}
               onUpdateMultiSelect={this.onUpdateMultiSelect}
+              onUpdateMetadata={this.onUpdateMetadata}
             />
             { false && (
               <AttachmentField

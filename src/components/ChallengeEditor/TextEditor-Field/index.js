@@ -28,10 +28,10 @@ class TextEditorField extends Component {
       challengeTags,
       challenge,
       onUpdateCheckbox,
-      onUpdateInput,
       onUpdateDescription,
       onUpdateMultiSelect,
-      shouldShowPrivateDescription
+      shouldShowPrivateDescription,
+      onUpdateMetadata
     } = this.props
     const { addedNewPrivateDescription } = this.state
     const challengeTrack = challenge.legacy
@@ -87,16 +87,15 @@ class TextEditorField extends Component {
             />
             <StockArtsField
               challenge={challenge}
-              onUpdateCheckbox={onUpdateCheckbox}
+              onUpdateCheckbox={onUpdateMetadata}
             />
             <SubmssionVisibility
               challenge={challenge}
-              onUpdateCheckbox={onUpdateCheckbox}
+              onUpdateCheckbox={onUpdateMetadata}
             />
             <MaximumSubmissionsField
               challenge={challenge}
-              onUpdateCheckbox={onUpdateCheckbox}
-              onUpdateInput={onUpdateInput}
+              onUpdateMetadata={onUpdateMetadata}
             />
           </React.Fragment>
         )}
@@ -108,14 +107,15 @@ class TextEditorField extends Component {
 TextEditorField.defaultProps = {
   challengeTags: [],
   // TODO: For our first go-live, we're probably going to have this UI in production before the Community App work to display data from V5 is available. Only hide the UI elements for private description for now. Don't take out any code or functionality.
-  shouldShowPrivateDescription: false
+  shouldShowPrivateDescription: false,
+  onUpdateMetadata: () => {}
 }
 
 TextEditorField.propTypes = {
   challengeTags: PropTypes.arrayOf(PropTypes.object).isRequired,
   challenge: PropTypes.shape().isRequired,
   onUpdateCheckbox: PropTypes.func.isRequired,
-  onUpdateInput: PropTypes.func.isRequired,
+  onUpdateMetadata: PropTypes.func,
   onUpdateDescription: PropTypes.func.isRequired,
   onUpdateMultiSelect: PropTypes.func.isRequired,
   shouldShowPrivateDescription: PropTypes.bool
