@@ -1,7 +1,8 @@
 import {
   LOAD_PROJECT_DETAILS_SUCCESS,
   LOAD_PROJECT_DETAILS_PENDING,
-  LOAD_PROJECT_DETAILS_FAILURE
+  LOAD_PROJECT_DETAILS_FAILURE,
+  LOAD_CHALLENGE_MEMBERS_SUCCESS
 } from '../config/constants'
 import { fetchProjectById } from '../services/projects'
 
@@ -20,6 +21,14 @@ export function loadProject (projectId) {
           type: LOAD_PROJECT_DETAILS_SUCCESS,
           projectDetail: project
         })
+
+        if (project && project.members) {
+          const members = project.members.filter(m => m.role === 'manager' || m.role === 'copilot')
+          dispatch({
+            type: LOAD_CHALLENGE_MEMBERS_SUCCESS,
+            members
+          })
+        }
       }).catch(() => {
         dispatch({
           type: LOAD_PROJECT_DETAILS_FAILURE

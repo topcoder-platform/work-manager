@@ -66,7 +66,9 @@ class ChallengeEditor extends Component {
       attachments,
       token,
       removeAttachment,
-      failedToLoad } = this.props
+      failedToLoad,
+      projectDetail
+    } = this.props
     return (
       <ChallengeEditorComponent
         isLoading={isLoading}
@@ -81,6 +83,7 @@ class ChallengeEditor extends Component {
         token={token}
         removeAttachment={removeAttachment}
         failedToLoad={failedToLoad}
+        projectDetail={projectDetail}
       />
     )
   }
@@ -104,6 +107,7 @@ ChallengeEditor.propTypes = {
   loadResourceRoles: PropTypes.func,
   challengeResources: PropTypes.arrayOf(PropTypes.object),
   challengeDetails: PropTypes.object,
+  projectDetail: PropTypes.object,
   metadata: PropTypes.shape({
     challengeTypes: PropTypes.array
   }),
@@ -115,8 +119,9 @@ ChallengeEditor.propTypes = {
   failedToLoad: PropTypes.bool
 }
 
-const mapStateToProps = ({ challenges: { challengeDetails, challengeResources, metadata, isLoading, attachments, failedToLoad }, auth: { token } }) => ({
+const mapStateToProps = ({ projects: { projectDetail }, challenges: { challengeDetails, challengeResources, metadata, isLoading, attachments, failedToLoad }, auth: { token } }) => ({
   challengeDetails,
+  projectDetail,
   challengeResources,
   metadata,
   isLoading,
