@@ -168,10 +168,7 @@ export function loadChallengeDetails (projectId, challengeId) {
           type: LOAD_CHALLENGE_DETAILS_SUCCESS,
           challengeDetails: challenge
         })
-
-        if (challenge.projectId) {
-          loadProject(challenge.projectId)(dispatch, getState)
-        }
+        loadProject(challenge.projectId)(dispatch, getState)
       }).catch(() => {
         dispatch({
           type: LOAD_CHALLENGE_DETAILS_FAILURE

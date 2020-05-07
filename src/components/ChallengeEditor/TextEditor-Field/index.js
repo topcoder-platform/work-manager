@@ -30,7 +30,8 @@ class TextEditorField extends Component {
       onUpdateCheckbox,
       onUpdateInput,
       onUpdateDescription,
-      onUpdateMultiSelect
+      onUpdateMultiSelect,
+      shouldShowPrivateDescription
     } = this.props
     const { addedNewPrivateDescription } = this.state
     const challengeTrack = challenge.legacy
@@ -50,17 +51,17 @@ class TextEditorField extends Component {
             type='description'
           />
         </div>)}
-        {!showShowPrivateDescriptionField && (<div className={styles.button} onClick={this.addNewPrivateDescription}>
+        {shouldShowPrivateDescription && !showShowPrivateDescriptionField && (<div className={styles.button} onClick={this.addNewPrivateDescription}>
           <PrimaryButton text={'Add private specification'} type={'info'} />
         </div>)}
-        {showShowPrivateDescriptionField && (<div className={styles.title}>
+        {shouldShowPrivateDescription && showShowPrivateDescriptionField && (<div className={styles.title}>
           <span>Private specification</span>
           <i>
             This text will only be visible to Topcoder members that have
             registered for this challenge
           </i>
         </div>)}
-        {showShowPrivateDescriptionField && challenge.id && (
+        {shouldShowPrivateDescription && showShowPrivateDescriptionField && challenge.id && (
           <div className={styles.row}>
             <DescriptionField
               isPrivate
@@ -105,7 +106,9 @@ class TextEditorField extends Component {
 }
 
 TextEditorField.defaultProps = {
-  challengeTags: []
+  challengeTags: [],
+  // TODO: For our first go-live, we're probably going to have this UI in production before the Community App work to display data from V5 is available. Only hide the UI elements for private description for now. Don't take out any code or functionality.
+  shouldShowPrivateDescription: false
 }
 
 TextEditorField.propTypes = {
@@ -114,7 +117,8 @@ TextEditorField.propTypes = {
   onUpdateCheckbox: PropTypes.func.isRequired,
   onUpdateInput: PropTypes.func.isRequired,
   onUpdateDescription: PropTypes.func.isRequired,
-  onUpdateMultiSelect: PropTypes.func.isRequired
+  onUpdateMultiSelect: PropTypes.func.isRequired,
+  shouldShowPrivateDescription: PropTypes.bool
 }
 
 export default TextEditorField
