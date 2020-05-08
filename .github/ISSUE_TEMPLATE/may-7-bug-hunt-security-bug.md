@@ -1,8 +1,8 @@
 ---
-name: May 7 Bug Hunt functionality bug
+name: May 7 Bug Hunt security bug
 about: May 7 bug hunt template
 title: ''
-labels: Functional, May 7 Bug Hunt
+labels: May 7 Bug Hunt, Security
 assignees: ''
 
 ---
