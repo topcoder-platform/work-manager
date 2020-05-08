@@ -1,5 +1,5 @@
 ---
-name: May 7 bug hunt suggestion
+name: May 7 Bug Hunt suggestion
 about: May 7 bug hunt template
 title: ''
 labels: May 7 Bug Hunt, Suggestion
