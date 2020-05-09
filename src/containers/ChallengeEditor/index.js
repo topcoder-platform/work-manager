@@ -3,6 +3,8 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { withRouter } from 'react-router-dom'
 import ChallengeEditorComponent from '../../components/ChallengeEditor'
+import Loader from '../../components/Loader'
+
 import {
   loadTimelineTemplates,
   loadChallengePhases,
@@ -69,6 +71,9 @@ class ChallengeEditor extends Component {
       failedToLoad,
       projectDetail
     } = this.props
+    if (!challengeDetails || !challengeDetails.id) {
+      return (<Loader />)
+    }
     return (
       <ChallengeEditorComponent
         isLoading={isLoading}

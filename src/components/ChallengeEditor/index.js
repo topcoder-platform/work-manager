@@ -93,9 +93,10 @@ class ChallengeEditor extends Component {
     this.getBackendChallengePhases = this.getBackendChallengePhases.bind(this)
     this.onUpdateMetadata = this.onUpdateMetadata.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000) // 3s
+    this.componentDidUpdate()
   }
 
-  componentDidUpdate (prevProps, prevState) {
+  componentDidUpdate () {
     const { isNew, challengeId, challengeDetails, metadata, attachments } = this.props
     if (
       challengeDetails &&
