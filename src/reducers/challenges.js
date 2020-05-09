@@ -75,7 +75,7 @@ export default function (state = initialState, action) {
         page: action.page
       }
     case LOAD_CHALLENGE_DETAILS_PENDING:
-      return { ...state, isLoading: true, attachments: [], challenge: null, failedToLoad: false }
+      return { ...state, isLoading: true, attachments: [], challenge: null, challengeDetails: {}, failedToLoad: false }
     case LOAD_CHALLENGES_FAILURE:
       return { ...state, isLoading: false }
     case LOAD_CHALLENGE_DETAILS_FAILURE:
