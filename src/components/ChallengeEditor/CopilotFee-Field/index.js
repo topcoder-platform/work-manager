@@ -3,6 +3,8 @@ import styles from './CopilotFee-Field.module.scss'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import { validateValue } from '../../../util/input-check'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faDollarSign } from '@fortawesome/free-solid-svg-icons'
 import { VALIDATION_VALUE_TYPE } from '../../../config/constants'
 
 const CopilotFeeField = ({ challenge, onUpdateOthers }) => {
@@ -22,6 +24,9 @@ const CopilotFeeField = ({ challenge, onUpdateOthers }) => {
         <label htmlFor='copilotFee'>Copilot Fee :</label>
       </div>
       <div className={cn(styles.field, styles.col2)}>
+        <div className={styles.selectContainer}>
+          <FontAwesomeIcon className={styles.icon} icon={faDollarSign} />
+        </div>
         <input id='copilotFee' name='copilotFee' type='text' placeholder='' value={value} maxLength='200' required onChange={onChange} />
       </div>
     </div>

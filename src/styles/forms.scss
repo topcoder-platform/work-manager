@@ -51,7 +51,7 @@ input:not([type="checkbox"]):not(:global(.fsp-url-source__input)) {
 
   @include roboto_light();
 
-  line-height: 20px;
+  line-height: 40px;
   color: $tc-gray-80;
   padding: 0 20px;
   outline: none;
@@ -61,8 +61,13 @@ input:not([type="checkbox"]):not(:global(.fsp-url-source__input)) {
   border-radius: 2px;
   cursor: auto;
   transition: 0.15s all;
+
+
+
+  @include placeholder {
+    line-height: 40px;
+  }
 }
 input:not([type="checkbox"]):not(:global(.fsp-url-source__input)):focus {
   border: 1px solid $tc-blue-20;
 }
-
