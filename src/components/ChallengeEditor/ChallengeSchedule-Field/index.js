@@ -117,9 +117,10 @@ class ChallengeScheduleField extends Component {
   }
 
   renderPhaseEditor () {
-    const { challenge, onUpdateSelect, onUpdatePhase, removePhase } = this.props
+    const { onUpdateSelect, onUpdatePhase, removePhase } = this.props
+    const allPhases = this.getAllPhases()
     return (
-      _.map(challenge.phases, (p, index) => (
+      _.map(allPhases, (p, index) => (
         <div className={styles.PhaseRow} key={index}>
           <PhaseInput
             phase={this.getChallengePhase(p)}
