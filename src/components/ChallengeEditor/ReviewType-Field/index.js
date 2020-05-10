@@ -16,16 +16,16 @@ const ReviewTypeField = ({ reviewers, challenge, onUpdateOthers, onUpdateSelect 
       <div className={cn(styles.field, styles.col2)}>
         <div className={styles.subGroup}>
           <div className={styles.subRow}>
-            <div className={styles.tcCheckbox}>
+            <div className={styles.tcRadioButton}>
               <input
                 name='community'
-                type='checkbox'
+                type='radio'
                 id='community'
                 checked={isCommunity}
                 onChange={(e) => e.target.checked && onUpdateOthers({ field: 'reviewType', value: 'community' })}
               />
               <label htmlFor='community'>
-                <div className={styles.checkboxLabel}>
+                <div className={styles.radioButtonLabel}>
                   Community
                 </div>
                 <input type='hidden' />
@@ -33,16 +33,16 @@ const ReviewTypeField = ({ reviewers, challenge, onUpdateOthers, onUpdateSelect 
             </div>
           </div>
           <div className={styles.subRow}>
-            <div className={styles.tcCheckbox}>
+            <div className={styles.tcRadioButton}>
               <input
                 name='internal'
-                type='checkbox'
+                type='radio'
                 id='internal'
                 checked={isInternal}
                 onChange={(e) => e.target.checked && onUpdateOthers({ field: 'reviewType', value: 'internal' })}
               />
               <label htmlFor='internal'>
-                <div className={styles.checkboxLabel}>
+                <div className={styles.radioButtonLabel}>
                   Internal
                 </div>
                 <input type='hidden' />
