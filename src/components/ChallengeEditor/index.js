@@ -414,12 +414,20 @@ class ChallengeEditor extends Component {
   }
 
   isValidChallenge () {
+    const { challenge } = this.state
     if (this.props.isNew) {
-      const { name, track, typeId } = this.state.challenge
+      const { name, track, typeId } = challenge
       return !!name && !!track && !!typeId
     }
+
+    const reviewType = challenge.reviewType ? challenge.reviewType.toLowerCase() : 'community'
+    const isInternal = reviewType === 'internal'
+    if (isInternal && !challenge.reviewer) {
+      return false
+    }
+
     return !(Object.values(pick(['track', 'typeId', 'name', 'description', 'tags', 'prizeSets'],
-      this.state.challenge)).filter(v => !v.length).length || _.isEmpty(this.state.currentTemplate))
+      challenge)).filter(v => !v.length).length || _.isEmpty(this.state.currentTemplate))
   }
 
   validateChallenge () {

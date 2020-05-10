@@ -9,63 +9,68 @@ const ReviewTypeField = ({ reviewers, challenge, onUpdateOthers, onUpdateSelect 
   const isCommunity = reviewType === 'community'
   const isInternal = reviewType === 'internal'
   return (
-    <div className={styles.row}>
-      <div className={cn(styles.field, styles.col1)}>
-        <label htmlFor='reviewType'>Review Type <span>*</span> :</label>
-      </div>
-      <div className={cn(styles.field, styles.col2)}>
-        <div className={styles.subGroup}>
-          <div className={styles.subRow}>
-            <div className={styles.tcCheckbox}>
-              <input
-                name='community'
-                type='checkbox'
-                id='community'
-                checked={isCommunity}
-                onChange={(e) => e.target.checked && onUpdateOthers({ field: 'reviewType', value: 'community' })}
-              />
-              <label htmlFor='community'>
-                <div className={styles.checkboxLabel}>
-                  Community
-                </div>
-                <input type='hidden' />
-              </label>
-            </div>
-          </div>
-          <div className={styles.subRow}>
-            <div className={styles.tcCheckbox}>
-              <input
-                name='internal'
-                type='checkbox'
-                id='internal'
-                checked={isInternal}
-                onChange={(e) => e.target.checked && onUpdateOthers({ field: 'reviewType', value: 'internal' })}
-              />
-              <label htmlFor='internal'>
-                <div className={styles.checkboxLabel}>
-                  Internal
-                </div>
-                <input type='hidden' />
-              </label>
-            </div>
-            {
-              isInternal && (
-                <Select
-                  name='reviewer'
-                  options={reviewers}
-                  placeholder='Select Reviewer'
-                  labelKey='handle'
-                  valueKey='handle'
-                  clearable={false}
-                  value={challenge.reviewer}
-                  onChange={(e) => onUpdateSelect(e.handle, false, 'reviewer')}
-                  disabled={false}
+    <div>
+      <div className={styles.row}>
+        <div className={cn(styles.field, styles.col1)}>
+          <label htmlFor='reviewType'>Review Type <span>*</span> :</label>
+        </div>
+        <div className={cn(styles.field, styles.col2)}>
+          <div className={styles.subGroup}>
+            <div className={styles.subRow}>
+              <div className={styles.tcCheckbox}>
+                <input
+                  name='community'
+                  type='checkbox'
+                  id='community'
+                  checked={isCommunity}
+                  onChange={(e) => e.target.checked && onUpdateOthers({ field: 'reviewType', value: 'community' })}
                 />
-              )
-            }
+                <label htmlFor='community'>
+                  <div className={styles.checkboxLabel}>
+                    Community
+                  </div>
+                  <input type='hidden' />
+                </label>
+              </div>
+            </div>
+            <div className={styles.subRow}>
+              <div className={styles.tcCheckbox}>
+                <input
+                  name='internal'
+                  type='checkbox'
+                  id='internal'
+                  checked={isInternal}
+                  onChange={(e) => e.target.checked && onUpdateOthers({ field: 'reviewType', value: 'internal' })}
+                />
+                <label htmlFor='internal'>
+                  <div className={styles.checkboxLabel}>
+                    Internal
+                  </div>
+                  <input type='hidden' />
+                </label>
+              </div>
+              {
+                isInternal && (
+                  <Select
+                    name='reviewer'
+                    options={reviewers}
+                    placeholder='Select Reviewer'
+                    labelKey='handle'
+                    valueKey='handle'
+                    clearable={false}
+                    value={challenge.reviewer}
+                    onChange={(e) => onUpdateSelect(e.handle, false, 'reviewer')}
+                    disabled={false}
+                  />
+                )
+              }
+            </div>
           </div>
         </div>
       </div>
+      { challenge.submitTriggered && isInternal && !challenge.reviewer && <div className={cn(styles.field, styles.row, styles.error)}>
+        Select a reviewer
+      </div> }
     </div>
   )
 }
