@@ -1,4 +1,4 @@
-@import "../../../styles/includes";
+@import '../../../styles/includes';
 
 .row {
   box-sizing: border-box;
@@ -23,7 +23,6 @@
       color: $tc-gray-80;
     }
 
-
     &.col1 {
       max-width: 185px;
       min-width: 185px;
@@ -41,12 +40,5 @@
       flex-direction: row;
       width: 600px;
     }
-
-    :global{
-      .Select-clear-zone {
-        display: none;
-        }
-      }
-    }
   }
-
+}
