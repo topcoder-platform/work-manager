@@ -157,6 +157,22 @@
     &.onlyOne {
       justify-content: center;
     }
+
+    .linkGroupLeft {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      span {
+        margin: 0 5px;
+      }
+
+      .linkGroupLeftBottom {
+        a {
+          font-size: 12px;
+        }
+      }
+    }
   }
 }
 
