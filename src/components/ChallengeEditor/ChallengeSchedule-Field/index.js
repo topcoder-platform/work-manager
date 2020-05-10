@@ -27,6 +27,7 @@ class ChallengeScheduleField extends Component {
     this.renderTimeLine = this.renderTimeLine.bind(this)
     this.getChallengePhase = this.getChallengePhase.bind(this)
     this.getAllPhases = this.getAllPhases.bind(this)
+    this.renderTimelineAgain = this.renderTimelineAgain.bind(this)
   }
 
   toggleEditMode () {
@@ -248,14 +249,25 @@ class ChallengeScheduleField extends Component {
     textProgressContainer.html(textProgressContainer.html())
   }
 
+  renderTimelineAgain () {
+    const { isEdit } = this.state
+    if (!isEdit) {
+      this.setState({ isEdit: true }, () => {
+        this.setState({ isEdit: false })
+      })
+    }
+  }
+
   render () {
     const { isEdit } = this.state
     const { currentTemplate } = this.props
     const { templates, resetPhase, challenge, onUpdateOthers } = this.props
     const timelines = !isEdit ? this.renderTimeLine() : null
     const chartHeight = `${(this.getAllPhases().length * GANTT_ROW_HEIGHT) + GANTT_FOOTER_HEIGHT}px`
-    console.log('totest chartHeight', chartHeight)
-    console.log('totest this.getAllPhases()', this.getAllPhases())
+    if (chartHeight !== this.lastChartHeight) {
+      this.renderTimelineAgain()
+    }
+    this.lastChartHeight = chartHeight
     return (
       <div className={styles.container}>
         <div className={cn(styles.row, styles.flexStart)}>
@@ -329,6 +341,10 @@ class ChallengeScheduleField extends Component {
                 loader={<div>Loading Timelines</div>}
                 data={timelines}
                 rootProps={{ 'data-testid': '1' }}
+                getChartWrapper={chartWrapper => {
+                  // get a reference to the chartWrapper
+                  this.chartWrapper = chartWrapper
+                }}
                 options={{
                   hAxis: {
                     format: 'currency'
