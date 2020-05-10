@@ -209,7 +209,7 @@ class ChallengeScheduleField extends Component {
     })
 
     // start date
-    textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" x="${$(minX).attr('x')}" y="-5") - 3}">${startDate.format('MMM DD YYYY, HH:mm')}</text>`))
+    textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" x="${minX}" y="-5") - 3}">${startDate.format('MMM DD YYYY, HH:mm')}</text>`))
 
     // finish date
     textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" text-anchor="end" x="${maxX}" y="-5">${finishDate.format('MMM DD YYYY, HH:mm')}</text>`))
