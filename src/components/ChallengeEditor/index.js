@@ -939,7 +939,7 @@ class ChallengeEditor extends Component {
             />
           </div>
           <div className={styles.group}>
-            <div className={styles.title}>Public specification</div>
+            <div className={styles.title}>Public specification <span>*</span></div>
             <TextEditorField
               challengeTags={metadata.challengeTags}
               challenge={challenge}
