@@ -9,6 +9,7 @@ import { pick } from 'lodash/fp'
 import Modal from '../Modal'
 import { withRouter } from 'react-router-dom'
 import { toastr } from 'react-redux-toastr'
+import xss from 'xss'
 
 import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
@@ -862,7 +863,12 @@ class ChallengeEditor extends Component {
 
             <div className={styles.row}>
               <div className={styles.col}>
-                <span><span className={styles.fieldTitle}>Project:</span> {projectDetail ? projectDetail.name : ''}</span>
+                <span>
+                  <span className={styles.fieldTitle}>Project:</span>
+                  <span dangerouslySetInnerHTML={{
+                    __html: xss(projectDetail ? projectDetail.name : '')
+                  }} />
+                </span>
               </div>
               <div className={styles.col}>
                 <span className={styles.fieldTitle}>Track:</span>
