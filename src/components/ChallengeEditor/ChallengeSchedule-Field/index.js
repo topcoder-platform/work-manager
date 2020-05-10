@@ -118,10 +118,9 @@ class ChallengeScheduleField extends Component {
   }
 
   renderPhaseEditor () {
-    const { onUpdateSelect, onUpdatePhase, removePhase } = this.props
-    const allPhases = this.getAllPhases()
+    const { onUpdateSelect, onUpdatePhase, removePhase, challenge } = this.props
     return (
-      _.map(allPhases, (p, index) => (
+      _.map(challenge.phases, (p, index) => (
         <div className={styles.PhaseRow} key={index}>
           <PhaseInput
             phase={this.getChallengePhase(p)}
@@ -254,6 +253,9 @@ class ChallengeScheduleField extends Component {
     const { currentTemplate } = this.props
     const { templates, resetPhase, challenge, onUpdateOthers } = this.props
     const timelines = !isEdit ? this.renderTimeLine() : null
+    const chartHeight = `${(this.getAllPhases().length * GANTT_ROW_HEIGHT) + GANTT_FOOTER_HEIGHT}px`
+    console.log('totest chartHeight', chartHeight)
+    console.log('totest this.getAllPhases()', this.getAllPhases())
     return (
       <div className={styles.container}>
         <div className={cn(styles.row, styles.flexStart)}>
@@ -322,7 +324,7 @@ class ChallengeScheduleField extends Component {
             <div id='gantt-chart' className={styles.chart}>
               <Chart
                 width={'100%'}
-                height={`${(this.getAllPhases().length * GANTT_ROW_HEIGHT) + GANTT_FOOTER_HEIGHT}px`}
+                height={chartHeight}
                 chartType='Gantt'
                 loader={<div>Loading Timelines</div>}
                 data={timelines}

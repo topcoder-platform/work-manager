@@ -372,7 +372,7 @@ class ChallengeEditor extends Component {
   /**
    * Reset  challenge Phases
    */
-  resetPhase (timeline) {
+  async resetPhase (timeline) {
     const timelinePhaseIds = timeline.phases.map(timelinePhase => timelinePhase.phaseId || timelinePhase)
     const validPhases = _.cloneDeep(this.props.metadata.challengePhases).filter(challengePhase => {
       return timelinePhaseIds.includes(challengePhase.id)
@@ -383,16 +383,15 @@ class ChallengeEditor extends Component {
 
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge }
-    newChallenge.timelineTemplateId = timeline.id
-    this.setState({
-      currentTemplate: timeline,
-      challenge: newChallenge
-    }, () => {
-      this.onUpdateOthers({
-        field: 'phases',
-        value: validPhases
-      })
+
+    const draftChallenge = await patchChallenge(newChallenge.id, {
+      phases: validPhases,
+      timelineTemplateId: timeline.id
     })
+    newChallenge.timelineTemplateId = timeline.id
+    newChallenge.phases = _.cloneDeep(draftChallenge.data.phases)
+
+    this.setState({ draftChallenge, challenge: newChallenge, currentTemplate: timeline })
   }
 
   toggleLaunch (e) {
