@@ -71,7 +71,9 @@ class ChallengeEditor extends Component {
       failedToLoad,
       projectDetail
     } = this.props
-    if (!challengeDetails || !challengeDetails.id) {
+
+    const challengeId = _.get(match.params, 'challengeId', null)
+    if (challengeId && (!challengeDetails || !challengeDetails.id)) {
       return (<Loader />)
     }
     return (
@@ -81,7 +83,7 @@ class ChallengeEditor extends Component {
         challengeResources={challengeResources}
         metadata={metadata}
         projectId={_.get(match.params, 'projectId', null)}
-        challengeId={_.get(match.params, 'challengeId', null)}
+        challengeId={challengeId}
         isNew={!_.has(match.params, 'challengeId')}
         uploadAttachment={createAttachment}
         attachments={attachments}
