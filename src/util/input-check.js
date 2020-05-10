@@ -16,12 +16,22 @@ const validateInteger = (value, prefixText = '') => {
 }
 
 /**
+ * Validate String
+ * @param {*} value
+ */
+const validateString = (value) => {
+  return /\S/.test(value) ? value : ''
+}
+
+/**
  * Validates Value
  */
 export const validateValue = (value, checkType = '', prefix = '') => {
   switch (checkType) {
     case VALIDATION_VALUE_TYPE.INTEGER:
       return validateInteger('' + value, prefix)
+    case VALIDATION_VALUE_TYPE.STRING:
+      return validateString(value)
     default:
       return value
   }

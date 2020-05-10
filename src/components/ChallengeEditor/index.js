@@ -169,7 +169,7 @@ class ChallengeEditor extends Component {
           newChallenge[e.target.name] = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER, '$')
           break
         default:
-          newChallenge[e.target.name] = e.target.value
+          newChallenge[e.target.name] = validateValue(e.target.value, VALIDATION_VALUE_TYPE.STRING)
           break
       }
       fieldChanged = e.target.name
