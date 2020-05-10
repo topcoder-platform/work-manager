@@ -15,7 +15,7 @@ import Modal from '../../Modal'
 import ChallengeTag from '../ChallengeTag'
 import styles from './ChallengeCard.module.scss'
 import { getFormattedDuration } from '../../../util/date'
-import { CHALLENGE_STATUS, COMMUNITY_APP_URL } from '../../../config/constants'
+import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, ONLINE_REVIEW_URL } from '../../../config/constants'
 import { OutlineButton, PrimaryButton } from '../../Buttons'
 import { patchChallenge } from '../../../services/challenges'
 
@@ -85,13 +85,22 @@ const getPhaseInfo = (c) => {
  */
 const hoverComponents = (challenge, onUpdateLaunch) => {
   const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.legacyId}`
+  const directUrl = `${DIRECT_PROJECT_URL}/contest/detail?projectId=${challenge.legacyId}`
+  const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
   switch (challenge.status.toUpperCase()) {
     case CHALLENGE_STATUS.DRAFT:
     case CHALLENGE_STATUS.ACTIVE:
     default:
       return (
         <div className={styles.linkGroup}>
-          <a className={styles.link} href={communityAppUrl}>View Challenge</a>
+          <div className={styles.linkGroupLeft}>
+            <a className={styles.link} href={communityAppUrl}>View Challenge</a>
+            <div className={styles.linkGroupLeftBottom}>
+              <a className={styles.link} href={directUrl} target='_blank'>Direct</a>
+              <span>|</span>
+              <a className={styles.link} href={orUrl} target='_blank'>OR</a>
+            </div>
+          </div>
           {
             challenge.status === 'Draft' && (
               <button className={styles.activateButton} onClick={() => onUpdateLaunch()}>
