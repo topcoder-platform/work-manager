@@ -72,7 +72,7 @@ class TextEditorField extends Component {
           </div>
         )}
         {challenge.submitTriggered && !challenge.description && (
-          <div className={styles.error}>Description is required field</div>
+          <div className={styles.error}>Public Specification is required</div>
         )}
         <TagsField
           challengeTags={challengeTagsFiltered}

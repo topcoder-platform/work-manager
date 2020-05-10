@@ -145,6 +145,8 @@
     width: 100%;
     padding-left: 20px;
     padding-right: 20px;
+    height: 100%;
+    align-items: center;
 
     .link,
     .link:hover,
@@ -162,6 +164,8 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      height: 100%;
+      justify-content: center;
 
       span {
         margin: 0 5px;
