@@ -93,12 +93,14 @@ const hoverComponents = (challenge, onUpdateLaunch) => {
     default:
       return (
         <div className={styles.linkGroup}>
-          <div className={styles.linkGroupLeft}>
+          <div className={styles.linkGroupLeft} onClick={() => {
+            window.location.href = communityAppUrl
+          }}>
             <a className={styles.link} href={communityAppUrl}>View Challenge</a>
             <div className={styles.linkGroupLeftBottom}>
-              <a className={styles.link} href={directUrl} target='_blank'>Direct</a>
+              <a onClick={(e) => e.stopPropagation()} className={styles.link} href={directUrl} target='_blank'>Direct</a>
               <span>|</span>
-              <a className={styles.link} href={orUrl} target='_blank'>OR</a>
+              <a onClick={(e) => e.stopPropagation()} className={styles.link} href={orUrl} target='_blank'>OR</a>
             </div>
           </div>
           {
