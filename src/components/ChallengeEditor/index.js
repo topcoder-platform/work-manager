@@ -124,8 +124,10 @@ class ChallengeEditor extends Component {
         }
         challengeData.copilot = copilot || copilotFromResources
         challengeData.reviewer = reviewer || reviewerFromResources
+        const challengeDetail = { ...dropdowns['newChallenge'], ...challengeData }
         this.setState({
-          challenge: { ...dropdowns['newChallenge'], ...challengeData },
+          challenge: challengeDetail,
+          draftChallenge: { data: _.cloneDeep(challengeDetails) },
           isLoading: false,
           currentTemplate
         })
@@ -372,7 +374,7 @@ class ChallengeEditor extends Component {
    */
   resetPhase (timeline) {
     const timelinePhaseIds = timeline.phases.map(timelinePhase => timelinePhase.phaseId || timelinePhase)
-    const validPhases = this.props.metadata.challengePhases.filter(challengePhase => {
+    const validPhases = _.cloneDeep(this.props.metadata.challengePhases).filter(challengePhase => {
       return timelinePhaseIds.includes(challengePhase.id)
     })
     validPhases.forEach(phase => {

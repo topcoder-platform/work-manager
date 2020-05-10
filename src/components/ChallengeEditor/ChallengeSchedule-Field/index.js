@@ -12,6 +12,7 @@ import Select from '../../Select'
 import { parseSVG } from '../../../util/svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDown, faTrash } from '@fortawesome/free-solid-svg-icons'
+import PrimaryButton from '../../Buttons/PrimaryButton'
 
 const GANTT_ROW_HEIGHT = 45
 const GANTT_FOOTER_HEIGHT = 40
@@ -306,6 +307,16 @@ class ChallengeScheduleField extends Component {
             </div>
           </div>
         </div>
+
+        {currentTemplate && (<div className={styles.row}>
+          <div className={styles.button}>
+            <PrimaryButton
+              text={'Reset Phases'}
+              type={'info'}
+              onClick={() => resetPhase(currentTemplate)} />
+          </div>
+        </div>)}
+
         {
           timelines && (
             <div id='gantt-chart' className={styles.chart}>
