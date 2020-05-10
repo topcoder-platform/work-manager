@@ -373,25 +373,15 @@ class ChallengeEditor extends Component {
    * Reset  challenge Phases
    */
   async resetPhase (timeline) {
-    const timelinePhaseIds = timeline.phases.map(timelinePhase => timelinePhase.phaseId || timelinePhase)
-    const validPhases = _.cloneDeep(this.props.metadata.challengePhases).filter(challengePhase => {
-      return timelinePhaseIds.includes(challengePhase.id)
-    })
-    validPhases.forEach(phase => {
-      delete Object.assign(phase, { phaseId: phase.id }).id
-    })
-
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge }
-
-    const draftChallenge = await patchChallenge(newChallenge.id, {
-      phases: validPhases,
-      timelineTemplateId: timeline.id
+    newChallenge.phases = []
+    this.setState({
+      currentTemplate: timeline,
+      challenge: newChallenge
+    }, () => {
+      this.autoUpdateChallengeThrottled('reset-phases')
     })
-    newChallenge.timelineTemplateId = timeline.id
-    newChallenge.phases = _.cloneDeep(draftChallenge.data.phases)
-
-    this.setState({ draftChallenge, challenge: newChallenge, currentTemplate: timeline })
   }
 
   toggleLaunch (e) {
@@ -571,13 +561,38 @@ class ChallengeEditor extends Component {
       let patchObject = (changedField === 'reviewType')
         ? { legacy: { reviewType: this.state.challenge[changedField] } }
         : { [changedField]: this.state.challenge[changedField] }
-      if (changedField === 'phases') {
+      if (changedField === 'phases' || changedField === 'reset-phases') {
+        const { currentTemplate } = this.state
         // need timelineTemplateId for updating phase
-        patchObject.timelineTemplateId = this.state.challenge.timelineTemplateId
+        patchObject.timelineTemplateId = currentTemplate ? currentTemplate.id : this.state.challenge.timelineTemplateId
+      }
+
+      if (changedField === 'reset-phases') {
+        delete patchObject['reset-phases']
+        const { currentTemplate } = this.state
+        const timelinePhaseIds = currentTemplate.phases.map(timelinePhase => timelinePhase.phaseId || timelinePhase)
+        const validPhases = _.cloneDeep(this.props.metadata.challengePhases).filter(challengePhase => {
+          return timelinePhaseIds.includes(challengePhase.id)
+        })
+        validPhases.forEach(phase => {
+          delete Object.assign(phase, { phaseId: phase.id }).id
+        })
+        patchObject.phases = validPhases
       }
       try {
         const draftChallenge = await patchChallenge(challengeId, patchObject)
-        this.setState({ draftChallenge })
+
+        const { challenge: oldChallenge } = this.state
+        const newChallenge = { ...oldChallenge }
+
+        if (changedField === 'reset-phases') {
+          const { currentTemplate } = this.state
+          newChallenge.timelineTemplateId = currentTemplate.id
+          newChallenge.phases = _.cloneDeep(draftChallenge.data.phases)
+          this.setState({ draftChallenge, challenge: newChallenge })
+        } else {
+          this.setState({ draftChallenge })
+        }
         this.updateTimeLastSaved()
       } catch (error) {
         if (changedField === 'groups') {
