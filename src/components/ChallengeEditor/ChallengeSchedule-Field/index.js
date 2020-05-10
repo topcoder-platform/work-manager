@@ -195,15 +195,24 @@ class ChallengeScheduleField extends Component {
     }
 
     // show start/end time in progress bar
+    let minX = -1
+    let maxX = -1
     progressContainer.find('rect').each((index, element) => {
-      if (index === 0) {
-        // start date
-        textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" x="${$(element).attr('x')}" y="-5") - 3}">${startDate.format('MMM DD YYYY, HH:mm')}</text>`))
-      } else if (index === timelines.length - 2) {
-        // finish date
-        textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" text-anchor="end" x="${parseFloat($(element).attr('x')) + parseFloat($(element).attr('width'))}" y="-5">${finishDate.format('MMM DD YYYY, HH:mm')}</text>`))
+      const tmpX = parseFloat($(element).attr('x'))
+      const endTmpX = parseFloat($(element).attr('x')) + parseFloat($(element).attr('width'))
+      if (minX < 0 || tmpX < minX) {
+        minX = tmpX
+      }
+      if (maxX < 0 || endTmpX > maxX) {
+        maxX = endTmpX
       }
     })
+
+    // start date
+    textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" x="${$(minX).attr('x')}" y="-5") - 3}">${startDate.format('MMM DD YYYY, HH:mm')}</text>`))
+
+    // finish date
+    textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" text-anchor="end" x="${maxX}" y="-5">${finishDate.format('MMM DD YYYY, HH:mm')}</text>`))
 
     /**
      * Handle mouse over progress event
