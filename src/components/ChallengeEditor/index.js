@@ -129,10 +129,12 @@ class ChallengeEditor extends Component {
         challengeData.copilot = copilot || copilotFromResources
         challengeData.reviewer = reviewer || reviewerFromResources
         const challengeDetail = { ...dropdowns['newChallenge'], ...challengeData }
+        const isOpenAdvanceSettings = challengeDetail.groups.length > 0
         this.setState({
           challenge: challengeDetail,
           draftChallenge: { data: _.cloneDeep(challengeDetails) },
           isLoading: false,
+          isOpenAdvanceSettings,
           currentTemplate
         })
       } catch (e) {
