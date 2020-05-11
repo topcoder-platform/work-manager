@@ -11,7 +11,7 @@ import { withRouter } from 'react-router-dom'
 import { toastr } from 'react-redux-toastr'
 import xss from 'xss'
 
-import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE } from '../../config/constants'
+import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE, DEFAULT_TERM_UUID, DEFAULT_NDA_UUID } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
 import TypeField from './Type-Field'
@@ -19,6 +19,7 @@ import ChallengeNameField from './ChallengeName-Field'
 import CopilotField from './Copilot-Field'
 import ReviewTypeField from './ReviewType-Field'
 import TermsField from './Terms-Field'
+import NDAField from './NDAField'
 import GroupsField from './Groups-Field'
 import CopilotFeeField from './CopilotFee-Field'
 import ChallengeTotalField from './ChallengeTotal-Field'
@@ -75,6 +76,7 @@ class ChallengeEditor extends Component {
     this.onUpdateOthers = this.onUpdateOthers.bind(this)
     this.onUpdateCheckbox = this.onUpdateCheckbox.bind(this)
     this.toggleAdvanceSettings = this.toggleAdvanceSettings.bind(this)
+    this.toggleNdaRequire = this.toggleNdaRequire.bind(this)
     this.removeAttachment = this.removeAttachment.bind(this)
     this.removePhase = this.removePhase.bind(this)
     this.resetPhase = this.resetPhase.bind(this)
@@ -345,6 +347,26 @@ class ChallengeEditor extends Component {
     this.setState({ isOpenAdvanceSettings: !isOpenAdvanceSettings })
   }
 
+  toggleNdaRequire () {
+    const { challenge } = this.state
+    const newChallenge = { ...challenge }
+    let { terms: oldTerms } = challenge
+    if (!oldTerms) {
+      oldTerms = []
+    }
+    let newTerms = []
+    if (oldTerms.indexOf(DEFAULT_NDA_UUID) >= 0) {
+      newTerms = _.remove(oldTerms, t => t !== DEFAULT_NDA_UUID)
+    } else {
+      oldTerms.push(DEFAULT_NDA_UUID)
+      newTerms = oldTerms
+    }
+    newChallenge.terms = newTerms
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled('terms')
+    })
+  }
+
   removeAttachment (file) {
     const { challenge } = this.state
     const newChallenge = { ...challenge }
@@ -535,7 +557,8 @@ class ChallengeEditor extends Component {
       legacy: {
         track,
         reviewType: 'community'
-      }
+      },
+      terms: [DEFAULT_TERM_UUID]
     }
     try {
       const draftChallenge = await createChallenge(newChallenge)
@@ -903,6 +926,7 @@ class ChallengeEditor extends Component {
               </div>
             </div>
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
+            <NDAField challenge={challenge} toggleNdaRequire={this.toggleNdaRequire} />
             <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
             <ReviewTypeField
               reviewers={metadata.members}
@@ -927,7 +951,8 @@ class ChallengeEditor extends Component {
             </div>
             { isOpenAdvanceSettings && (
               <React.Fragment>
-                <TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />
+                {/* remove terms field and use default term */}
+                {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}
                 <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
               </React.Fragment>
             )}
