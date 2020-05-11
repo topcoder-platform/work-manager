@@ -1,7 +1,15 @@
 /**
  * Constants used across the app
  */
-export const { COMMUNITY_APP_URL, CHALLENGE_API_URL, CONNECT_APP_URL, DIRECT_PROJECT_URL, ONLINE_REVIEW_URL } = process.env
+export const {
+  COMMUNITY_APP_URL,
+  CHALLENGE_API_URL,
+  CONNECT_APP_URL,
+  DIRECT_PROJECT_URL,
+  ONLINE_REVIEW_URL,
+  DEFAULT_TERM_UUID,
+  DEFAULT_NDA_UUID
+} = process.env
 
 // Actions
 export const LOAD_PROJECTS_SUCCESS = 'LOAD_PROJECTS_SUCCESS'
