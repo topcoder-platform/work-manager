@@ -26,7 +26,7 @@ class ChallengePrizesField extends Component {
 
   addNewPrize () {
     const challengePrize = this.getChallengePrize()
-    challengePrize.prizes = [...challengePrize.prizes, { type: CHALLENGE_PRIZE_TYPE.MONEY, value: 0 }]
+    challengePrize.prizes = [...challengePrize.prizes, { type: CHALLENGE_PRIZE_TYPE.MONEY, value: '' }]
     this.onUpdateValue(challengePrize)
   }
 
