@@ -40,9 +40,12 @@ class ChallengeScheduleField extends Component {
     if (!phase) {
       return phase
     }
-    const challengePhase = challengePhases.find(challengePhase => challengePhase.id === phase.phaseId)
+    let challengePhase = challengePhases.find(challengePhase => challengePhase.id === phase.phaseId)
+    if (challengePhase) {
+      challengePhase = _.cloneDeep(challengePhase)
+    }
     if (challengePhase) challengePhase.duration = phase.duration
-    return challengePhase || phase
+    return phase
   }
 
   getAllPhases () {
