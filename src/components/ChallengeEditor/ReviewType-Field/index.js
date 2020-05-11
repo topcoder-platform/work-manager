@@ -28,7 +28,7 @@ const ReviewTypeField = ({ reviewers, challenge, onUpdateOthers, onUpdateSelect 
                 <label htmlFor='community'>
                   <div className={styles.radioButtonLabel}>
                     Community
-                </div>
+                  </div>
                   <input type='hidden' />
                 </label>
               </div>
@@ -45,7 +45,7 @@ const ReviewTypeField = ({ reviewers, challenge, onUpdateOthers, onUpdateSelect 
                 <label htmlFor='internal'>
                   <div className={styles.radioButtonLabel}>
                     Internal
-                </div>
+                  </div>
                   <input type='hidden' />
                 </label>
               </div>
