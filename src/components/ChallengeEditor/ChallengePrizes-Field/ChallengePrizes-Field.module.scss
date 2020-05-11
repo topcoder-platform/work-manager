@@ -42,6 +42,10 @@
       align-items: center;
     }
 
+    &.col2.error {
+      color: $tc-red;
+      margin-top: -25px;
+    }
     &.col2 {
       align-self: flex-end;
       margin-bottom: auto;
