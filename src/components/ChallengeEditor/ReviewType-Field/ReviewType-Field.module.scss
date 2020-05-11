@@ -161,4 +161,9 @@
       border-color: $white;
     }
   }
+
+  &.error {
+    color: $tc-red;
+    margin-top: -25px;
+  }
 }

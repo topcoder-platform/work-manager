@@ -28,7 +28,7 @@ const ChallengesComponent = ({
   totalChallenges
 }) => {
   return (
-    <Sticky top={10} bottomBoundary='#SidebarContainer'>
+    <Sticky top={10}>
       <div>
         <Helmet title={activeProject ? activeProject.name : ''} />
         <div className={styles.titleContainer}>

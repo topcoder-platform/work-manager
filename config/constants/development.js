@@ -21,5 +21,7 @@ module.exports = {
   TECHNOLOGIES_V4_API_URL: `${DEV_API_HOSTNAME}/v4/technologies`,
   CONNECT_APP_URL: `https://connect.${DOMAIN}`,
   DIRECT_PROJECT_URL: `https://www.${DOMAIN}/direct`,
-  ONLINE_REVIEW_URL: `https://software.${DOMAIN}`
+  ONLINE_REVIEW_URL: `https://software.${DOMAIN}`,
+  DEFAULT_TERM_UUID: 'ae6fc4ff-3bd1-4e3f-a987-cc60ab94b422',
+  DEFAULT_NDA_UUID: '7245bb7d-d7c9-45a0-9603-d5ff05af0977'
 }

@@ -23,6 +23,10 @@
   color: $challenges-title;
   margin-top: 30px;
   text-align: center;
+
+  span {
+    color: $tc-red;
+  }
 }
 
 .textRequired {

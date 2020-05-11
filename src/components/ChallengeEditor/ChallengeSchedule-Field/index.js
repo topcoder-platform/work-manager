@@ -12,6 +12,7 @@ import Select from '../../Select'
 import { parseSVG } from '../../../util/svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleDown, faTrash } from '@fortawesome/free-solid-svg-icons'
+import PrimaryButton from '../../Buttons/PrimaryButton'
 
 const GANTT_ROW_HEIGHT = 45
 const GANTT_FOOTER_HEIGHT = 40
@@ -26,6 +27,7 @@ class ChallengeScheduleField extends Component {
     this.renderTimeLine = this.renderTimeLine.bind(this)
     this.getChallengePhase = this.getChallengePhase.bind(this)
     this.getAllPhases = this.getAllPhases.bind(this)
+    this.renderTimelineAgain = this.renderTimelineAgain.bind(this)
   }
 
   toggleEditMode () {
@@ -38,9 +40,12 @@ class ChallengeScheduleField extends Component {
     if (!phase) {
       return phase
     }
-    const challengePhase = challengePhases.find(challengePhase => challengePhase.id === phase.phaseId)
+    let challengePhase = challengePhases.find(challengePhase => challengePhase.id === phase.phaseId)
+    if (challengePhase) {
+      challengePhase = _.cloneDeep(challengePhase)
+    }
     if (challengePhase) challengePhase.duration = phase.duration
-    return challengePhase || phase
+    return phase
   }
 
   getAllPhases () {
@@ -117,10 +122,9 @@ class ChallengeScheduleField extends Component {
   }
 
   renderPhaseEditor () {
-    const { onUpdateSelect, onUpdatePhase, removePhase } = this.props
-    const allPhases = this.getAllPhases()
+    const { onUpdateSelect, onUpdatePhase, removePhase, challenge } = this.props
     return (
-      _.map(allPhases, (p, index) => (
+      _.map(challenge.phases, (p, index) => (
         <div className={styles.PhaseRow} key={index}>
           <PhaseInput
             phase={this.getChallengePhase(p)}
@@ -195,15 +199,24 @@ class ChallengeScheduleField extends Component {
     }
 
     // show start/end time in progress bar
+    let minX = -1
+    let maxX = -1
     progressContainer.find('rect').each((index, element) => {
-      if (index === 0) {
-        // start date
-        textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" x="${$(element).attr('x')}" y="-5") - 3}">${startDate.format('MMM DD YYYY, HH:mm')}</text>`))
-      } else if (index === timelines.length - 2) {
-        // finish date
-        textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" text-anchor="end" x="${parseFloat($(element).attr('x')) + parseFloat($(element).attr('width'))}" y="-5">${finishDate.format('MMM DD YYYY, HH:mm')}</text>`))
+      const tmpX = parseFloat($(element).attr('x'))
+      const endTmpX = parseFloat($(element).attr('x')) + parseFloat($(element).attr('width'))
+      if (minX < 0 || tmpX < minX) {
+        minX = tmpX
+      }
+      if (maxX < 0 || endTmpX > maxX) {
+        maxX = endTmpX
       }
     })
+
+    // start date
+    textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" x="${minX}" y="-5") - 3}">${startDate.format('MMM DD YYYY, HH:mm')}</text>`))
+
+    // finish date
+    textProgressContainer.append(parseSVG(`<text style="cursor: default; user-select: none; -webkit-font-smoothing: antialiased; font-family: Arial; font-size: 13px; font-weight: normal;" text-anchor="end" x="${maxX}" y="-5">${finishDate.format('MMM DD YYYY, HH:mm')}</text>`))
 
     /**
      * Handle mouse over progress event
@@ -239,11 +252,25 @@ class ChallengeScheduleField extends Component {
     textProgressContainer.html(textProgressContainer.html())
   }
 
+  renderTimelineAgain () {
+    const { isEdit } = this.state
+    if (!isEdit) {
+      this.setState({ isEdit: true }, () => {
+        this.setState({ isEdit: false })
+      })
+    }
+  }
+
   render () {
     const { isEdit } = this.state
     const { currentTemplate } = this.props
     const { templates, resetPhase, challenge, onUpdateOthers } = this.props
     const timelines = !isEdit ? this.renderTimeLine() : null
+    const chartHeight = `${(this.getAllPhases().length * GANTT_ROW_HEIGHT) + GANTT_FOOTER_HEIGHT}px`
+    if (chartHeight !== this.lastChartHeight) {
+      this.renderTimelineAgain()
+    }
+    this.lastChartHeight = chartHeight
     return (
       <div className={styles.container}>
         <div className={cn(styles.row, styles.flexStart)}>
@@ -297,16 +324,30 @@ class ChallengeScheduleField extends Component {
             </div>
           </div>
         </div>
+
+        {currentTemplate && (<div className={styles.row}>
+          <div className={styles.button}>
+            <PrimaryButton
+              text={'Reset Phases'}
+              type={'info'}
+              onClick={() => resetPhase(currentTemplate)} />
+          </div>
+        </div>)}
+
         {
           timelines && (
             <div id='gantt-chart' className={styles.chart}>
               <Chart
                 width={'100%'}
-                height={`${(this.getAllPhases().length * GANTT_ROW_HEIGHT) + GANTT_FOOTER_HEIGHT}px`}
+                height={chartHeight}
                 chartType='Gantt'
                 loader={<div>Loading Timelines</div>}
                 data={timelines}
                 rootProps={{ 'data-testid': '1' }}
+                getChartWrapper={chartWrapper => {
+                  // get a reference to the chartWrapper
+                  this.chartWrapper = chartWrapper
+                }}
                 options={{
                   hAxis: {
                     format: 'currency'

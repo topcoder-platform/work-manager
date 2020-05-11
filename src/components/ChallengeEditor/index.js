@@ -9,8 +9,9 @@ import { pick } from 'lodash/fp'
 import Modal from '../Modal'
 import { withRouter } from 'react-router-dom'
 import { toastr } from 'react-redux-toastr'
+import xss from 'xss'
 
-import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE } from '../../config/constants'
+import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE, DEFAULT_TERM_UUID, DEFAULT_NDA_UUID } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
 import TypeField from './Type-Field'
@@ -18,6 +19,7 @@ import ChallengeNameField from './ChallengeName-Field'
 import CopilotField from './Copilot-Field'
 import ReviewTypeField from './ReviewType-Field'
 import TermsField from './Terms-Field'
+import NDAField from './NDAField'
 import GroupsField from './Groups-Field'
 import CopilotFeeField from './CopilotFee-Field'
 import ChallengeTotalField from './ChallengeTotal-Field'
@@ -74,6 +76,7 @@ class ChallengeEditor extends Component {
     this.onUpdateOthers = this.onUpdateOthers.bind(this)
     this.onUpdateCheckbox = this.onUpdateCheckbox.bind(this)
     this.toggleAdvanceSettings = this.toggleAdvanceSettings.bind(this)
+    this.toggleNdaRequire = this.toggleNdaRequire.bind(this)
     this.removeAttachment = this.removeAttachment.bind(this)
     this.removePhase = this.removePhase.bind(this)
     this.resetPhase = this.resetPhase.bind(this)
@@ -124,8 +127,10 @@ class ChallengeEditor extends Component {
         }
         challengeData.copilot = copilot || copilotFromResources
         challengeData.reviewer = reviewer || reviewerFromResources
+        const challengeDetail = { ...dropdowns['newChallenge'], ...challengeData }
         this.setState({
-          challenge: { ...dropdowns['newChallenge'], ...challengeData },
+          challenge: challengeDetail,
+          draftChallenge: { data: _.cloneDeep(challengeDetails) },
           isLoading: false,
           currentTemplate
         })
@@ -166,7 +171,7 @@ class ChallengeEditor extends Component {
           newChallenge[e.target.name] = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER, '$')
           break
         default:
-          newChallenge[e.target.name] = e.target.value
+          newChallenge[e.target.name] = validateValue(e.target.value, VALIDATION_VALUE_TYPE.STRING)
           break
       }
       fieldChanged = e.target.name
@@ -342,6 +347,26 @@ class ChallengeEditor extends Component {
     this.setState({ isOpenAdvanceSettings: !isOpenAdvanceSettings })
   }
 
+  toggleNdaRequire () {
+    const { challenge } = this.state
+    const newChallenge = { ...challenge }
+    let { terms: oldTerms } = challenge
+    if (!oldTerms) {
+      oldTerms = []
+    }
+    let newTerms = []
+    if (oldTerms.indexOf(DEFAULT_NDA_UUID) >= 0) {
+      newTerms = _.remove(oldTerms, t => t !== DEFAULT_NDA_UUID)
+    } else {
+      oldTerms.push(DEFAULT_NDA_UUID)
+      newTerms = oldTerms
+    }
+    newChallenge.terms = newTerms
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled('terms')
+    })
+  }
+
   removeAttachment (file) {
     const { challenge } = this.state
     const newChallenge = { ...challenge }
@@ -370,26 +395,15 @@ class ChallengeEditor extends Component {
   /**
    * Reset  challenge Phases
    */
-  resetPhase (timeline) {
-    const timelinePhaseIds = timeline.phases.map(timelinePhase => timelinePhase.phaseId || timelinePhase)
-    const validPhases = this.props.metadata.challengePhases.filter(challengePhase => {
-      return timelinePhaseIds.includes(challengePhase.id)
-    })
-    validPhases.forEach(phase => {
-      delete Object.assign(phase, { phaseId: phase.id }).id
-    })
-
+  async resetPhase (timeline) {
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge }
-    newChallenge.timelineTemplateId = timeline.id
+    newChallenge.phases = []
     this.setState({
       currentTemplate: timeline,
       challenge: newChallenge
     }, () => {
-      this.onUpdateOthers({
-        field: 'phases',
-        value: validPhases
-      })
+      this.autoUpdateChallengeThrottled('reset-phases')
     })
   }
 
@@ -414,12 +428,20 @@ class ChallengeEditor extends Component {
   }
 
   isValidChallenge () {
+    const { challenge } = this.state
     if (this.props.isNew) {
-      const { name, track, typeId } = this.state.challenge
+      const { name, track, typeId } = challenge
       return !!name && !!track && !!typeId
     }
+
+    const reviewType = challenge.reviewType ? challenge.reviewType.toLowerCase() : 'community'
+    const isInternal = reviewType === 'internal'
+    if (isInternal && !challenge.reviewer) {
+      return false
+    }
+
     return !(Object.values(pick(['track', 'typeId', 'name', 'description', 'tags', 'prizeSets'],
-      this.state.challenge)).filter(v => !v.length).length || _.isEmpty(this.state.currentTemplate))
+      challenge)).filter(v => !v.length).length || _.isEmpty(this.state.currentTemplate))
   }
 
   validateChallenge () {
@@ -535,7 +557,8 @@ class ChallengeEditor extends Component {
       legacy: {
         track,
         reviewType: 'community'
-      }
+      },
+      terms: [DEFAULT_TERM_UUID]
     }
     try {
       const draftChallenge = await createChallenge(newChallenge)
@@ -562,13 +585,38 @@ class ChallengeEditor extends Component {
       let patchObject = (changedField === 'reviewType')
         ? { legacy: { reviewType: this.state.challenge[changedField] } }
         : { [changedField]: this.state.challenge[changedField] }
-      if (changedField === 'phases') {
+      if (changedField === 'phases' || changedField === 'reset-phases') {
+        const { currentTemplate } = this.state
         // need timelineTemplateId for updating phase
-        patchObject.timelineTemplateId = this.state.challenge.timelineTemplateId
+        patchObject.timelineTemplateId = currentTemplate ? currentTemplate.id : this.state.challenge.timelineTemplateId
+      }
+
+      if (changedField === 'reset-phases') {
+        delete patchObject['reset-phases']
+        const { currentTemplate } = this.state
+        const timelinePhaseIds = currentTemplate.phases.map(timelinePhase => timelinePhase.phaseId || timelinePhase)
+        const validPhases = _.cloneDeep(this.props.metadata.challengePhases).filter(challengePhase => {
+          return timelinePhaseIds.includes(challengePhase.id)
+        })
+        validPhases.forEach(phase => {
+          delete Object.assign(phase, { phaseId: phase.id }).id
+        })
+        patchObject.phases = validPhases
       }
       try {
         const draftChallenge = await patchChallenge(challengeId, patchObject)
-        this.setState({ draftChallenge })
+
+        const { challenge: oldChallenge } = this.state
+        const newChallenge = { ...oldChallenge }
+
+        if (changedField === 'reset-phases') {
+          const { currentTemplate } = this.state
+          newChallenge.timelineTemplateId = currentTemplate.id
+          newChallenge.phases = _.cloneDeep(draftChallenge.data.phases)
+          this.setState({ draftChallenge, challenge: newChallenge })
+        } else {
+          this.setState({ draftChallenge })
+        }
         this.updateTimeLastSaved()
       } catch (error) {
         if (changedField === 'groups') {
@@ -862,7 +910,12 @@ class ChallengeEditor extends Component {
 
             <div className={styles.row}>
               <div className={styles.col}>
-                <span><span className={styles.fieldTitle}>Project:</span> {projectDetail ? projectDetail.name : ''}</span>
+                <span>
+                  <span className={styles.fieldTitle}>Project:</span>
+                  <span dangerouslySetInnerHTML={{
+                    __html: xss(projectDetail ? projectDetail.name : '')
+                  }} />
+                </span>
               </div>
               <div className={styles.col}>
                 <span className={styles.fieldTitle}>Track:</span>
@@ -873,6 +926,7 @@ class ChallengeEditor extends Component {
               </div>
             </div>
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
+            <NDAField challenge={challenge} toggleNdaRequire={this.toggleNdaRequire} />
             <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
             <ReviewTypeField
               reviewers={metadata.members}
@@ -897,7 +951,8 @@ class ChallengeEditor extends Component {
             </div>
             { isOpenAdvanceSettings && (
               <React.Fragment>
-                <TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />
+                {/* remove terms field and use default term */}
+                {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}
                 <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
               </React.Fragment>
             )}
@@ -915,7 +970,7 @@ class ChallengeEditor extends Component {
             />
           </div>
           <div className={styles.group}>
-            <div className={styles.title}>Public specification</div>
+            <div className={styles.title}>Public specification <span>*</span></div>
             <TextEditorField
               challengeTags={metadata.challengeTags}
               challenge={challenge}

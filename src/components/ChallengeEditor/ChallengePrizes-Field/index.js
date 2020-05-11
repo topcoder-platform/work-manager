@@ -26,7 +26,7 @@ class ChallengePrizesField extends Component {
 
   addNewPrize () {
     const challengePrize = this.getChallengePrize()
-    challengePrize.prizes = [...challengePrize.prizes, { type: CHALLENGE_PRIZE_TYPE.MONEY, value: 0 }]
+    challengePrize.prizes = [...challengePrize.prizes, { type: CHALLENGE_PRIZE_TYPE.MONEY, value: '' }]
     this.onUpdateValue(challengePrize)
   }
 
@@ -60,7 +60,7 @@ class ChallengePrizesField extends Component {
     return _.map(this.getChallengePrize().prizes, (prize, index) => (
       <div className={styles.row} key={`${index}-${prize.amount}-edit`}>
         <div className={cn(styles.field, styles.col1)}>
-          <label htmlFor={`${index}-prize`}>Prize {index + 1}:</label>
+          <label htmlFor={`${index}-prize`}>Prize {index + 1} <span>*</span>:</label>
         </div>
         <div className={cn(styles.field, styles.col2)}>
           <PrizeInput
