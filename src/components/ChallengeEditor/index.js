@@ -87,6 +87,7 @@ class ChallengeEditor extends Component {
     this.resetModal = this.resetModal.bind(this)
     this.createNewChallenge = this.createNewChallenge.bind(this)
     this.getCurrentChallengeId = this.getCurrentChallengeId.bind(this)
+    this.isValidChallengePrizes = this.isValidChallengePrizes.bind(this)
     this.isValidChallenge = this.isValidChallenge.bind(this)
     this.createChallengeHandler = this.createChallengeHandler.bind(this)
     this.createDraftHandler = this.createDraftHandler.bind(this)
@@ -415,6 +416,14 @@ class ChallengeEditor extends Component {
     }
   }
 
+  isValidChallengePrizes () {
+    const challengePrizes = this.state.challenge.prizeSets.find(p => p.type === 'Challenge prizes')
+    if (challengePrizes.prizes.length > 1) {
+      return _.every(challengePrizes.prizes, (p) => p.value > 0)
+    }
+    return true
+  }
+
   isValidChallenge () {
     const { challenge } = this.state
     if (this.props.isNew) {
@@ -428,8 +437,16 @@ class ChallengeEditor extends Component {
       return false
     }
 
-    return !(Object.values(pick(['track', 'typeId', 'name', 'description', 'tags', 'prizeSets'],
-      challenge)).filter(v => !v.length).length || _.isEmpty(this.state.currentTemplate))
+    return !(Object.values(pick([
+      'track',
+      'typeId',
+      'name',
+      'description',
+      'tags',
+      'prizeSets'
+    ], challenge)).filter(v => !v.length).length ||
+      !this.isValidChallengePrizes() ||
+      _.isEmpty(this.state.currentTemplate))
   }
 
   validateChallenge () {
@@ -575,6 +592,9 @@ class ChallengeEditor extends Component {
       if (changedField === 'phases') {
         // need timelineTemplateId for updating phase
         patchObject.timelineTemplateId = this.state.challenge.timelineTemplateId
+      }
+      if (changedField === 'prizeSets' && !this.isValidChallengePrizes()) {
+        return
       }
       try {
         const draftChallenge = await patchChallenge(challengeId, patchObject)
