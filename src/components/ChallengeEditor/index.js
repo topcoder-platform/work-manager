@@ -508,7 +508,7 @@ class ChallengeEditor extends Component {
   }
 
   onUpdatePhase (newValue, property, index) {
-    if (property === 'duration' && newValue < 0) newValue = 0
+    if (property === 'duration' && (newValue | 0) <= 0) return
     let newChallenge = _.cloneDeep(this.state.challenge)
     newChallenge.phases[index][property] = newValue
     this.setState({ challenge: newChallenge }, () => {
