@@ -7,7 +7,10 @@ import PropTypes from 'prop-types'
 import { DebounceInput } from 'react-debounce-input'
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
 import Pagination from 'react-js-pagination'
+import cn from 'classnames'
 
+import { PrimaryButton } from '../../Buttons'
+import Modal from '../../Modal'
 import 'react-tabs/style/react-tabs.css'
 import styles from './ChallengeList.module.scss'
 import NoChallenge from '../NoChallenge'
@@ -20,14 +23,21 @@ import {
 
 require('bootstrap/scss/bootstrap.scss')
 
+const theme = {
+  container: styles.modalContainer
+}
+
 class ChallengeList extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      searchText: this.props.filterChallengeName
+      searchText: this.props.filterChallengeName,
+      errorMessage: null
     }
     this.directUpdateSearchParam = this.updateSearchParam.bind(this) // update search param without debounce
     this.handlePageChange = this.handlePageChange.bind(this) // update search param without debounce
+    this.showError = this.showError.bind(this)
+    this.hideError = this.hideError.bind(this)
     this.updateSearchParam = debounce(this.updateSearchParam.bind(this), 1000)
   }
 
@@ -57,8 +67,23 @@ class ChallengeList extends Component {
     }
   }
 
+  /**
+   * Show error message
+   * @param {String} errorMessage error message
+   */
+  showError (errorMessage) {
+    this.setState({ errorMessage })
+  }
+
+  /**
+   * Hide error message
+   */
+  hideError () {
+    this.setState({ errorMessage: null })
+  }
+
   render () {
-    const { searchText } = this.state
+    const { searchText, errorMessage } = this.state
     const {
       activeProject,
       warnMessage,
@@ -82,6 +107,25 @@ class ChallengeList extends Component {
       case CHALLENGE_STATUS.COMPLETED:
         selectedTab = 3
         break
+    }
+
+    let warningModal = null
+    if (errorMessage) {
+      warningModal = <Modal theme={theme} onCancel={this.hideError}>
+        <div className={cn(styles.contentContainer, styles.confirm)}>
+          <div className={styles.title}>Error</div>
+          {errorMessage}
+          <div className={styles.buttonGroup}>
+            <div className={styles.buttonSizeA}>
+              <PrimaryButton
+                text={'Close'}
+                type={'info'}
+                onClick={this.hideError}
+              />
+            </div>
+          </div>
+        </div>
+      </Modal>
     }
 
     return (
@@ -149,7 +193,7 @@ class ChallengeList extends Component {
             <ul className={styles.challengeList}>
               {
                 map(challenges, (c) => {
-                  return <li className={styles.challengeItem} key={`challenge-card-${c.id}`}><ChallengeCard shouldShowCurrentPhase={selectedTab === 0} challenge={c} /></li>
+                  return <li className={styles.challengeItem} key={`challenge-card-${c.id}`}><ChallengeCard shouldShowCurrentPhase={selectedTab === 0} challenge={c} showError={this.showError} /></li>
                 })
               }
             </ul>
@@ -166,6 +210,7 @@ class ChallengeList extends Component {
             linkClass='page-link'
           />
         </div>
+        {warningModal}
       </div>
     )
   }

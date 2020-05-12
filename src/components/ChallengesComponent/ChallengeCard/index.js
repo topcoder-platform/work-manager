@@ -83,15 +83,21 @@ const getPhaseInfo = (c) => {
  * @param onUpdateLaunch
  * @returns {*}
  */
-const hoverComponents = (challenge, onUpdateLaunch) => {
+const hoverComponents = (challenge, onUpdateLaunch, showError) => {
   const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.legacyId}`
   const directUrl = `${DIRECT_PROJECT_URL}/contest/detail?projectId=${challenge.legacyId}`
   const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
+  const showLegacyError = () => {
+    if (showError) {
+      showError((<span>The legacy processor has not yet given this challenge a legacy ID. Please wait a few minutes or contact <a href='mailto: support@topcoder.com'>support@topcoder.com</a></span>))
+    }
+  }
+
   switch (challenge.status.toUpperCase()) {
     case CHALLENGE_STATUS.DRAFT:
     case CHALLENGE_STATUS.ACTIVE:
     default:
-      return (
+      return challenge.legacyId ? (
         <div className={styles.linkGroup}>
           <div className={styles.linkGroupLeft} onClick={() => {
             window.location.href = communityAppUrl
@@ -101,6 +107,24 @@ const hoverComponents = (challenge, onUpdateLaunch) => {
               <a onClick={(e) => e.stopPropagation()} className={styles.link} href={directUrl} target='_blank'>Direct</a>
               <span>|</span>
               <a onClick={(e) => e.stopPropagation()} className={styles.link} href={orUrl} target='_blank'>OR</a>
+            </div>
+          </div>
+          {
+            challenge.status === 'Draft' && (
+              <button className={styles.activateButton} onClick={() => onUpdateLaunch()}>
+                <span>Activate</span>
+              </button>
+            )
+          }
+        </div>
+      ) : (
+        <div className={styles.linkGroup}>
+          <div className={styles.linkGroupLeft} onClick={() => { showLegacyError() }}>
+            <a className={styles.link}>View Challenge</a>
+            <div className={styles.linkGroupLeftBottom}>
+              <a className={styles.link}>Direct</a>
+              <span>|</span>
+              <a className={styles.link}>OR</a>
             </div>
           </div>
           {
@@ -221,7 +245,7 @@ class ChallengeCard extends React.Component {
           <span className='block light-text'>{endTime}</span>
         </Link>)}
         <div className={cn(styles.col4, styles.editingContainer)}>
-          {hoverComponents(challenge, this.onUpdateLaunch)}
+          {hoverComponents(challenge, this.onUpdateLaunch, this.props.showError)}
         </div>
         <div className={cn(styles.col4, styles.iconsContainer)}>
           <div className={styles.faIconContainer}>
@@ -239,12 +263,14 @@ class ChallengeCard extends React.Component {
 }
 
 ChallengeCard.defaultPrps = {
-  shouldShowCurrentPhase: true
+  shouldShowCurrentPhase: true,
+  showError: () => {}
 }
 
 ChallengeCard.propTypes = {
   challenge: PropTypes.object,
-  shouldShowCurrentPhase: PropTypes.bool
+  shouldShowCurrentPhase: PropTypes.bool,
+  showError: PropTypes.func
 }
 
 export default withRouter(ChallengeCard)
