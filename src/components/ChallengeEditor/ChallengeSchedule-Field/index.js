@@ -325,7 +325,7 @@ class ChallengeScheduleField extends Component {
           </div>
         </div>
 
-        {currentTemplate && (<div className={styles.row}>
+        {currentTemplate && (<div className={`${styles.row} ${styles.resetPhasesRow}`}>
           <div className={styles.button}>
             <PrimaryButton
               text={'Reset Phases'}
