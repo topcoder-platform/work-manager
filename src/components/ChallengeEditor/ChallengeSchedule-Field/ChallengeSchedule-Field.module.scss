@@ -51,12 +51,6 @@
     margin: 30px 30px 0 30px;
     height: 40px;
 
-    &.resetPhasesRow {
-      justify-content: flex-end;
-      margin-top: 0;
-      margin-bottom: 20px;
-    }
-
     .field {
       @include upto-sm {
         display: block;
