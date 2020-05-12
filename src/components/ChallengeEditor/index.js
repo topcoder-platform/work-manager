@@ -364,6 +364,9 @@ class ChallengeEditor extends Component {
       oldTerms.push(DEFAULT_NDA_UUID)
       newTerms = oldTerms
     }
+    if (newTerms.indexOf(DEFAULT_TERM_UUID) < 0) {
+      newTerms.push(DEFAULT_TERM_UUID)
+    }
     newChallenge.terms = newTerms
     this.setState({ challenge: newChallenge }, () => {
       this.autoUpdateChallengeThrottled('terms')
