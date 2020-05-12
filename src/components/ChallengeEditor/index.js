@@ -96,6 +96,7 @@ class ChallengeEditor extends Component {
     this.getCurrentTemplate = this.getCurrentTemplate.bind(this)
     this.getBackendChallengePhases = this.getBackendChallengePhases.bind(this)
     this.onUpdateMetadata = this.onUpdateMetadata.bind(this)
+    this.getTemplatePhases = this.getTemplatePhases.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000) // 3s
     this.componentDidUpdate()
   }
@@ -136,6 +137,15 @@ class ChallengeEditor extends Component {
           isLoading: false,
           isOpenAdvanceSettings,
           currentTemplate
+        }, () => {
+          // set default phases
+          if (!challengeDetail.phases || !challengeDetail.phases.length) {
+            let defaultTemplate = currentTemplate
+            if (!defaultTemplate) {
+              defaultTemplate = _.find(metadata.timelineTemplates, { name: 'Standard Code' })
+            }
+            this.resetPhase(defaultTemplate)
+          }
         })
       } catch (e) {
         this.setState({ isLoading: true })
@@ -568,8 +578,11 @@ class ChallengeEditor extends Component {
 
   async createNewChallenge () {
     if (!this.props.isNew) return
-
+    const { metadata } = this.props
     const { name, track, typeId } = this.state.challenge
+
+    const defaultTemplate = _.find(metadata.timelineTemplates, { name: 'Standard Code' })
+
     const newChallenge = {
       status: 'New',
       projectId: this.props.projectId,
@@ -580,7 +593,9 @@ class ChallengeEditor extends Component {
         track,
         reviewType: 'community'
       },
-      terms: [DEFAULT_TERM_UUID]
+      timelineTemplateId: defaultTemplate.id,
+      terms: [DEFAULT_TERM_UUID],
+      phases: this.getTemplatePhases(defaultTemplate)
     }
     try {
       const draftChallenge = await createChallenge(newChallenge)
@@ -589,6 +604,20 @@ class ChallengeEditor extends Component {
     } catch (e) {
       this.setState({ isSaving: false })
     }
+  }
+
+  getTemplatePhases (template) {
+    const timelinePhaseIds = template.phases.map(timelinePhase => timelinePhase.phaseId || timelinePhase)
+    const validPhases = _.cloneDeep(this.props.metadata.challengePhases).filter(challengePhase => {
+      return timelinePhaseIds.includes(challengePhase.id)
+    })
+    validPhases.forEach(phase => {
+      delete Object.assign(phase, { phaseId: phase.id }).id
+    })
+    return validPhases.map(p => ({
+      duration: p.duration,
+      phaseId: p.phaseId
+    }))
   }
 
   async autoUpdateChallenge (changedField, prevValue) {
@@ -616,14 +645,7 @@ class ChallengeEditor extends Component {
       if (changedField === 'reset-phases') {
         delete patchObject['reset-phases']
         const { currentTemplate } = this.state
-        const timelinePhaseIds = currentTemplate.phases.map(timelinePhase => timelinePhase.phaseId || timelinePhase)
-        const validPhases = _.cloneDeep(this.props.metadata.challengePhases).filter(challengePhase => {
-          return timelinePhaseIds.includes(challengePhase.id)
-        })
-        validPhases.forEach(phase => {
-          delete Object.assign(phase, { phaseId: phase.id }).id
-        })
-        patchObject.phases = validPhases
+        patchObject.phases = this.getTemplatePhases(currentTemplate)
       }
       if (changedField === 'prizeSets' && !this.isValidChallengePrizes()) {
         return
