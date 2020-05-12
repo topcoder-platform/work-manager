@@ -38,6 +38,7 @@ class ChallengeList extends Component {
     this.handlePageChange = this.handlePageChange.bind(this) // update search param without debounce
     this.showError = this.showError.bind(this)
     this.hideError = this.hideError.bind(this)
+    this.reloadChallengeList = this.reloadChallengeList.bind(this)
     this.updateSearchParam = debounce(this.updateSearchParam.bind(this), 1000)
   }
 
@@ -65,6 +66,15 @@ class ChallengeList extends Component {
     if (page !== pageNumber) {
       loadChallengesByPage(pageNumber, activeProjectId, status, searchText)
     }
+  }
+
+  /**
+   * Reload challenge list
+   */
+  reloadChallengeList () {
+    const { searchText } = this.state
+    const { page, loadChallengesByPage, activeProjectId, status } = this.props
+    loadChallengesByPage(page, activeProjectId, status, searchText)
   }
 
   /**
@@ -193,7 +203,7 @@ class ChallengeList extends Component {
             <ul className={styles.challengeList}>
               {
                 map(challenges, (c) => {
-                  return <li className={styles.challengeItem} key={`challenge-card-${c.id}`}><ChallengeCard shouldShowCurrentPhase={selectedTab === 0} challenge={c} showError={this.showError} /></li>
+                  return <li className={styles.challengeItem} key={`challenge-card-${c.id}`}><ChallengeCard shouldShowCurrentPhase={selectedTab === 0} challenge={c} showError={this.showError} reloadChallengeList={this.reloadChallengeList} /></li>
                 })
               }
             </ul>
