@@ -193,7 +193,7 @@ class ChallengeCard extends React.Component {
 
   render () {
     const { isLaunch, isConfirm, isSaving } = this.state
-    const { challenge, shouldShowCurrentPhase } = this.props
+    const { challenge, shouldShowCurrentPhase, reloadChallengeList } = this.props
     const { phaseMessage, endTime } = getPhaseInfo(challenge)
     return (
       <div className={styles.item}>
@@ -215,13 +215,13 @@ class ChallengeCard extends React.Component {
         )
         }
         { isLaunch && isConfirm && (
-          <Modal theme={theme} onCancel={() => this.resetModal()}>
+          <Modal theme={theme} onCancel={reloadChallengeList}>
             <div className={cn(styles.contentContainer, styles.confirm)}>
               <div className={styles.title}>Success</div>
               <span>Your challenge is saved as active</span>
               <div className={styles.buttonGroup}>
-                <div className={styles.buttonSizeA}>
-                  <PrimaryButton text={'Close'} type={'info'} link={'/'} />
+                <div className={styles.buttonSizeA} onClick={reloadChallengeList}>
+                  <PrimaryButton text={'Close'} type={'info'} />
                 </div>
                 <div className={styles.buttonSizeA} onClick={() => this.resetModal()}>
                   <OutlineButton text={'View Challenge'} type={'success'} link={`/projects/${challenge.projectId}/challenges/${isConfirm}/edit`} />
@@ -264,13 +264,15 @@ class ChallengeCard extends React.Component {
 
 ChallengeCard.defaultPrps = {
   shouldShowCurrentPhase: true,
-  showError: () => {}
+  showError: () => {},
+  reloadChallengeList: () => {}
 }
 
 ChallengeCard.propTypes = {
   challenge: PropTypes.object,
   shouldShowCurrentPhase: PropTypes.bool,
-  showError: PropTypes.func
+  showError: PropTypes.func,
+  reloadChallengeList: PropTypes.func
 }
 
 export default withRouter(ChallengeCard)

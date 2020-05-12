@@ -49,7 +49,13 @@ class PhaseInput extends Component {
             {
               withDates && (
                 <div className={styles.timePicker}>
-                  <TimePicker showSecond={false} value={time} format={timeFormat} onChange={(value) => onUpdatePhase(value)} />
+                  <TimePicker
+                    showSecond={false}
+                    value={time}
+                    format={timeFormat}
+                    onChange={(value) => onUpdatePhase(value)}
+                    placement='topLeft'
+                  />
                 </div>
               )
             }
