@@ -29,7 +29,7 @@
       max-width: 185px;
       min-width: 185px;
       margin-left: 30px;
-      margin-right: 14px;
+      margin-right: 40px;
       align-items: center;
       white-space: nowrap;
       display: flex;
@@ -42,9 +42,8 @@
       margin-top: auto;
       display: flex;
       flex-direction: row;
-      max-width: 100px;
       min-width: 100px;
-      justify-content: center;
+      justify-content: left;
 
       span {
         display: flex;
