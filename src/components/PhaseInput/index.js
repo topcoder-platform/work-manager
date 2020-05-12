@@ -54,7 +54,6 @@ class PhaseInput extends Component {
                     value={time}
                     format={timeFormat}
                     onChange={(value) => onUpdatePhase(value)}
-                    placement='topLeft'
                   />
                 </div>
               )
