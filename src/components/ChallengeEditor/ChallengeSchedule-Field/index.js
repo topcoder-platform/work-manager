@@ -325,15 +325,6 @@ class ChallengeScheduleField extends Component {
           </div>
         </div>
 
-        {currentTemplate && (<div className={`${styles.row} ${styles.resetPhasesRow}`}>
-          <div className={styles.button}>
-            <PrimaryButton
-              text={'Reset Phases'}
-              type={'info'}
-              onClick={() => resetPhase(currentTemplate)} />
-          </div>
-        </div>)}
-
         {
           timelines && (
             <div id='gantt-chart' className={styles.chart}>
@@ -363,6 +354,14 @@ class ChallengeScheduleField extends Component {
             </div>
           )
         }
+        {currentTemplate && isEdit && (<div className={styles.row}>
+          <div className={styles.button}>
+            <PrimaryButton
+              text={'Reset Phases'}
+              type={'info'}
+              onClick={() => resetPhase(currentTemplate)} />
+          </div>
+        </div>)}
         {
           isEdit && this.renderPhaseEditor()
         }
