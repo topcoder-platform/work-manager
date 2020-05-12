@@ -101,9 +101,10 @@
 
 .challengeItem {
   list-style: none;
-  height: 83px;
+  min-height: 83px;
   width: 100%;
   border-top: 1px $gray solid;
+  padding: 10px 0;
 
   a {
     text-decoration: none;
