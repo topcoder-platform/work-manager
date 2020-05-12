@@ -131,10 +131,18 @@
             margin-right: 5px;
           }
 
+          svg {
+            transform: scale(1, -1);
+          }
+
           &.active {
             color: $tc-blue-20;
             span {
               color: $tc-blue-20;
+            }
+
+            svg {
+              transform: scale(1, 1);
             }
           }
         }
