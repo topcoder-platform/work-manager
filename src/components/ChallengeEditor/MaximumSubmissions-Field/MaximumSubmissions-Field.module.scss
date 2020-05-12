@@ -48,7 +48,23 @@
         display: inline-block;
 
         input[type=checkbox] {
-          display: none;
+          display: flex;
+          opacity: 0;
+
+          &:focus ~ label {
+            &::after {
+              opacity: 0.3;
+            }
+          }
+
+          &:checked ~ label {
+            background: $tc-blue-20;
+
+            &::after {
+              opacity: 1;
+              border-color: $white;
+            }
+          }
         }
 
         label {
@@ -91,14 +107,6 @@
             margin-left: 24px;
             width: 75px;
           }
-        }
-
-        input[type=checkbox]:checked ~ label {
-          background: $tc-blue-20;
-        }
-
-        input[type=checkbox]:checked + label::after {
-          border-color: $white;
         }
       }
 

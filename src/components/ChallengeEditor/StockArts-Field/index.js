@@ -32,7 +32,6 @@ class StockArtsField extends Component {
                 <div className={styles.checkboxLabel}>
                   Is stock photography allowed?
                 </div>
-                <input type='hidden' />
               </label>
             </div>
           </div>

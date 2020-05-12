@@ -32,7 +32,6 @@ class SubmissionVisibilityField extends Component {
                 <div className={styles.checkboxLabel}>
                   Submissions are viewable after challenge ends.
                 </div>
-                <input type='hidden' />
               </label>
             </div>
           </div>

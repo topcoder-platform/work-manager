@@ -47,7 +47,6 @@ class MaximumSubmissionsField extends Component {
                   <div className={styles.checkboxLabel}>
                     Unlimited
                   </div>
-                  <input type='hidden' />
                 </label>
               </div>
             </div>
@@ -66,7 +65,6 @@ class MaximumSubmissionsField extends Component {
                   <div className={styles.checkboxLabel}>
                     Limit :
                   </div>
-                  <input type='hidden' />
                 </label>
               </div>
               <input
