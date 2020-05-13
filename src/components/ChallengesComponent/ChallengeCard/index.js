@@ -84,7 +84,7 @@ const getPhaseInfo = (c) => {
  * @returns {*}
  */
 const hoverComponents = (challenge, onUpdateLaunch, showError) => {
-  const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.legacyId}`
+  const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.id}`
   const directUrl = `${DIRECT_PROJECT_URL}/contest/detail?projectId=${challenge.legacyId}`
   const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
   const showLegacyError = () => {
@@ -119,12 +119,20 @@ const hoverComponents = (challenge, onUpdateLaunch, showError) => {
         </div>
       ) : (
         <div className={styles.linkGroup}>
-          <div className={styles.linkGroupLeft} onClick={() => { showLegacyError() }}>
-            <a className={styles.link}>View Challenge</a>
+          <div className={styles.linkGroupLeft} onClick={() => {
+            window.location.href = communityAppUrl
+          }}>
+            <a className={styles.link} href={communityAppUrl}>View Challenge</a>
             <div className={styles.linkGroupLeftBottom}>
-              <a className={styles.link}>Direct</a>
+              <a onClick={(e) => {
+                e.stopPropagation()
+                showLegacyError()
+              }} className={styles.link}>Direct</a>
               <span>|</span>
-              <a className={styles.link}>OR</a>
+              <a onClick={(e) => {
+                e.stopPropagation()
+                showLegacyError()
+              }} className={styles.link}>OR</a>
             </div>
           </div>
           {

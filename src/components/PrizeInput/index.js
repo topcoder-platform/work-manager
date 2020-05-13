@@ -14,7 +14,7 @@ const PrizeInput = ({ prize, onUpdateInput, isFocus, index }) => {
 
       <input
         id='amount' name='amount' autoFocus={isFocus} type='text' placeholder='Prize'
-        value={prize.value} maxLength='200' onChange={e => onUpdateInput(e.target.value, index)} />
+        value={prize.value} maxLength='16' onChange={e => onUpdateInput(e.target.value, index)} />
     </div>
   )
 }

@@ -42,7 +42,7 @@ class PhaseInput extends Component {
             {
               withDates && (
                 <div className={styles.dayPicker}>
-                  <DayPickerInput formatDate={formatDate} inputProps={{ readOnly: true }} parseDate={parseDate} placeholder={dateFormat} value={date} onDayChange={(selectedDay) => onUpdatePhase(moment(`${moment(selectedDay).format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`))} format={dateFormat} />
+                  <DayPickerInput formatDate={formatDate} inputProps={{ readOnly: true }} dayPickerProps={{ disabledDays: { before: new Date() } }} parseDate={parseDate} placeholder={dateFormat} value={date} onDayChange={(selectedDay) => onUpdatePhase(moment(`${moment(selectedDay).format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`))} format={dateFormat} />
                 </div>
               )
             }
@@ -62,7 +62,7 @@ class PhaseInput extends Component {
             {
               withDuration && (
                 <div className={styles.durationPicker}>
-                  <input type='number' value={phase.duration} onChange={e => onUpdatePhase(e.target.value)} min={0} placeholder='Duration (hours)' />
+                  <input type='number' value={phase.duration} onChange={e => onUpdatePhase(e.target.value)} min={1} placeholder='Duration (hours)' />
                 </div>
               )
             }
