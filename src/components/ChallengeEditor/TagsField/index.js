@@ -4,28 +4,30 @@ import Select from '../../Select'
 import cn from 'classnames'
 import styles from './Tags-Field.module.scss'
 
-const TagsField = ({ challengeTags, challenge, onUpdateMultiSelect }) => {
+const TagsField = ({ challengeTags, challenge, onUpdateMultiSelect, readOnly }) => {
   const mapOps = item => ({ label: item.name, value: item.id })
   return (
     <>
       <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)}>
-          <label htmlFor='keywords'>Tags<span>*</span> :</label>
+          <label htmlFor='keywords'>Tags{!readOnly && (<span>*</span>)} :</label>
         </div>
         <div className={cn(styles.field, styles.col2)}>
           <input type='hidden' />
-          <Select
+          {readOnly ? (
+            <span>{(challenge.tags && challenge.tags.length) ? challenge.tags.join(', ') : ''}</span>
+          ) : (<Select
             id='track-select'
             multi
             options={challengeTags.map(mapOps)}
             simpleValue
             value={(challenge.tags && challenge.tags.length) ? challenge.tags.join(',') : ''}
             onChange={(value) => onUpdateMultiSelect(value, 'tags')}
-          />
+          />)}
         </div>
       </div>
 
-      { challenge.submitTriggered && !challenge.tags.length && <div className={styles.row}>
+      { !readOnly && challenge.submitTriggered && !challenge.tags.length && <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)} />
         <div className={cn(styles.field, styles.col2, styles.error)}>
           Select at least one tag
@@ -36,13 +38,15 @@ const TagsField = ({ challengeTags, challenge, onUpdateMultiSelect }) => {
 }
 
 TagsField.defaultProps = {
-  challengeTags: []
+  challengeTags: [],
+  readOnly: false
 }
 
 TagsField.propTypes = {
   challenge: PropTypes.shape().isRequired,
   challengeTags: PropTypes.arrayOf(PropTypes.object).isRequired,
-  onUpdateMultiSelect: PropTypes.func.isRequired
+  onUpdateMultiSelect: PropTypes.func.isRequired,
+  readOnly: PropTypes.bool
 }
 
 export default TagsField

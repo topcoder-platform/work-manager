@@ -5,7 +5,20 @@ import cn from 'classnames'
 import _ from 'lodash'
 import CopilotCard from '../../CopilotCard'
 
-const CopilotField = ({ copilots, challenge, onUpdateOthers }) => {
+const CopilotField = ({ copilots, challenge, onUpdateOthers, readOnly }) => {
+  if (readOnly) {
+    const selectedCopilot = _.find(copilots, { handle: challenge.copilot })
+    return (
+      <div className={styles.row}>
+        <div className={cn(styles.field, styles.col1)}>
+          <label htmlFor='copilot'>Copilot :</label>
+        </div>
+        {selectedCopilot && (<div className={cn(styles.field, styles.col2)}>
+          <CopilotCard copilot={selectedCopilot} selectedCopilot='' key={selectedCopilot.handle} />
+        </div>)}
+      </div>
+    )
+  }
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
@@ -22,13 +35,16 @@ const CopilotField = ({ copilots, challenge, onUpdateOthers }) => {
 }
 
 CopilotField.defaultProps = {
-  copilots: []
+  copilots: [],
+  onUpdateOthers: () => {},
+  readOnly: false
 }
 
 CopilotField.propTypes = {
   copilots: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,
-  onUpdateOthers: PropTypes.func.isRequired
+  onUpdateOthers: PropTypes.func,
+  readOnly: PropTypes.bool
 }
 
 export default CopilotField

@@ -7,7 +7,7 @@ import styles from './MaximumSubmissions-Field.module.scss'
 
 class MaximumSubmissionsField extends Component {
   render () {
-    const { challenge, onUpdateMetadata } = this.props
+    const { challenge, onUpdateMetadata, readOnly } = this.props
     const metadata = challenge.metadata || {}
     let existingData = _.find(metadata, { name: 'submissionLimit' })
     let isUnlimited = false
@@ -30,9 +30,10 @@ class MaximumSubmissionsField extends Component {
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)}>
             <label htmlFor='maximum'>Maximum Number of Submissions :</label>
+            {readOnly && (<span> {isUnlimited ? 'Unlimited' : count}</span>)}
           </div>
         </div>
-        <div className={styles.row}>
+        {!readOnly && (<div className={styles.row}>
           <div className={styles.subGroup}>
             <div className={styles.subRow}>
               <div className={styles.tcCheckbox}>
@@ -78,19 +79,21 @@ class MaximumSubmissionsField extends Component {
               />
             </div>
           </div>
-        </div>
+        </div>)}
       </React.Fragment>
     )
   }
 }
 
 MaximumSubmissionsField.defaultProps = {
-  onUpdateMetadata: () => {}
+  onUpdateMetadata: () => {},
+  readOnly: false
 }
 
 MaximumSubmissionsField.propTypes = {
   challenge: PropTypes.shape().isRequired,
-  onUpdateMetadata: PropTypes.func
+  onUpdateMetadata: PropTypes.func,
+  readOnly: PropTypes.bool
 }
 
 export default MaximumSubmissionsField

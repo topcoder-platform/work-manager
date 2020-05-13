@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import styles from './NDAField.module.scss'
 import { DEFAULT_NDA_UUID } from '../../../config/constants'
 
-const NDAField = ({ challenge, toggleNdaRequire }) => {
+const NDAField = ({ challenge, toggleNdaRequire, readOnly }) => {
   const isRequiredNda = challenge.terms && challenge.terms.indexOf(DEFAULT_NDA_UUID) >= 0
   return (
     <div className={styles.row}>
@@ -14,8 +14,9 @@ const NDAField = ({ challenge, toggleNdaRequire }) => {
           id='isRequiredNda'
           checked={isRequiredNda}
           onChange={toggleNdaRequire}
+          readOnly={readOnly}
         />
-        <label htmlFor='isRequiredNda'>
+        <label htmlFor='isRequiredNda' className={readOnly ? styles.readOnly : ''}>
           <div>NDA Required</div>
           <input type='hidden' />
         </label>
@@ -25,12 +26,14 @@ const NDAField = ({ challenge, toggleNdaRequire }) => {
 }
 
 NDAField.defaultProps = {
-  toggleNdaRequire: () => {}
+  toggleNdaRequire: () => {},
+  readOnly: false
 }
 
 NDAField.propTypes = {
   challenge: PropTypes.shape().isRequired,
-  toggleNdaRequire: PropTypes.func
+  toggleNdaRequire: PropTypes.func,
+  readOnly: PropTypes.bool
 }
 
 export default NDAField

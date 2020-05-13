@@ -59,14 +59,16 @@ class ChallengePrizesField extends Component {
 
   renderPrizes () {
     const { currentPrizeIndex } = this.state
-
+    const { readOnly } = this.props
     return _.map(this.getChallengePrize().prizes, (prize, index, { length }) => (
       <div key={`${index}-${prize.amount}-edit`}>
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)}>
-            <label htmlFor={`${index}-prize`}>Prize {index + 1} <span>*</span>:</label>
+            <label htmlFor={`${index}-prize`}>Prize {index + 1} {!readOnly && (<span>*</span>)}:</label>
           </div>
-          <div className={cn(styles.field, styles.col2)}>
+          {readOnly ? (
+            <span>${prize.value}</span>
+          ) : (<div className={cn(styles.field, styles.col2)}>
             <PrizeInput
               prize={prize}
               isFocus={index === currentPrizeIndex}
@@ -79,9 +81,9 @@ class ChallengePrizesField extends Component {
                 </div>
               )
             }
-          </div>
+          </div>)}
         </div>
-        {(prize.value === '' || (length > 1 && +prize.value === 0)) && <div className={styles.row}>
+        {!readOnly && (prize.value === '' || (length > 1 && +prize.value === 0)) && <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)} />
           <div className={cn(styles.field, styles.col2, styles.error)}>
             {prize.value === ''
@@ -94,6 +96,7 @@ class ChallengePrizesField extends Component {
   }
 
   render () {
+    const { readOnly } = this.props
     return (
       <div className={styles.container}>
         <div className={styles.row}>
@@ -102,17 +105,23 @@ class ChallengePrizesField extends Component {
           </div>
         </div>
         { this.renderPrizes() }
-        <div className={styles.button} onClick={this.addNewPrize}>
+        {!readOnly && (<div className={styles.button} onClick={this.addNewPrize}>
           <PrimaryButton text={'Add New Prize'} type={'info'} />
-        </div>
+        </div>)}
       </div>
     )
   }
 }
 
+ChallengePrizesField.defaultProps = {
+  onUpdateOthers: () => {},
+  readOnly: false
+}
+
 ChallengePrizesField.propTypes = {
   challenge: PropTypes.shape().isRequired,
-  onUpdateOthers: PropTypes.func.isRequired
+  onUpdateOthers: PropTypes.func,
+  readOnly: PropTypes.bool
 }
 
 export default ChallengePrizesField

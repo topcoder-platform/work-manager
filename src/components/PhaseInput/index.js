@@ -19,7 +19,7 @@ const dateFormat = 'MM/DD/YYYY'
 
 class PhaseInput extends Component {
   render () {
-    const { phase, onUpdateSelect, onUpdatePhase, withDates, withDuration, endDate } = this.props
+    const { phase, onUpdateSelect, onUpdatePhase, withDates, withDuration, endDate, readOnly } = this.props
     if (_.isEmpty(phase)) return null
     const date = moment(phase.date).format(dateFormat)
     const time = moment(phase.date)
@@ -42,26 +42,32 @@ class PhaseInput extends Component {
             {
               withDates && (
                 <div className={styles.dayPicker}>
-                  <DayPickerInput formatDate={formatDate} dayPickerProps={{ disabledDays: { before: new Date() } }} parseDate={parseDate} placeholder={dateFormat} value={date} onDayChange={(selectedDay) => onUpdatePhase(moment(`${moment(selectedDay).format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`))} format={dateFormat} />
+                  {readOnly ? (
+                    <span className={styles.readOnlyValue}>{date}</span>
+                  ) : (<DayPickerInput formatDate={formatDate} dayPickerProps={{ disabledDays: { before: new Date() } }} parseDate={parseDate} placeholder={dateFormat} value={date} onDayChange={(selectedDay) => onUpdatePhase(moment(`${moment(selectedDay).format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`))} format={dateFormat} />)}
                 </div>
               )
             }
             {
               withDates && (
                 <div className={styles.timePicker}>
-                  <TimePicker
+                  {readOnly ? (
+                    <span className={styles.readOnlyValue}>{time.format(timeFormat)}</span>
+                  ) : (<TimePicker
                     showSecond={false}
                     value={time}
                     format={timeFormat}
                     onChange={(value) => onUpdatePhase(value)}
-                  />
+                  />)}
                 </div>
               )
             }
             {
               withDuration && (
                 <div className={styles.durationPicker}>
-                  <input type='number' value={phase.duration} onChange={e => onUpdatePhase(e.target.value)} min={1} placeholder='Duration (hours)' />
+                  {readOnly ? (
+                    <span className={styles.readOnlyValue}>{phase.duration}</span>
+                  ) : (<input type='number' value={phase.duration} onChange={e => onUpdatePhase(e.target.value)} min={1} placeholder='Duration (hours)' />)}
                 </div>
               )
             }
@@ -91,7 +97,8 @@ class PhaseInput extends Component {
 PhaseInput.defaultProps = {
   withDates: false,
   withDuration: false,
-  endDate: null
+  endDate: null,
+  readOnly: false
 }
 
 PhaseInput.propTypes = {
@@ -100,6 +107,7 @@ PhaseInput.propTypes = {
   onUpdatePhase: PropTypes.func.isRequired,
   withDates: PropTypes.bool,
   withDuration: PropTypes.bool,
-  endDate: PropTypes.shape()
+  endDate: PropTypes.shape(),
+  readOnly: PropTypes.bool
 }
 export default PhaseInput

@@ -31,7 +31,8 @@ class TextEditorField extends Component {
       onUpdateDescription,
       onUpdateMultiSelect,
       shouldShowPrivateDescription,
-      onUpdateMetadata
+      onUpdateMetadata,
+      readOnly
     } = this.props
     const { addedNewPrivateDescription } = this.state
     const challengeTrack = challenge.legacy
@@ -49,9 +50,10 @@ class TextEditorField extends Component {
             challenge={challenge}
             onUpdateDescription={onUpdateDescription}
             type='description'
+            readOnly={readOnly}
           />
         </div>)}
-        {shouldShowPrivateDescription && !showShowPrivateDescriptionField && (<div className={styles.button} onClick={this.addNewPrivateDescription}>
+        {!readOnly && shouldShowPrivateDescription && !showShowPrivateDescriptionField && (<div className={styles.button} onClick={this.addNewPrivateDescription}>
           <PrimaryButton text={'Add private specification'} type={'info'} />
         </div>)}
         {shouldShowPrivateDescription && showShowPrivateDescriptionField && (<div className={styles.title}>
@@ -68,6 +70,7 @@ class TextEditorField extends Component {
               challenge={challenge}
               onUpdateDescription={onUpdateDescription}
               type='privateDescription'
+              readOnly={readOnly}
             />
           </div>
         )}
@@ -78,24 +81,29 @@ class TextEditorField extends Component {
           challengeTags={challengeTagsFiltered}
           challenge={challenge}
           onUpdateMultiSelect={onUpdateMultiSelect}
+          readOnly={readOnly}
         />
         {challengeTrack && challengeTrack === CHALLENGE_TRACKS.DESIGN && (
           <React.Fragment>
             <FinalDeliverablesField
               challenge={challenge}
               onUpdateCheckbox={onUpdateCheckbox}
+              readOnly={readOnly}
             />
             <StockArtsField
               challenge={challenge}
               onUpdateCheckbox={onUpdateMetadata}
+              readOnly={readOnly}
             />
             <SubmssionVisibility
               challenge={challenge}
               onUpdateCheckbox={onUpdateMetadata}
+              readOnly={readOnly}
             />
             <MaximumSubmissionsField
               challenge={challenge}
               onUpdateMetadata={onUpdateMetadata}
+              readOnly={readOnly}
             />
           </React.Fragment>
         )}
@@ -108,17 +116,22 @@ TextEditorField.defaultProps = {
   challengeTags: [],
   // TODO: For our first go-live, we're probably going to have this UI in production before the Community App work to display data from V5 is available. Only hide the UI elements for private description for now. Don't take out any code or functionality.
   shouldShowPrivateDescription: false,
-  onUpdateMetadata: () => {}
+  onUpdateMetadata: () => {},
+  onUpdateCheckbox: () => {},
+  onUpdateDescription: () => {},
+  onUpdateMultiSelect: () => {},
+  readOnly: false
 }
 
 TextEditorField.propTypes = {
   challengeTags: PropTypes.arrayOf(PropTypes.object).isRequired,
   challenge: PropTypes.shape().isRequired,
-  onUpdateCheckbox: PropTypes.func.isRequired,
+  onUpdateCheckbox: PropTypes.func,
   onUpdateMetadata: PropTypes.func,
-  onUpdateDescription: PropTypes.func.isRequired,
-  onUpdateMultiSelect: PropTypes.func.isRequired,
-  shouldShowPrivateDescription: PropTypes.bool
+  onUpdateDescription: PropTypes.func,
+  onUpdateMultiSelect: PropTypes.func,
+  shouldShowPrivateDescription: PropTypes.bool,
+  readOnly: PropTypes.bool
 }
 
 export default TextEditorField

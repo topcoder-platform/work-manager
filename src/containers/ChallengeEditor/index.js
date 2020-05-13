@@ -1,8 +1,9 @@
 import _ from 'lodash'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { withRouter } from 'react-router-dom'
+import { withRouter, Route } from 'react-router-dom'
 import ChallengeEditorComponent from '../../components/ChallengeEditor'
+import ChallengeViewComponent from '../../components/ChallengeEditor/ChallengeView'
 import Loader from '../../components/Loader'
 
 import {
@@ -25,7 +26,6 @@ class ChallengeEditor extends Component {
   componentDidMount () {
     const {
       match,
-      loadChallengeDetails,
       loadTimelineTemplates,
       loadChallengePhases,
       loadChallengeTypes,
@@ -33,7 +33,8 @@ class ChallengeEditor extends Component {
       loadChallengeTerms,
       loadGroups,
       loadResources,
-      loadResourceRoles
+      loadResourceRoles,
+      loadChallengeDetails
     } = this.props
     const challengeId = _.get(match.params, 'challengeId', null)
     loadTimelineTemplates()
@@ -44,7 +45,15 @@ class ChallengeEditor extends Component {
     loadGroups()
     loadResources(challengeId)
     loadResourceRoles()
-    loadChallengeDetails(_.get(match.params, 'projectId', null), challengeId)
+    this.fetchChallengeDetails(match, loadChallengeDetails)
+
+    this.unlisten = this.props.history.listen((location, action) => {
+      const { isLoading } = this.props
+      if (!isLoading) {
+        const { match: newMatch, loadChallengeDetails } = this.props
+        this.fetchChallengeDetails(newMatch, loadChallengeDetails)
+      }
+    })
   }
 
   componentWillReceiveProps (nextProps) {
@@ -53,8 +62,14 @@ class ChallengeEditor extends Component {
     const projectId = _.get(newMatch.params, 'projectId', null)
     const challengeId = _.get(newMatch.params, 'challengeId', null)
     if (_.get(match.params, 'projectId', null) !== projectId || _.get(match.params, 'challengeId', null) !== challengeId) {
-      loadChallengeDetails(projectId, challengeId)
+      this.fetchChallengeDetails(newMatch, loadChallengeDetails)
     }
+  }
+
+  fetchChallengeDetails (newMatch, loadChallengeDetails) {
+    const projectId = _.get(newMatch.params, 'projectId', null)
+    const challengeId = _.get(newMatch.params, 'challengeId', null)
+    loadChallengeDetails(projectId, challengeId)
   }
 
   render () {
@@ -71,33 +86,73 @@ class ChallengeEditor extends Component {
       failedToLoad,
       projectDetail
     } = this.props
-
     const challengeId = _.get(match.params, 'challengeId', null)
     if (challengeId && (!challengeDetails || !challengeDetails.id)) {
       return (<Loader />)
     }
-    return (
-      <ChallengeEditorComponent
-        isLoading={isLoading}
-        challengeDetails={challengeDetails}
-        challengeResources={challengeResources}
-        metadata={metadata}
-        projectId={_.get(match.params, 'projectId', null)}
-        challengeId={challengeId}
-        isNew={!_.has(match.params, 'challengeId')}
-        uploadAttachment={createAttachment}
-        attachments={attachments}
-        token={token}
-        removeAttachment={removeAttachment}
-        failedToLoad={failedToLoad}
-        projectDetail={projectDetail}
-      />
-    )
+    return <div>
+      <Route
+        exact
+        path={this.props.match.path}
+        render={({ match }) => ((
+          <ChallengeEditorComponent
+            isLoading={isLoading}
+            challengeDetails={challengeDetails}
+            challengeResources={challengeResources}
+            metadata={metadata}
+            projectId={_.get(match.params, 'projectId', null)}
+            challengeId={challengeId}
+            isNew={!_.has(match.params, 'challengeId')}
+            uploadAttachment={createAttachment}
+            attachments={attachments}
+            token={token}
+            removeAttachment={removeAttachment}
+            failedToLoad={failedToLoad}
+            projectDetail={projectDetail}
+          />
+        ))
+        } />
+      <Route
+        exact
+        path={`${this.props.match.path}/edit`}
+        render={({ match }) => ((
+          <ChallengeEditorComponent
+            isLoading={isLoading}
+            challengeDetails={challengeDetails}
+            challengeResources={challengeResources}
+            metadata={metadata}
+            projectId={_.get(match.params, 'projectId', null)}
+            challengeId={challengeId}
+            isNew={!_.has(match.params, 'challengeId')}
+            uploadAttachment={createAttachment}
+            attachments={attachments}
+            token={token}
+            removeAttachment={removeAttachment}
+            failedToLoad={failedToLoad}
+            projectDetail={projectDetail}
+          />
+        ))
+        } />
+      <Route
+        exact
+        path={`${this.props.match.path}/view`}
+        render={({ match }) => ((
+          <ChallengeViewComponent
+            metadata={metadata}
+            projectDetail={projectDetail}
+            challenge={challengeDetails}
+            challengeResources={challengeResources}
+            token={token}
+          />
+        ))
+        } />
+    </div>
   }
 }
 
 ChallengeEditor.propTypes = {
   match: PropTypes.shape({
+    path: PropTypes.string,
     params: PropTypes.shape({
       challengeId: PropTypes.string,
       projectId: PropTypes.string
@@ -115,6 +170,7 @@ ChallengeEditor.propTypes = {
   challengeResources: PropTypes.arrayOf(PropTypes.object),
   challengeDetails: PropTypes.object,
   projectDetail: PropTypes.object,
+  history: PropTypes.object,
   metadata: PropTypes.shape({
     challengeTypes: PropTypes.array
   }),

@@ -91,7 +91,7 @@
 
         :global {
           .rc-time-picker-clear {
-            top: 9px; 
+            top: 9px;
           }
         }
       }
@@ -114,6 +114,8 @@
   }
 }
 
-
+.readOnlyValue {
+  color: black;
+}
 
 

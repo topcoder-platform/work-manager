@@ -93,32 +93,41 @@ class ChallengeEditor extends Component {
     this.isValidChallenge = this.isValidChallenge.bind(this)
     this.createChallengeHandler = this.createChallengeHandler.bind(this)
     this.createDraftHandler = this.createDraftHandler.bind(this)
+    this.onSaveChallenge = this.onSaveChallenge.bind(this)
     this.getCurrentTemplate = this.getCurrentTemplate.bind(this)
     this.getBackendChallengePhases = this.getBackendChallengePhases.bind(this)
     this.onUpdateMetadata = this.onUpdateMetadata.bind(this)
     this.getTemplatePhases = this.getTemplatePhases.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000) // 3s
-    this.componentDidUpdate()
+    this.resetChallengeData((newState, finish) => {
+      this.state = {
+        ...this.state,
+        ...newState
+      }
+      if (finish) {
+        finish()
+      }
+    })
   }
 
   componentDidUpdate () {
-    const { isNew, challengeId, challengeDetails, metadata, attachments } = this.props
+    this.resetChallengeData(this.setState.bind(this))
+  }
+
+  async resetChallengeData (setState = () => {}) {
+    const { isNew, challengeDetails, metadata, attachments } = this.props
     if (
       challengeDetails &&
       challengeDetails.id &&
-      (!this.state.challenge || this.state.challenge.id !== challengeDetails.id)) {
-      this.resetChallengeData(isNew, challengeId, challengeDetails, metadata, attachments)
-    }
-  }
-
-  async resetChallengeData (isNew, challengeId, challengeDetails, metadata, attachments) {
-    if (!isNew) {
+      (!this.state.challenge || this.state.challenge.id !== challengeDetails.id) &&
+      !isNew
+    ) {
       try {
         const copilotResource = this.getResourceFromProps('Copilot')
         const copilotFromResources = copilotResource ? copilotResource.memberHandle : ''
         const reviewerResource = this.getResourceFromProps('Reviewer')
         const reviewerFromResources = reviewerResource ? reviewerResource.memberHandle : ''
-        this.setState({ isConfirm: false, isLaunch: false })
+        setState({ isConfirm: false, isLaunch: false })
         const challengeData = this.updateAttachmentlist(challengeDetails, attachments)
         const currentTemplate = _.find(metadata.timelineTemplates, { id: challengeData.timelineTemplateId })
         let copilot, reviewer
@@ -131,9 +140,13 @@ class ChallengeEditor extends Component {
         challengeData.reviewer = reviewer || reviewerFromResources
         const challengeDetail = { ...dropdowns['newChallenge'], ...challengeData }
         const isOpenAdvanceSettings = challengeDetail.groups.length > 0
-        this.setState({
+        setState({
           challenge: challengeDetail,
-          draftChallenge: { data: _.cloneDeep(challengeDetails) },
+          draftChallenge: { data: {
+            ..._.cloneDeep(challengeDetails),
+            copilot: challengeData.copilot,
+            reviewer: challengeData.reviewer
+          } },
           isLoading: false,
           isOpenAdvanceSettings,
           currentTemplate
@@ -156,7 +169,7 @@ class ChallengeEditor extends Component {
           }
         })
       } catch (e) {
-        this.setState({ isLoading: true })
+        setState({ isLoading: true })
       }
     }
   }
@@ -184,7 +197,6 @@ class ChallengeEditor extends Component {
   onUpdateInput (e, isSub = false, field = null, index = -1, valueType = null) {
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge }
-    let fieldChanged = null
     if (!isSub) {
       switch (e.target.name) {
         case 'reviewCost':
@@ -195,7 +207,6 @@ class ChallengeEditor extends Component {
           newChallenge[e.target.name] = validateValue(e.target.value, VALIDATION_VALUE_TYPE.STRING)
           break
       }
-      fieldChanged = e.target.name
     } else {
       switch (field) {
         case 'checkpointPrizes':
@@ -222,13 +233,10 @@ class ChallengeEditor extends Component {
           newChallenge[field][e.target.name] = e.target.value
           break
       }
-      fieldChanged = field
     }
 
     // calculate total cost of challenge
-    this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled(fieldChanged)
-    })
+    this.setState({ challenge: newChallenge })
   }
 
   /**
@@ -251,10 +259,7 @@ class ChallengeEditor extends Component {
           newChallenge[field][index][option.key] = option.name
         }
       }
-      const prevValue = oldChallenge[field]
-      this.setState({ challenge: newChallenge }, () => {
-        this.autoUpdateChallengeThrottled(field, prevValue)
-      })
+      this.setState({ challenge: newChallenge })
     }
   }
 
@@ -273,10 +278,7 @@ class ChallengeEditor extends Component {
       value = value.filter(val => PRIZE_SETS_TYPE.includes(val.type))
     }
     newChallenge[field] = value
-    const prevValue = oldChallenge[field]
-    this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled(field, prevValue)
-    })
+    this.setState({ challenge: newChallenge })
   }
 
   /**
@@ -314,9 +316,7 @@ class ChallengeEditor extends Component {
     } else {
       _.set(newChallenge, `${field}.${index}.check`, checked)
     }
-    this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled(field)
-    })
+    this.setState({ challenge: newChallenge })
   }
 
   /**
@@ -358,9 +358,7 @@ class ChallengeEditor extends Component {
     } else {
       existingMetadata.value = `${value}`
     }
-    this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled('metadata')
-    })
+    this.setState({ challenge: newChallenge })
   }
 
   toggleAdvanceSettings () {
@@ -386,9 +384,7 @@ class ChallengeEditor extends Component {
       newTerms.push(DEFAULT_TERM_UUID)
     }
     newChallenge.terms = newTerms
-    this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled('terms')
-    })
+    this.setState({ challenge: newChallenge })
   }
 
   removeAttachment (file) {
@@ -397,9 +393,7 @@ class ChallengeEditor extends Component {
     const { attachments: oldAttachments } = challenge
     const newAttachments = _.remove(oldAttachments, att => att.fileName !== file)
     newChallenge.attachments = _.clone(newAttachments)
-    this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled('attachments')
-    })
+    this.setState({ challenge: newChallenge })
   }
 
   /**
@@ -412,9 +406,7 @@ class ChallengeEditor extends Component {
     const newPhaseList = _.cloneDeep(oldChallenge.phases)
     newPhaseList.splice(index, 1)
     newChallenge.phases = _.clone(newPhaseList)
-    this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled('phases')
-    })
+    this.setState({ challenge: newChallenge })
   }
   /**
    * Reset  challenge Phases
@@ -448,6 +440,13 @@ class ChallengeEditor extends Component {
     e.preventDefault()
     if (this.validateChallenge()) {
       this.createNewChallenge()
+    }
+  }
+
+  onSaveChallenge (e) {
+    e.preventDefault()
+    if (this.validateChallenge()) {
+      this.onlySave()
     }
   }
 
@@ -523,18 +522,14 @@ class ChallengeEditor extends Component {
     let newChallenge = { ...challenge }
     newChallenge[field] = options ? options.split(',') : []
 
-    this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled(field)
-    })
+    this.setState({ challenge: newChallenge })
   }
 
   onUpdatePhase (newValue, property, index) {
     if (property === 'duration' && (newValue | 0) <= 0) return
     let newChallenge = _.cloneDeep(this.state.challenge)
     newChallenge.phases[index][property] = newValue
-    this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled('phases')
-    })
+    this.setState({ challenge: newChallenge })
   }
 
   onUploadFile (files) {
@@ -546,9 +541,7 @@ class ChallengeEditor extends Component {
         size: file.size
       })
     })
-    this.setState({ challenge: newChallenge }, () => {
-      this.autoUpdateChallengeThrottled('attachments')
-    })
+    this.setState({ challenge: newChallenge })
   }
 
   collectChallengeData (status) {
@@ -563,9 +556,11 @@ class ChallengeEditor extends Component {
       'reviewType',
       'tags',
       'groups',
-      'prizeSets',
+      'metadata',
       'startDate',
-      'terms'], this.state.challenge)
+      'terms',
+      'prizeSets'
+    ], this.state.challenge)
     challenge.legacy = {
       reviewType: challenge.reviewType,
       track: challenge.track
@@ -588,7 +583,7 @@ class ChallengeEditor extends Component {
     delete challenge.attachments
     delete challenge.track
     delete challenge.reviewType
-    return challenge
+    return _.cloneDeep(challenge)
   }
 
   goToEdit (challengeID) {
@@ -682,8 +677,11 @@ class ChallengeEditor extends Component {
         return
       }
       try {
+        const copilot = this.state.draftChallenge.data.copilot
+        const reviewer = this.state.draftChallenge.data.reviewer
         const draftChallenge = await patchChallenge(challengeId, patchObject)
-
+        draftChallenge.copilot = copilot
+        draftChallenge.reviewer = reviewer
         const { challenge: oldChallenge } = this.state
         const newChallenge = { ...oldChallenge }
 
@@ -691,7 +689,9 @@ class ChallengeEditor extends Component {
           const { currentTemplate } = this.state
           newChallenge.timelineTemplateId = currentTemplate.id
           newChallenge.phases = _.cloneDeep(draftChallenge.data.phases)
-          this.setState({ draftChallenge, challenge: newChallenge })
+          this.setState({
+            draftChallenge,
+            challenge: newChallenge })
         } else {
           this.setState({ draftChallenge })
         }
@@ -719,47 +719,50 @@ class ChallengeEditor extends Component {
     return challengeId
   }
 
-  async onActiveChallenge () {
+  async updateAllChallengeInfo (status, cb = () => {}) {
     if (this.state.isSaving) return
     this.setState({ isSaving: true })
-    const status = 'Active'
+    const challenge = this.collectChallengeData(status)
     let newChallenge = _.cloneDeep(this.state.challenge)
     newChallenge.status = status
     try {
-      const draftChallenge = await patchChallenge(newChallenge.id, {
-        status
-      })
-      this.setState({ isLaunch: true, isConfirm: newChallenge.id, draftChallenge, challenge: newChallenge, isSaving: false })
+      const challengeId = this.getCurrentChallengeId()
+      const response = await updateChallenge(challenge, challengeId)
+      const { copilot: previousCopilot, reviewer: previousReviewer } = this.state.draftChallenge.data
+      const { copilot, reviewer } = this.state.challenge
+      if (copilot) await this.updateResource(response.data.id, 'Copilot', copilot, previousCopilot)
+      if (reviewer) await this.updateResource(response.data.id, 'Reviewer', reviewer, previousReviewer)
+      this.updateTimeLastSaved()
+
+      const draftChallenge = response
+      draftChallenge.data.copilot = copilot
+      draftChallenge.data.reviewer = reviewer
+      this.setState({ isLaunch: true,
+        isConfirm: newChallenge.id,
+        draftChallenge,
+        challenge: newChallenge,
+        isSaving: false }, cb)
     } catch (e) {
-      this.setState({ isSaving: false })
+      this.setState({ isSaving: false }, cb)
     }
   }
 
+  async onActiveChallenge () {
+    this.updateAllChallengeInfo('Active')
+  }
+
   async saveDraft () {
-    this.setState({ isSaving: true })
-    try {
-      const status = 'Draft'
-      let newChallenge = _.cloneDeep(this.state.challenge)
-      newChallenge.status = status
-      const draftChallenge = await patchChallenge(newChallenge.id, {
-        status
-      })
-      this.setState({ isLaunch: true, isConfirm: newChallenge.id, draftChallenge, challenge: newChallenge, isSaving: false })
-    } catch (e) {
-      this.setState({ isSaving: false })
-    }
+    this.updateAllChallengeInfo('Draft')
+  }
+
+  async onlySave () {
+    this.updateAllChallengeInfo(this.state.challenge.status, () => {
+      this.resetModal()
+    })
   }
 
   updateTimeLastSaved () {
     this.setState({ timeLastSaved: moment().format('MMMM Do YYYY, h:mm:ss a') })
-  }
-
-  async updateAllChallengeInfo (challenge) {
-    const challengeId = this.getCurrentChallengeId()
-    const response = await updateChallenge(challenge, challengeId)
-    this.updateTimeLastSaved()
-    this.setState({ draftChallenge: response })
-    return response
   }
 
   getResourceRoleByName (name) {
@@ -769,6 +772,9 @@ class ChallengeEditor extends Component {
 
   async updateResource (challengeId, name, value, prevValue) {
     const resourceRole = this.getResourceRoleByName(name)
+    if (value === prevValue) {
+      return
+    }
     const newResource = {
       challengeId,
       memberHandle: value,
@@ -960,11 +966,16 @@ class ChallengeEditor extends Component {
             {!isLoading && <LastSavedDisplay timeLastSaved={timeLastSaved} />}
             {!isLoading && (!isActive) && (!isCompleted) && <div className={styles.buttonContainer}>
               <div className={styles.button}>
-                <OutlineButton text={'Launch as Draft'} type={'success'} onClick={this.createDraftHandler} />
+                <OutlineButton text={'Save Draft'} type={'success'} onClick={this.createDraftHandler} />
               </div>
-              {!isLoading && (<div className={styles.button}>
+              <div className={styles.button}>
                 <PrimaryButton text={'Launch as Active'} type={'info'} submit />
-              </div>)}
+              </div>
+            </div>}
+            {!isLoading && isActive && <div className={styles.buttonContainer}>
+              <div className={styles.button}>
+                <OutlineButton text={'Save'} type={'success'} onClick={this.onSaveChallenge} />
+              </div>
             </div>}
           </div>
         )
@@ -986,7 +997,7 @@ class ChallengeEditor extends Component {
         <form name='challenge-info-form' noValidate autoComplete='off' onSubmit={this.toggleLaunch}>
           <div className={styles.group}>
 
-            <div className={styles.row}>
+            <div className={cn(styles.row, styles.topRow)}>
               <div className={styles.col}>
                 <span>
                   <span className={styles.fieldTitle}>Project:</span>

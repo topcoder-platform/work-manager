@@ -7,7 +7,7 @@ import styles from './SubmissionVisibility-Field.module.scss'
 
 class SubmissionVisibilityField extends Component {
   render () {
-    const { challenge, onUpdateCheckbox } = this.props
+    const { challenge, onUpdateCheckbox, readOnly } = this.props
     const metadata = challenge.metadata || {}
     let existingData = _.find(metadata, { name: 'submissionsViewable' }) || {}
     let isTrue = existingData.value === 'true'
@@ -27,8 +27,9 @@ class SubmissionVisibilityField extends Component {
                 id='submissionsViewable'
                 checked={isTrue}
                 onChange={(e) => onUpdateCheckbox('submissionsViewable', e.target.checked)}
+                readOnly={readOnly}
               />
-              <label htmlFor='submissionsViewable'>
+              <label htmlFor='submissionsViewable' className={readOnly ? styles.readOnly : ''}>
                 <div className={styles.checkboxLabel}>
                   Submissions are viewable after challenge ends.
                 </div>
@@ -41,9 +42,14 @@ class SubmissionVisibilityField extends Component {
   }
 }
 
+SubmissionVisibilityField.defaultProps = {
+  readOnly: false
+}
+
 SubmissionVisibilityField.propTypes = {
   challenge: PropTypes.shape().isRequired,
-  onUpdateCheckbox: PropTypes.func.isRequired
+  onUpdateCheckbox: PropTypes.func.isRequired,
+  readOnly: PropTypes.bool
 }
 
 export default SubmissionVisibilityField
