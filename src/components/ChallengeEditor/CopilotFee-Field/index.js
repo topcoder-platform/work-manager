@@ -13,7 +13,10 @@ const CopilotFeeField = ({ challenge, onUpdateOthers }) => {
   const value = copilotFee.prizes[0].value
 
   function onChange (e) {
-    const value = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER)
+    let value = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER)
+    if (parseInt(value) > 1000000) {
+      value = '1000000'
+    }
     copilotFee.prizes = [{ type, value }]
     onUpdateOthers({ field: 'prizeSets', value: [...challenge.prizeSets.filter(p => p.type !== type), copilotFee] })
   }
@@ -27,7 +30,7 @@ const CopilotFeeField = ({ challenge, onUpdateOthers }) => {
         <div className={styles.selectContainer}>
           <FontAwesomeIcon className={styles.icon} icon={faDollarSign} />
         </div>
-        <input id='copilotFee' name='copilotFee' type='text' placeholder='' value={value} maxLength='200' required onChange={onChange} />
+        <input id='copilotFee' name='copilotFee' type='text' placeholder='' value={value} maxLength='7' required onChange={onChange} />
       </div>
     </div>
   )

@@ -39,6 +39,9 @@ class ChallengePrizesField extends Component {
   onUpdateInput (value, index) {
     const challengePrize = this.getChallengePrize()
     challengePrize.prizes[index].value = validateValue(value, VALIDATION_VALUE_TYPE.INTEGER)
+    if (parseInt(challengePrize.prizes[index].value) > 1000000) {
+      challengePrize.prizes[index].value = '1000000'
+    }
     this.onUpdateValue(challengePrize)
   }
 
