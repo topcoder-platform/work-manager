@@ -146,6 +146,14 @@ class ChallengeEditor extends Component {
             }
             this.resetPhase(defaultTemplate)
           }
+
+          // set default prize sets
+          if (!challengeDetail.prizeSets || !challengeDetail.prizeSets.length) {
+            this.onUpdateOthers({
+              field: 'prizeSets',
+              value: this.getDefaultPrizeSets()
+            })
+          }
         })
       } catch (e) {
         this.setState({ isLoading: true })
@@ -445,10 +453,20 @@ class ChallengeEditor extends Component {
 
   isValidChallengePrizes () {
     const challengePrizes = this.state.challenge.prizeSets.find(p => p.type === 'Challenge prizes')
-    if (challengePrizes.prizes.length > 1) {
-      return _.every(challengePrizes.prizes, (p) => p.value > 0)
+    if (challengePrizes.prizes.length === 0) {
+      return false
     }
-    return true
+
+    return _.every(challengePrizes.prizes, (prize) => {
+      if (prize.value === '') {
+        return false
+      }
+      const prizeNumber = parseInt(prize.value)
+      if (prizeNumber > 1000000) {
+        return false
+      }
+      return true
+    })
   }
 
   isValidChallenge () {
@@ -464,6 +482,10 @@ class ChallengeEditor extends Component {
       return false
     }
 
+    if (!this.isValidChallengePrizes()) {
+      return false
+    }
+
     return !(Object.values(pick([
       'track',
       'typeId',
@@ -472,7 +494,6 @@ class ChallengeEditor extends Component {
       'tags',
       'prizeSets'
     ], challenge)).filter(v => !v.length).length ||
-      !this.isValidChallengePrizes() ||
       _.isEmpty(this.state.currentTemplate))
   }
 
@@ -595,7 +616,8 @@ class ChallengeEditor extends Component {
       },
       timelineTemplateId: defaultTemplate.id,
       terms: [DEFAULT_TERM_UUID],
-      phases: this.getTemplatePhases(defaultTemplate)
+      phases: this.getTemplatePhases(defaultTemplate),
+      prizeSets: this.getDefaultPrizeSets()
     }
     try {
       const draftChallenge = await createChallenge(newChallenge)
@@ -618,6 +640,15 @@ class ChallengeEditor extends Component {
       duration: p.duration,
       phaseId: p.phaseId
     }))
+  }
+
+  getDefaultPrizeSets () {
+    return [
+      {
+        type: 'Challenge prizes',
+        prizes: [{ type: 'money', value: '0' }]
+      }
+    ]
   }
 
   async autoUpdateChallenge (changedField, prevValue) {
@@ -1038,8 +1069,8 @@ class ChallengeEditor extends Component {
             <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <ChallengeTotalField challenge={challenge} />
-            { this.state.hasValidationErrors && !challenge.prizeSets.length &&
-              <div className={styles.error}>Should have at-least 1 prize value</div> }
+            { this.state.hasValidationErrors && !this.isValidChallengePrizes() &&
+              <div className={styles.error}>Prize amounts should be from 0 to 1000000</div> }
           </div>
           { actionButtons }
         </form>
