@@ -115,10 +115,11 @@ class ChallengeEditor extends Component {
   }
 
   async resetChallengeData (setState = () => {}) {
-    const { isNew, challengeDetails, metadata, attachments } = this.props
+    const { isNew, challengeDetails, metadata, attachments, challengeId } = this.props
     if (
       challengeDetails &&
       challengeDetails.id &&
+      challengeId === challengeDetails.id &&
       (!this.state.challenge || this.state.challenge.id !== challengeDetails.id) &&
       !isNew
     ) {
@@ -758,6 +759,8 @@ class ChallengeEditor extends Component {
   async onlySave () {
     this.updateAllChallengeInfo(this.state.challenge.status, () => {
       this.resetModal()
+      const { history } = this.props
+      history.push('./view')
     })
   }
 
@@ -832,7 +835,7 @@ class ChallengeEditor extends Component {
   }
 
   render () {
-    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, timeLastSaved } = this.state
+    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, timeLastSaved, isSaving } = this.state
     const {
       isNew,
       isLoading,
@@ -940,7 +943,7 @@ class ChallengeEditor extends Component {
                 <OutlineButton
                   text={'View Challenge'}
                   type={'success'}
-                  onClick={this.resetModal}
+                  link={'./view'}
                 />
               </div>
             </div>
@@ -974,7 +977,7 @@ class ChallengeEditor extends Component {
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
               <div className={styles.button}>
-                <OutlineButton text={'Save'} type={'success'} onClick={this.onSaveChallenge} />
+                <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
               </div>
             </div>}
           </div>

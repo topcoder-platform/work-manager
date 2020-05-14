@@ -32,43 +32,46 @@ class ChallengeEditor extends Component {
       loadChallengeTags,
       loadChallengeTerms,
       loadGroups,
-      loadResources,
       loadResourceRoles,
-      loadChallengeDetails
+      loadChallengeDetails,
+      loadResources
     } = this.props
-    const challengeId = _.get(match.params, 'challengeId', null)
     loadTimelineTemplates()
     loadChallengePhases()
     loadChallengeTypes()
     loadChallengeTags()
     loadChallengeTerms()
     loadGroups()
-    loadResources(challengeId)
     loadResourceRoles()
-    this.fetchChallengeDetails(match, loadChallengeDetails)
+    this.fetchChallengeDetails(match, loadChallengeDetails, loadResources)
 
-    this.unlisten = this.props.history.listen((location, action) => {
+    this.unlisten = this.props.history.listen(() => {
       const { isLoading } = this.props
       if (!isLoading) {
-        const { match: newMatch, loadChallengeDetails } = this.props
-        this.fetchChallengeDetails(newMatch, loadChallengeDetails)
+        const { match: newMatch, loadChallengeDetails, loadResources } = this.props
+        this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources)
       }
     })
   }
 
+  componentWillUnmount () {
+    this.unlisten()
+  }
+
   componentWillReceiveProps (nextProps) {
     const { match } = this.props
-    const { match: newMatch, loadChallengeDetails } = nextProps
+    const { match: newMatch, loadChallengeDetails, loadResources } = nextProps
     const projectId = _.get(newMatch.params, 'projectId', null)
     const challengeId = _.get(newMatch.params, 'challengeId', null)
     if (_.get(match.params, 'projectId', null) !== projectId || _.get(match.params, 'challengeId', null) !== challengeId) {
-      this.fetchChallengeDetails(newMatch, loadChallengeDetails)
+      this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources)
     }
   }
 
-  fetchChallengeDetails (newMatch, loadChallengeDetails) {
+  fetchChallengeDetails (newMatch, loadChallengeDetails, loadResources) {
     const projectId = _.get(newMatch.params, 'projectId', null)
     const challengeId = _.get(newMatch.params, 'challengeId', null)
+    loadResources(challengeId)
     loadChallengeDetails(projectId, challengeId)
   }
 
@@ -138,11 +141,13 @@ class ChallengeEditor extends Component {
         path={`${this.props.match.path}/view`}
         render={({ match }) => ((
           <ChallengeViewComponent
+            isLoading={isLoading}
             metadata={metadata}
             projectDetail={projectDetail}
             challenge={challengeDetails}
             challengeResources={challengeResources}
             token={token}
+            challengeId={challengeId}
           />
         ))
         } />

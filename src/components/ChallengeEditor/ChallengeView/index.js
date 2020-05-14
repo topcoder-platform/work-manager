@@ -16,8 +16,9 @@ import AttachmentField from '../Attachment-Field'
 import ChallengePrizesField from '../ChallengePrizes-Field'
 import CopilotFeeField from '../CopilotFee-Field'
 import ChallengeTotalField from '../ChallengeTotal-Field'
+import Loader from '../../Loader'
 
-const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources, token }) => {
+const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources, token, isLoading, challengeId }) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
 
   const [openAdvanceSettings, setOpenAdvanceSettings] = useState(false)
@@ -48,6 +49,8 @@ const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources,
   const isCommunity = reviewType === 'community'
   const isInternal = reviewType === 'internal'
   const timeLineTemplate = _.find(metadata.timelineTemplates, { id: challenge.timelineTemplateId })
+  if (isLoading || _.isEmpty(metadata.challengePhases) || challenge.id !== challengeId) return <Loader />
+
   return (
     <div className={styles.wrapper}>
       <Helmet title='View Details' />
@@ -172,6 +175,8 @@ ChallengeView.propTypes = {
   challenge: PropTypes.object,
   metadata: PropTypes.object,
   token: PropTypes.string,
+  isLoading: PropTypes.bool.isRequired,
+  challengeId: PropTypes.string.isRequired,
   challengeResources: PropTypes.arrayOf(PropTypes.object)
 }
 
