@@ -72,7 +72,8 @@ class Routes extends React.Component {
             <TopBarContainer />,
             <Sidebar projectId={match.params.projectId} menu={'New Challenge'} />
           )()} />
-        <Route exact path='/projects/:projectId/challenges/:challengeId/edit'
+        <Route
+          path='/projects/:projectId/challenges/:challengeId'
           render={({ match }) => renderApp(
             <ChallengeEditor />,
             <TopBarContainer />,

@@ -109,6 +109,10 @@
       background: $tc-gray-30;
       transition: all 0.15s ease-in-out;
 
+      &.readOnly {
+        cursor: auto;
+      }
+
       &::after {
         opacity: 0;
         content: '';
@@ -126,6 +130,9 @@
 
       &:hover::after {
         opacity: 0.3;
+      }
+      &:hover:read-only::after {
+        opacity: 0;
       }
 
       div {

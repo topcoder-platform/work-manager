@@ -232,23 +232,23 @@ class ChallengeCard extends React.Component {
                   <PrimaryButton text={'Close'} type={'info'} />
                 </div>
                 <div className={styles.buttonSizeA} onClick={() => this.resetModal()}>
-                  <OutlineButton text={'View Challenge'} type={'success'} link={`/projects/${challenge.projectId}/challenges/${isConfirm}/edit`} />
+                  <OutlineButton text={'View Challenge'} type={'success'} link={`/projects/${challenge.projectId}/challenges/${isConfirm}/view`} />
                 </div>
               </div>
             </div>
           </Modal>
         ) }
 
-        <Link className={styles.col1} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`}>
+        <Link className={styles.col1} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
           <div className={styles.name}>
             <span className={styles.block}>{challenge.name}</span>
             <ChallengeTag track={challenge.legacy && challenge.legacy.track} challengeType={challenge.type} />
           </div>
         </Link>
-        <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`}>
+        <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
           {renderStatus(challenge.status.toUpperCase())}
         </Link>
-        {shouldShowCurrentPhase && (<Link className={styles.col3} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`}>
+        {shouldShowCurrentPhase && (<Link className={styles.col3} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
           <span className={styles.block}>{phaseMessage}</span>
           <span className='block light-text'>{endTime}</span>
         </Link>)}

@@ -17,10 +17,14 @@ const CopilotCard = ({ copilot, selectedCopilot, onUpdateOthers }) => {
   )
 }
 
+CopilotCard.defaultProps = {
+  onUpdateOthers: () => {}
+}
+
 CopilotCard.propTypes = {
   copilot: PropTypes.shape().isRequired,
   selectedCopilot: PropTypes.string.isRequired,
-  onUpdateOthers: PropTypes.func.isRequired
+  onUpdateOthers: PropTypes.func
 }
 
 export default CopilotCard

@@ -8,7 +8,7 @@ import styles from './FinalDeliverables-Field.module.scss'
 
 class FinalDeliverablesField extends Component {
   render () {
-    const { challenge, onUpdateCheckbox } = this.props
+    const { challenge, onUpdateCheckbox, readOnly } = this.props
     return (
       <React.Fragment>
         <div className={styles.row}>
@@ -27,32 +27,37 @@ class FinalDeliverablesField extends Component {
                     id={type.name}
                     checked={type.check}
                     onChange={(e) => onUpdateCheckbox(type.name, e.target.checked, 'fileTypes', index)}
+                    readOnly={readOnly}
                   />
-                  <label htmlFor={type.name}>
+                  <label htmlFor={type.name} className={cn({ [styles.readOnly]: readOnly })}>
                     <div className={styles.checkboxLabel}>
                       {type.name}
                     </div>
-                    <input type='hidden' />
                   </label>
                 </div>
               ))
             }
           </div>
         </div>
-        <div className={styles.row}>
+        {!readOnly && (<div className={styles.row}>
           <div className={styles.button}>
             <PrimaryButton text={'Add File Type'} type={'info'} disabled />
           </div>
-        </div>
+        </div>)}
 
       </React.Fragment>
     )
   }
 }
 
+FinalDeliverablesField.defaultProps = {
+  readOnly: false
+}
+
 FinalDeliverablesField.propTypes = {
   challenge: PropTypes.shape().isRequired,
-  onUpdateCheckbox: PropTypes.func.isRequired
+  onUpdateCheckbox: PropTypes.func.isRequired,
+  readOnly: PropTypes.bool
 }
 
 export default FinalDeliverablesField

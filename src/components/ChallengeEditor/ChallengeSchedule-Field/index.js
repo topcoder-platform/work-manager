@@ -122,7 +122,7 @@ class ChallengeScheduleField extends Component {
   }
 
   renderPhaseEditor () {
-    const { onUpdateSelect, onUpdatePhase, removePhase, challenge } = this.props
+    const { onUpdateSelect, onUpdatePhase, removePhase, challenge, readOnly } = this.props
     return (
       _.map(challenge.phases, (p, index) => (
         <div className={styles.PhaseRow} key={index}>
@@ -132,8 +132,9 @@ class ChallengeScheduleField extends Component {
             onUpdateSelect={onUpdateSelect}
             onUpdatePhase={newValue => onUpdatePhase(parseInt(newValue), 'duration', index)}
             endDate={moment(p.scheduledEndDate)}
+            readOnly={readOnly}
           />
-          {index !== 0 &&
+          {index !== 0 && !readOnly &&
           <div className={styles.icon} onClick={() => removePhase(index)}>
             <FontAwesomeIcon icon={faTrash} />
           </div>
@@ -263,7 +264,7 @@ class ChallengeScheduleField extends Component {
 
   render () {
     const { isEdit } = this.state
-    const { currentTemplate } = this.props
+    const { currentTemplate, readOnly } = this.props
     const { templates, resetPhase, challenge, onUpdateOthers } = this.props
     const timelines = !isEdit ? this.renderTimeLine() : null
     const chartHeight = `${(this.getAllPhases().length * GANTT_ROW_HEIGHT) + GANTT_FOOTER_HEIGHT}px`
@@ -275,20 +276,24 @@ class ChallengeScheduleField extends Component {
       <div className={styles.container}>
         <div className={cn(styles.row, styles.flexStart)}>
           <div className={cn(styles.field, styles.col1)}>
-            <label htmlFor={'notitle'}>Timeline template <span className={styles.red}>*</span> :</label>
+            <label htmlFor={'notitle'}>Timeline template {!readOnly && (<span className={styles.red}>*</span>)} :</label>
           </div>
           <div className={cn(styles.field, styles.col2)}>
             <div className={styles.templates}>
-              <Select
-                name='template'
-                options={templates}
-                placeholder='Select'
-                labelKey='name'
-                valueKey='name'
-                clearable={false}
-                value={currentTemplate}
-                onChange={(e) => resetPhase(e)}
-              />
+              {readOnly ? (
+                <span>{currentTemplate ? currentTemplate.name : ''}</span>
+              ) : (
+                <Select
+                  name='template'
+                  options={templates}
+                  placeholder='Select'
+                  labelKey='name'
+                  valueKey='name'
+                  clearable={false}
+                  value={currentTemplate}
+                  onChange={(e) => resetPhase(e)}
+                />
+              )}
             </div>
           </div>
         </div>
@@ -308,6 +313,7 @@ class ChallengeScheduleField extends Component {
               field: 'startDate',
               value: newValue.format()
             })}
+            readOnly={readOnly}
           />
         </div>
         <div className={styles.row}>
@@ -354,7 +360,7 @@ class ChallengeScheduleField extends Component {
             </div>
           )
         }
-        {currentTemplate && isEdit && (<div className={styles.row}>
+        {currentTemplate && isEdit && !readOnly && (<div className={styles.row}>
           <div className={styles.button}>
             <PrimaryButton
               text={'Reset Phases'}
@@ -373,7 +379,13 @@ class ChallengeScheduleField extends Component {
 ChallengeScheduleField.defaultProps = {
   templates: [],
   currentTemplate: null,
-  challengePhasesWithCorrectTimeline: []
+  challengePhasesWithCorrectTimeline: [],
+  removePhase: () => {},
+  resetPhase: () => {},
+  onUpdateSelect: () => {},
+  onUpdatePhase: () => {},
+  onUpdateOthers: () => {},
+  readOnly: false
 }
 
 ChallengeScheduleField.propTypes = {
@@ -381,12 +393,13 @@ ChallengeScheduleField.propTypes = {
   challengePhases: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challengePhasesWithCorrectTimeline: PropTypes.arrayOf(PropTypes.shape()),
   challenge: PropTypes.shape().isRequired,
-  removePhase: PropTypes.func.isRequired,
-  resetPhase: PropTypes.func.isRequired,
-  onUpdateSelect: PropTypes.func.isRequired,
-  onUpdatePhase: PropTypes.func.isRequired,
+  removePhase: PropTypes.func,
+  resetPhase: PropTypes.func,
+  onUpdateSelect: PropTypes.func,
+  onUpdatePhase: PropTypes.func,
   onUpdateOthers: PropTypes.func.isRequired,
-  currentTemplate: PropTypes.shape()
+  currentTemplate: PropTypes.shape(),
+  readOnly: PropTypes.bool
 }
 
 export default ChallengeScheduleField

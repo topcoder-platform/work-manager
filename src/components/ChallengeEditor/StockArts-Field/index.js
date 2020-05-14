@@ -7,7 +7,7 @@ import styles from './StockArts-Field.module.scss'
 
 class StockArtsField extends Component {
   render () {
-    const { challenge, onUpdateCheckbox } = this.props
+    const { challenge, onUpdateCheckbox, readOnly } = this.props
     const metadata = challenge.metadata || {}
     let existingData = _.find(metadata, { name: 'allowStockArt' }) || {}
     let isStockArts = existingData.value === 'true'
@@ -27,8 +27,9 @@ class StockArtsField extends Component {
                 id='stockArts'
                 checked={isStockArts}
                 onChange={(e) => onUpdateCheckbox('allowStockArt', e.target.checked)}
+                readOnly={readOnly}
               />
-              <label htmlFor='stockArts'>
+              <label htmlFor='stockArts' className={readOnly ? styles.readOnly : ''}>
                 <div className={styles.checkboxLabel}>
                   Is stock photography allowed?
                 </div>
@@ -41,9 +42,14 @@ class StockArtsField extends Component {
   }
 }
 
+StockArtsField.defaultProps = {
+  readOnly: false
+}
+
 StockArtsField.propTypes = {
   challenge: PropTypes.shape().isRequired,
-  onUpdateCheckbox: PropTypes.func.isRequired
+  onUpdateCheckbox: PropTypes.func.isRequired,
+  readOnly: PropTypes.bool
 }
 
 export default StockArtsField

@@ -8,7 +8,7 @@ import { faCloudUploadAlt, faTrash } from '@fortawesome/free-solid-svg-icons'
 import styles from './Attachment-Field.module.scss'
 import cn from 'classnames'
 
-const AttachmentField = ({ challenge, removeAttachment, onUploadFile, token }) => {
+const AttachmentField = ({ challenge, removeAttachment, onUploadFile, token, readOnly }) => {
   const onDrop = useCallback(acceptedFiles => {
     _.forEach(acceptedFiles, item => {
       onUploadFile(challenge.id, item)
@@ -26,9 +26,9 @@ const AttachmentField = ({ challenge, removeAttachment, onUploadFile, token }) =
       <div className={styles.fileRow} key={`${index}-${att.fileName}`}>
         <a className={styles.col1} href={downloadAttachmentURL(challenge.id, att.id, token)}>{att.fileName}</a>
         <div className={styles.col2}>{formatBytes(att.fileSize)}</div>
-        <div className={styles.icon} onClick={() => removeAttachment(att.id)}>
+        {!readOnly && (<div className={styles.icon} onClick={() => removeAttachment(att.id)}>
           <FontAwesomeIcon icon={faTrash} size={'lg'} />
-        </div>
+        </div>)}
       </div>
     ))
   )
@@ -48,7 +48,7 @@ const AttachmentField = ({ challenge, removeAttachment, onUploadFile, token }) =
           <label htmlFor='Attachment'>Attachment :</label>
         </div>
       </div>
-      <div className={styles.row}>
+      {!readOnly && (<div className={styles.row}>
         <div {...getRootProps({ className: `${styles.uploadPanel} ${isDragActive ? styles.isActive : ''}` })}>
           <label htmlFor='uploadFile'>
             <div className={styles.icon}>
@@ -62,7 +62,7 @@ const AttachmentField = ({ challenge, removeAttachment, onUploadFile, token }) =
           </label>
           <input {...getInputProps()} />
         </div>
-      </div>
+      </div>)}
       {
         _.has(challenge, 'attachments') && challenge.attachments.length > 0 && (
           <React.Fragment>
@@ -86,11 +86,18 @@ const AttachmentField = ({ challenge, removeAttachment, onUploadFile, token }) =
   )
 }
 
+AttachmentField.defaultProps = {
+  removeAttachment: () => {},
+  onUploadFile: () => {},
+  readOnly: false
+}
+
 AttachmentField.propTypes = {
   challenge: PropTypes.shape().isRequired,
-  removeAttachment: PropTypes.func.isRequired,
-  onUploadFile: PropTypes.func.isRequired,
-  token: PropTypes.string.isRequired
+  removeAttachment: PropTypes.func,
+  onUploadFile: PropTypes.func,
+  token: PropTypes.string.isRequired,
+  readOnly: PropTypes.bool
 }
 
 export default AttachmentField
