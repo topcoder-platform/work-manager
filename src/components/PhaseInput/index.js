@@ -44,7 +44,7 @@ class PhaseInput extends Component {
                 <div className={styles.dayPicker}>
                   {readOnly ? (
                     <span className={styles.readOnlyValue}>{date}</span>
-                  ) : (<DayPickerInput formatDate={formatDate} dayPickerProps={{ disabledDays: { before: new Date() } }} parseDate={parseDate} placeholder={dateFormat} value={date} onDayChange={(selectedDay) => onUpdatePhase(moment(`${moment(selectedDay).format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`))} format={dateFormat} />)}
+                  ) : (<DayPickerInput formatDate={formatDate} inputProps={{ readOnly: true }} dayPickerProps={{ disabledDays: { before: new Date() } }} parseDate={parseDate} placeholder={dateFormat} value={date} onDayChange={(selectedDay) => onUpdatePhase(moment(`${moment(selectedDay).format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`))} format={dateFormat} />)}
                 </div>
               )
             }
@@ -55,6 +55,7 @@ class PhaseInput extends Component {
                     <span className={styles.readOnlyValue}>{time.format(timeFormat)}</span>
                   ) : (<TimePicker
                     showSecond={false}
+                    inputReadOnly
                     value={time}
                     format={timeFormat}
                     onChange={(value) => onUpdatePhase(value)}
