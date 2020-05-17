@@ -75,6 +75,7 @@ class ChallengeEditor extends Component {
     this.onUpdateSelect = this.onUpdateSelect.bind(this)
     this.onUpdateOthers = this.onUpdateOthers.bind(this)
     this.onUpdateCheckbox = this.onUpdateCheckbox.bind(this)
+    this.addFileType = this.addFileType.bind(this)
     this.toggleAdvanceSettings = this.toggleAdvanceSettings.bind(this)
     this.toggleNdaRequire = this.toggleNdaRequire.bind(this)
     this.removeAttachment = this.removeAttachment.bind(this)
@@ -317,6 +318,20 @@ class ChallengeEditor extends Component {
     } else {
       _.set(newChallenge, `${field}.${index}.check`, checked)
     }
+    this.setState({ challenge: newChallenge })
+  }
+
+  /**
+   * Add new file type
+   * @param {String} newFileType The new file type
+   */
+  addFileType (newFileType) {
+    const { challenge: oldChallenge } = this.state
+    const newChallenge = { ...oldChallenge }
+    if (!_.isArray(newChallenge.fileTypes)) {
+      newChallenge.fileTypes = []
+    }
+    newChallenge.fileTypes.push({ name: newFileType, check: false })
     this.setState({ challenge: newChallenge })
   }
 
@@ -598,7 +613,7 @@ class ChallengeEditor extends Component {
     const { metadata } = this.props
     const { name, track, typeId } = this.state.challenge
 
-    const defaultTemplate = _.find(metadata.timelineTemplates, { name: 'Standard Code' })
+    const defaultTemplate = _.find(metadata.timelineTemplates, { name: 'Standard Development' })
 
     const newChallenge = {
       status: 'New',
@@ -1067,6 +1082,7 @@ class ChallengeEditor extends Component {
               challengeTags={metadata.challengeTags}
               challenge={challenge}
               onUpdateCheckbox={this.onUpdateCheckbox}
+              addFileType={this.addFileType}
               onUpdateInput={this.onUpdateInput}
               onUpdateDescription={this.onUpdateDescription}
               onUpdateMultiSelect={this.onUpdateMultiSelect}

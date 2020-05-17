@@ -7,6 +7,29 @@ import PrimaryButton from '../../Buttons/PrimaryButton'
 import styles from './FinalDeliverables-Field.module.scss'
 
 class FinalDeliverablesField extends Component {
+  constructor (props) {
+    super(props)
+    this.state = {
+      newFileType: ''
+    }
+    this.onChangeInput = this.onChangeInput.bind(this)
+    this.onAddFileType = this.onAddFileType.bind(this)
+  }
+
+  onChangeInput (value) {
+    this.setState({ newFileType: _.trim(value) })
+  }
+
+  onAddFileType (event) {
+    if (!_.isEmpty(this.state.newFileType)) {
+      this.props.addFileType(this.state.newFileType)
+      this.setState({ newFileType: '' })
+    }
+
+    event.preventDefault()
+    event.stopPropagation()
+  }
+
   render () {
     const { challenge, onUpdateCheckbox, readOnly } = this.props
     return (
@@ -40,9 +63,23 @@ class FinalDeliverablesField extends Component {
           </div>
         </div>
         {!readOnly && (<div className={styles.row}>
-          <div className={styles.button}>
-            <PrimaryButton text={'Add File Type'} type={'info'} disabled />
-          </div>
+          <form name='add-file-type-form' autoComplete='off' onSubmit={this.onAddFileType}>
+            <div>
+              <input
+                id='addFileType'
+                type='text'
+                value={this.state.newFileType}
+                onChange={(e) => this.onChangeInput(e.target.value)}
+              />
+            </div>
+            <div className={styles.button}>
+              <PrimaryButton
+                text={'Add File Type'}
+                type={'info'}
+                submit
+              />
+            </div>
+          </form>
         </div>)}
 
       </React.Fragment>
@@ -57,6 +94,7 @@ FinalDeliverablesField.defaultProps = {
 FinalDeliverablesField.propTypes = {
   challenge: PropTypes.shape().isRequired,
   onUpdateCheckbox: PropTypes.func.isRequired,
+  addFileType: PropTypes.func.isRequired,
   readOnly: PropTypes.bool
 }
 
