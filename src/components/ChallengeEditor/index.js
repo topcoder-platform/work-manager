@@ -598,7 +598,7 @@ class ChallengeEditor extends Component {
     const { metadata } = this.props
     const { name, track, typeId } = this.state.challenge
 
-    const defaultTemplate = _.find(metadata.timelineTemplates, { name: 'Standard Code' })
+    const defaultTemplate = _.find(metadata.timelineTemplates, { name: 'Standard Development' })
 
     const newChallenge = {
       status: 'New',
