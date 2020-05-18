@@ -610,6 +610,7 @@ class ChallengeEditor extends Component {
         track,
         reviewType: 'community'
       },
+      descriptionFormat: 'markdown',
       timelineTemplateId: defaultTemplate.id,
       terms: [DEFAULT_TERM_UUID],
       phases: this.getTemplatePhases(defaultTemplate),
