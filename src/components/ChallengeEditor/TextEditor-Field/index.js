@@ -28,6 +28,7 @@ class TextEditorField extends Component {
       challengeTags,
       challenge,
       onUpdateCheckbox,
+      addFileType,
       onUpdateDescription,
       onUpdateMultiSelect,
       shouldShowPrivateDescription,
@@ -88,6 +89,7 @@ class TextEditorField extends Component {
             <FinalDeliverablesField
               challenge={challenge}
               onUpdateCheckbox={onUpdateCheckbox}
+              addFileType={addFileType}
               readOnly={readOnly}
             />
             <StockArtsField
@@ -118,6 +120,7 @@ TextEditorField.defaultProps = {
   shouldShowPrivateDescription: false,
   onUpdateMetadata: () => {},
   onUpdateCheckbox: () => {},
+  addFileType: () => {},
   onUpdateDescription: () => {},
   onUpdateMultiSelect: () => {},
   readOnly: false
@@ -127,6 +130,7 @@ TextEditorField.propTypes = {
   challengeTags: PropTypes.arrayOf(PropTypes.object).isRequired,
   challenge: PropTypes.shape().isRequired,
   onUpdateCheckbox: PropTypes.func,
+  addFileType: PropTypes.func,
   onUpdateMetadata: PropTypes.func,
   onUpdateDescription: PropTypes.func,
   onUpdateMultiSelect: PropTypes.func,

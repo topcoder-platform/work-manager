@@ -140,6 +140,11 @@
     margin-left: 30px;
   }
 
+  form {
+    display: flex;
+    flex-direction: row;
+  }
+  
   .button {
     width: 137px;
     height: 40px;
