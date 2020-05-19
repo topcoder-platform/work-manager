@@ -1,5 +1,3 @@
-// eslint-disable-next-line no-unused-vars
-import DEV_API_HOSTNAME from './development'
 const DOMAIN = 'topcoder.com'
 const PROD_API_HOSTNAME = `https://api.${DOMAIN}`
 
