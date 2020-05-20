@@ -1,5 +1,6 @@
 const express = require('express')
 const path = require('path')
+const healthCheck = require('topcoder-healthcheck-dropin')
 
 const app = express()
 
@@ -11,20 +12,13 @@ const requireHTTPS = (req, res, next) => {
   next()
 }
 
+function check () {
+  return true
+}
+app.use(healthCheck.middleware([check]))
 app.use(requireHTTPS)
-
 app.use(express.static(__dirname))
 app.use(express.static(path.join(__dirname, 'build')))
-
-// the topcoder-healthcheck-dropin library returns checksRun count,
-// here it follows that to return such count
-let checksRun = 0
-
-app.get('/health', (req, res) => {
-  checksRun += 1
-  res.json({ checksRun })
-})
-
 app.get('/*', (req, res) => res.sendFile(path.join(__dirname, 'build', 'index.html')))
 const port = process.env.PORT || 3000
 app.listen(port)
