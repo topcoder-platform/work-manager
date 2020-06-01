@@ -57,6 +57,15 @@ export const convertChallengePhaseFromSecondsToHours = (phases) => {
 }
 
 /**
+ * Sorts the challenge phases in order of their supposed execution
+ *
+ * @param {Array} phases challenge phases that are to be sorte3d
+ */
+export const sortChallengePhases = (phases) => {
+  return _.sortBy(phases, phase => phase.actualStartDate || phase.scheduledStartDate)
+}
+
+/**
  * Convert challenge phase from hours to second and remove unnessesary field
  * @param {Object} challengeDetail challenge detail
  */

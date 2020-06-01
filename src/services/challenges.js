@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import qs from 'qs'
 import { axiosInstance } from './axiosWithAuth'
-import { updateChallengePhaseBeforeSendRequest, convertChallengePhaseFromSecondsToHours } from '../util/date'
+import { updateChallengePhaseBeforeSendRequest, convertChallengePhaseFromSecondsToHours, sortChallengePhases } from '../util/date'
 import FormData from 'form-data'
 const {
   CHALLENGE_API_URL,
@@ -88,6 +88,7 @@ export async function fetchChallenge (challengeId) {
     }
   }
   convertChallengePhaseFromSecondsToHours(newResponse.phases)
+  newResponse.phases = sortChallengePhases(newResponse.phases)
   return newResponse
 }
 
