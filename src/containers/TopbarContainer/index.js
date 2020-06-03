@@ -4,12 +4,19 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { loadUser } from '../../actions/auth'
+import { setActiveProject } from '../../actions/sidebar'
 import { connect } from 'react-redux'
 import TopBar from '../../components/TopBar'
 
 class TopbarContainer extends Component {
   componentDidMount () {
     this.props.loadUser()
+
+    const { projectId, activeProjectId } = this.props
+
+    if (projectId && activeProjectId < 0) {
+      this.props.setActiveProject(parseInt(projectId))
+    }
   }
 
   render () {
@@ -20,7 +27,10 @@ class TopbarContainer extends Component {
 
 TopbarContainer.propTypes = {
   loadUser: PropTypes.func.isRequired,
-  auth: PropTypes.object.isRequired
+  setActiveProject: PropTypes.func.isRequired,
+  auth: PropTypes.object.isRequired,
+  activeProjectId: PropTypes.number,
+  projectId: PropTypes.string
 }
 
 const mapStateToProps = ({ auth }) => ({
@@ -28,7 +38,8 @@ const mapStateToProps = ({ auth }) => ({
 })
 
 const mapDispatchToProps = {
-  loadUser
+  loadUser,
+  setActiveProject
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(TopbarContainer)
