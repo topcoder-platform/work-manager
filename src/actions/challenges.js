@@ -70,8 +70,8 @@ export function loadChallengesByPage (page, projectId, status, filterChallengeNa
 
     return fetchChallenges(filters, {
       page,
-      perPage: PAGE_SIZE,
-      memberId: getState().auth.user ? getState().auth.user.userId : null
+      perPage: PAGE_SIZE
+      // memberId: getState().auth.user ? getState().auth.user.userId : null
     }).then((res) => {
       dispatch({
         type: LOAD_CHALLENGES_SUCCESS,

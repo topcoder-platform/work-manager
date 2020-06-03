@@ -55,8 +55,9 @@ const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources,
     <div className={styles.wrapper}>
       <Helmet title='View Details' />
       <div className={styles.title}>View Details</div>
-      <div className={cn(styles.button, styles.editButton)}>
+      <div className={cn(styles.actionButtons, styles.button, styles.editButton)}>
         <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} />
+        <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
       </div>
       <div className={styles.container}>
         <div className={styles.formContainer}>
