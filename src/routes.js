@@ -82,7 +82,7 @@ class Routes extends React.Component {
         <Route exact path='/projects/:projectId/challenges'
           render={({ match }) => renderApp(
             <ChallengeList projectId={match.params.projectId} />,
-            <TopBarContainer />,
+            <TopBarContainer projectId={match.params.projectId} />,
             <Sidebar projectId={match.params.projectId} />
           )()} />
         {/* If path is not defined redirect to landing page */}

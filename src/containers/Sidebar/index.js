@@ -15,7 +15,7 @@ class SidebarContainer extends Component {
   }
 
   componentDidMount () {
-    this.props.loadProjects()
+    // this.props.loadProjects()
 
     const { projectId, activeProjectId } = this.props
 

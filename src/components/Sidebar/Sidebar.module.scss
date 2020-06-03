@@ -5,34 +5,11 @@
   height: 100vh;
   background-color: $dark-gray;
   overflow: auto;
-
-  ul {
-    list-style: none;
-    width: 100%;
-    padding: 0;
-    margin-top: 0;
-
-    li {
-      cursor: pointer;
-    }
-  }
-
-  a {
-    text-decoration: none;
-  }
-
-  .noProjects {
-    @include roboto;
-    font-weight: 400;
-    padding-left: 30px;
-    padding-right: 20px;
-    color: $white;
-  }
 }
 
 .logo {
   width: calc(100% - 100px);
-  padding: 30px 50px 42px 50px;
+  padding: 30px 50px 42px 30px;
   @media screen and (max-width: 300px * 4) {
     width: calc(100% - 20px);
     padding: 30px 10px 42px 10px;
@@ -46,10 +23,8 @@
   font-weight: 400;
   line-height: 31px;
   color: $white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 37px
+  margin-bottom: 37px;
+  padding-left: 30px;
 }
 
 .homeLink {
