@@ -106,7 +106,7 @@ class Challenges extends Component {
       <Fragment>
         <div className={styles.projectSearch}>
           <div className={styles.projectSearchHeader}>
-            <label>Swtich Project</label>
+            <label>Switch Project</label>
             <DebounceInput
               minLength={2}
               debounceTimeout={300}
