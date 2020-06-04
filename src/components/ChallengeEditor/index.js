@@ -277,7 +277,7 @@ class ChallengeEditor extends Component {
       value = null
     }
     if (field === 'prizeSets') {
-      value = value.filter(val => PRIZE_SETS_TYPE.includes(val.type))
+      value = value.filter(val => _.values(PRIZE_SETS_TYPE).includes(val.type))
     }
     newChallenge[field] = value
     this.setState({ challenge: newChallenge })
@@ -467,7 +467,7 @@ class ChallengeEditor extends Component {
   }
 
   isValidChallengePrizes () {
-    const challengePrizes = this.state.challenge.prizeSets.find(p => p.type === 'Challenge prizes')
+    const challengePrizes = this.state.challenge.prizeSets.find(p => p.type === PRIZE_SETS_TYPE.CHALLENGE_PRIZES)
     if (challengePrizes.prizes.length === 0) {
       return false
     }
@@ -657,7 +657,7 @@ class ChallengeEditor extends Component {
   getDefaultPrizeSets () {
     return [
       {
-        type: 'Challenge prizes',
+        type: PRIZE_SETS_TYPE.CHALLENGE_PRIZES,
         prizes: [{ type: 'money', value: '0' }]
       }
     ]
