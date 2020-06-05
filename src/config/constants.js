@@ -8,7 +8,8 @@ export const {
   DIRECT_PROJECT_URL,
   ONLINE_REVIEW_URL,
   DEFAULT_TERM_UUID,
-  DEFAULT_NDA_UUID
+  DEFAULT_NDA_UUID,
+  SUBMITTER_ROLE_UUID
 } = process.env
 
 // Actions

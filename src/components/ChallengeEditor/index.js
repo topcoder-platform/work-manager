@@ -11,7 +11,13 @@ import { withRouter } from 'react-router-dom'
 import { toastr } from 'react-redux-toastr'
 import xss from 'xss'
 
-import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE, DEFAULT_TERM_UUID, DEFAULT_NDA_UUID } from '../../config/constants'
+import {
+  VALIDATION_VALUE_TYPE,
+  PRIZE_SETS_TYPE,
+  DEFAULT_TERM_UUID,
+  DEFAULT_NDA_UUID,
+  SUBMITTER_ROLE_UUID
+} from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
 import TypeField from './Type-Field'
@@ -390,14 +396,14 @@ class ChallengeEditor extends Component {
       oldTerms = []
     }
     let newTerms = []
-    if (oldTerms.indexOf(DEFAULT_NDA_UUID) >= 0) {
-      newTerms = _.remove(oldTerms, t => t !== DEFAULT_NDA_UUID)
+    if (_.some(oldTerms, { id: DEFAULT_NDA_UUID })) {
+      newTerms = _.remove(oldTerms, t => t.id !== DEFAULT_NDA_UUID)
     } else {
-      oldTerms.push(DEFAULT_NDA_UUID)
+      oldTerms.push({ id: DEFAULT_NDA_UUID, roleId: SUBMITTER_ROLE_UUID })
       newTerms = oldTerms
     }
-    if (newTerms.indexOf(DEFAULT_TERM_UUID) < 0) {
-      newTerms.push(DEFAULT_TERM_UUID)
+    if (!_.some(newTerms, { id: DEFAULT_TERM_UUID })) {
+      newTerms.push({ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID })
     }
     newChallenge.terms = newTerms
     this.setState({ challenge: newChallenge })
@@ -627,7 +633,7 @@ class ChallengeEditor extends Component {
       },
       descriptionFormat: 'markdown',
       timelineTemplateId: defaultTemplate.id,
-      terms: [DEFAULT_TERM_UUID],
+      terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }],
       phases: this.getTemplatePhases(defaultTemplate),
       prizeSets: this.getDefaultPrizeSets()
     }
