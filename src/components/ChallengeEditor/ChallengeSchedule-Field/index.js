@@ -27,7 +27,6 @@ class ChallengeScheduleField extends Component {
     this.renderTimeLine = this.renderTimeLine.bind(this)
     this.getChallengePhase = this.getChallengePhase.bind(this)
     this.getAllPhases = this.getAllPhases.bind(this)
-    this.renderTimelineAgain = this.renderTimelineAgain.bind(this)
   }
 
   toggleEditMode () {
