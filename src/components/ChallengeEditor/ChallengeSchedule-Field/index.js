@@ -253,25 +253,12 @@ class ChallengeScheduleField extends Component {
     textProgressContainer.html(textProgressContainer.html())
   }
 
-  renderTimelineAgain () {
-    const { isEdit } = this.state
-    if (!isEdit) {
-      this.setState({ isEdit: true }, () => {
-        this.setState({ isEdit: false })
-      })
-    }
-  }
-
   render () {
     const { isEdit } = this.state
     const { currentTemplate, readOnly } = this.props
     const { templates, resetPhase, challenge, onUpdateOthers } = this.props
     const timelines = !isEdit ? this.renderTimeLine() : null
     const chartHeight = `${(this.getAllPhases().length * GANTT_ROW_HEIGHT) + GANTT_FOOTER_HEIGHT}px`
-    if (chartHeight !== this.lastChartHeight) {
-      this.renderTimelineAgain()
-    }
-    this.lastChartHeight = chartHeight
     return (
       <div className={styles.container}>
         <div className={cn(styles.row, styles.flexStart)}>
