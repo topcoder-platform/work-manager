@@ -23,7 +23,7 @@ CopilotCard.defaultProps = {
 
 CopilotCard.propTypes = {
   copilot: PropTypes.shape().isRequired,
-  selectedCopilot: PropTypes.string.isRequired,
+  selectedCopilot: PropTypes.string,
   onUpdateOthers: PropTypes.func
 }
 
