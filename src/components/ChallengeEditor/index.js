@@ -1038,6 +1038,9 @@ class ChallengeEditor extends Component {
               <div className={styles.col}>
                 <span><span className={styles.fieldTitle}>Type:</span> {selectedType ? selectedType.name : ''}</span>
               </div>
+              <div className={styles.col}>
+                <span><span className={styles.fieldTitle}>Status:</span> {challenge.status}</span>
+              </div>
             </div>
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             <NDAField challenge={challenge} toggleNdaRequire={this.toggleNdaRequire} />
