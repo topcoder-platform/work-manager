@@ -1120,6 +1120,9 @@ class ChallengeEditor extends Component {
       <div className={styles.wrapper}>
         <Helmet title={getTitle(isNew)} />
         <div className={styles.title}>{getTitle(isNew)}</div>
+        <div className={cn(styles.actionButtons, styles.button)}>
+          <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
+        </div>
         <div className={styles.textRequired}>* Required</div>
         <div className={styles.container}>
           { activateModal }
