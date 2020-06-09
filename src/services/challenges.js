@@ -54,7 +54,7 @@ export async function fetchGroups (filters) {
  * @returns {Promise<*>}
  */
 export async function fetchTimelineTemplates () {
-  const response = await axiosInstance.get(CHALLENGE_TIMELINE_TEMPLATES_URL)
+  const response = await axiosInstance.get(`${CHALLENGE_TIMELINE_TEMPLATES_URL}?page=1&perPage=100`)
   return _.get(response, 'data', [])
 }
 
