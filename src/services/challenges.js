@@ -63,7 +63,7 @@ export async function fetchTimelineTemplates () {
  * @returns {Promise<*>}
  */
 export async function fetchChallengePhases () {
-  const response = await axiosInstance.get(CHALLENGE_PHASES_URL)
+  const response = await axiosInstance.get(`${CHALLENGE_PHASES_URL}?page=1&perPage=100`)
   convertChallengePhaseFromSecondsToHours(response.data)
   return _.get(response, 'data', [])
 }
