@@ -104,6 +104,7 @@ class ChallengeEditor extends Component {
     this.getCurrentTemplate = this.getCurrentTemplate.bind(this)
     this.onUpdateMetadata = this.onUpdateMetadata.bind(this)
     this.getTemplatePhases = this.getTemplatePhases.bind(this)
+    this.getAvailableTimelineTemplates = this.getAvailableTimelineTemplates.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000) // 3s
     this.resetChallengeData((newState, finish) => {
       this.state = {
@@ -617,8 +618,13 @@ class ChallengeEditor extends Component {
     if (!this.props.isNew) return
     const { metadata } = this.props
     const { name, track, typeId } = this.state.challenge
+    const { timelineTemplates } = metadata
 
-    const defaultTemplate = _.find(metadata.timelineTemplates, { name: 'Standard Development' })
+    // fallback template
+    const STD_DEV_TIMELINE_TEMPLATE = _.find(timelineTemplates, { name: 'Standard Development' })
+    const avlTemplates = this.getAvailableTimelineTemplates()
+    // chooses first available timeline template or fallback template for the new challenge
+    const defaultTemplate = avlTemplates && avlTemplates.length > 0 ? avlTemplates[0] : STD_DEV_TIMELINE_TEMPLATE
 
     const newChallenge = {
       status: 'New',
@@ -847,6 +853,20 @@ class ChallengeEditor extends Component {
     return _.find(metadata.timelineTemplates, { id: challenge.timelineTemplateId })
   }
 
+  /**
+   * Filters the available timeline templates based on the challenge type
+   */
+  getAvailableTimelineTemplates () {
+    const { challenge } = this.state
+    const { metadata } = this.props
+    const { challengeTimelines, timelineTemplates } = metadata
+
+    // all timeline template ids available for the challenge type
+    const availableTemplateIds = _.filter(challengeTimelines, tt => tt.typeId === challenge.typeId).map(tt => tt.timelineTemplateId)
+    // filter and return timeline templates that are available for this challenge type
+    return _.filter(timelineTemplates, tt => availableTemplateIds.indexOf(tt.id) !== -1)
+  }
+
   render () {
     const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, timeLastSaved, isSaving } = this.state
     const {
@@ -1065,7 +1085,7 @@ class ChallengeEditor extends Component {
               </React.Fragment>
             )}
             <ChallengeScheduleField
-              templates={metadata.timelineTemplates}
+              templates={this.getAvailableTimelineTemplates()}
               challengePhases={metadata.challengePhases}
               removePhase={this.removePhase}
               resetPhase={this.resetPhase}

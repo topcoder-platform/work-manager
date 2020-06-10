@@ -12,6 +12,7 @@ module.exports = {
   CHALLENGE_TIMELINE_TEMPLATES_URL: `${PROD_API_HOSTNAME}/v5/timeline-templates`,
   CHALLENGE_TYPES_URL: `${PROD_API_HOSTNAME}/v5/challenge-types`,
   CHALLENGE_PHASES_URL: `${PROD_API_HOSTNAME}/v5/challenge-phases`,
+  CHALLENGE_TIMELINES_URL: `${DEV_API_HOSTNAME}/v5/challenge-timelines`,
   PROJECT_API_URL: `${PROD_API_HOSTNAME}/v5/projects`,
   GROUPS_API_URL: `${PROD_API_HOSTNAME}/v5/groups`,
   TERMS_API_URL: `${PROD_API_HOSTNAME}/v5/terms`,

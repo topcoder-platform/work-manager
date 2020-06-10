@@ -10,6 +10,7 @@ import {
   loadTimelineTemplates,
   loadChallengePhases,
   loadChallengeTypes,
+  loadChallengeTimelines,
   loadChallengeTags,
   loadChallengeTerms,
   loadGroups,
@@ -29,6 +30,7 @@ class ChallengeEditor extends Component {
       loadTimelineTemplates,
       loadChallengePhases,
       loadChallengeTypes,
+      loadChallengeTimelines,
       loadChallengeTags,
       loadChallengeTerms,
       loadGroups,
@@ -39,6 +41,7 @@ class ChallengeEditor extends Component {
     loadTimelineTemplates()
     loadChallengePhases()
     loadChallengeTypes()
+    loadChallengeTimelines()
     loadChallengeTags()
     loadChallengeTerms()
     loadGroups()
@@ -166,6 +169,7 @@ ChallengeEditor.propTypes = {
   loadTimelineTemplates: PropTypes.func,
   loadChallengePhases: PropTypes.func,
   loadChallengeTypes: PropTypes.func,
+  loadChallengeTimelines: PropTypes.func,
   loadChallengeTags: PropTypes.func,
   loadChallengeTerms: PropTypes.func,
   loadGroups: PropTypes.func,
@@ -203,6 +207,7 @@ const mapDispatchToProps = {
   loadTimelineTemplates,
   loadChallengePhases,
   loadChallengeTypes,
+  loadChallengeTimelines,
   loadChallengeTags,
   loadGroups,
   createAttachment,

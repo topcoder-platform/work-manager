@@ -8,6 +8,7 @@ const {
   CHALLENGE_TYPES_URL,
   CHALLENGE_TIMELINE_TEMPLATES_URL,
   CHALLENGE_PHASES_URL,
+  CHALLENGE_TIMELINES_URL,
   GROUPS_API_URL,
   PLATFORMS_V4_API_URL,
   TECHNOLOGIES_V4_API_URL,
@@ -55,6 +56,15 @@ export async function fetchGroups (filters) {
  */
 export async function fetchTimelineTemplates () {
   const response = await axiosInstance.get(`${CHALLENGE_TIMELINE_TEMPLATES_URL}?page=1&perPage=100`)
+  return _.get(response, 'data', [])
+}
+
+/**
+ * Api request for fetching challenge timelines
+ * @returns {Promise<*>}
+ */
+export async function fetchChallengeTimelines () {
+  const response = await axiosInstance.get(`${CHALLENGE_TIMELINES_URL}?page=1&perPage=100`)
   return _.get(response, 'data', [])
 }
 
