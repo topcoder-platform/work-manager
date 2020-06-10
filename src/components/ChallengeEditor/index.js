@@ -586,7 +586,7 @@ class ChallengeEditor extends Component {
       reviewType: challenge.reviewType,
       track: challenge.track
     }
-    challenge.timelineTemplateId = this.props.metadata.timelineTemplates[0].id
+    challenge.timelineTemplateId = this.getCurrentTemplate().id
     challenge.projectId = this.props.projectId
     challenge.prizeSets = challenge.prizeSets.map(p => {
       const prizes = p.prizes.map(s => ({ ...s, value: convertDollarToInteger(s.value, '$') }))
