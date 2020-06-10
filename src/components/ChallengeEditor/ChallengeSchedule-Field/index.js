@@ -88,7 +88,10 @@ class ChallengeScheduleField extends Component {
    */
   recalculatePhaseDates (phase, phases, startDate) {
     const templatePhase = this.getPhaseFromTimelineTemplate(phase)
-    if (templatePhase.predecessor) {
+    if (!templatePhase) {
+      console.warning(`Possible template mismatch. Phase not found in the timeline template of the challenge.`)
+    }
+    if (templatePhase && templatePhase.predecessor) {
       const prePhase = _.find(phases, (p) => p.phaseId === templatePhase.predecessor)
       // `Predecessor ${templatePhase.predecessor} not found from given phases.`
       phase.predecessor = prePhase.id
