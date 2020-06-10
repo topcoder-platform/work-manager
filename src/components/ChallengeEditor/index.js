@@ -102,7 +102,6 @@ class ChallengeEditor extends Component {
     this.createDraftHandler = this.createDraftHandler.bind(this)
     this.onSaveChallenge = this.onSaveChallenge.bind(this)
     this.getCurrentTemplate = this.getCurrentTemplate.bind(this)
-    this.getBackendChallengePhases = this.getBackendChallengePhases.bind(this)
     this.onUpdateMetadata = this.onUpdateMetadata.bind(this)
     this.getTemplatePhases = this.getTemplatePhases.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000) // 3s
@@ -848,14 +847,6 @@ class ChallengeEditor extends Component {
     return _.find(metadata.timelineTemplates, { id: challenge.timelineTemplateId })
   }
 
-  getBackendChallengePhases () {
-    const { draftChallenge } = this.state
-    if (!draftChallenge.data.id) {
-      return []
-    }
-    return draftChallenge.data.phases
-  }
-
   render () {
     const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, timeLastSaved, isSaving } = this.state
     const {
@@ -1079,7 +1070,6 @@ class ChallengeEditor extends Component {
               removePhase={this.removePhase}
               resetPhase={this.resetPhase}
               challenge={challenge}
-              challengePhasesWithCorrectTimeline={this.getBackendChallengePhases()}
               onUpdateSelect={this.onUpdateSelect}
               onUpdatePhase={this.onUpdatePhase}
               onUpdateOthers={this.onUpdateOthers}

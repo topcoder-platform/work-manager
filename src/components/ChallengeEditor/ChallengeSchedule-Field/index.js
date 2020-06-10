@@ -24,8 +24,10 @@ class ChallengeScheduleField extends Component {
       isEdit: false
     }
     this.toggleEditMode = this.toggleEditMode.bind(this)
-    this.renderTimeLine = this.renderTimeLine.bind(this)
-    this.getChallengePhase = this.getChallengePhase.bind(this)
+    this.prepareTimeline = this.prepareTimeline.bind(this)
+    this.getPhaseTemplate = this.getPhaseTemplate.bind(this)
+    this.getPhaseFromTimelineTemplate = this.getPhaseFromTimelineTemplate.bind(this)
+    this.recalculatePhaseDates = this.recalculatePhaseDates.bind(this)
     this.getAllPhases = this.getAllPhases.bind(this)
   }
 
@@ -34,12 +36,35 @@ class ChallengeScheduleField extends Component {
     this.setState({ isEdit: !isEdit })
   }
 
-  getChallengePhase (phase) {
+  /**
+   * Finds the phase template from the timeline template. Timeline template contains default duration
+   * and predecessor information.
+   *
+   * @param {Object} phase phase for which template is to be found
+   */
+  getPhaseFromTimelineTemplate (phase) {
+    const { currentTemplate } = this.props
+    if (currentTemplate.phases) {
+      let templatePhase = currentTemplate.phases.find(tp => tp.phaseId === phase.phaseId)
+      if (templatePhase) {
+        templatePhase = _.cloneDeep(templatePhase)
+      }
+      return templatePhase
+    }
+    return phase
+  }
+
+  /**
+   * Finds the phase definition/template from phase templates. Phase templates contains name and description
+   *
+   * @param {Object} phase phase for which definition/template is to be found
+   */
+  getPhaseTemplate (phase) {
     const { challengePhases } = this.props
     if (!phase) {
       return phase
     }
-    let challengePhase = challengePhases.find(challengePhase => challengePhase.id === phase.phaseId)
+    let challengePhase = challengePhases.find(cp => cp.id === phase.phaseId)
     if (challengePhase) {
       challengePhase = _.cloneDeep(challengePhase)
     }
@@ -48,14 +73,43 @@ class ChallengeScheduleField extends Component {
   }
 
   getAllPhases () {
-    const { challenge, challengePhasesWithCorrectTimeline } = this.props
-    if (challengePhasesWithCorrectTimeline && challengePhasesWithCorrectTimeline.length) {
-      return challengePhasesWithCorrectTimeline
-    }
+    const { challenge } = this.props
     return challenge.phases
   }
 
-  renderTimeLine () {
+  /**
+   * Helper method to recalculate the phase dates. It is used just for rendering the timeline.
+   * Actual population of dates is done in api at
+   * https://github.com/topcoder-platform/challenge-api/blob/0253c238d67fddadfa2d6c0fb882568b97ce8a20/src/services/ChallengeService.js#L402
+   *
+   * @param {Object} phase phase for which dates are to be calculated
+   * @param {Array} phases all phases
+   * @param {Date} startDate start date of the first phase, usually it is challenge's start date
+   */
+  recalculatePhaseDates (phase, phases, startDate) {
+    const templatePhase = this.getPhaseFromTimelineTemplate(phase)
+    if (templatePhase.predecessor) {
+      const prePhase = _.find(phases, (p) => p.phaseId === templatePhase.predecessor)
+      // `Predecessor ${templatePhase.predecessor} not found from given phases.`
+      phase.predecessor = prePhase.id
+    }
+    if (!phase.predecessor) {
+      phase.scheduledStartDate = startDate
+      phase.scheduledEndDate = moment(startDate).add(phase.duration || 0, 'hours').toDate()
+      phase.actualStartDate = phase.scheduledStartDate
+      phase.actualEndDate = phase.scheduledEndDate
+    } else {
+      const preIndex = _.findIndex(phases, (p) => p.id === phase.predecessor)
+      // `Invalid phase predecessor: ${phase.predecessor}`
+      phase.scheduledStartDate = phases[preIndex].scheduledEndDate
+      phase.scheduledEndDate = moment(phase.scheduledStartDate).add(phase.duration || 0, 'hours').toDate()
+      phase.actualStartDate = phase.scheduledStartDate
+      phase.actualEndDate = phase.scheduledEndDate
+    }
+  }
+
+  prepareTimeline () {
+    const { challenge } = this.props
     const allPhases = this.getAllPhases()
     if (_.isEmpty(allPhases) || typeof allPhases[0] === 'undefined') {
       return null
@@ -75,8 +129,11 @@ class ChallengeScheduleField extends Component {
     )
 
     var hourToMilisecond = 60 * 60 * 1000 // = 1 hour
+    let cStartDate = challenge.startDate
     _.map(allPhases, (p, index) => {
-      const phase = this.getChallengePhase(p)
+      const phase = this.getPhaseTemplate(p)
+      // recalculate the phase dates, assuming duration is edited by user
+      this.recalculatePhaseDates(phase, allPhases, cStartDate)
       if (phase && timelines) {
         var startDate
         if (p.scheduledStartDate) {
@@ -101,7 +158,7 @@ class ChallengeScheduleField extends Component {
         } else {
           percentage = Math.round(((endDate.getTime() - startDate.getTime()) / (hourToMilisecond * p.duration)) * 100)
         }
-        const predecessorPhase = phase.predecessor ? this.getChallengePhase(allPhases.filter(ph => ph.phaseId === phase.predecessor)[0]) : null
+        const predecessorPhase = phase.predecessor ? this.getPhaseTemplate(allPhases.filter(ph => ph.phaseId === phase.predecessor)[0]) : null
         timelines.push(
           [
             phase.name || '',
@@ -126,7 +183,7 @@ class ChallengeScheduleField extends Component {
       _.map(challenge.phases, (p, index) => (
         <div className={styles.PhaseRow} key={index}>
           <PhaseInput
-            phase={this.getChallengePhase(p)}
+            phase={this.getPhaseTemplate(p)}
             withDuration
             onUpdateSelect={onUpdateSelect}
             onUpdatePhase={newValue => onUpdatePhase(parseInt(newValue), 'duration', index)}
@@ -256,7 +313,7 @@ class ChallengeScheduleField extends Component {
     const { isEdit } = this.state
     const { currentTemplate, readOnly } = this.props
     const { templates, resetPhase, challenge, onUpdateOthers } = this.props
-    const timelines = !isEdit ? this.renderTimeLine() : null
+    const timelines = !isEdit ? this.prepareTimeline() : null
     const chartHeight = `${(this.getAllPhases().length * GANTT_ROW_HEIGHT) + GANTT_FOOTER_HEIGHT}px`
     return (
       <div className={styles.container}>
@@ -365,7 +422,6 @@ class ChallengeScheduleField extends Component {
 ChallengeScheduleField.defaultProps = {
   templates: [],
   currentTemplate: null,
-  challengePhasesWithCorrectTimeline: [],
   removePhase: () => {},
   resetPhase: () => {},
   onUpdateSelect: () => {},
@@ -377,7 +433,6 @@ ChallengeScheduleField.defaultProps = {
 ChallengeScheduleField.propTypes = {
   templates: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challengePhases: PropTypes.arrayOf(PropTypes.shape()).isRequired,
-  challengePhasesWithCorrectTimeline: PropTypes.arrayOf(PropTypes.shape()),
   challenge: PropTypes.shape().isRequired,
   removePhase: PropTypes.func,
   resetPhase: PropTypes.func,
