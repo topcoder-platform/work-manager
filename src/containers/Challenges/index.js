@@ -110,7 +110,7 @@ class Challenges extends Component {
             <DebounceInput
               minLength={2}
               debounceTimeout={300}
-              placeholder='Search projects'
+              placeholder='Search projects (Enter project id or project title in double quotes or any text from project)'
               onChange={(e) => this.updateProjectName(e.target.value)}
               value={searchProjectName}
             />
