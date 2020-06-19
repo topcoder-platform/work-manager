@@ -11,7 +11,7 @@ import Chart from 'react-google-charts'
 import Select from '../../Select'
 import { parseSVG } from '../../../util/svg'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faAngleDown, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faTrash } from '@fortawesome/free-solid-svg-icons'
 import PrimaryButton from '../../Buttons/PrimaryButton'
 
 const GANTT_ROW_HEIGHT = 45
@@ -314,8 +314,8 @@ class ChallengeScheduleField extends Component {
 
   render () {
     const { isEdit } = this.state
-    const { currentTemplate, readOnly } = this.props
-    const { templates, resetPhase, challenge, onUpdateOthers } = this.props
+    const { currentTemplate, readOnly, templates } = this.props
+    const { savePhases, resetPhase, challenge, onUpdateOthers } = this.props
     const timelines = !isEdit ? this.prepareTimeline() : null
     const chartHeight = `${(this.getAllPhases().length * GANTT_ROW_HEIGHT) + GANTT_FOOTER_HEIGHT}px`
     return (
@@ -369,12 +369,17 @@ class ChallengeScheduleField extends Component {
               <span>Timezone: {jstz.determine().name()}</span>
             </div>
           </div>
-          <div className={cn(styles.field, styles.col2)} onClick={this.toggleEditMode}>
-            <div className={cn(styles.editButton, { [styles.active]: isEdit })}>
-              <span>Edit</span>
-              <FontAwesomeIcon className={cn(styles.icon, { [styles.active]: isEdit })} icon={faAngleDown} />
+          { !readOnly &&
+            (<div className={cn(styles.field, styles.col2)}>
+              <div className={cn(styles.button, { [styles.active]: isEdit })}>
+                <PrimaryButton
+                  text={isEdit ? 'Back to Gantt' : 'Edit Phases'}
+                  type={'info'}
+                  onClick={this.toggleEditMode} />
+              </div>
             </div>
-          </div>
+            )
+          }
         </div>
 
         {
@@ -407,7 +412,11 @@ class ChallengeScheduleField extends Component {
           )
         }
         {currentTemplate && isEdit && !readOnly && (<div className={styles.row}>
-          <div className={styles.button}>
+          <div className={cn(styles.actionButtons)}>
+            <PrimaryButton
+              text={'Save Phases'}
+              type={'info'}
+              onClick={() => savePhases()} />
             <PrimaryButton
               text={'Reset Phases'}
               type={'info'}
@@ -427,6 +436,7 @@ ChallengeScheduleField.defaultProps = {
   currentTemplate: null,
   removePhase: () => {},
   resetPhase: () => {},
+  savePhases: () => {},
   onUpdateSelect: () => {},
   onUpdatePhase: () => {},
   onUpdateOthers: () => {},
@@ -439,6 +449,7 @@ ChallengeScheduleField.propTypes = {
   challenge: PropTypes.shape().isRequired,
   removePhase: PropTypes.func,
   resetPhase: PropTypes.func,
+  savePhases: PropTypes.func,
   onUpdateSelect: PropTypes.func,
   onUpdatePhase: PropTypes.func,
   onUpdateOthers: PropTypes.func.isRequired,

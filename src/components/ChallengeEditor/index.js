@@ -87,6 +87,7 @@ class ChallengeEditor extends Component {
     this.removeAttachment = this.removeAttachment.bind(this)
     this.removePhase = this.removePhase.bind(this)
     this.resetPhase = this.resetPhase.bind(this)
+    this.savePhases = this.savePhases.bind(this)
     this.toggleLaunch = this.toggleLaunch.bind(this)
     this.onUpdateMultiSelect = this.onUpdateMultiSelect.bind(this)
     this.onUpdatePhase = this.onUpdatePhase.bind(this)
@@ -430,6 +431,14 @@ class ChallengeEditor extends Component {
     newChallenge.phases = _.clone(newPhaseList)
     this.setState({ challenge: newChallenge })
   }
+
+  /**
+   * Save updated  challenge Phases
+   */
+  async savePhases () {
+    this.autoUpdateChallengeThrottled('phases')
+  }
+
   /**
    * Reset  challenge Phases
    */
@@ -1089,6 +1098,7 @@ class ChallengeEditor extends Component {
               challengePhases={metadata.challengePhases}
               removePhase={this.removePhase}
               resetPhase={this.resetPhase}
+              savePhases={this.savePhases}
               challenge={challenge}
               onUpdateSelect={this.onUpdateSelect}
               onUpdatePhase={this.onUpdatePhase}
