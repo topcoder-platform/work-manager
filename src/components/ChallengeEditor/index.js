@@ -6,7 +6,7 @@ import { Helmet } from 'react-helmet'
 import cn from 'classnames'
 import moment from 'moment'
 import { pick } from 'lodash/fp'
-import Modal from '../Modal'
+// import Modal from '../Modal'
 import { withRouter } from 'react-router-dom'
 import { toastr } from 'react-redux-toastr'
 import xss from 'xss'
@@ -46,6 +46,8 @@ import {
   deleteResource,
   patchChallenge
 } from '../../services/challenges'
+import ConfirmationModal from '../Modal/ConfirmationModal'
+import AlertModal from '../Modal/AlertModal'
 
 const theme = {
   container: styles.modalContainer
@@ -436,7 +438,11 @@ class ChallengeEditor extends Component {
    * Save updated  challenge Phases
    */
   async savePhases () {
-    this.autoUpdateChallengeThrottled('phases')
+    await this.autoUpdateChallengeThrottled('phases')
+    this.setState({
+      isConfirm: true,
+      isLaunch: true
+    })
   }
 
   /**
@@ -923,6 +929,7 @@ class ChallengeEditor extends Component {
 
     let activateModal = null
     let draftModal = null
+    let savedModal = null
 
     let { type } = challenge
     if (!type) {
@@ -934,63 +941,51 @@ class ChallengeEditor extends Component {
         }
       }
     }
-
-    if (!isNew && isLaunch && !isConfirm) {
-      activateModal = (
-        <Modal theme={theme} onCancel={this.resetModal}>
-          <div className={styles.contentContainer}>
-            <div className={styles.title}>Launch Challenge Confirmation</div>
-            <span>{`Do you want to launch ${type} challenge "${challenge.name}"?`}</span>
-            <div className={styles.buttonGroup}>
-              <div className={styles.button}>
-                <OutlineButton
-                  className={cn({ disabled: this.state.isSaving })}
-                  text={'Cancel'}
-                  type={'danger'}
-                  onClick={this.resetModal}
-                />
-              </div>
-              <div className={styles.button}>
-                <PrimaryButton
-                  text={this.state.isSaving ? 'Launching...' : 'Confirm'}
-                  type={'info'}
-                  onClick={this.onActiveChallenge}
-                />
-              </div>
-            </div>
-          </div>
-        </Modal>
+    console.log(isNew, 'isNew')
+    if (!isNew && challenge.status === 'New' && isLaunch && isConfirm) {
+      savedModal = (
+        <AlertModal
+          title='Saved Challenge'
+          message={`Challenge "${challenge.name}" is saved successfuly`}
+          theme={theme}
+          onCancel={this.resetModal}
+          closeText='Close'
+          okText='View Challenge'
+          okLink='./view'
+          onClose={this.resetModal}
+        />
       )
     }
 
-    if (!isNew && isLaunch && isConfirm) {
+    if (!isNew && isLaunch && !isConfirm) {
+      activateModal = (
+        <ConfirmationModal
+          title='Launch Challenge Confirmation'
+          message={`Do you want to launch ${type} challenge "${challenge.name}"?`}
+          theme={theme}
+          isProcessing={this.state.isSaving}
+          onCancel={this.resetModal}
+          onConfirm={this.onActiveChallenge}
+        />
+      )
+    }
+
+    if (!isNew && challenge.status !== 'New' && isLaunch && isConfirm) {
       draftModal = (
-        <Modal theme={theme} onCancel={() => this.resetModal()}>
-          <div className={cn(styles.contentContainer, styles.confirm)}>
-            <div className={styles.title}>Success</div>
-            <span>{
-              challenge.status === 'Draft'
-                ? 'Your challenge is saved as draft'
-                : 'We have scheduled your challenge and processed the payment'
-            }</span>
-            <div className={styles.buttonGroup}>
-              <div className={styles.buttonSizeA}>
-                <PrimaryButton
-                  text={'Close'}
-                  type={'info'}
-                  link={'/'}
-                />
-              </div>
-              <div className={styles.buttonSizeA}>
-                <OutlineButton
-                  text={'View Challenge'}
-                  type={'success'}
-                  link={'./view'}
-                />
-              </div>
-            </div>
-          </div>
-        </Modal>
+        <AlertModal
+          title='Success'
+          message={
+            challenge.status === 'Draft'
+              ? 'Your challenge is saved as draft'
+              : 'We have scheduled your challenge and processed the payment'
+          }
+          theme={theme}
+          closeText='Close'
+          closeLink='/'
+          okText='View Challenge'
+          okLink='./view'
+          onClose={this.resetModal}
+        />
       )
     }
 
@@ -1147,6 +1142,7 @@ class ChallengeEditor extends Component {
         <div className={styles.container}>
           { activateModal }
           { draftModal }
+          { savedModal }
           <div className={styles.formContainer}>
             { challengeForm }
           </div>
