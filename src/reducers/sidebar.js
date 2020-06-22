@@ -11,7 +11,7 @@ import {
 
 const initialState = {
   activeProjectId: -1,
-  isLoading: true,
+  isLoading: false,
   projects: []
 }
 

@@ -941,7 +941,6 @@ class ChallengeEditor extends Component {
         }
       }
     }
-    console.log(isNew, 'isNew')
     if (!isNew && challenge.status === 'New' && isLaunch && isConfirm) {
       savedModal = (
         <AlertModal
