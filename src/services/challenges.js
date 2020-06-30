@@ -22,7 +22,7 @@ const {
  * @returns {Promise<*>}
  */
 export async function fetchChallengeTypes () {
-  const response = await axiosInstance.get(`${CHALLENGE_TYPES_URL}?isActive=true`)
+  const response = await axiosInstance.get(`${CHALLENGE_TYPES_URL}`)
   return _.get(response, 'data', [])
 }
 

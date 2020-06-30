@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import React from 'react'
 import PropTypes from 'prop-types'
 import Select from '../../Select'
@@ -14,7 +15,7 @@ const TypeField = ({ types, onUpdateSelect, challenge, disabled }) => {
         <div className={cn(styles.field, styles.col2, { [styles.disabled]: disabled })}>
           <Select
             name='track'
-            options={types}
+            options={_.filter(types, t => t.isActive)}
             value={challenge.typeId}
             placeholder='Track Type'
             labelKey='name'
