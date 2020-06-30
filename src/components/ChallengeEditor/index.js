@@ -1135,7 +1135,7 @@ class ChallengeEditor extends Component {
         <Helmet title={getTitle(isNew)} />
         <div className={styles.title}>{getTitle(isNew)}</div>
         <div className={cn(styles.actionButtons, styles.button)}>
-          <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
+          <PrimaryButton text={'Back'} type={'info'} submit link={`/projects/${projectDetail.id}/challenges`} />
         </div>
         <div className={styles.textRequired}>* Required</div>
         <div className={styles.container}>
