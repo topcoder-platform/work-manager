@@ -50,7 +50,7 @@ const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources,
   const isInternal = reviewType === 'internal'
   const timeLineTemplate = _.find(metadata.timelineTemplates, { id: challenge.timelineTemplateId })
   if (isLoading || _.isEmpty(metadata.challengePhases) || challenge.id !== challengeId) return <Loader />
-
+  const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
   return (
     <div className={styles.wrapper}>
       <Helmet title='View Details' />
@@ -123,14 +123,16 @@ const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources,
                 <span><span className={styles.fieldTitle}>Groups:</span> {challenge.groups ? challenge.groups.join(', ') : ''}</span>
               </div>
             </div>)}
-            <ChallengeScheduleField
-              templates={metadata.timelineTemplates}
-              challengePhases={metadata.challengePhases}
-              challenge={challenge}
-              challengePhasesWithCorrectTimeline={challenge.phases}
-              currentTemplate={timeLineTemplate}
-              readOnly
-            />
+            { showTimeline && (
+              <ChallengeScheduleField
+                templates={metadata.timelineTemplates}
+                challengePhases={metadata.challengePhases}
+                challenge={challenge}
+                challengePhasesWithCorrectTimeline={challenge.phases}
+                currentTemplate={timeLineTemplate}
+                readOnly
+              />
+            )}
           </div>
           <div className={styles.group}>
             <div className={styles.title}>Public specification <span>*</span></div>

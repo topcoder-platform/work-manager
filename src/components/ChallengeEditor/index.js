@@ -1022,6 +1022,7 @@ class ChallengeEditor extends Component {
     </React.Fragment>
     const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
     const currentChallengeId = this.getCurrentChallengeId()
+    const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
     const challengeForm = isNew
       ? (
         <form name='challenge-new-form' noValidate autoComplete='off' onSubmit={this.createChallengeHandler}>
@@ -1087,18 +1088,20 @@ class ChallengeEditor extends Component {
                 <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
               </React.Fragment>
             )}
-            <ChallengeScheduleField
-              templates={this.getAvailableTimelineTemplates()}
-              challengePhases={metadata.challengePhases}
-              removePhase={this.removePhase}
-              resetPhase={this.resetPhase}
-              savePhases={this.savePhases}
-              challenge={challenge}
-              onUpdateSelect={this.onUpdateSelect}
-              onUpdatePhase={this.onUpdatePhase}
-              onUpdateOthers={this.onUpdateOthers}
-              currentTemplate={this.getCurrentTemplate()}
-            />
+            { showTimeline && (
+              <ChallengeScheduleField
+                templates={this.getAvailableTimelineTemplates()}
+                challengePhases={metadata.challengePhases}
+                removePhase={this.removePhase}
+                resetPhase={this.resetPhase}
+                savePhases={this.savePhases}
+                challenge={challenge}
+                onUpdateSelect={this.onUpdateSelect}
+                onUpdatePhase={this.onUpdatePhase}
+                onUpdateOthers={this.onUpdateOthers}
+                currentTemplate={this.getCurrentTemplate()}
+              />
+            )}
           </div>
           <div className={styles.group}>
             <div className={styles.title}>Public specification <span>*</span></div>
