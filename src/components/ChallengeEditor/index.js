@@ -186,7 +186,7 @@ class ChallengeEditor extends Component {
   }
 
   resetModal () {
-    this.setState({ isLoading: false, isConfirm: false, isLaunch: false })
+    this.setState({ isLoading: false, isConfirm: false, isLaunch: false, error: null })
   }
 
   onUpdateDescription (description, fieldName) {
@@ -786,7 +786,8 @@ class ChallengeEditor extends Component {
         challenge: newChallenge,
         isSaving: false }, cb)
     } catch (e) {
-      this.setState({ isSaving: false }, cb)
+      const error = _.get(e, 'response.data.message', `Unable to update the challenge to status ${status}`)
+      this.setState({ isSaving: false, error }, cb)
     }
   }
 
@@ -963,6 +964,7 @@ class ChallengeEditor extends Component {
           message={`Do you want to launch ${type} challenge "${challenge.name}"?`}
           theme={theme}
           isProcessing={this.state.isSaving}
+          errorMessage={this.state.error}
           onCancel={this.resetModal}
           onConfirm={this.onActiveChallenge}
         />

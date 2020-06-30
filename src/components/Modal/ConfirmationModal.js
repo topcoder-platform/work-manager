@@ -6,7 +6,7 @@ import styles from './ConfirmationModal.module.scss'
 import OutlineButton from '../Buttons/OutlineButton'
 import PrimaryButton from '../Buttons/PrimaryButton'
 
-const ConfirmationModal = ({ title, message, theme, isProcessing, onCancel, onConfirm }) => (
+const ConfirmationModal = ({ title, message, errorMessage, theme, isProcessing, onCancel, onConfirm }) => (
   <Modal theme={theme} onCancel={onCancel}>
     <div className={styles.contentContainer}>
       <div className={styles.title}>{title}</div>
@@ -28,6 +28,7 @@ const ConfirmationModal = ({ title, message, theme, isProcessing, onCancel, onCo
           />
         </div>
       </div>
+      <span className={styles.errorMessage}>{errorMessage}</span>
     </div>
   </Modal>
 )
@@ -35,6 +36,7 @@ const ConfirmationModal = ({ title, message, theme, isProcessing, onCancel, onCo
 ConfirmationModal.propTypes = {
   title: PropTypes.string,
   message: PropTypes.string,
+  errorMessage: PropTypes.string,
   theme: PropTypes.shape(),
   isProcessing: PropTypes.bool,
   onCancel: PropTypes.func,
