@@ -48,17 +48,17 @@ class ChallengeEditor extends Component {
     loadResourceRoles()
     this.fetchChallengeDetails(match, loadChallengeDetails, loadResources)
 
-    this.unlisten = this.props.history.listen(() => {
-      const { isLoading } = this.props
-      if (!isLoading) {
-        const { match: newMatch, loadChallengeDetails, loadResources } = this.props
-        this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources)
-      }
-    })
+    // this.unlisten = this.props.history.listen(() => {
+    //   const { isLoading } = this.props
+    //   if (!isLoading) {
+    //     const { match: newMatch, loadChallengeDetails, loadResources } = this.props
+    //     this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources)
+    //   }
+    // })
   }
 
   componentWillUnmount () {
-    this.unlisten()
+    // this.unlisten()
   }
 
   componentWillReceiveProps (nextProps) {
@@ -179,7 +179,7 @@ ChallengeEditor.propTypes = {
   challengeResources: PropTypes.arrayOf(PropTypes.object),
   challengeDetails: PropTypes.object,
   projectDetail: PropTypes.object,
-  history: PropTypes.object,
+  // history: PropTypes.object,
   metadata: PropTypes.shape({
     challengeTypes: PropTypes.array
   }),
