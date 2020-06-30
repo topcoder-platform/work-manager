@@ -44,7 +44,7 @@ class ChallengeScheduleField extends Component {
    */
   getPhaseFromTimelineTemplate (phase) {
     const { currentTemplate } = this.props
-    if (currentTemplate.phases) {
+    if (currentTemplate && currentTemplate.phases) {
       let templatePhase = currentTemplate.phases.find(tp => tp.phaseId === phase.phaseId)
       if (templatePhase) {
         templatePhase = _.cloneDeep(templatePhase)
