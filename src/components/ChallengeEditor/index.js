@@ -172,12 +172,12 @@ class ChallengeEditor extends Component {
           }
 
           // set default prize sets
-          if (!challengeDetail.prizeSets || !challengeDetail.prizeSets.length) {
-            this.onUpdateOthers({
-              field: 'prizeSets',
-              value: this.getDefaultPrizeSets()
-            })
-          }
+          // if (!challengeDetail.prizeSets || !challengeDetail.prizeSets.length) {
+          //   this.onUpdateOthers({
+          //     field: 'prizeSets',
+          //     value: this.getDefaultPrizeSets()
+          //   })
+          // }
         })
       } catch (e) {
         setState({ isLoading: true })
@@ -654,8 +654,8 @@ class ChallengeEditor extends Component {
       descriptionFormat: 'markdown',
       timelineTemplateId: defaultTemplate.id,
       terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }],
-      phases: this.getTemplatePhases(defaultTemplate),
-      prizeSets: this.getDefaultPrizeSets()
+      phases: this.getTemplatePhases(defaultTemplate)
+      // prizeSets: this.getDefaultPrizeSets()
     }
     try {
       const draftChallenge = await createChallenge(newChallenge)
@@ -680,14 +680,14 @@ class ChallengeEditor extends Component {
     }))
   }
 
-  getDefaultPrizeSets () {
-    return [
-      {
-        type: PRIZE_SETS_TYPE.CHALLENGE_PRIZES,
-        prizes: [{ type: 'money', value: '0' }]
-      }
-    ]
-  }
+  // getDefaultPrizeSets () {
+  //   return [
+  //     {
+  //       type: PRIZE_SETS_TYPE.CHALLENGE_PRIZES,
+  //       prizes: [{ type: 'money', value: '0' }]
+  //     }
+  //   ]
+  // }
 
   async autoUpdateChallenge (changedField, prevValue) {
     if (this.state.isSaving || this.state.isLoading || !this.getCurrentChallengeId()) return
