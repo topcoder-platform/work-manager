@@ -15,7 +15,7 @@ const TypeField = ({ types, onUpdateSelect, challenge, disabled }) => {
         <div className={cn(styles.field, styles.col2, { [styles.disabled]: disabled })}>
           <Select
             name='track'
-            options={_.filter(types, t => t.isActive)}
+            options={_.filter(types, t => t.isActive && t.track === challenge.track)}
             value={challenge.typeId}
             placeholder='Track Type'
             labelKey='name'
@@ -43,6 +43,7 @@ TypeField.defaultProps = {
 
 TypeField.propTypes = {
   // currentType: PropTypes.string.isRequired,
+  track: PropTypes.string,
   types: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,
   onUpdateSelect: PropTypes.func.isRequired,
