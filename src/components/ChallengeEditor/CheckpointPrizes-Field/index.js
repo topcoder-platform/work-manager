@@ -4,10 +4,10 @@ import styles from './CheckpointPrizes-Field.module.scss'
 import cn from 'classnames'
 import { range } from 'lodash'
 import { validateValue } from '../../../util/input-check'
-import { VALIDATION_VALUE_TYPE } from '../../../config/constants'
+import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE } from '../../../config/constants'
 
 const CheckpointPrizesField = ({ challenge, onUpdateOthers }) => {
-  const type = 'Checkpoint prizes'
+  const type = PRIZE_SETS_TYPE.CHECKPOINT_PRIZES
   const checkpointPrize = challenge.prizeSets.find(p => p.type === type) || { type, prizes: [] }
   const number = checkpointPrize.prizes.length
   const amount = checkpointPrize.prizes.length ? checkpointPrize.prizes[0].value : 0

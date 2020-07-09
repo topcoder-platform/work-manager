@@ -11,14 +11,14 @@ import {
 
 const initialState = {
   activeProjectId: -1,
-  isLoading: true,
+  isLoading: false,
   projects: []
 }
 
 export default function (state = initialState, action) {
   switch (action.type) {
     case SET_ACTIVE_PROJECT:
-      return { ...state, activeProjectId: action.projectId }
+      return { ...state, activeProjectId: action.projectId, projects: [], isLoading: false }
     case LOAD_PROJECTS_SUCCESS:
       return { ...state, projects: action.projects, isLoading: false, isLoggedIn: true }
     case LOAD_PROJECTS_PENDING:

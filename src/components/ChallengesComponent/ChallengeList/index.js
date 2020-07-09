@@ -203,7 +203,11 @@ class ChallengeList extends Component {
             <ul className={styles.challengeList}>
               {
                 map(challenges, (c) => {
-                  return <li className={styles.challengeItem} key={`challenge-card-${c.id}`}><ChallengeCard shouldShowCurrentPhase={selectedTab === 0} challenge={c} showError={this.showError} reloadChallengeList={this.reloadChallengeList} /></li>
+                  return (
+                    <li className={styles.challengeItem} key={`challenge-card-${c.id}`}>
+                      <ChallengeCard shouldShowCurrentPhase={selectedTab === 0} challenge={c} showError={this.showError} reloadChallengeList={this.reloadChallengeList} />
+                    </li>
+                  )
                 })
               }
             </ul>

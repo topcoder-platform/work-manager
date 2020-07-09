@@ -10,6 +10,7 @@
   max-height: 410px;
   display: flex;
   flex-direction: column;
+  overflow: auto;
 
   &.isPrivate {
     max-height: 205px;

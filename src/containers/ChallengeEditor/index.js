@@ -10,6 +10,7 @@ import {
   loadTimelineTemplates,
   loadChallengePhases,
   loadChallengeTypes,
+  loadChallengeTimelines,
   loadChallengeTags,
   loadChallengeTerms,
   loadGroups,
@@ -29,6 +30,7 @@ class ChallengeEditor extends Component {
       loadTimelineTemplates,
       loadChallengePhases,
       loadChallengeTypes,
+      loadChallengeTimelines,
       loadChallengeTags,
       loadChallengeTerms,
       loadGroups,
@@ -39,23 +41,24 @@ class ChallengeEditor extends Component {
     loadTimelineTemplates()
     loadChallengePhases()
     loadChallengeTypes()
+    loadChallengeTimelines()
     loadChallengeTags()
     loadChallengeTerms()
     loadGroups()
     loadResourceRoles()
     this.fetchChallengeDetails(match, loadChallengeDetails, loadResources)
 
-    this.unlisten = this.props.history.listen(() => {
-      const { isLoading } = this.props
-      if (!isLoading) {
-        const { match: newMatch, loadChallengeDetails, loadResources } = this.props
-        this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources)
-      }
-    })
+    // this.unlisten = this.props.history.listen(() => {
+    //   const { isLoading } = this.props
+    //   if (!isLoading) {
+    //     const { match: newMatch, loadChallengeDetails, loadResources } = this.props
+    //     this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources)
+    //   }
+    // })
   }
 
   componentWillUnmount () {
-    this.unlisten()
+    // this.unlisten()
   }
 
   componentWillReceiveProps (nextProps) {
@@ -166,6 +169,7 @@ ChallengeEditor.propTypes = {
   loadTimelineTemplates: PropTypes.func,
   loadChallengePhases: PropTypes.func,
   loadChallengeTypes: PropTypes.func,
+  loadChallengeTimelines: PropTypes.func,
   loadChallengeTags: PropTypes.func,
   loadChallengeTerms: PropTypes.func,
   loadGroups: PropTypes.func,
@@ -175,7 +179,7 @@ ChallengeEditor.propTypes = {
   challengeResources: PropTypes.arrayOf(PropTypes.object),
   challengeDetails: PropTypes.object,
   projectDetail: PropTypes.object,
-  history: PropTypes.object,
+  // history: PropTypes.object,
   metadata: PropTypes.shape({
     challengeTypes: PropTypes.array
   }),
@@ -203,6 +207,7 @@ const mapDispatchToProps = {
   loadTimelineTemplates,
   loadChallengePhases,
   loadChallengeTypes,
+  loadChallengeTimelines,
   loadChallengeTags,
   loadGroups,
   createAttachment,

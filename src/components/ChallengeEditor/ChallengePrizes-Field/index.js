@@ -8,7 +8,7 @@ import PrizeInput from '../../PrizeInput'
 import styles from './ChallengePrizes-Field.module.scss'
 import cn from 'classnames'
 import { PrimaryButton } from '../../Buttons'
-import { CHALLENGE_PRIZE_TYPE, VALIDATION_VALUE_TYPE } from '../../../config/constants'
+import { CHALLENGE_PRIZE_TYPE, VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE } from '../../../config/constants'
 import { validateValue } from '../../../util/input-check'
 
 class ChallengePrizesField extends Component {
@@ -46,14 +46,14 @@ class ChallengePrizesField extends Component {
   }
 
   onUpdateValue (challengePrize) {
-    const type = 'Challenge prizes'
+    const type = PRIZE_SETS_TYPE.CHALLENGE_PRIZES
     const { onUpdateOthers, challenge } = this.props
 
     onUpdateOthers({ field: 'prizeSets', value: [...challenge.prizeSets.filter(p => p.type !== type), challengePrize] })
   }
 
   getChallengePrize () {
-    const type = 'Challenge prizes'
+    const type = PRIZE_SETS_TYPE.CHALLENGE_PRIZES
     return (this.props.challenge.prizeSets && this.props.challenge.prizeSets.length && this.props.challenge.prizeSets.find(p => p.type === type)) || { type, prizes: [{ type: CHALLENGE_PRIZE_TYPE.MONEY, value: 0 }] }
   }
 

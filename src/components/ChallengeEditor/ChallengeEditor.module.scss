@@ -6,6 +6,7 @@
   flex-direction: column;
   margin-bottom: 30px;
   flex-shrink: 0;
+  position: relative;
 }
 
 @-moz-document url-prefix() {
@@ -236,6 +237,16 @@
   padding-bottom: 20px;
   color: $tc-red
 }
+
+.actionButtons {
+  &.button {
+    height: 40px;
+    position: absolute;
+    top: 30px;
+    right: 20px;
+  }
+}
+
 .buttonContainer {
   display: flex;
   margin: 0px 30px;

@@ -23,7 +23,7 @@ import {
 } from '../config/constants'
 
 const initialState = {
-  isLoading: true,
+  isLoading: false,
   challenges: [],
   metadata: {},
   challengeDetails: {},

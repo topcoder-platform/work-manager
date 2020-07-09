@@ -10,7 +10,8 @@ import {
   fetchChallenges,
   fetchChallengeTerms,
   fetchResources,
-  fetchResourceRoles
+  fetchResourceRoles,
+  fetchChallengeTimelines
 } from '../services/challenges'
 import {
   LOAD_CHALLENGE_DETAILS_PENDING,
@@ -70,8 +71,8 @@ export function loadChallengesByPage (page, projectId, status, filterChallengeNa
 
     return fetchChallenges(filters, {
       page,
-      perPage: PAGE_SIZE,
-      memberId: getState().auth.user ? getState().auth.user.userId : null
+      perPage: PAGE_SIZE
+      // memberId: getState().auth.user ? getState().auth.user.userId : null
     }).then((res) => {
       dispatch({
         type: LOAD_CHALLENGES_SUCCESS,
@@ -224,6 +225,17 @@ export function loadChallengeTypes () {
       type: LOAD_CHALLENGE_METADATA_SUCCESS,
       metadataKey: 'challengeTypes',
       metadataValue: challengeTypes
+    })
+  }
+}
+
+export function loadChallengeTimelines () {
+  return async (dispatch) => {
+    const challengeTimelines = await fetchChallengeTimelines()
+    dispatch({
+      type: LOAD_CHALLENGE_METADATA_SUCCESS,
+      metadataKey: 'challengeTimelines',
+      metadataValue: challengeTimelines
     })
   }
 }

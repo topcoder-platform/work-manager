@@ -12,6 +12,7 @@ module.exports = {
   CHALLENGE_TIMELINE_TEMPLATES_URL: `${DEV_API_HOSTNAME}/v5/timeline-templates`,
   CHALLENGE_TYPES_URL: `${DEV_API_HOSTNAME}/v5/challenge-types`,
   CHALLENGE_PHASES_URL: `${DEV_API_HOSTNAME}/v5/challenge-phases`,
+  CHALLENGE_TIMELINES_URL: `${DEV_API_HOSTNAME}/v5/challenge-timelines`,
   PROJECT_API_URL: `${DEV_API_HOSTNAME}/v5/projects`,
   GROUPS_API_URL: `${DEV_API_HOSTNAME}/v5/groups`,
   TERMS_API_URL: `${DEV_API_HOSTNAME}/v5/terms`,
@@ -23,5 +24,6 @@ module.exports = {
   DIRECT_PROJECT_URL: `https://www.${DOMAIN}/direct`,
   ONLINE_REVIEW_URL: `https://software.${DOMAIN}`,
   DEFAULT_TERM_UUID: 'ae6fc4ff-3bd1-4e3f-a987-cc60ab94b422',
-  DEFAULT_NDA_UUID: '7245bb7d-d7c9-45a0-9603-d5ff05af0977'
+  DEFAULT_NDA_UUID: '7245bb7d-d7c9-45a0-9603-d5ff05af0977',
+  SUBMITTER_ROLE_UUID: '732339e7-8e30-49d7-9198-cccf9451e221'
 }

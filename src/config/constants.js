@@ -8,7 +8,8 @@ export const {
   DIRECT_PROJECT_URL,
   ONLINE_REVIEW_URL,
   DEFAULT_TERM_UUID,
-  DEFAULT_NDA_UUID
+  DEFAULT_NDA_UUID,
+  SUBMITTER_ROLE_UUID
 } = process.env
 
 // Actions
@@ -71,12 +72,12 @@ export const PHASE_STATUS = {
 }
 
 // List of prize sets types
-export const PRIZE_SETS_TYPE = [
-  'Challenge prizes',
-  'Copilot payment',
-  'Reviewer payment',
-  'Checkpoint prizes'
-]
+export const PRIZE_SETS_TYPE = {
+  CHALLENGE_PRIZES: 'placement',
+  COPILOT_PAYMENT: 'copilot',
+  REVIEWER_PAYMENT: 'reviewer',
+  CHECKPOINT_PRIZES: 'checkpoint'
+}
 
 // List of subtracks that should be considered as Marathon Matches
 export const MARATHON_MATCH_SUBTRACKS = [

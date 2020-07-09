@@ -21,7 +21,7 @@ export function setActiveProject (projectId) {
 /**
  * Loads projects of the authenticated user
  */
-export function loadProjects (filterProjectName = '') {
+export function loadProjects (filterProjectName = '', myProjects = true) {
   return (dispatch) => {
     dispatch({
       type: LOAD_PROJECTS_PENDING
@@ -29,11 +29,19 @@ export function loadProjects (filterProjectName = '') {
 
     const filters = {}
     if (!_.isEmpty(filterProjectName)) {
-      filters['name'] = `*${filterProjectName}*`
+      if (!isNaN(filterProjectName)) { // if it is number
+        filters['id'] = parseInt(filterProjectName, 10)
+      } else { // text search
+        filters['keyword'] = decodeURIComponent(filterProjectName)
+      }
     }
     filters['status'] = 'active'
-    filters['sort'] = 'lastActivityAt'
-    filters['memberOnly'] = 'true'
+    filters['sort'] = 'lastActivityAt desc'
+    // filters['perPage'] = 20
+    // filters['page'] = 1
+    if (myProjects) {
+      filters['memberOnly'] = true
+    }
 
     fetchMemberProjects(filters).then(projects => dispatch({
       type: LOAD_PROJECTS_SUCCESS,

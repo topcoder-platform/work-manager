@@ -15,12 +15,20 @@ class SidebarContainer extends Component {
   }
 
   componentDidMount () {
-    this.props.loadProjects()
-
-    const { projectId, activeProjectId } = this.props
+    const { projectId, activeProjectId, isLoading } = this.props
+    if (!projectId && activeProjectId === -1 && !isLoading) {
+      this.props.loadProjects()
+    }
 
     if (projectId && activeProjectId < 0) {
       this.props.setActiveProject(parseInt(projectId))
+    }
+  }
+
+  componentWillReceiveProps (nextProps) {
+    const { projectId, isLoading } = nextProps
+    if (this.props.projectId !== projectId && !projectId && !isLoading) {
+      this.props.loadProjects()
     }
   }
 

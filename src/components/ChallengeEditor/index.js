@@ -6,12 +6,18 @@ import { Helmet } from 'react-helmet'
 import cn from 'classnames'
 import moment from 'moment'
 import { pick } from 'lodash/fp'
-import Modal from '../Modal'
+// import Modal from '../Modal'
 import { withRouter } from 'react-router-dom'
 import { toastr } from 'react-redux-toastr'
 import xss from 'xss'
 
-import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE, DEFAULT_TERM_UUID, DEFAULT_NDA_UUID } from '../../config/constants'
+import {
+  VALIDATION_VALUE_TYPE,
+  PRIZE_SETS_TYPE,
+  DEFAULT_TERM_UUID,
+  DEFAULT_NDA_UUID,
+  SUBMITTER_ROLE_UUID
+} from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
 import TypeField from './Type-Field'
@@ -40,6 +46,8 @@ import {
   deleteResource,
   patchChallenge
 } from '../../services/challenges'
+import ConfirmationModal from '../Modal/ConfirmationModal'
+import AlertModal from '../Modal/AlertModal'
 
 const theme = {
   container: styles.modalContainer
@@ -81,6 +89,7 @@ class ChallengeEditor extends Component {
     this.removeAttachment = this.removeAttachment.bind(this)
     this.removePhase = this.removePhase.bind(this)
     this.resetPhase = this.resetPhase.bind(this)
+    this.savePhases = this.savePhases.bind(this)
     this.toggleLaunch = this.toggleLaunch.bind(this)
     this.onUpdateMultiSelect = this.onUpdateMultiSelect.bind(this)
     this.onUpdatePhase = this.onUpdatePhase.bind(this)
@@ -96,9 +105,9 @@ class ChallengeEditor extends Component {
     this.createDraftHandler = this.createDraftHandler.bind(this)
     this.onSaveChallenge = this.onSaveChallenge.bind(this)
     this.getCurrentTemplate = this.getCurrentTemplate.bind(this)
-    this.getBackendChallengePhases = this.getBackendChallengePhases.bind(this)
     this.onUpdateMetadata = this.onUpdateMetadata.bind(this)
     this.getTemplatePhases = this.getTemplatePhases.bind(this)
+    this.getAvailableTimelineTemplates = this.getAvailableTimelineTemplates.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000) // 3s
     this.resetChallengeData((newState, finish) => {
       this.state = {
@@ -163,12 +172,12 @@ class ChallengeEditor extends Component {
           }
 
           // set default prize sets
-          if (!challengeDetail.prizeSets || !challengeDetail.prizeSets.length) {
-            this.onUpdateOthers({
-              field: 'prizeSets',
-              value: this.getDefaultPrizeSets()
-            })
-          }
+          // if (!challengeDetail.prizeSets || !challengeDetail.prizeSets.length) {
+          //   this.onUpdateOthers({
+          //     field: 'prizeSets',
+          //     value: this.getDefaultPrizeSets()
+          //   })
+          // }
         })
       } catch (e) {
         setState({ isLoading: true })
@@ -177,7 +186,7 @@ class ChallengeEditor extends Component {
   }
 
   resetModal () {
-    this.setState({ isLoading: false, isConfirm: false, isLaunch: false })
+    this.setState({ isLoading: false, isConfirm: false, isLaunch: false, error: null })
   }
 
   onUpdateDescription (description, fieldName) {
@@ -277,7 +286,7 @@ class ChallengeEditor extends Component {
       value = null
     }
     if (field === 'prizeSets') {
-      value = value.filter(val => PRIZE_SETS_TYPE.includes(val.type))
+      value = value.filter(val => _.values(PRIZE_SETS_TYPE).includes(val.type))
     }
     newChallenge[field] = value
     this.setState({ challenge: newChallenge })
@@ -390,14 +399,14 @@ class ChallengeEditor extends Component {
       oldTerms = []
     }
     let newTerms = []
-    if (oldTerms.indexOf(DEFAULT_NDA_UUID) >= 0) {
-      newTerms = _.remove(oldTerms, t => t !== DEFAULT_NDA_UUID)
+    if (_.some(oldTerms, { id: DEFAULT_NDA_UUID })) {
+      newTerms = _.remove(oldTerms, t => t.id !== DEFAULT_NDA_UUID)
     } else {
-      oldTerms.push(DEFAULT_NDA_UUID)
+      oldTerms.push({ id: DEFAULT_NDA_UUID, roleId: SUBMITTER_ROLE_UUID })
       newTerms = oldTerms
     }
-    if (newTerms.indexOf(DEFAULT_TERM_UUID) < 0) {
-      newTerms.push(DEFAULT_TERM_UUID)
+    if (!_.some(newTerms, { id: DEFAULT_TERM_UUID })) {
+      newTerms.push({ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID })
     }
     newChallenge.terms = newTerms
     this.setState({ challenge: newChallenge })
@@ -424,6 +433,18 @@ class ChallengeEditor extends Component {
     newChallenge.phases = _.clone(newPhaseList)
     this.setState({ challenge: newChallenge })
   }
+
+  /**
+   * Save updated  challenge Phases
+   */
+  async savePhases () {
+    await this.autoUpdateChallengeThrottled('phases')
+    this.setState({
+      isConfirm: true,
+      isLaunch: true
+    })
+  }
+
   /**
    * Reset  challenge Phases
    */
@@ -467,7 +488,7 @@ class ChallengeEditor extends Component {
   }
 
   isValidChallengePrizes () {
-    const challengePrizes = this.state.challenge.prizeSets.find(p => p.type === 'Challenge prizes')
+    const challengePrizes = this.state.challenge.prizeSets.find(p => p.type === PRIZE_SETS_TYPE.CHALLENGE_PRIZES)
     if (challengePrizes.prizes.length === 0) {
       return false
     }
@@ -581,7 +602,7 @@ class ChallengeEditor extends Component {
       reviewType: challenge.reviewType,
       track: challenge.track
     }
-    challenge.timelineTemplateId = this.props.metadata.timelineTemplates[0].id
+    challenge.timelineTemplateId = this.getCurrentTemplate().id
     challenge.projectId = this.props.projectId
     challenge.prizeSets = challenge.prizeSets.map(p => {
       const prizes = p.prizes.map(s => ({ ...s, value: convertDollarToInteger(s.value, '$') }))
@@ -612,8 +633,13 @@ class ChallengeEditor extends Component {
     if (!this.props.isNew) return
     const { metadata } = this.props
     const { name, track, typeId } = this.state.challenge
+    const { timelineTemplates } = metadata
 
-    const defaultTemplate = _.find(metadata.timelineTemplates, { name: 'Standard Development' })
+    // fallback template
+    const STD_DEV_TIMELINE_TEMPLATE = _.find(timelineTemplates, { name: 'Standard Development' })
+    const avlTemplates = this.getAvailableTimelineTemplates()
+    // chooses first available timeline template or fallback template for the new challenge
+    const defaultTemplate = avlTemplates && avlTemplates.length > 0 ? avlTemplates[0] : STD_DEV_TIMELINE_TEMPLATE
 
     const newChallenge = {
       status: 'New',
@@ -627,9 +653,9 @@ class ChallengeEditor extends Component {
       },
       descriptionFormat: 'markdown',
       timelineTemplateId: defaultTemplate.id,
-      terms: [DEFAULT_TERM_UUID],
-      phases: this.getTemplatePhases(defaultTemplate),
-      prizeSets: this.getDefaultPrizeSets()
+      terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }],
+      phases: this.getTemplatePhases(defaultTemplate)
+      // prizeSets: this.getDefaultPrizeSets()
     }
     try {
       const draftChallenge = await createChallenge(newChallenge)
@@ -654,14 +680,14 @@ class ChallengeEditor extends Component {
     }))
   }
 
-  getDefaultPrizeSets () {
-    return [
-      {
-        type: 'Challenge prizes',
-        prizes: [{ type: 'money', value: '0' }]
-      }
-    ]
-  }
+  // getDefaultPrizeSets () {
+  //   return [
+  //     {
+  //       type: PRIZE_SETS_TYPE.CHALLENGE_PRIZES,
+  //       prizes: [{ type: 'money', value: '0' }]
+  //     }
+  //   ]
+  // }
 
   async autoUpdateChallenge (changedField, prevValue) {
     if (this.state.isSaving || this.state.isLoading || !this.getCurrentChallengeId()) return
@@ -760,7 +786,8 @@ class ChallengeEditor extends Component {
         challenge: newChallenge,
         isSaving: false }, cb)
     } catch (e) {
-      this.setState({ isSaving: false }, cb)
+      const error = _.get(e, 'response.data.message', `Unable to update the challenge to status ${status}`)
+      this.setState({ isSaving: false, error }, cb)
     }
   }
 
@@ -842,12 +869,18 @@ class ChallengeEditor extends Component {
     return _.find(metadata.timelineTemplates, { id: challenge.timelineTemplateId })
   }
 
-  getBackendChallengePhases () {
-    const { draftChallenge } = this.state
-    if (!draftChallenge.data.id) {
-      return []
-    }
-    return draftChallenge.data.phases
+  /**
+   * Filters the available timeline templates based on the challenge type
+   */
+  getAvailableTimelineTemplates () {
+    const { challenge } = this.state
+    const { metadata } = this.props
+    const { challengeTimelines, timelineTemplates } = metadata
+
+    // all timeline template ids available for the challenge type
+    const availableTemplateIds = _.filter(challengeTimelines, tt => tt.typeId === challenge.typeId).map(tt => tt.timelineTemplateId)
+    // filter and return timeline templates that are available for this challenge type
+    return _.filter(timelineTemplates, tt => availableTemplateIds.indexOf(tt.id) !== -1)
   }
 
   render () {
@@ -897,6 +930,7 @@ class ChallengeEditor extends Component {
 
     let activateModal = null
     let draftModal = null
+    let savedModal = null
 
     let { type } = challenge
     if (!type) {
@@ -908,63 +942,51 @@ class ChallengeEditor extends Component {
         }
       }
     }
-
-    if (!isNew && isLaunch && !isConfirm) {
-      activateModal = (
-        <Modal theme={theme} onCancel={this.resetModal}>
-          <div className={styles.contentContainer}>
-            <div className={styles.title}>Launch Challenge Confirmation</div>
-            <span>{`Do you want to launch ${type} challenge "${challenge.name}"?`}</span>
-            <div className={styles.buttonGroup}>
-              <div className={styles.button}>
-                <OutlineButton
-                  className={cn({ disabled: this.state.isSaving })}
-                  text={'Cancel'}
-                  type={'danger'}
-                  onClick={this.resetModal}
-                />
-              </div>
-              <div className={styles.button}>
-                <PrimaryButton
-                  text={this.state.isSaving ? 'Launching...' : 'Confirm'}
-                  type={'info'}
-                  onClick={this.onActiveChallenge}
-                />
-              </div>
-            </div>
-          </div>
-        </Modal>
+    if (!isNew && challenge.status === 'New' && isLaunch && isConfirm) {
+      savedModal = (
+        <AlertModal
+          title='Saved Challenge'
+          message={`Challenge "${challenge.name}" is saved successfuly`}
+          theme={theme}
+          onCancel={this.resetModal}
+          closeText='Close'
+          okText='View Challenge'
+          okLink='./view'
+          onClose={this.resetModal}
+        />
       )
     }
 
-    if (!isNew && isLaunch && isConfirm) {
+    if (!isNew && isLaunch && !isConfirm) {
+      activateModal = (
+        <ConfirmationModal
+          title='Launch Challenge Confirmation'
+          message={`Do you want to launch ${type} challenge "${challenge.name}"?`}
+          theme={theme}
+          isProcessing={this.state.isSaving}
+          errorMessage={this.state.error}
+          onCancel={this.resetModal}
+          onConfirm={this.onActiveChallenge}
+        />
+      )
+    }
+
+    if (!isNew && challenge.status !== 'New' && isLaunch && isConfirm) {
       draftModal = (
-        <Modal theme={theme} onCancel={() => this.resetModal()}>
-          <div className={cn(styles.contentContainer, styles.confirm)}>
-            <div className={styles.title}>Success</div>
-            <span>{
-              challenge.status === 'Draft'
-                ? 'Your challenge is saved as draft'
-                : 'We have scheduled your challenge and processed the payment'
-            }</span>
-            <div className={styles.buttonGroup}>
-              <div className={styles.buttonSizeA}>
-                <PrimaryButton
-                  text={'Close'}
-                  type={'info'}
-                  link={'/'}
-                />
-              </div>
-              <div className={styles.buttonSizeA}>
-                <OutlineButton
-                  text={'View Challenge'}
-                  type={'success'}
-                  link={'./view'}
-                />
-              </div>
-            </div>
-          </div>
-        </Modal>
+        <AlertModal
+          title='Success'
+          message={
+            challenge.status === 'Draft'
+              ? 'Your challenge is saved as draft'
+              : 'We have scheduled your challenge and processed the payment'
+          }
+          theme={theme}
+          closeText='Close'
+          closeLink='/'
+          okText='View Challenge'
+          okLink='./view'
+          onClose={this.resetModal}
+        />
       )
     }
 
@@ -1002,6 +1024,7 @@ class ChallengeEditor extends Component {
     </React.Fragment>
     const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
     const currentChallengeId = this.getCurrentChallengeId()
+    const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
     const challengeForm = isNew
       ? (
         <form name='challenge-new-form' noValidate autoComplete='off' onSubmit={this.createChallengeHandler}>
@@ -1031,6 +1054,9 @@ class ChallengeEditor extends Component {
               </div>
               <div className={styles.col}>
                 <span><span className={styles.fieldTitle}>Type:</span> {selectedType ? selectedType.name : ''}</span>
+              </div>
+              <div className={styles.col}>
+                <span><span className={styles.fieldTitle}>Status:</span> {challenge.status}</span>
               </div>
             </div>
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
@@ -1064,18 +1090,20 @@ class ChallengeEditor extends Component {
                 <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
               </React.Fragment>
             )}
-            <ChallengeScheduleField
-              templates={metadata.timelineTemplates}
-              challengePhases={metadata.challengePhases}
-              removePhase={this.removePhase}
-              resetPhase={this.resetPhase}
-              challenge={challenge}
-              challengePhasesWithCorrectTimeline={this.getBackendChallengePhases()}
-              onUpdateSelect={this.onUpdateSelect}
-              onUpdatePhase={this.onUpdatePhase}
-              onUpdateOthers={this.onUpdateOthers}
-              currentTemplate={this.getCurrentTemplate()}
-            />
+            { showTimeline && (
+              <ChallengeScheduleField
+                templates={this.getAvailableTimelineTemplates()}
+                challengePhases={metadata.challengePhases}
+                removePhase={this.removePhase}
+                resetPhase={this.resetPhase}
+                savePhases={this.savePhases}
+                challenge={challenge}
+                onUpdateSelect={this.onUpdateSelect}
+                onUpdatePhase={this.onUpdatePhase}
+                onUpdateOthers={this.onUpdateOthers}
+                currentTemplate={this.getCurrentTemplate()}
+              />
+            )}
           </div>
           <div className={styles.group}>
             <div className={styles.title}>Public specification <span>*</span></div>
@@ -1111,10 +1139,14 @@ class ChallengeEditor extends Component {
       <div className={styles.wrapper}>
         <Helmet title={getTitle(isNew)} />
         <div className={styles.title}>{getTitle(isNew)}</div>
+        <div className={cn(styles.actionButtons, styles.button)}>
+          <PrimaryButton text={'Back'} type={'info'} submit link={`/projects/${projectDetail.id}/challenges`} />
+        </div>
         <div className={styles.textRequired}>* Required</div>
         <div className={styles.container}>
           { activateModal }
           { draftModal }
+          { savedModal }
           <div className={styles.formContainer}>
             { challengeForm }
           </div>

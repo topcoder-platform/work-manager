@@ -1,13 +1,14 @@
 import _ from 'lodash'
 import qs from 'qs'
 import { axiosInstance } from './axiosWithAuth'
-import { updateChallengePhaseBeforeSendRequest, convertChallengePhaseFromSecondsToHours } from '../util/date'
+import { updateChallengePhaseBeforeSendRequest, convertChallengePhaseFromSecondsToHours, sortChallengePhases } from '../util/date'
 import FormData from 'form-data'
 const {
   CHALLENGE_API_URL,
   CHALLENGE_TYPES_URL,
   CHALLENGE_TIMELINE_TEMPLATES_URL,
   CHALLENGE_PHASES_URL,
+  CHALLENGE_TIMELINES_URL,
   GROUPS_API_URL,
   PLATFORMS_V4_API_URL,
   TECHNOLOGIES_V4_API_URL,
@@ -21,7 +22,7 @@ const {
  * @returns {Promise<*>}
  */
 export async function fetchChallengeTypes () {
-  const response = await axiosInstance.get(`${CHALLENGE_TYPES_URL}?isActive=true`)
+  const response = await axiosInstance.get(`${CHALLENGE_TYPES_URL}`)
   return _.get(response, 'data', [])
 }
 
@@ -54,7 +55,16 @@ export async function fetchGroups (filters) {
  * @returns {Promise<*>}
  */
 export async function fetchTimelineTemplates () {
-  const response = await axiosInstance.get(CHALLENGE_TIMELINE_TEMPLATES_URL)
+  const response = await axiosInstance.get(`${CHALLENGE_TIMELINE_TEMPLATES_URL}?page=1&perPage=100`)
+  return _.get(response, 'data', [])
+}
+
+/**
+ * Api request for fetching challenge timelines
+ * @returns {Promise<*>}
+ */
+export async function fetchChallengeTimelines () {
+  const response = await axiosInstance.get(`${CHALLENGE_TIMELINES_URL}?page=1&perPage=100`)
   return _.get(response, 'data', [])
 }
 
@@ -63,7 +73,7 @@ export async function fetchTimelineTemplates () {
  * @returns {Promise<*>}
  */
 export async function fetchChallengePhases () {
-  const response = await axiosInstance.get(CHALLENGE_PHASES_URL)
+  const response = await axiosInstance.get(`${CHALLENGE_PHASES_URL}?page=1&perPage=100`)
   convertChallengePhaseFromSecondsToHours(response.data)
   return _.get(response, 'data', [])
 }
@@ -88,6 +98,7 @@ export async function fetchChallenge (challengeId) {
     }
   }
   convertChallengePhaseFromSecondsToHours(newResponse.phases)
+  newResponse.phases = sortChallengePhases(newResponse.phases)
   return newResponse
 }
 

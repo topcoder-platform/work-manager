@@ -5,10 +5,10 @@ import PropTypes from 'prop-types'
 import { validateValue } from '../../../util/input-check'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faDollarSign } from '@fortawesome/free-solid-svg-icons'
-import { VALIDATION_VALUE_TYPE } from '../../../config/constants'
+import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE } from '../../../config/constants'
 
 const CopilotFeeField = ({ challenge, onUpdateOthers, readOnly }) => {
-  const type = 'Copilot payment'
+  const type = PRIZE_SETS_TYPE.COPILOT_PAYMENT
   const copilotFee = (challenge.prizeSets && challenge.prizeSets.find(p => p.type === type)) || { type, prizes: [{ type, value: 0 }] }
   const value = copilotFee.prizes[0].value
 
