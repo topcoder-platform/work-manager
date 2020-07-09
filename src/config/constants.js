@@ -111,9 +111,9 @@ export const CHALLENGE_PRIZE_TYPE = {
 export const ALLOWED_USER_ROLES = [
   'copilot',
   'administrator',
-  'Connect Admin',
-  'Connect Manager',
-  'Connect Copilot'
+  'connect admin',
+  'connect manager',
+  'connect copilot'
 ]
 
 export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
