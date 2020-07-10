@@ -21,6 +21,7 @@ module.exports = {
   PLATFORMS_V4_API_URL: `${PROD_API_HOSTNAME}/v4/platforms`,
   TECHNOLOGIES_V4_API_URL: `${PROD_API_HOSTNAME}/v4/technologies`,
   CONNECT_APP_URL: `https://connect.${DOMAIN}`,
+  DIRECT_PROJECT_URL: `https://www.${DOMAIN}/direct`,
   ONLINE_REVIEW_URL: `https://software.${DOMAIN}`,
   DEFAULT_TERM_UUID: '5e217280-1413-4d4f-b183-454f348805ab', // Terms & Conditions of Use at TopCoder
   DEFAULT_NDA_UUID: '05342dcb-3405-445e-95b2-8ea2a3834b0d', // Appirio NDA v2.0
