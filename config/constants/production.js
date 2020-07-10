@@ -22,7 +22,7 @@ module.exports = {
   TECHNOLOGIES_V4_API_URL: `${PROD_API_HOSTNAME}/v4/technologies`,
   CONNECT_APP_URL: `https://connect.${DOMAIN}`,
   ONLINE_REVIEW_URL: `https://software.${DOMAIN}`,
-  DEFAULT_TERM_UUID: 'ae6fc4ff-3bd1-4e3f-a987-cc60ab94b422',
-  DEFAULT_NDA_UUID: '7245bb7d-d7c9-45a0-9603-d5ff05af0977',
+  DEFAULT_TERM_UUID: '5e217280-1413-4d4f-b183-454f348805ab', // Terms & Conditions of Use at TopCoder
+  DEFAULT_NDA_UUID: '05342dcb-3405-445e-95b2-8ea2a3834b0d', // Appirio NDA v2.0
   SUBMITTER_ROLE_UUID: '732339e7-8e30-49d7-9198-cccf9451e221'
 }
