@@ -14,7 +14,7 @@ const GroupsField = ({ groups, onUpdateMultiSelect, challenge }) => {
         <Select
           name='group'
           multi
-          options={groups.map(g => ({ label: g.name, value: g.name }))}
+          options={groups.map(g => ({ label: g.name, value: g.id }))}
           simpleValue
           value={challenge.groups.join(',')}
           placeholder='Select groups'
