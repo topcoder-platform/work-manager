@@ -598,11 +598,11 @@ class ChallengeEditor extends Component {
       'terms',
       'prizeSets'
     ], this.state.challenge)
-    challenge.legacy = {
+    challenge.legacy = _.assign(this.state.challenge.legacy, {
       reviewType: challenge.reviewType,
       track: challenge.track
-    }
-    challenge.timelineTemplateId = this.getCurrentTemplate().id
+    })
+    challenge.timelineTemplateId = _.get(this.getCurrentTemplate(), 'id')
     challenge.projectId = this.props.projectId
     challenge.prizeSets = challenge.prizeSets.map(p => {
       const prizes = p.prizes.map(s => ({ ...s, value: convertDollarToInteger(s.value, '$') }))
@@ -703,7 +703,7 @@ class ChallengeEditor extends Component {
       }
     } else {
       let patchObject = (changedField === 'reviewType')
-        ? { legacy: { reviewType: this.state.challenge[changedField] } }
+        ? { legacy: { reviewType: this.state.challenge[changedField] } } // NOTE it assumes challenge API PATCH respects the changes in legacy JSON
         : { [changedField]: this.state.challenge[changedField] }
       if (changedField === 'phases' || changedField === 'reset-phases') {
         const { currentTemplate } = this.state
