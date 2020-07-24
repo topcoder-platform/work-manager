@@ -996,7 +996,7 @@ class ChallengeEditor extends Component {
         isNew && (
           <div className={styles.buttonContainer}>
             <div className={styles.button}>
-              <OutlineButton text={'Create Challenge'} type={'success'} submit />
+              <OutlineButton text={'Continue Set-Up'} type={'success'} submit />
             </div>
           </div>
         )
