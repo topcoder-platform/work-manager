@@ -55,7 +55,7 @@ const theme = {
 
 const getTitle = (isNew) => {
   if (isNew) {
-    return 'Create New Challenge'
+    return 'Create New Work'
   }
 
   return 'Edit Challenge'
