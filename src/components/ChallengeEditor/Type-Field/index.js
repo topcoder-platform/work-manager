@@ -10,14 +10,14 @@ const TypeField = ({ types, onUpdateSelect, challenge, disabled }) => {
     <>
       <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)}>
-          <label htmlFor='type'>Type <span>*</span> :</label>
+          <label htmlFor='type'>Work Format <span>*</span> :</label>
         </div>
         <div className={cn(styles.field, styles.col2, { [styles.disabled]: disabled })}>
           <Select
             name='track'
             options={_.filter(types, t => t.isActive && t.track === challenge.track)}
             value={challenge.typeId}
-            placeholder='Track Type'
+            placeholder='Work Format'
             labelKey='name'
             valueKey='id'
             clearable={false}
@@ -29,7 +29,7 @@ const TypeField = ({ types, onUpdateSelect, challenge, disabled }) => {
       { challenge.submitTriggered && !challenge.typeId && <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)} />
         <div className={cn(styles.field, styles.col2, styles.error)}>
-          Type is required field
+          Work Format is required field
         </div>
       </div> }
     </>
