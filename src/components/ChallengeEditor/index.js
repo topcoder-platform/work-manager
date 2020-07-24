@@ -58,7 +58,7 @@ const getTitle = (isNew) => {
     return 'Create New Work'
   }
 
-  return 'Edit Challenge'
+  return 'Set-Up Work'
 }
 
 class ChallengeEditor extends Component {
