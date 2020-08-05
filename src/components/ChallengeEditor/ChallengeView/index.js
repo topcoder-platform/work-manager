@@ -20,6 +20,7 @@ import Loader from '../../Loader'
 
 const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources, token, isLoading, challengeId }) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
+  const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
 
   const [openAdvanceSettings, setOpenAdvanceSettings] = useState(false)
 
@@ -73,7 +74,7 @@ const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources,
               </div>
               <div className={styles.col}>
                 <span className={styles.fieldTitle}>Track:</span>
-                <Track disabled type={challenge.track} isActive key={challenge.track} onUpdateOthers={() => {}} />
+                <Track disabled type={challengeTrack} isActive key={challenge.trackId} onUpdateOthers={() => {}} />
               </div>
               <div className={styles.col}>
                 <span><span className={styles.fieldTitle}>Type:</span> {selectedType ? selectedType.name : ''}</span>

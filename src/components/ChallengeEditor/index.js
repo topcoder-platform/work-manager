@@ -508,8 +508,8 @@ class ChallengeEditor extends Component {
   isValidChallenge () {
     const { challenge } = this.state
     if (this.props.isNew) {
-      const { name, track, typeId } = challenge
-      return !!name && !!track && !!typeId
+      const { name, trackId, typeId } = challenge
+      return !!name && !!trackId && !!typeId
     }
 
     const reviewType = challenge.reviewType ? challenge.reviewType.toLowerCase() : 'community'
@@ -523,7 +523,7 @@ class ChallengeEditor extends Component {
     }
 
     return !(Object.values(pick([
-      'track',
+      'trackId',
       'typeId',
       'name',
       'description',
@@ -586,7 +586,7 @@ class ChallengeEditor extends Component {
     const challenge = pick([
       'phases',
       'typeId',
-      'track',
+      'trackId',
       'name',
       'description',
       'privateDescription',
@@ -599,8 +599,7 @@ class ChallengeEditor extends Component {
       'prizeSets'
     ], this.state.challenge)
     challenge.legacy = _.assign(this.state.challenge.legacy, {
-      reviewType: challenge.reviewType,
-      track: challenge.track
+      reviewType: challenge.reviewType
     })
     challenge.timelineTemplateId = _.get(this.getCurrentTemplate(), 'id')
     challenge.projectId = this.props.projectId
@@ -618,7 +617,6 @@ class ChallengeEditor extends Component {
     ], p))
     if (challenge.terms && challenge.terms.length === 0) delete challenge.terms
     delete challenge.attachments
-    delete challenge.track
     delete challenge.reviewType
     return _.cloneDeep(challenge)
   }
@@ -632,7 +630,7 @@ class ChallengeEditor extends Component {
   async createNewChallenge () {
     if (!this.props.isNew) return
     const { metadata } = this.props
-    const { name, track, typeId } = this.state.challenge
+    const { name, trackId, typeId } = this.state.challenge
     const { timelineTemplates } = metadata
 
     // fallback template
@@ -646,9 +644,9 @@ class ChallengeEditor extends Component {
       projectId: this.props.projectId,
       name,
       typeId,
+      trackId,
       startDate: moment().add(1, 'days').format(),
       legacy: {
-        track,
         reviewType: 'community'
       },
       descriptionFormat: 'markdown',
@@ -1023,13 +1021,14 @@ class ChallengeEditor extends Component {
       }
     </React.Fragment>
     const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
+    const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
     const currentChallengeId = this.getCurrentChallengeId()
     const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
     const challengeForm = isNew
       ? (
         <form name='challenge-new-form' noValidate autoComplete='off' onSubmit={this.createChallengeHandler}>
           <div className={styles.newFormContainer}>
-            <TrackField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
+            <TrackField tracks={metadata.challengeTracks} challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
           </div>
@@ -1050,7 +1049,7 @@ class ChallengeEditor extends Component {
               </div>
               <div className={styles.col}>
                 <span className={styles.fieldTitle}>Track:</span>
-                <Track disabled type={challenge.track} isActive key={challenge.track} onUpdateOthers={() => {}} />
+                <Track disabled type={challengeTrack} isActive key={challenge.trackId} onUpdateOthers={() => {}} />
               </div>
               <div className={styles.col}>
                 <span><span className={styles.fieldTitle}>Type:</span> {selectedType ? selectedType.name : ''}</span>

@@ -242,7 +242,7 @@ class ChallengeCard extends React.Component {
         <Link className={styles.col1} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
           <div className={styles.name}>
             <span className={styles.block}>{challenge.name}</span>
-            <ChallengeTag track={challenge.legacy && challenge.legacy.track} challengeType={challenge.type} />
+            <ChallengeTag track={challenge.trackId} challengeType={challenge.type} />
           </div>
         </Link>
         <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>

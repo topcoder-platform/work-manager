@@ -15,7 +15,7 @@ const TypeField = ({ types, onUpdateSelect, challenge, disabled }) => {
         <div className={cn(styles.field, styles.col2, { [styles.disabled]: disabled })}>
           <Select
             name='track'
-            options={_.filter(types, t => t.isActive && t.track === challenge.track)}
+            options={_.filter(types, t => t.isActive)}
             value={challenge.typeId}
             placeholder='Work Format'
             labelKey='name'
