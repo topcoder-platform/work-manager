@@ -36,9 +36,6 @@ class TextEditorField extends Component {
       readOnly
     } = this.props
     const { addedNewPrivateDescription } = this.state
-    const challengeTrack = challenge.legacy
-      ? challenge.legacy.track
-      : challenge.track
     const challengeTagsFiltered = challengeTags.map(function (tag) {
       return { id: tag.name, name: tag.name }
     })
@@ -84,7 +81,7 @@ class TextEditorField extends Component {
           onUpdateMultiSelect={onUpdateMultiSelect}
           readOnly={readOnly}
         />
-        {challengeTrack && challengeTrack === CHALLENGE_TRACKS.DESIGN && (
+        {challenge.trackId === CHALLENGE_TRACKS.DESIGN && (
           <React.Fragment>
             <FinalDeliverablesField
               challenge={challenge}

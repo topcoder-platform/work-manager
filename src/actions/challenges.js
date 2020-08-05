@@ -11,7 +11,8 @@ import {
   fetchChallengeTerms,
   fetchResources,
   fetchResourceRoles,
-  fetchChallengeTimelines
+  fetchChallengeTimelines,
+  fetchChallengeTracks
 } from '../services/challenges'
 import {
   LOAD_CHALLENGE_DETAILS_PENDING,
@@ -225,6 +226,17 @@ export function loadChallengeTypes () {
       type: LOAD_CHALLENGE_METADATA_SUCCESS,
       metadataKey: 'challengeTypes',
       metadataValue: challengeTypes
+    })
+  }
+}
+
+export function loadChallengeTracks () {
+  return async (dispatch) => {
+    const challengeTracks = await fetchChallengeTracks()
+    dispatch({
+      type: LOAD_CHALLENGE_METADATA_SUCCESS,
+      metadataKey: 'challengeTracks',
+      metadataValue: challengeTracks
     })
   }
 }

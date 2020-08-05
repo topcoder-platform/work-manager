@@ -3,14 +3,12 @@ import _ from 'lodash'
 import React from 'react'
 import PropTypes from 'prop-types'
 import styles from './Track-Field.module.scss'
-
-import { CHALLENGE_TRACKS } from '../../../config/constants'
 import Track from '../../Track'
 
-const TrackField = ({ challenge, onUpdateOthers, disabled }) => {
+const TrackField = ({ challenge, tracks, onUpdateOthers, disabled }) => {
   const renderTracks = (track, currentTrack) => {
     return (
-      <Track disabled={disabled} type={track} isActive={track === currentTrack} key={track} onUpdateOthers={onUpdateOthers} />
+      <Track disabled={disabled} type={track} isActive={track.id === currentTrack} key={track.id} onUpdateOthers={onUpdateOthers} />
     )
   }
 
@@ -22,7 +20,7 @@ const TrackField = ({ challenge, onUpdateOthers, disabled }) => {
         </div>
         <div className={cn(styles.field, styles.col2)}>
           {
-            _.map(CHALLENGE_TRACKS, track => renderTracks(track, challenge.track))
+            _.map(tracks, track => renderTracks(track, challenge.trackId))
           }
         </div>
       </div>

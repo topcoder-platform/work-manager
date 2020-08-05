@@ -28,6 +28,9 @@ const stylizedSubTrack = (t, challengeTypes) => {
     )
 }
 
+/**
+ * ***************** UNUSED **************************
+ */
 const Tag = ({ track, subTrack, value, challengeTypes, roleTag }) => {
   const className = cn(styles.tag, {
     [styles.dataScience]: track === CHALLENGE_TRACKS.DATA_SCIENCE,

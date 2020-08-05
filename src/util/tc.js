@@ -32,6 +32,8 @@ export function getRatingColor (rating) {
 }
 
 /**
+ * ********** UNUSED ************************
+ *
  * Handle special subtrack DEVELOP_MARATHON_MATCH
  * @param {String} track
  * @param {String} subTrack
