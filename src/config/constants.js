@@ -125,5 +125,3 @@ export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
   `${CHALLENGE_API_URL}/${challengeId}/attachments/${attachmentId}?token=${token}`
 
 export const PAGE_SIZE = 50
-
-export const SEGMENT_API_KEY = SEGMENT_API_KEY
