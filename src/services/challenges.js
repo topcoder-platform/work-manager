@@ -6,6 +6,7 @@ import FormData from 'form-data'
 const {
   CHALLENGE_API_URL,
   CHALLENGE_TYPES_URL,
+  CHALLENGE_TRACKS_URL,
   CHALLENGE_TIMELINE_TEMPLATES_URL,
   CHALLENGE_PHASES_URL,
   CHALLENGE_TIMELINES_URL,
@@ -23,6 +24,15 @@ const {
  */
 export async function fetchChallengeTypes () {
   const response = await axiosInstance.get(`${CHALLENGE_TYPES_URL}`)
+  return _.get(response, 'data', [])
+}
+
+/**
+ * Api request for fetching challenge tracks
+ * @returns {Promise<*>}
+ */
+export async function fetchChallengeTracks () {
+  const response = await axiosInstance.get(`${CHALLENGE_TRACKS_URL}`)
   return _.get(response, 'data', [])
 }
 

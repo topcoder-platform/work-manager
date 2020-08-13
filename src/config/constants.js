@@ -9,7 +9,12 @@ export const {
   ONLINE_REVIEW_URL,
   DEFAULT_TERM_UUID,
   DEFAULT_NDA_UUID,
-  SUBMITTER_ROLE_UUID
+  SUBMITTER_ROLE_UUID,
+  DEV_TRACK_ID,
+  DES_TRACK_ID,
+  DS_TRACK_ID,
+  QA_TRACK_ID,
+  SEGMENT_API_KEY
 } = process.env
 
 // Actions
@@ -58,10 +63,10 @@ export const RESET_SIDEBAR_ACTIVE_PARAMS = 'RESET_SIDEBAR_ACTIVE_PARAMS'
 
 // Name of challenge tracks
 export const CHALLENGE_TRACKS = {
-  DESIGN: 'DESIGN',
-  DEVELOP: 'DEVELOP',
-  DATA_SCIENCE: 'DATA_SCIENCE',
-  QA: 'QA'
+  DESIGN: DES_TRACK_ID,
+  DEVELOP: DEV_TRACK_ID,
+  DATA_SCIENCE: DS_TRACK_ID,
+  QA: QA_TRACK_ID
 }
 
 // List of challenge phase statuses

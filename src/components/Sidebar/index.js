@@ -14,7 +14,7 @@ const Sidebar = ({
   return (
     <div className={styles.sidebar}>
       <img src={TopcoderLogo} className={styles.logo} />
-      <div className={styles.title}>Challenge Editor</div>
+      <div className={styles.title}>Work Manager</div>
       <Link to='/'>
         <div className={cn(styles.homeLink, { [styles.active]: !projectId })} onClick={resetSidebarActiveParams}>
           Active challenges
