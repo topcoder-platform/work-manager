@@ -80,7 +80,11 @@ class ChallengeEditor extends Component {
       draftChallenge: { data: { id: null } },
       timeLastSaved: moment().format('MMMM Do YYYY, h:mm:ss a'),
       currentTemplate: null,
-      assignedMemberDetails: null
+      // set `assignedMemberDetails` immediately, in case it's already loaded
+      // NOTE that we have to keep `assignedMemberDetails` in the local state, rather than just get it from the props
+      // because we can update it locally when we choose another assigned user, so we don't have to wait for user details
+      // to be loaded from Member Service as we already know it in such case
+      assignedMemberDetails: this.props.assignedMemberDetails
     }
     this.onUpdateInput = this.onUpdateInput.bind(this)
     this.onUpdateSelect = this.onUpdateSelect.bind(this)
@@ -129,8 +133,7 @@ class ChallengeEditor extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    // if challenge already has assigned member and we didn't updated it
-    // then use loaded user details for assigned member
+    // if member details weren't initially loaded and now they got loaded, then set them to the state
     if (!this.state.assignedMemberDetails && nextProps.assignedMemberDetails) {
       this.setState({ assignedMemberDetails: nextProps.assignedMemberDetails })
     }
