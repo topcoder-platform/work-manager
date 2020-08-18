@@ -17,6 +17,7 @@ import ChallengePrizesField from '../ChallengePrizes-Field'
 import CopilotFeeField from '../CopilotFee-Field'
 import ChallengeTotalField from '../ChallengeTotal-Field'
 import Loader from '../../Loader'
+import PhaseInput from '../../PhaseInput'
 
 const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources, token, isLoading, challengeId }) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
@@ -124,6 +125,18 @@ const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources,
                 <span><span className={styles.fieldTitle}>Groups:</span> {challenge.groups ? challenge.groups.join(', ') : ''}</span>
               </div>
             </div>)}
+            {
+              <div className={styles.PhaseRow}>
+                <PhaseInput
+                  withDates
+                  phase={{
+                    name: 'Start Date',
+                    date: challenge.startDate
+                  }}
+                  readOnly
+                />
+              </div>
+            }
             { showTimeline && (
               <ChallengeScheduleField
                 templates={metadata.timelineTemplates}

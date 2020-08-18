@@ -48,6 +48,7 @@ import {
 } from '../../services/challenges'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import AlertModal from '../Modal/AlertModal'
+import PhaseInput from '../PhaseInput'
 
 const theme = {
   container: styles.modalContainer
@@ -1089,6 +1090,22 @@ class ChallengeEditor extends Component {
                 <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
               </React.Fragment>
             )}
+            {
+              <div className={styles.PhaseRow}>
+                <PhaseInput
+                  withDates
+                  phase={{
+                    name: 'Start Date',
+                    date: challenge.startDate
+                  }}
+                  onUpdatePhase={newValue => this.onUpdateOthers({
+                    field: 'startDate',
+                    value: newValue.format()
+                  })}
+                  readOnly={false}
+                />
+              </div>
+            }
             { showTimeline && (
               <ChallengeScheduleField
                 templates={this.getAvailableTimelineTemplates()}
