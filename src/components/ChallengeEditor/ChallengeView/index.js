@@ -17,8 +17,9 @@ import ChallengePrizesField from '../ChallengePrizes-Field'
 import CopilotFeeField from '../CopilotFee-Field'
 import ChallengeTotalField from '../ChallengeTotal-Field'
 import Loader from '../../Loader'
+import AssignedMemberField from '../AssignedMember-Field'
 
-const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources, token, isLoading, challengeId }) => {
+const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources, token, isLoading, challengeId, assignedMemberDetails }) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
 
@@ -52,6 +53,7 @@ const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources,
   const timeLineTemplate = _.find(metadata.timelineTemplates, { id: challenge.timelineTemplateId })
   if (isLoading || _.isEmpty(metadata.challengePhases) || challenge.id !== challengeId) return <Loader />
   const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
+  const isTask = _.get(challenge, 'task.isTask', false)
   return (
     <div className={styles.wrapper}>
       <Helmet title='View Details' />
@@ -90,6 +92,7 @@ const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources,
               </div>
             </div>
             <NDAField challenge={challenge} readOnly />
+            {isTask && <AssignedMemberField challenge={challenge} assignedMemberDetails={assignedMemberDetails} readOnly /> }
             <CopilotField challenge={{
               copilot
             }} copilots={metadata.members} readOnly />
@@ -181,7 +184,8 @@ ChallengeView.propTypes = {
   token: PropTypes.string,
   isLoading: PropTypes.bool.isRequired,
   challengeId: PropTypes.string.isRequired,
-  challengeResources: PropTypes.arrayOf(PropTypes.object)
+  challengeResources: PropTypes.arrayOf(PropTypes.object),
+  assignedMemberDetails: PropTypes.shape()
 }
 
 export default withRouter(ChallengeView)

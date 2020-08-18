@@ -26,6 +26,10 @@ export const SET_ACTIVE_PROJECT = 'SET_ACTIVE_PROJECT'
 
 export const LOAD_USER_SUCCESS = 'LOAD_USER_SUCCESS'
 
+export const LOAD_MEMBER_PENDING = 'LOAD_MEMBER_PENDING'
+export const LOAD_MEMBER_SUCCESS = 'LOAD_MEMBER_SUCCESS'
+export const LOAD_MEMBER_FAILURE = 'LOAD_MEMBER_FAILURE'
+
 export const LOAD_CHALLENGES_SUCCESS = 'LOAD_CHALLENGES_SUCCESS'
 export const LOAD_CHALLENGES_PENDING = 'LOAD_CHALLENGES_PENDING'
 export const LOAD_CHALLENGES_FAILURE = 'LOAD_CHALLENGES_FAILURE'
@@ -125,3 +129,13 @@ export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
   `${CHALLENGE_API_URL}/${challengeId}/attachments/${attachmentId}?token=${token}`
 
 export const PAGE_SIZE = 50
+
+/**
+ * The minimal number of characters to enter before starting showing autocomplete suggestions
+ */
+export const AUTOCOMPLETE_MIN_LENGTH = 3
+
+/**
+ * Debounce timeout in ms for calling API for getting autocomplete suggestions
+ */
+export const AUTOCOMPLETE_DEBOUNCE_TIME_MS = 150
