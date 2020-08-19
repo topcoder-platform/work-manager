@@ -49,6 +49,7 @@ import {
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import AlertModal from '../Modal/AlertModal'
 import PhaseInput from '../PhaseInput'
+import LegacyLinks from '../LegacyLinks'
 
 const theme = {
   container: styles.modalContainer
@@ -1154,8 +1155,11 @@ class ChallengeEditor extends Component {
     return (
       <div className={styles.wrapper}>
         <Helmet title={getTitle(isNew)} />
+        <div className={cn(styles.actionButtons, styles.actionButtonsLeft)}>
+          <LegacyLinks challenge={challenge} />
+        </div>
         <div className={styles.title}>{getTitle(isNew)}</div>
-        <div className={cn(styles.actionButtons, styles.button)}>
+        <div className={cn(styles.actionButtons, styles.actionButtonsRight)}>
           <PrimaryButton text={'Back'} type={'info'} submit link={`/projects/${projectDetail.id}/challenges`} />
         </div>
         <div className={styles.textRequired}>* Required</div>

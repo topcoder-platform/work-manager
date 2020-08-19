@@ -18,6 +18,7 @@ import CopilotFeeField from '../CopilotFee-Field'
 import ChallengeTotalField from '../ChallengeTotal-Field'
 import Loader from '../../Loader'
 import PhaseInput from '../../PhaseInput'
+import LegacyLinks from '../../LegacyLinks'
 
 const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources, token, isLoading, challengeId }) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
@@ -56,8 +57,11 @@ const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources,
   return (
     <div className={styles.wrapper}>
       <Helmet title='View Details' />
+      <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsLeft)}>
+        <LegacyLinks challenge={challenge} />
+      </div>
       <div className={styles.title}>View Details</div>
-      <div className={cn(styles.actionButtons, styles.button, styles.editButton)}>
+      <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsRight)}>
         <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} />
         <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
       </div>

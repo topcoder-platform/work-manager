@@ -239,12 +239,19 @@
 }
 
 .actionButtons {
+  position: absolute;
+  top: 30px;
   &.button {
     height: 40px;
-    position: absolute;
-    top: 30px;
-    right: 20px;
   }
+}
+
+.actionButtonsLeft {
+  left: 20px;
+}
+
+.actionButtonsRight {
+  right: 20px;
 }
 
 .buttonContainer {
