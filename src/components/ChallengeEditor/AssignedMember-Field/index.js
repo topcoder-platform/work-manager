@@ -21,7 +21,7 @@ const AssignedMemberField = ({ challenge, onChange, assignedMemberDetails, readO
       </div>
       <div className={cn(styles.field, styles.col2)}>
         {readOnly ? (
-          <div className={styles.readOnlyValue}>{value.label}</div>
+          value && <div className={styles.readOnlyValue}>{value.label}</div>
         ) : (
           <SelectUserAutocomplete
             value={value}
