@@ -21,6 +21,9 @@ import {
   loadResources,
   loadResourceRoles
 } from '../../actions/challenges'
+import {
+  loadMemberDetails
+} from '../../actions/members'
 
 import { connect } from 'react-redux'
 
@@ -72,6 +75,29 @@ class ChallengeEditor extends Component {
     if (_.get(match.params, 'projectId', null) !== projectId || _.get(match.params, 'challengeId', null) !== challengeId) {
       this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources)
     }
+
+    // this section is called only one time as soon challenge details are loaded
+    if (
+      this.props.challengeDetails.id !== nextProps.challengeDetails.id &&
+      _.get(match.params, 'challengeId', null) === nextProps.challengeDetails.id
+    ) {
+      this.loadAssignedMemberDetails(nextProps)
+    }
+  }
+
+  /**
+   * Load assign member details if challenge has a member assigned
+   * @param {Object} nextProps the latest props
+   */
+  loadAssignedMemberDetails (nextProps) {
+    // cannot use `loadMemberDetails` form the `nextProps` because linter complains about unused prop
+    const { loadMemberDetails } = this.props
+    const { challengeDetails } = nextProps
+    const assignedMemberId = _.get(challengeDetails, 'task.memberId')
+
+    if (assignedMemberId) {
+      loadMemberDetails(assignedMemberId)
+    }
   }
 
   fetchChallengeDetails (newMatch, loadChallengeDetails, loadResources) {
@@ -93,12 +119,15 @@ class ChallengeEditor extends Component {
       token,
       removeAttachment,
       failedToLoad,
-      projectDetail
+      projectDetail,
+      members
     } = this.props
     const challengeId = _.get(match.params, 'challengeId', null)
     if (challengeId && (!challengeDetails || !challengeDetails.id)) {
       return (<Loader />)
     }
+    const assignedMemberId = _.get(challengeDetails, 'task.memberId')
+    const assignedMemberDetails = _.find(members, (member) => member.userId.toString() === assignedMemberId)
     return <div>
       <Route
         exact
@@ -118,6 +147,7 @@ class ChallengeEditor extends Component {
             removeAttachment={removeAttachment}
             failedToLoad={failedToLoad}
             projectDetail={projectDetail}
+            assignedMemberDetails={assignedMemberDetails}
           />
         ))
         } />
@@ -139,6 +169,7 @@ class ChallengeEditor extends Component {
             removeAttachment={removeAttachment}
             failedToLoad={failedToLoad}
             projectDetail={projectDetail}
+            assignedMemberDetails={assignedMemberDetails}
           />
         ))
         } />
@@ -154,6 +185,7 @@ class ChallengeEditor extends Component {
             challengeResources={challengeResources}
             token={token}
             challengeId={challengeId}
+            assignedMemberDetails={assignedMemberDetails}
           />
         ))
         } />
@@ -192,10 +224,12 @@ ChallengeEditor.propTypes = {
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string,
   removeAttachment: PropTypes.func,
-  failedToLoad: PropTypes.bool
+  failedToLoad: PropTypes.bool,
+  loadMemberDetails: PropTypes.func,
+  members: PropTypes.arrayOf(PropTypes.shape())
 }
 
-const mapStateToProps = ({ projects: { projectDetail }, challenges: { challengeDetails, challengeResources, metadata, isLoading, attachments, failedToLoad }, auth: { token } }) => ({
+const mapStateToProps = ({ projects: { projectDetail }, challenges: { challengeDetails, challengeResources, metadata, isLoading, attachments, failedToLoad }, auth: { token }, members: { members } }) => ({
   challengeDetails,
   projectDetail,
   challengeResources,
@@ -203,7 +237,8 @@ const mapStateToProps = ({ projects: { projectDetail }, challenges: { challengeD
   isLoading,
   attachments,
   token,
-  failedToLoad
+  failedToLoad,
+  members
 })
 
 const mapDispatchToProps = {
@@ -219,7 +254,8 @@ const mapDispatchToProps = {
   removeAttachment,
   loadChallengeTerms,
   loadResources,
-  loadResourceRoles
+  loadResourceRoles,
+  loadMemberDetails
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChallengeEditor))

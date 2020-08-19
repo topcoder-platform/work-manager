@@ -50,6 +50,7 @@ import ConfirmationModal from '../Modal/ConfirmationModal'
 import AlertModal from '../Modal/AlertModal'
 import PhaseInput from '../PhaseInput'
 import LegacyLinks from '../LegacyLinks'
+import AssignedMemberField from './AssignedMember-Field'
 
 const theme = {
   container: styles.modalContainer
@@ -79,12 +80,18 @@ class ChallengeEditor extends Component {
       },
       draftChallenge: { data: { id: null } },
       timeLastSaved: moment().format('MMMM Do YYYY, h:mm:ss a'),
-      currentTemplate: null
+      currentTemplate: null,
+      // set `assignedMemberDetails` immediately, in case it's already loaded
+      // NOTE that we have to keep `assignedMemberDetails` in the local state, rather than just get it from the props
+      // because we can update it locally when we choose another assigned user, so we don't have to wait for user details
+      // to be loaded from Member Service as we already know it in such case
+      assignedMemberDetails: this.props.assignedMemberDetails
     }
     this.onUpdateInput = this.onUpdateInput.bind(this)
     this.onUpdateSelect = this.onUpdateSelect.bind(this)
     this.onUpdateOthers = this.onUpdateOthers.bind(this)
     this.onUpdateCheckbox = this.onUpdateCheckbox.bind(this)
+    this.onUpdateAssignedMember = this.onUpdateAssignedMember.bind(this)
     this.addFileType = this.addFileType.bind(this)
     this.toggleAdvanceSettings = this.toggleAdvanceSettings.bind(this)
     this.toggleNdaRequire = this.toggleNdaRequire.bind(this)
@@ -124,6 +131,13 @@ class ChallengeEditor extends Component {
 
   componentDidUpdate () {
     this.resetChallengeData(this.setState.bind(this))
+  }
+
+  componentWillReceiveProps (nextProps) {
+    // if member details weren't initially loaded and now they got loaded, then set them to the state
+    if (!this.state.assignedMemberDetails && nextProps.assignedMemberDetails) {
+      this.setState({ assignedMemberDetails: nextProps.assignedMemberDetails })
+    }
   }
 
   async resetChallengeData (setState = () => {}) {
@@ -250,6 +264,39 @@ class ChallengeEditor extends Component {
 
     // calculate total cost of challenge
     this.setState({ challenge: newChallenge })
+  }
+
+  /**
+   * Update assigned member
+   * (only applied for the `Task` type challenge)
+   *
+   * @param {{label: string, value: string }} option option with user
+   */
+  onUpdateAssignedMember (option) {
+    const { challenge: oldChallenge } = this.state
+    const newChallenge = { ...oldChallenge }
+    let assignedMemberDetails
+
+    if (option && option.value) {
+      newChallenge.task = {
+        ...oldChallenge.task,
+        memberId: option.value
+        // TODO uncomment as soon as issue in API is fixed https://github.com/topcoder-platform/challenge-api/issues/272
+        // isAssigned: true
+      }
+      assignedMemberDetails = {
+        handle: option.label,
+        userId: parseInt(option.value, 10)
+      }
+    } else {
+      newChallenge.task = _.omit(oldChallenge.task, ['memberId', 'isAssigned'])
+      assignedMemberDetails = null
+    }
+
+    this.setState({
+      challenge: newChallenge,
+      assignedMemberDetails
+    })
   }
 
   /**
@@ -598,7 +645,8 @@ class ChallengeEditor extends Component {
       'metadata',
       'startDate',
       'terms',
-      'prizeSets'
+      'prizeSets',
+      'task'
     ], this.state.challenge)
     challenge.legacy = _.assign(this.state.challenge.legacy, {
       reviewType: challenge.reviewType
@@ -898,6 +946,8 @@ class ChallengeEditor extends Component {
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
     }
+    const isTask = _.get(challenge, 'task.isTask', false)
+    const { assignedMemberDetails } = this.state
     let isActive = false
     let isCompleted = false
     if (challenge.status) {
@@ -1062,6 +1112,13 @@ class ChallengeEditor extends Component {
             </div>
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             <NDAField challenge={challenge} toggleNdaRequire={this.toggleNdaRequire} />
+            {isTask && (
+              <AssignedMemberField
+                challenge={challenge}
+                onChange={this.onUpdateAssignedMember}
+                assignedMemberDetails={assignedMemberDetails}
+              />
+            )}
             <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
             <ReviewTypeField
               reviewers={metadata.members}
@@ -1198,7 +1255,8 @@ ChallengeEditor.propTypes = {
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string.isRequired,
   failedToLoad: PropTypes.bool,
-  history: PropTypes.any.isRequired
+  history: PropTypes.any.isRequired,
+  assignedMemberDetails: PropTypes.shape()
 }
 
 export default withRouter(ChallengeEditor)
