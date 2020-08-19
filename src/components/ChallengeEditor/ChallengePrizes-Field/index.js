@@ -59,12 +59,13 @@ class ChallengePrizesField extends Component {
 
   renderPrizes () {
     const { currentPrizeIndex } = this.state
-    const { readOnly } = this.props
+    const { readOnly, challenge } = this.props
+    const isTask = _.get(challenge, 'task.isTask', false)
     return _.map(this.getChallengePrize().prizes, (prize, index, { length }) => (
       <div key={`${index}-${prize.amount}-edit`}>
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)}>
-            <label htmlFor={`${index}-prize`}>Prize {index + 1} {!readOnly && (<span>*</span>)}:</label>
+            <label htmlFor={`${index}-prize`}>Prize {!isTask ? index + 1 : ''} {!readOnly && (<span>*</span>)}:</label>
           </div>
           {readOnly ? (
             <span>${prize.value}</span>
@@ -96,7 +97,8 @@ class ChallengePrizesField extends Component {
   }
 
   render () {
-    const { readOnly } = this.props
+    const { readOnly, challenge } = this.props
+    const isTask = _.get(challenge, 'task.isTask', false)
     return (
       <div className={styles.container}>
         <div className={styles.row}>
@@ -105,7 +107,7 @@ class ChallengePrizesField extends Component {
           </div>
         </div>
         { this.renderPrizes() }
-        {!readOnly && (<div className={styles.button} onClick={this.addNewPrize}>
+        {!readOnly && !isTask && (<div className={styles.button} onClick={this.addNewPrize}>
           <PrimaryButton text={'Add New Prize'} type={'info'} />
         </div>)}
       </div>
