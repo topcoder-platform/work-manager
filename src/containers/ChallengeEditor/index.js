@@ -78,8 +78,8 @@ class ChallengeEditor extends Component {
 
     // this section is called only one time as soon challenge details are loaded
     if (
-      this.props.challengeDetails.id !== nextProps.challengeDetails.id &&
-      _.get(match.params, 'challengeId', null) === nextProps.challengeDetails.id
+      _.get(this.props, 'challengeDetails.id') !== _.get(nextProps, 'challengeDetails.id') &&
+      _.get(match.params, 'challengeId', null) === _.get(nextProps, 'challengeDetails.id')
     ) {
       this.loadAssignedMemberDetails(nextProps)
     }
