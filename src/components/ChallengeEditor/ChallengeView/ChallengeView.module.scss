@@ -234,19 +234,22 @@
 
 .actionButtons {
   display: flex;
+  position: absolute;
+  top: 30px;
 }
 
+.actionButtonsLeft {
+  left: 20px;
+}
+
+.actionButtonsRight {
+  right: 20px;
+}
 
 .button {
   height: 40px;
   span {
     padding: 0 20px;
-  }
-
-  &.editButton {
-    position: absolute;
-    top: 30px;
-    right: 20px;
   }
 }
 .buttonContainer {
