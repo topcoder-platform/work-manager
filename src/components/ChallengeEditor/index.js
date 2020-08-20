@@ -223,10 +223,8 @@ class ChallengeEditor extends Component {
       }]
     }
 
-    console.log({ newChallenge })
-
     this.setState({
-      // challenge: newChallenge
+      challenge: newChallenge
     }, () => {
       this.updateAllChallengeInfo('Completed')
     })
