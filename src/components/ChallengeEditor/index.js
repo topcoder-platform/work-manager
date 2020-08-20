@@ -106,6 +106,8 @@ class ChallengeEditor extends Component {
     this.onUpdateDescription = this.onUpdateDescription.bind(this)
     this.onActiveChallenge = this.onActiveChallenge.bind(this)
     this.resetModal = this.resetModal.bind(this)
+    this.openCloseTaskConfirmation = this.openCloseTaskConfirmation.bind(this)
+    this.onCloseTask = this.onCloseTask.bind(this)
     this.createNewChallenge = this.createNewChallenge.bind(this)
     this.getCurrentChallengeId = this.getCurrentChallengeId.bind(this)
     this.isValidChallengePrizes = this.isValidChallengePrizes.bind(this)
@@ -202,7 +204,43 @@ class ChallengeEditor extends Component {
   }
 
   resetModal () {
-    this.setState({ isLoading: false, isConfirm: false, isLaunch: false, error: null })
+    this.setState({ isLoading: false, isConfirm: false, isLaunch: false, error: null, isCloseTask: false })
+  }
+
+  /**
+   * Close task when user confirm it
+   */
+  onCloseTask () {
+    const { challenge: oldChallenge, assignedMemberDetails } = this.state
+
+    // set assigned user as the only one winner
+    const newChallenge = {
+      ...oldChallenge,
+      winners: [{
+        userId: assignedMemberDetails.userId,
+        handle: assignedMemberDetails.handle,
+        placement: 1
+      }]
+    }
+
+    console.log({ newChallenge })
+
+    this.setState({
+      // challenge: newChallenge
+    }, () => {
+      this.updateAllChallengeInfo('Completed')
+    })
+  }
+
+  /**
+   * Open Close Task Confirmation
+   * @param {Event} e event
+   */
+  openCloseTaskConfirmation (e) {
+    e.preventDefault()
+    if (this.validateChallenge()) {
+      this.setState({ isCloseTask: true })
+    }
   }
 
   onUpdateDescription (description, fieldName) {
@@ -646,7 +684,8 @@ class ChallengeEditor extends Component {
       'startDate',
       'terms',
       'prizeSets',
-      'task'
+      'task',
+      'winners'
     ], this.state.challenge)
     challenge.legacy = _.assign(this.state.challenge.legacy, {
       reviewType: challenge.reviewType
@@ -932,7 +971,7 @@ class ChallengeEditor extends Component {
   }
 
   render () {
-    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, timeLastSaved, isSaving } = this.state
+    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, timeLastSaved, isSaving, isCloseTask } = this.state
     const {
       isNew,
       isLoading,
@@ -979,6 +1018,7 @@ class ChallengeEditor extends Component {
     }
 
     let activateModal = null
+    let closeTaskModal = null
     let draftModal = null
     let savedModal = null
 
@@ -1019,6 +1059,65 @@ class ChallengeEditor extends Component {
           onConfirm={this.onActiveChallenge}
         />
       )
+    }
+
+    /*
+      Closing Task Confirmation Modal and Error Modal
+    */
+    if (isCloseTask && !isConfirm) {
+      const taskPrize = _.get(_.find(challenge.prizeSets, { type: 'placement' }), 'prizes[0].value')
+      const assignedMember = assignedMemberDetails ? assignedMemberDetails.handle : `User id: ${_.get(challenge, 'task.memberId')}`
+      const copilotFee = _.get(_.find(challenge.prizeSets, { type: 'copilot' }), 'prizes[0].value')
+      const copilot = challenge.copilot
+
+      const validationErrors = []
+      if (!_.get(challenge, 'task.memberId')) {
+        validationErrors.push('assign task member')
+      }
+
+      if (!copilot) {
+        validationErrors.push('select copilot')
+      }
+
+      if (!copilotFee) {
+        validationErrors.push('set copilot fee')
+      }
+
+      // if all data for closing task is there, show confirmation modal
+      if (validationErrors.length === 0) {
+        closeTaskModal = (
+          <ConfirmationModal
+            title='Close Task Confirmation'
+            message={
+              <p>
+                Are you sure want to close task <strong>"{challenge.name}"</strong> with the prize <strong>${taskPrize}</strong> for <strong>{assignedMember}</strong>
+                {' '}
+                and copilot fee <strong>${copilotFee}</strong> for <strong>{copilot}</strong>?
+              </p>
+            }
+            theme={theme}
+            isProcessing={this.state.isSaving}
+            errorMessage={this.state.error}
+            onCancel={this.resetModal}
+            onConfirm={this.onCloseTask}
+          />
+        )
+
+      // if some information for closing task is missing, ask to complete it
+      } else {
+        const formattedErrors = validationErrors.length === 1 ? validationErrors[0] : (
+          validationErrors.slice(0, -1).join(', ') + ' and ' + validationErrors[validationErrors.length - 1]
+        )
+        closeTaskModal = (
+          <AlertModal
+            title='Cannot Close Task'
+            message={`Please, ${formattedErrors} before closing task.`}
+            theme={theme}
+            closeText='OK'
+            onClose={this.resetModal}
+          />
+        )
+      }
     }
 
     if (!isNew && challenge.status !== 'New' && isLaunch && isConfirm) {
@@ -1067,6 +1166,11 @@ class ChallengeEditor extends Component {
               <div className={styles.button}>
                 <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
               </div>
+              {isTask && (
+                <div className={styles.button}>
+                  <PrimaryButton text={'Close Task'} type={'danger'} onClick={this.openCloseTaskConfirmation} />
+                </div>
+              )}
             </div>}
           </div>
         )
@@ -1224,6 +1328,7 @@ class ChallengeEditor extends Component {
           { activateModal }
           { draftModal }
           { savedModal }
+          { closeTaskModal }
           <div className={styles.formContainer}>
             { challengeForm }
           </div>
