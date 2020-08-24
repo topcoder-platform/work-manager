@@ -12,21 +12,25 @@ const AlertModal = ({ title, message, theme, onClose, closeLink, okLink, closeTe
       <div className={styles.title}>{title}</div>
       <span>{message}</span>
       <div className={styles.buttonGroup}>
-        <div className={styles.buttonSizeA}>
-          <PrimaryButton
-            text={closeText}
-            type={'info'}
-            link={closeLink}
-            onClick={closeLink ? () => {} : onClose}
-          />
-        </div>
-        <div className={styles.buttonSizeA}>
-          <OutlineButton
-            text={okText}
-            type={'success'}
-            link={okLink}
-          />
-        </div>
+        {closeText && (
+          <div className={styles.buttonSizeA}>
+            <PrimaryButton
+              text={closeText}
+              type={'info'}
+              link={closeLink}
+              onClick={closeLink ? () => {} : onClose}
+            />
+          </div>
+        )}
+        {okText && (
+          <div className={styles.buttonSizeA}>
+            <OutlineButton
+              text={okText}
+              type={'success'}
+              link={okLink}
+            />
+          </div>
+        )}
       </div>
     </div>
   </Modal>
