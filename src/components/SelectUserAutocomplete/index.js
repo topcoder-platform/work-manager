@@ -53,6 +53,6 @@ SelectUserAutocomplete.propTypes = {
   value: PropTypes.shape({
     label: PropTypes.string.isRequired,
     value: PropTypes.string.isRequired
-  }).isRequired,
+  }),
   onChange: PropTypes.func
 }
