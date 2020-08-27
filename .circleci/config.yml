@@ -74,6 +74,7 @@ workflows:
             branches:
               only:
                 - develop
+                - feature/server-faccade
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.
