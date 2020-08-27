@@ -986,8 +986,10 @@ class ChallengeEditor extends Component {
     const isTask = _.get(challenge, 'task.isTask', false)
     const { assignedMemberDetails } = this.state
     let isActive = false
+    let isDraft = false
     let isCompleted = false
     if (challenge.status) {
+      isDraft = challenge.status.toLowerCase() === 'draft'
       isActive = challenge.status.toLowerCase() === 'active'
       isCompleted = challenge.status.toLowerCase() === 'completed'
     }
@@ -1156,9 +1158,9 @@ class ChallengeEditor extends Component {
               <div className={styles.button}>
                 <OutlineButton text={'Save Draft'} type={'success'} onClick={this.createDraftHandler} />
               </div>
-              <div className={styles.button}>
+              { isDraft && <div className={styles.button}>
                 <PrimaryButton text={'Launch as Active'} type={'info'} submit />
-              </div>
+              </div>}
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
               <div className={styles.button}>
