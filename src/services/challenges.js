@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import qs from 'qs'
 import { axiosInstance } from './axiosWithAuth'
-import { updateChallengePhaseBeforeSendRequest, convertChallengePhaseFromSecondsToHours, sortChallengePhases } from '../util/date'
+import { updateChallengePhaseBeforeSendRequest, convertChallengePhaseFromSecondsToHours, normalizeChallengeDataFromAPI } from '../util/date'
 import FormData from 'form-data'
 const {
   CHALLENGE_API_URL,
@@ -95,21 +95,7 @@ export async function fetchChallengePhases () {
  */
 export async function fetchChallenge (challengeId) {
   const response = await axiosInstance.get(`${CHALLENGE_API_URL}/${challengeId}`)
-  const newResponse = _.get(response, 'data')
-  if (newResponse.legacy) {
-    if (newResponse.legacy.track) {
-      newResponse.track = newResponse.legacy.track.trim()
-    }
-    if (newResponse.legacy.reviewType) {
-      newResponse.reviewType = newResponse.legacy.reviewType
-    }
-    if (newResponse.legacy.forumId) {
-      newResponse.forumId = newResponse.legacy.forumId
-    }
-  }
-  convertChallengePhaseFromSecondsToHours(newResponse.phases)
-  newResponse.phases = sortChallengePhases(newResponse.phases)
-  return newResponse
+  return normalizeChallengeDataFromAPI(_.get(response, 'data'))
 }
 
 /**
@@ -128,12 +114,11 @@ export function createChallenge (challenge) {
  * Api request for updating challenge
  * @param challenge challenge data
  * @param challengeId Challenge id
- * @returns {Promise<*>}
+ * @returns {Promise<*>} challenge data
  */
 export function updateChallenge (challenge, challengeId) {
-  return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(challenge)).then(rs => {
-    convertChallengePhaseFromSecondsToHours(rs.data.phases)
-    return rs
+  return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(challenge)).then(response => {
+    return normalizeChallengeDataFromAPI(_.get(response, 'data'))
   })
 }
 
