@@ -76,8 +76,7 @@
     "xss": "^1.0.6"
   },
   "scripts": {
-    "build-server": "babel src/services server.js -d build/server --copy-files",
-    "start": "node build/server.js",
+    "start": "node server.js",
     "server:dev": "cross-env BABEL_ENV=development NODE_ENV=development node ./bin/www",
     "dev": "node scripts/start.js",
     "build": "node scripts/build.js",
