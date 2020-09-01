@@ -99,7 +99,16 @@ export default function (state = initialState, action) {
         isLoading: false,
         failedToLoad: false
       }
-    case LOAD_CHALLENGE_METADATA_SUCCESS:
+    case LOAD_CHALLENGE_METADATA_SUCCESS: {
+      if (action.metadataKey === 'metadata') {
+        return {
+          ...state,
+          metadata: {
+            ...state.metadata,
+            ...action.metadataValue
+          }
+        }
+      }
       return {
         ...state,
         metadata: {
@@ -107,6 +116,7 @@ export default function (state = initialState, action) {
           [action.metadataKey]: action.metadataValue
         }
       }
+    }
     case LOAD_CHALLENGE_MEMBERS_SUCCESS:
       return { ...state, metadata: { ...state.metadata, members: action.members } }
     case UPLOAD_ATTACHMENT_PENDING:

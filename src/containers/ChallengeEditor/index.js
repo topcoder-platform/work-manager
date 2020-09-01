@@ -7,19 +7,20 @@ import ChallengeViewComponent from '../../components/ChallengeEditor/ChallengeVi
 import Loader from '../../components/Loader'
 
 import {
-  loadTimelineTemplates,
-  loadChallengePhases,
-  loadChallengeTypes,
-  loadChallengeTracks,
-  loadChallengeTimelines,
-  loadChallengeTags,
+  loadMetadata,
+  // loadTimelineTemplates,
+  // loadChallengePhases,
+  // loadChallengeTypes,
+  // loadChallengeTracks,
+  // loadChallengeTimelines,
+  // loadChallengeTags,
   // loadChallengeTerms,
   loadGroups,
   loadChallengeDetails,
   createAttachment,
   removeAttachment,
-  loadResources,
-  loadResourceRoles
+  loadResources
+  // loadResourceRoles
 } from '../../actions/challenges'
 import {
   loadMemberDetails
@@ -31,27 +32,29 @@ class ChallengeEditor extends Component {
   componentDidMount () {
     const {
       match,
-      loadTimelineTemplates,
-      loadChallengePhases,
-      loadChallengeTypes,
-      loadChallengeTracks,
-      loadChallengeTimelines,
-      loadChallengeTags,
+      loadMetadata,
+      // loadTimelineTemplates,
+      // loadChallengePhases,
+      // loadChallengeTypes,
+      // loadChallengeTracks,
+      // loadChallengeTimelines,
+      // loadChallengeTags,
       // loadChallengeTerms,
       loadGroups,
-      loadResourceRoles,
+      // loadResourceRoles,
       loadChallengeDetails,
       loadResources
     } = this.props
-    loadTimelineTemplates()
-    loadChallengePhases()
-    loadChallengeTypes()
-    loadChallengeTracks()
-    loadChallengeTimelines()
-    loadChallengeTags()
+    loadMetadata()
+    // loadTimelineTemplates()
+    // loadChallengePhases()
+    // loadChallengeTypes()
+    // loadChallengeTracks()
+    // loadChallengeTimelines()
+    // loadChallengeTags()
     // loadChallengeTerms()
     loadGroups()
-    loadResourceRoles()
+    // loadResourceRoles()
     this.fetchChallengeDetails(match, loadChallengeDetails, loadResources)
 
     // this.unlisten = this.props.history.listen(() => {
@@ -201,17 +204,18 @@ ChallengeEditor.propTypes = {
       projectId: PropTypes.string
     })
   }).isRequired,
-  loadTimelineTemplates: PropTypes.func,
-  loadChallengePhases: PropTypes.func,
-  loadChallengeTypes: PropTypes.func,
-  loadChallengeTracks: PropTypes.func,
-  loadChallengeTimelines: PropTypes.func,
-  loadChallengeTags: PropTypes.func,
+  loadMetadata: PropTypes.func,
+  // loadTimelineTemplates: PropTypes.func,
+  // loadChallengePhases: PropTypes.func,
+  // loadChallengeTypes: PropTypes.func,
+  // loadChallengeTracks: PropTypes.func,
+  // loadChallengeTimelines: PropTypes.func,
+  // loadChallengeTags: PropTypes.func,
   // loadChallengeTerms: PropTypes.func,
   loadGroups: PropTypes.func,
   loadChallengeDetails: PropTypes.func,
   loadResources: PropTypes.func,
-  loadResourceRoles: PropTypes.func,
+  // loadResourceRoles: PropTypes.func,
   challengeResources: PropTypes.arrayOf(PropTypes.object),
   challengeDetails: PropTypes.object,
   projectDetail: PropTypes.object,
@@ -242,19 +246,20 @@ const mapStateToProps = ({ projects: { projectDetail }, challenges: { challengeD
 })
 
 const mapDispatchToProps = {
+  loadMetadata,
   loadChallengeDetails,
-  loadTimelineTemplates,
-  loadChallengePhases,
-  loadChallengeTypes,
-  loadChallengeTracks,
-  loadChallengeTimelines,
-  loadChallengeTags,
+  // loadTimelineTemplates,
+  // loadChallengePhases,
+  // loadChallengeTypes,
+  // loadChallengeTracks,
+  // loadChallengeTimelines,
+  // loadChallengeTags,
   loadGroups,
   createAttachment,
   removeAttachment,
   // loadChallengeTerms,
   loadResources,
-  loadResourceRoles,
+  // loadResourceRoles,
   loadMemberDetails
 }
 

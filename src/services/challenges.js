@@ -22,8 +22,8 @@ const {
  * Api request for fetching challenge types
  * @returns {Promise<*>}
  */
-export async function fetchChallengeTypes () {
-  const response = await axiosInstance.get(`${CHALLENGE_TYPES_URL}`)
+async function fetchChallengeTypes () {
+  const response = await this.axios.get(`${CHALLENGE_TYPES_URL}`)
   return _.get(response, 'data', [])
 }
 
@@ -31,8 +31,8 @@ export async function fetchChallengeTypes () {
  * Api request for fetching challenge tracks
  * @returns {Promise<*>}
  */
-export async function fetchChallengeTracks () {
-  const response = await axiosInstance.get(`${CHALLENGE_TRACKS_URL}`)
+async function fetchChallengeTracks () {
+  const response = await this.axios.get(`${CHALLENGE_TRACKS_URL}`)
   return _.get(response, 'data', [])
 }
 
@@ -40,9 +40,9 @@ export async function fetchChallengeTracks () {
  * Api request for fetching challenge tags
  * @returns {Promise<*>}
  */
-export async function fetchChallengeTags () {
-  const platforms = await axiosInstance.get(PLATFORMS_V4_API_URL)
-  const technologies = await axiosInstance.get(TECHNOLOGIES_V4_API_URL)
+async function fetchChallengeTags () {
+  const platforms = await this.axios.get(PLATFORMS_V4_API_URL)
+  const technologies = await this.axios.get(TECHNOLOGIES_V4_API_URL)
   return [
     ..._.map(_.get(platforms, 'data.result.content', []), tag => _.pick(tag, 'name')),
     ..._.map(_.get(technologies, 'data.result.content', []), tag => _.pick(tag, 'name'))
@@ -55,8 +55,8 @@ export async function fetchChallengeTags () {
  * @param filters
  * @returns {Promise<*>}
  */
-export async function fetchGroups (filters) {
-  const response = await axiosInstance.get(`${GROUPS_API_URL}?${qs.stringify(filters, { encode: false })}`)
+async function fetchGroups (filters) {
+  const response = await this.axios.get(`${GROUPS_API_URL}?${qs.stringify(filters, { encode: false })}`)
   return _.get(response, 'data', [])
 }
 
@@ -64,8 +64,8 @@ export async function fetchGroups (filters) {
  * Api request for fetching timeline templates
  * @returns {Promise<*>}
  */
-export async function fetchTimelineTemplates () {
-  const response = await axiosInstance.get(`${CHALLENGE_TIMELINE_TEMPLATES_URL}?page=1&perPage=100`)
+async function fetchTimelineTemplates () {
+  const response = await this.axios.get(`${CHALLENGE_TIMELINE_TEMPLATES_URL}?page=1&perPage=100`)
   return _.get(response, 'data', [])
 }
 
@@ -73,8 +73,8 @@ export async function fetchTimelineTemplates () {
  * Api request for fetching challenge timelines
  * @returns {Promise<*>}
  */
-export async function fetchChallengeTimelines () {
-  const response = await axiosInstance.get(`${CHALLENGE_TIMELINES_URL}?page=1&perPage=100`)
+async function fetchChallengeTimelines () {
+  const response = await this.axios.get(`${CHALLENGE_TIMELINES_URL}?page=1&perPage=100`)
   return _.get(response, 'data', [])
 }
 
@@ -82,8 +82,8 @@ export async function fetchChallengeTimelines () {
  * Api request for fetching challenge phases
  * @returns {Promise<*>}
  */
-export async function fetchChallengePhases () {
-  const response = await axiosInstance.get(`${CHALLENGE_PHASES_URL}?page=1&perPage=100`)
+async function fetchChallengePhases () {
+  const response = await this.axios.get(`${CHALLENGE_PHASES_URL}?page=1&perPage=100`)
   convertChallengePhaseFromSecondsToHours(response.data)
   return _.get(response, 'data', [])
 }
@@ -93,8 +93,8 @@ export async function fetchChallengePhases () {
  * @param projectId Challenge id
  * @returns {Promise<*>}
  */
-export async function fetchChallenge (challengeId) {
-  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/${challengeId}`)
+async function fetchChallenge (challengeId) {
+  const response = await this.axios.get(`${CHALLENGE_API_URL}/${challengeId}`)
   const newResponse = _.get(response, 'data')
   if (newResponse.legacy) {
     if (newResponse.legacy.track) {
@@ -117,7 +117,7 @@ export async function fetchChallenge (challengeId) {
  * @param challenge challenge data
  * @returns {Promise<*>}
  */
-export function createChallenge (challenge) {
+function createChallenge (challenge) {
   return axiosInstance.post(CHALLENGE_API_URL, updateChallengePhaseBeforeSendRequest(challenge)).then(rs => {
     convertChallengePhaseFromSecondsToHours(rs.data.phases)
     return rs
@@ -130,14 +130,14 @@ export function createChallenge (challenge) {
  * @param challengeId Challenge id
  * @returns {Promise<*>}
  */
-export function updateChallenge (challenge, challengeId) {
+function updateChallenge (challenge, challengeId) {
   return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(challenge)).then(rs => {
     convertChallengePhaseFromSecondsToHours(rs.data.phases)
     return rs
   })
 }
 
-export function uploadAttachment (challengeId, file) {
+function uploadAttachment (challengeId, file) {
   const data = new FormData()
   data.append('attachment', file)
   return axiosInstance.post(`${CHALLENGE_API_URL}/${challengeId}/attachments`, data)
@@ -148,7 +148,7 @@ export function uploadAttachment (challengeId, file) {
  * @param filters
  * @param params
  */
-export function fetchChallenges (filters, params) {
+function fetchChallenges (filters, params) {
   const query = {
     ...filters,
     ...params
@@ -161,7 +161,7 @@ export function fetchChallenges (filters, params) {
  * @param challengeId
  * @param params
  */
-export function patchChallenge (challengeId, params) {
+function patchChallenge (challengeId, params) {
   return axiosInstance.patch(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(params)).then(rs => {
     convertChallengePhaseFromSecondsToHours(rs.data.phases)
     return rs
@@ -172,9 +172,9 @@ export function patchChallenge (challengeId, params) {
  * Api request for fetching challenge terms
  * @returns {Promise<*>}
  */
-export async function fetchChallengeTerms () {
+async function fetchChallengeTerms () {
   const query = { page: 1, perPage: 10 }
-  const response = await axiosInstance.get(`${TERMS_API_URL}?${qs.stringify(query, { encode: false })}`)
+  const response = await this.axios.get(`${TERMS_API_URL}?${qs.stringify(query, { encode: false })}`)
   const responseData = _.get(response, 'data', [])
   const returnData = responseData.result.map(element => _.pick(element, ['id', 'title']))
   return returnData
@@ -185,7 +185,7 @@ export async function fetchChallengeTerms () {
  * @param challenge challenge data
  * @returns {Promise<*>}
  */
-export function createResource (resource) {
+function createResource (resource) {
   return axiosInstance.post(RESOURCES_API_URL, resource)
 }
 
@@ -194,8 +194,8 @@ export function createResource (resource) {
  * @param challengeId Challenge id
  * @returns {Promise<*>}
  */
-export async function fetchResources (challengeId) {
-  const response = await axiosInstance.get(`${RESOURCES_API_URL}?challengeId=${challengeId}`)
+async function fetchResources (challengeId) {
+  const response = await this.axios.get(`${RESOURCES_API_URL}?challengeId=${challengeId}`)
   return _.get(response, 'data', [])
 }
 
@@ -203,8 +203,8 @@ export async function fetchResources (challengeId) {
 * Api request for fetching resource roles
 * @returns {Promise<*>}
 */
-export async function fetchResourceRoles () {
-  const response = await axiosInstance.get(RESOURCE_ROLES_API_URL)
+async function fetchResourceRoles () {
+  const response = await this.axios.get(RESOURCE_ROLES_API_URL)
   return _.get(response, 'data', [])
 }
 
@@ -213,6 +213,42 @@ export async function fetchResourceRoles () {
  * @param {object} resource to delete
  * @returns {Promise<*>}
  */
-export function deleteResource (resource) {
-  return axiosInstance.delete(RESOURCES_API_URL, { data: resource })
+function deleteResource (resource) {
+  return this.axios.delete(RESOURCES_API_URL, { data: resource })
 }
+
+async function fetchMetadata () {
+  const response = await this.axios.get('/api/metadata')
+  return _.get(response, 'data', [])
+}
+
+function Challenges () {
+  this.axios = axiosInstance
+
+  this.init = function (axiosInstance) {
+    this.axios = axiosInstance
+  }
+
+  this.fetchChallengeTypes = fetchChallengeTypes.bind(this)
+  this.fetchChallengeTracks = fetchChallengeTracks.bind(this)
+  this.fetchChallengeTags = fetchChallengeTags.bind(this)
+  this.fetchGroups = fetchGroups.bind(this)
+  this.fetchTimelineTemplates = fetchTimelineTemplates.bind(this)
+  this.fetchChallengeTimelines = fetchChallengeTimelines.bind(this)
+  this.fetchChallengePhases = fetchChallengePhases.bind(this)
+  this.fetchChallenge = fetchChallenge.bind(this)
+  this.createChallenge = createChallenge.bind(this)
+  this.updateChallenge = updateChallenge.bind(this)
+  this.fetchChallenges = fetchChallenges.bind(this)
+  this.uploadAttachment = uploadAttachment.bind(this)
+  this.patchChallenge = patchChallenge.bind(this)
+  this.fetchChallengeTerms = fetchChallengeTerms.bind(this)
+  this.createResource = createResource.bind(this)
+  this.fetchResources = fetchResources.bind(this)
+  this.fetchResourceRoles = fetchResourceRoles.bind(this)
+  this.deleteResource = deleteResource.bind(this)
+  this.fetchMetadata = fetchMetadata.bind(this)
+  return this
+}
+
+export const service = new Challenges()

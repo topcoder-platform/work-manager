@@ -17,7 +17,7 @@ import styles from './ChallengeCard.module.scss'
 import { getFormattedDuration } from '../../../util/date'
 import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, ONLINE_REVIEW_URL } from '../../../config/constants'
 import { OutlineButton, PrimaryButton } from '../../Buttons'
-import { patchChallenge } from '../../../services/challenges'
+const { patchChallenge } = require('../../../services/challenges')
 
 const theme = {
   container: styles.modalContainer
