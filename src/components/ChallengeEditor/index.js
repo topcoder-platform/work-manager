@@ -41,7 +41,6 @@ import styles from './ChallengeEditor.module.scss'
 import Track from '../Track'
 import {
   createChallenge,
-  updateChallenge,
   createResource,
   deleteResource,
   patchChallenge
@@ -848,6 +847,7 @@ class ChallengeEditor extends Component {
   }
 
   async updateAllChallengeInfo (status, cb = () => {}) {
+    const { updateChallengeDetails } = this.props
     if (this.state.isSaving) return
     this.setState({ isSaving: true })
     const challenge = this.collectChallengeData(status)
@@ -855,14 +855,14 @@ class ChallengeEditor extends Component {
     newChallenge.status = status
     try {
       const challengeId = this.getCurrentChallengeId()
-      const response = await updateChallenge(challenge, challengeId)
+      const action = await updateChallengeDetails(challengeId, challenge)
       const { copilot: previousCopilot, reviewer: previousReviewer } = this.state.draftChallenge.data
       const { copilot, reviewer } = this.state.challenge
-      if (copilot) await this.updateResource(response.data.id, 'Copilot', copilot, previousCopilot)
-      if (reviewer) await this.updateResource(response.data.id, 'Reviewer', reviewer, previousReviewer)
+      if (copilot) await this.updateResource(challengeId, 'Copilot', copilot, previousCopilot)
+      if (reviewer) await this.updateResource(challengeId, 'Reviewer', reviewer, previousReviewer)
       this.updateTimeLastSaved()
 
-      const draftChallenge = response
+      const draftChallenge = { data: action.challengeDetails }
       draftChallenge.data.copilot = copilot
       draftChallenge.data.reviewer = reviewer
       this.setState({ isLaunch: true,
@@ -1361,7 +1361,8 @@ ChallengeEditor.propTypes = {
   token: PropTypes.string.isRequired,
   failedToLoad: PropTypes.bool,
   history: PropTypes.any.isRequired,
-  assignedMemberDetails: PropTypes.shape()
+  assignedMemberDetails: PropTypes.shape(),
+  updateChallengeDetails: PropTypes.func.isRequired
 }
 
 export default withRouter(ChallengeEditor)
