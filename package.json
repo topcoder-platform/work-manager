@@ -76,7 +76,7 @@
     "xss": "^1.0.6"
   },
   "scripts": {
-    "start": "node server.js",
+    "start": "node ./bin/www",
     "server:dev": "cross-env BABEL_ENV=development NODE_ENV=development node ./bin/www",
     "dev": "node scripts/start.js",
     "build": "node scripts/build.js",
