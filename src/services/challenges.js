@@ -94,7 +94,7 @@ async function fetchChallengePhases () {
  * @returns {Promise<*>}
  */
 async function fetchChallenge (challengeId) {
-  const response = this.axios.get(`${CHALLENGE_API_URL}/${challengeId}`)
+  const response = await this.axios.get(`${CHALLENGE_API_URL}/${challengeId}`)
   return normalizeChallengeDataFromAPI(_.get(response, 'data'))
 }
 
