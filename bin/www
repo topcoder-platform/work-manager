@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+const path = require('path');
+const rootPath = path.join(__dirname, '../');
+
+/* App startup script. */
+
+/* Enables Babel for the server-side code (with exception of this very file). */
+require('@babel/register')({
+  root: rootPath,
+  ignore: [
+    /node_modules\/(?!appirio-tech.*|topcoder|tc-)/,
+    /node_modules\/topcoder-react-utils/,
+  ],
+  "presets": [
+      "@babel/preset-react",
+      [
+        "@babel/preset-env",
+        {
+          "targets": {
+            "esmodules": true
+          }
+        }
+      ]
+    ]
+});
+
+/* Runs the ExpressJS startup script. */
+require('../server');

@@ -39,17 +39,17 @@ import dropdowns from './mock-data/dropdowns'
 import LastSavedDisplay from './LastSaved-Display'
 import styles from './ChallengeEditor.module.scss'
 import Track from '../Track'
-import {
-  createChallenge,
-  createResource,
-  deleteResource,
-  patchChallenge
-} from '../../services/challenges'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import AlertModal from '../Modal/AlertModal'
 import PhaseInput from '../PhaseInput'
 import LegacyLinks from '../LegacyLinks'
 import AssignedMemberField from './AssignedMember-Field'
+const {
+  createChallenge,
+  createResource,
+  deleteResource,
+  patchChallenge
+} = require('../../services/challenges').service
 
 const theme = {
   container: styles.modalContainer

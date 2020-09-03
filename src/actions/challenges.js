@@ -1,21 +1,5 @@
 import _ from 'lodash'
 import {
-  fetchChallengeTypes,
-  fetchChallengeTags,
-  fetchGroups,
-  fetchTimelineTemplates,
-  fetchChallengePhases,
-  uploadAttachment,
-  fetchChallenge,
-  fetchChallenges,
-  fetchChallengeTerms,
-  fetchResources,
-  fetchResourceRoles,
-  fetchChallengeTimelines,
-  fetchChallengeTracks,
-  updateChallenge
-} from '../services/challenges'
-import {
   LOAD_CHALLENGE_DETAILS_PENDING,
   LOAD_CHALLENGE_DETAILS_SUCCESS,
   LOAD_CHALLENGE_DETAILS_FAILURE,
@@ -38,6 +22,23 @@ import {
 } from '../config/constants'
 import { fetchProjectById } from '../services/projects'
 import { loadProject } from './projects'
+const {
+  fetchMetadata,
+  fetchChallengeTypes,
+  fetchChallengeTags,
+  fetchGroups,
+  fetchTimelineTemplates,
+  fetchChallengePhases,
+  uploadAttachment,
+  fetchChallenge,
+  fetchChallenges,
+  fetchChallengeTerms,
+  fetchResources,
+  fetchResourceRoles,
+  fetchChallengeTimelines,
+  fetchChallengeTracks,
+  updateChallenge
+} = require('../services/challenges').service
 
 /**
  * Member challenges related redux actions
@@ -198,6 +199,17 @@ export function loadChallengeDetails (projectId, challengeId) {
         })
       }
     }
+  }
+}
+
+export function loadMetadata () {
+  return async (dispatch) => {
+    const metadata = await fetchMetadata()
+    dispatch({
+      type: LOAD_CHALLENGE_METADATA_SUCCESS,
+      metadataKey: 'metadata',
+      metadataValue: metadata
+    })
   }
 }
 
