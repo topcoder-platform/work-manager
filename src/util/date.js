@@ -57,6 +57,33 @@ export const convertChallengePhaseFromSecondsToHours = (phases) => {
 }
 
 /**
+ * Normalize challenge data from the format returned by API
+ * to the format we use in Redux Store
+ *
+ * @param {Object} apiChallengeData challenge data from API
+ *
+ * @returns {object} challenge data in the Redux Store format
+ */
+export const normalizeChallengeDataFromAPI = (apiChallengeData) => {
+  const normalizedChallengeData = _.cloneDeep(apiChallengeData)
+  if (normalizedChallengeData.legacy) {
+    if (normalizedChallengeData.legacy.track) {
+      normalizedChallengeData.track = normalizedChallengeData.legacy.track.trim()
+    }
+    if (normalizedChallengeData.legacy.reviewType) {
+      normalizedChallengeData.reviewType = normalizedChallengeData.legacy.reviewType
+    }
+    if (normalizedChallengeData.legacy.forumId) {
+      normalizedChallengeData.forumId = normalizedChallengeData.legacy.forumId
+    }
+  }
+  convertChallengePhaseFromSecondsToHours(normalizedChallengeData.phases)
+  normalizedChallengeData.phases = sortChallengePhases(normalizedChallengeData.phases)
+
+  return normalizedChallengeData
+}
+
+/**
  * Sorts the challenge phases in order of their supposed execution
  *
  * @param {Array} phases challenge phases that are to be sorte3d

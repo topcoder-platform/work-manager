@@ -19,7 +19,9 @@ import {
   UPLOAD_ATTACHMENT_SUCCESS,
   UPLOAD_ATTACHMENT_PENDING,
   REMOVE_ATTACHMENT,
-  SET_FILTER_CHALLENGE_VALUE
+  SET_FILTER_CHALLENGE_VALUE,
+  UPDATE_CHALLENGE_DETAILS_FAILURE,
+  UPDATE_CHALLENGE_DETAILS_SUCCESS
 } from '../config/constants'
 
 const initialState = {
@@ -79,8 +81,10 @@ export default function (state = initialState, action) {
     case LOAD_CHALLENGES_FAILURE:
       return { ...state, isLoading: false }
     case LOAD_CHALLENGE_DETAILS_FAILURE:
+    case UPDATE_CHALLENGE_DETAILS_FAILURE:
       return { ...state, isLoading: false, attachments: [], challenge: null, failedToLoad: true }
     case LOAD_CHALLENGE_DETAILS_SUCCESS:
+    case UPDATE_CHALLENGE_DETAILS_SUCCESS:
       return {
         ...state,
         challengeDetails: action.challengeDetails,

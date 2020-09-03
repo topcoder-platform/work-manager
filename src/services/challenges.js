@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import qs from 'qs'
 import { axiosInstance } from './axiosWithAuth'
-import { updateChallengePhaseBeforeSendRequest, convertChallengePhaseFromSecondsToHours, sortChallengePhases } from '../util/date'
+import { updateChallengePhaseBeforeSendRequest, convertChallengePhaseFromSecondsToHours, normalizeChallengeDataFromAPI } from '../util/date'
 import FormData from 'form-data'
 const {
   CHALLENGE_API_URL,
@@ -94,22 +94,8 @@ async function fetchChallengePhases () {
  * @returns {Promise<*>}
  */
 async function fetchChallenge (challengeId) {
-  const response = await this.axios.get(`${CHALLENGE_API_URL}/${challengeId}`)
-  const newResponse = _.get(response, 'data')
-  if (newResponse.legacy) {
-    if (newResponse.legacy.track) {
-      newResponse.track = newResponse.legacy.track.trim()
-    }
-    if (newResponse.legacy.reviewType) {
-      newResponse.reviewType = newResponse.legacy.reviewType
-    }
-    if (newResponse.legacy.forumId) {
-      newResponse.forumId = newResponse.legacy.forumId
-    }
-  }
-  convertChallengePhaseFromSecondsToHours(newResponse.phases)
-  newResponse.phases = sortChallengePhases(newResponse.phases)
-  return newResponse
+  const response = this.axios.get(`${CHALLENGE_API_URL}/${challengeId}`)
+  return normalizeChallengeDataFromAPI(_.get(response, 'data'))
 }
 
 /**
@@ -118,7 +104,7 @@ async function fetchChallenge (challengeId) {
  * @returns {Promise<*>}
  */
 function createChallenge (challenge) {
-  return axiosInstance.post(CHALLENGE_API_URL, updateChallengePhaseBeforeSendRequest(challenge)).then(rs => {
+  return this.axios.post(CHALLENGE_API_URL, updateChallengePhaseBeforeSendRequest(challenge)).then(rs => {
     convertChallengePhaseFromSecondsToHours(rs.data.phases)
     return rs
   })
@@ -128,19 +114,18 @@ function createChallenge (challenge) {
  * Api request for updating challenge
  * @param challenge challenge data
  * @param challengeId Challenge id
- * @returns {Promise<*>}
+ * @returns {Promise<*>} challenge data
  */
-function updateChallenge (challenge, challengeId) {
-  return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(challenge)).then(rs => {
-    convertChallengePhaseFromSecondsToHours(rs.data.phases)
-    return rs
+export function updateChallenge (challenge, challengeId) {
+  return this.axios.put(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(challenge)).then(response => {
+    return normalizeChallengeDataFromAPI(_.get(response, 'data'))
   })
 }
 
 function uploadAttachment (challengeId, file) {
   const data = new FormData()
   data.append('attachment', file)
-  return axiosInstance.post(`${CHALLENGE_API_URL}/${challengeId}/attachments`, data)
+  return this.axios.post(`${CHALLENGE_API_URL}/${challengeId}/attachments`, data)
 }
 
 /**
@@ -153,7 +138,7 @@ function fetchChallenges (filters, params) {
     ...filters,
     ...params
   }
-  return axiosInstance.get(`${CHALLENGE_API_URL}?${qs.stringify(query, { encode: false })}`)
+  return this.axios.get(`${CHALLENGE_API_URL}?${qs.stringify(query, { encode: false })}`)
 }
 
 /**
@@ -162,7 +147,7 @@ function fetchChallenges (filters, params) {
  * @param params
  */
 function patchChallenge (challengeId, params) {
-  return axiosInstance.patch(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(params)).then(rs => {
+  return this.axios.patch(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(params)).then(rs => {
     convertChallengePhaseFromSecondsToHours(rs.data.phases)
     return rs
   })
@@ -186,7 +171,7 @@ async function fetchChallengeTerms () {
  * @returns {Promise<*>}
  */
 function createResource (resource) {
-  return axiosInstance.post(RESOURCES_API_URL, resource)
+  return this.axios.post(RESOURCES_API_URL, resource)
 }
 
 /**
@@ -248,6 +233,7 @@ function Challenges () {
   this.fetchResourceRoles = fetchResourceRoles.bind(this)
   this.deleteResource = deleteResource.bind(this)
   this.fetchMetadata = fetchMetadata.bind(this)
+  this.updateChallenge = updateChallenge.bind(this)
   return this
 }
 

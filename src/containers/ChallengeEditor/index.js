@@ -19,8 +19,9 @@ import {
   loadChallengeDetails,
   createAttachment,
   removeAttachment,
-  loadResources
-  // loadResourceRoles
+  loadResources,
+  // loadResourceRoles,
+  updateChallengeDetails
 } from '../../actions/challenges'
 import {
   loadMemberDetails
@@ -123,6 +124,7 @@ class ChallengeEditor extends Component {
       removeAttachment,
       failedToLoad,
       projectDetail,
+      updateChallengeDetails,
       members
     } = this.props
     const challengeId = _.get(match.params, 'challengeId', null)
@@ -151,6 +153,7 @@ class ChallengeEditor extends Component {
             failedToLoad={failedToLoad}
             projectDetail={projectDetail}
             assignedMemberDetails={assignedMemberDetails}
+            updateChallengeDetails={updateChallengeDetails}
           />
         ))
         } />
@@ -173,6 +176,7 @@ class ChallengeEditor extends Component {
             failedToLoad={failedToLoad}
             projectDetail={projectDetail}
             assignedMemberDetails={assignedMemberDetails}
+            updateChallengeDetails={updateChallengeDetails}
           />
         ))
         } />
@@ -230,6 +234,7 @@ ChallengeEditor.propTypes = {
   removeAttachment: PropTypes.func,
   failedToLoad: PropTypes.bool,
   loadMemberDetails: PropTypes.func,
+  updateChallengeDetails: PropTypes.func,
   members: PropTypes.arrayOf(PropTypes.shape())
 }
 
@@ -260,7 +265,8 @@ const mapDispatchToProps = {
   // loadChallengeTerms,
   loadResources,
   // loadResourceRoles,
-  loadMemberDetails
+  loadMemberDetails,
+  updateChallengeDetails
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChallengeEditor))

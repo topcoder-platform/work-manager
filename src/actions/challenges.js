@@ -15,7 +15,10 @@ import {
   LOAD_CHALLENGE_RESOURCES_SUCCESS,
   LOAD_CHALLENGE_RESOURCES_FAILURE,
   REMOVE_ATTACHMENT,
-  PAGE_SIZE
+  PAGE_SIZE,
+  UPDATE_CHALLENGE_DETAILS_PENDING,
+  UPDATE_CHALLENGE_DETAILS_SUCCESS,
+  UPDATE_CHALLENGE_DETAILS_FAILURE
 } from '../config/constants'
 import { fetchProjectById } from '../services/projects'
 import { loadProject } from './projects'
@@ -33,7 +36,8 @@ const {
   fetchResources,
   fetchResourceRoles,
   fetchChallengeTimelines,
-  fetchChallengeTracks
+  fetchChallengeTracks,
+  updateChallenge
 } = require('../services/challenges').service
 
 /**
@@ -205,6 +209,33 @@ export function loadMetadata () {
       type: LOAD_CHALLENGE_METADATA_SUCCESS,
       metadataKey: 'metadata',
       metadataValue: metadata
+    })
+  }
+}
+
+/**
+ * Update Challenge details
+ *
+ * @param {String} challengeId      challenge id
+ * @param {Object} challengeDetails challenge data
+ *
+ * @returns {Promise<{ type: string, challengeDetails: object }>} action object
+ */
+export function updateChallengeDetails (challengeId, challengeDetails) {
+  return async (dispatch) => {
+    dispatch({
+      type: UPDATE_CHALLENGE_DETAILS_PENDING
+    })
+
+    return updateChallenge(challengeDetails, challengeId).then((challenge) => {
+      return dispatch({
+        type: UPDATE_CHALLENGE_DETAILS_SUCCESS,
+        challengeDetails: challenge
+      })
+    }).catch(() => {
+      dispatch({
+        type: UPDATE_CHALLENGE_DETAILS_FAILURE
+      })
     })
   }
 }
