@@ -582,7 +582,7 @@ class ChallengeEditor extends Component {
         return false
       }
       const prizeNumber = parseInt(prize.value)
-      if (prizeNumber > 1000000) {
+      if (prizeNumber <= 0 || prizeNumber > 1000000) {
         return false
       }
       return true
@@ -1306,8 +1306,6 @@ class ChallengeEditor extends Component {
             <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <ChallengeTotalField challenge={challenge} />
-            { this.state.hasValidationErrors && !this.isValidChallengePrizes() &&
-              <div className={styles.error}>Prize amounts should be from 0 to 1000000</div> }
           </div>
           { actionButtons }
         </form>
