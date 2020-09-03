@@ -138,7 +138,11 @@ export function fetchChallenges (filters, params) {
     ...filters,
     ...params
   }
-  return axiosInstance.get(`${CHALLENGE_API_URL}?${qs.stringify(query, { encode: false })}`)
+  return axiosInstance.get(`${CHALLENGE_API_URL}?${qs.stringify(query, { encode: false })}`).then(response => {
+    // normalize challenge data in the list of challenges for consistency with data of a single challenge details page
+    response.data = response.data.map(normalizeChallengeDataFromAPI)
+    return response
+  })
 }
 
 /**
