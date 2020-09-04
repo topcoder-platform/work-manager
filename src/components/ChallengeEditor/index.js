@@ -42,8 +42,7 @@ import Track from '../Track'
 import {
   createChallenge,
   createResource,
-  deleteResource,
-  patchChallenge
+  deleteResource
 } from '../../services/challenges'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import AlertModal from '../Modal/AlertModal'
@@ -78,7 +77,6 @@ class ChallengeEditor extends Component {
         ...dropdowns['newChallenge']
       },
       draftChallenge: { data: { id: null } },
-      timeLastSaved: moment().format('MMMM Do YYYY, h:mm:ss a'),
       currentTemplate: null,
       // set `assignedMemberDetails` immediately, in case it's already loaded
       // NOTE that we have to keep `assignedMemberDetails` in the local state, rather than just get it from the props
@@ -774,6 +772,7 @@ class ChallengeEditor extends Component {
   // }
 
   async autoUpdateChallenge (changedField, prevValue) {
+    const { partiallyUpdateChallengeDetails } = this.props
     if (this.state.isSaving || this.state.isLoading || !this.getCurrentChallengeId()) return
     const challengeId = this.state.draftChallenge.data.id || this.props.challengeId
     if (_.includes(['copilot', 'reviewer'], changedField)) {
@@ -806,7 +805,8 @@ class ChallengeEditor extends Component {
       try {
         const copilot = this.state.draftChallenge.data.copilot
         const reviewer = this.state.draftChallenge.data.reviewer
-        const draftChallenge = await patchChallenge(challengeId, patchObject)
+        const action = await partiallyUpdateChallengeDetails(challengeId, patchObject)
+        const draftChallenge = { data: action.challengeDetails }
         draftChallenge.copilot = copilot
         draftChallenge.reviewer = reviewer
         const { challenge: oldChallenge } = this.state
@@ -822,7 +822,6 @@ class ChallengeEditor extends Component {
         } else {
           this.setState({ draftChallenge })
         }
-        this.updateTimeLastSaved()
       } catch (error) {
         if (changedField === 'groups') {
           toastr.error('Error', `You don't have access to the ${patchObject.groups[0]} group`)
@@ -860,7 +859,6 @@ class ChallengeEditor extends Component {
       const { copilot, reviewer } = this.state.challenge
       if (copilot) await this.updateResource(challengeId, 'Copilot', copilot, previousCopilot)
       if (reviewer) await this.updateResource(challengeId, 'Reviewer', reviewer, previousReviewer)
-      this.updateTimeLastSaved()
 
       const draftChallenge = { data: action.challengeDetails }
       draftChallenge.data.copilot = copilot
@@ -892,10 +890,6 @@ class ChallengeEditor extends Component {
     })
   }
 
-  updateTimeLastSaved () {
-    this.setState({ timeLastSaved: moment().format('MMMM Do YYYY, h:mm:ss a') })
-  }
-
   getResourceRoleByName (name) {
     const { resourceRoles } = this.props.metadata
     return resourceRoles ? resourceRoles.find(role => role.name === name) : null
@@ -918,7 +912,6 @@ class ChallengeEditor extends Component {
     }
 
     await createResource(newResource)
-    this.updateTimeLastSaved()
   }
 
   updateAttachmentlist (challenge, attachments) {
@@ -969,7 +962,15 @@ class ChallengeEditor extends Component {
   }
 
   render () {
-    const { isLaunch, isConfirm, challenge, isOpenAdvanceSettings, timeLastSaved, isSaving, isCloseTask } = this.state
+    const {
+      isLaunch,
+      isConfirm,
+      challenge,
+      draftChallenge,
+      isOpenAdvanceSettings,
+      isSaving,
+      isCloseTask
+    } = this.state
     const {
       isNew,
       isLoading,
@@ -1153,7 +1154,7 @@ class ChallengeEditor extends Component {
       {
         !isNew && (
           <div className={styles.bottomContainer}>
-            {!isLoading && <LastSavedDisplay timeLastSaved={timeLastSaved} />}
+            {!isLoading && <LastSavedDisplay timeLastSaved={draftChallenge.data.updated} />}
             {!isLoading && (!isActive) && (!isCompleted) && <div className={styles.buttonContainer}>
               <div className={styles.button}>
                 <OutlineButton text={'Save Draft'} type={'success'} onClick={this.createDraftHandler} />
@@ -1360,7 +1361,8 @@ ChallengeEditor.propTypes = {
   failedToLoad: PropTypes.bool,
   history: PropTypes.any.isRequired,
   assignedMemberDetails: PropTypes.shape(),
-  updateChallengeDetails: PropTypes.func.isRequired
+  updateChallengeDetails: PropTypes.func.isRequired,
+  partiallyUpdateChallengeDetails: PropTypes.func.isRequired
 }
 
 export default withRouter(ChallengeEditor)
