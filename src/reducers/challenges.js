@@ -85,8 +85,20 @@ export default function (state = initialState, action) {
       return { ...state, isLoading: false, attachments: [], challenge: null, failedToLoad: true }
     case LOAD_CHALLENGE_DETAILS_SUCCESS:
     case UPDATE_CHALLENGE_DETAILS_SUCCESS:
+      let updatedChallenges = state.challenges
+      // when updating challenge details, make the same update in the challenge list
+      if (action.type === UPDATE_CHALLENGE_DETAILS_SUCCESS) {
+        const updatedChallengeIndex = _.findIndex(state.challenges, { id: action.challengeDetails.id })
+        updatedChallenges = [
+          ...state.challenges.slice(0, updatedChallengeIndex),
+          action.challengeDetails,
+          ...state.challenges.slice(updatedChallengeIndex + 1)
+        ]
+      }
+
       return {
         ...state,
+        challenges: updatedChallenges,
         challengeDetails: action.challengeDetails,
         isLoading: false,
         attachments: _.has(action.challengeDetails, 'attachments') ? action.challengeDetails.attachments : [],
