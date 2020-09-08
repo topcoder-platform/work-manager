@@ -84,14 +84,16 @@ class ChallengePrizesField extends Component {
             }
           </div>)}
         </div>
-        {!readOnly && (prize.value === '' || (length > 1 && +prize.value === 0)) && <div className={styles.row}>
-          <div className={cn(styles.field, styles.col1)} />
-          <div className={cn(styles.field, styles.col2, styles.error)}>
-            {prize.value === ''
-              ? 'Prize amount is required field'
-              : 'Prize amount must be more than zero'}
+        {!readOnly && (prize.value === '' || (+prize.value <= 0 || +prize.value > 1000000)) && (
+          <div className={styles.row}>
+            <div className={cn(styles.field, styles.col1)} />
+            <div className={cn(styles.field, styles.col2, styles.error)}>
+              {prize.value === ''
+                ? 'Prize amount is required field'
+                : 'Prize amount must be more than 0 and no more than 1000000'}
+            </div>
           </div>
-        </div>}
+        )}
       </div>
     ))
   }

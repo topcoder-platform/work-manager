@@ -13,7 +13,8 @@ import {
   fetchResourceRoles,
   fetchChallengeTimelines,
   fetchChallengeTracks,
-  updateChallenge
+  updateChallenge,
+  patchChallenge
 } from '../services/challenges'
 import {
   LOAD_CHALLENGE_DETAILS_PENDING,
@@ -202,7 +203,7 @@ export function loadChallengeDetails (projectId, challengeId) {
 }
 
 /**
- * Update Challenge details
+ * Update challenge details
  *
  * @param {String} challengeId      challenge id
  * @param {Object} challengeDetails challenge data
@@ -215,7 +216,36 @@ export function updateChallengeDetails (challengeId, challengeDetails) {
       type: UPDATE_CHALLENGE_DETAILS_PENDING
     })
 
-    return updateChallenge(challengeDetails, challengeId).then((challenge) => {
+    return updateChallenge(challengeId, challengeDetails).then((challenge) => {
+      return dispatch({
+        type: UPDATE_CHALLENGE_DETAILS_SUCCESS,
+        challengeDetails: challenge
+      })
+    }).catch(() => {
+      dispatch({
+        type: UPDATE_CHALLENGE_DETAILS_FAILURE
+      })
+    })
+  }
+}
+
+/**
+ * Partially update challenge details
+ *
+ * The difference from `updateChallengeDetails` that this method internally uses `PATCH` API method instead of `PUT`.
+ *
+ * @param {String} challengeId             challenge id
+ * @param {Object} partialChallengeDetails partial challenge data
+ *
+ * @returns {Promise<{ type: string, challengeDetails: object }>} action object
+ */
+export function partiallyUpdateChallengeDetails (challengeId, partialChallengeDetails) {
+  return async (dispatch) => {
+    dispatch({
+      type: UPDATE_CHALLENGE_DETAILS_PENDING
+    })
+
+    return patchChallenge(challengeId, partialChallengeDetails).then((challenge) => {
       return dispatch({
         type: UPDATE_CHALLENGE_DETAILS_SUCCESS,
         challengeDetails: challenge

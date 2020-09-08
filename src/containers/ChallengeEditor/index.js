@@ -20,7 +20,8 @@ import {
   removeAttachment,
   loadResources,
   loadResourceRoles,
-  updateChallengeDetails
+  updateChallengeDetails,
+  partiallyUpdateChallengeDetails
 } from '../../actions/challenges'
 import {
   loadMemberDetails
@@ -122,6 +123,7 @@ class ChallengeEditor extends Component {
       failedToLoad,
       projectDetail,
       updateChallengeDetails,
+      partiallyUpdateChallengeDetails,
       members
     } = this.props
     const challengeId = _.get(match.params, 'challengeId', null)
@@ -151,6 +153,7 @@ class ChallengeEditor extends Component {
             projectDetail={projectDetail}
             assignedMemberDetails={assignedMemberDetails}
             updateChallengeDetails={updateChallengeDetails}
+            partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
           />
         ))
         } />
@@ -174,6 +177,7 @@ class ChallengeEditor extends Component {
             projectDetail={projectDetail}
             assignedMemberDetails={assignedMemberDetails}
             updateChallengeDetails={updateChallengeDetails}
+            partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
           />
         ))
         } />
@@ -230,7 +234,8 @@ ChallengeEditor.propTypes = {
   removeAttachment: PropTypes.func,
   failedToLoad: PropTypes.bool,
   loadMemberDetails: PropTypes.func,
-  updateChallengeDetails: PropTypes.func,
+  updateChallengeDetails: PropTypes.func.isRequired,
+  partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   members: PropTypes.arrayOf(PropTypes.shape())
 }
 
@@ -261,7 +266,8 @@ const mapDispatchToProps = {
   loadResources,
   loadResourceRoles,
   loadMemberDetails,
-  updateChallengeDetails
+  updateChallengeDetails,
+  partiallyUpdateChallengeDetails
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChallengeEditor))

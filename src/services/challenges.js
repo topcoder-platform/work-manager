@@ -112,11 +112,11 @@ export function createChallenge (challenge) {
 
 /**
  * Api request for updating challenge
- * @param challenge challenge data
  * @param challengeId Challenge id
+ * @param challenge challenge data
  * @returns {Promise<*>} challenge data
  */
-export function updateChallenge (challenge, challengeId) {
+export function updateChallenge (challengeId, challenge) {
   return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(challenge)).then(response => {
     return normalizeChallengeDataFromAPI(_.get(response, 'data'))
   })
@@ -138,7 +138,11 @@ export function fetchChallenges (filters, params) {
     ...filters,
     ...params
   }
-  return axiosInstance.get(`${CHALLENGE_API_URL}?${qs.stringify(query, { encode: false })}`)
+  return axiosInstance.get(`${CHALLENGE_API_URL}?${qs.stringify(query, { encode: false })}`).then(response => {
+    // normalize challenge data in the list of challenges for consistency with data of a single challenge details page
+    response.data = response.data.map(normalizeChallengeDataFromAPI)
+    return response
+  })
 }
 
 /**
@@ -148,8 +152,7 @@ export function fetchChallenges (filters, params) {
  */
 export function patchChallenge (challengeId, params) {
   return axiosInstance.patch(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(params)).then(rs => {
-    convertChallengePhaseFromSecondsToHours(rs.data.phases)
-    return rs
+    return normalizeChallengeDataFromAPI(_.get(rs, 'data'))
   })
 }
 
