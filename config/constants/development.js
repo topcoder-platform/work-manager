@@ -2,6 +2,7 @@ const DOMAIN = 'topcoder-dev.com'
 const DEV_API_HOSTNAME = `https://api.${DOMAIN}`
 
 module.exports = {
+  NODE_ENV: 'development',
   ACCOUNTS_APP_CONNECTOR_URL: `https://accounts.${DOMAIN}/connector.html`,
   ACCOUNTS_APP_LOGIN_URL: `https://accounts.${DOMAIN}/member`,
   COMMUNITY_APP_URL: `https://www.${DOMAIN}`,
