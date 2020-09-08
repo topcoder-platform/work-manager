@@ -1051,8 +1051,8 @@ class ChallengeEditor extends Component {
     if (!isNew && isLaunch && !isConfirm) {
       activateModal = (
         <ConfirmationModal
-          title='Launch Challenge Confirmation'
-          message={`Do you want to launch ${type} challenge "${challenge.name}"?`}
+          title='Confirm Launch'
+          message={`Do you want to launch "${challenge.name}"?`}
           theme={theme}
           isProcessing={this.state.isSaving}
           errorMessage={this.state.error}
