@@ -717,6 +717,9 @@ class ChallengeEditor extends Component {
     const { name, trackId, typeId } = this.state.challenge
     const { timelineTemplates } = metadata
 
+    // indicate that creating process has started
+    this.setState({ isSaving: true })
+
     // fallback template
     const STD_DEV_TIMELINE_TEMPLATE = _.find(timelineTemplates, { name: 'Standard Development' })
     const avlTemplates = this.getAvailableTimelineTemplates()
@@ -1146,7 +1149,7 @@ class ChallengeEditor extends Component {
         isNew && (
           <div className={styles.buttonContainer}>
             <div className={styles.button}>
-              <OutlineButton text={'Continue Set-Up'} type={'success'} submit />
+              <OutlineButton text={'Continue Set-Up'} type={'success'} submit disabled={isSaving} />
             </div>
           </div>
         )
