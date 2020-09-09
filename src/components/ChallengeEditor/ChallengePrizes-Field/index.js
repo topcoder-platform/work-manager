@@ -84,7 +84,7 @@ class ChallengePrizesField extends Component {
             }
           </div>)}
         </div>
-        {!readOnly && (prize.value === '' || (+prize.value <= 0 || +prize.value > 1000000)) && (
+        {!readOnly && challenge.submitTriggered && (prize.value === '' || (+prize.value <= 0 || +prize.value > 1000000)) && (
           <div className={styles.row}>
             <div className={cn(styles.field, styles.col1)} />
             <div className={cn(styles.field, styles.col2, styles.error)}>
