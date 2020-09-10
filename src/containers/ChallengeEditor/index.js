@@ -21,7 +21,8 @@ import {
   loadResources,
   loadResourceRoles,
   updateChallengeDetails,
-  partiallyUpdateChallengeDetails
+  partiallyUpdateChallengeDetails,
+  createChallenge
 } from '../../actions/challenges'
 import {
   loadMemberDetails
@@ -124,6 +125,7 @@ class ChallengeEditor extends Component {
       projectDetail,
       updateChallengeDetails,
       partiallyUpdateChallengeDetails,
+      createChallenge,
       members
     } = this.props
     const challengeId = _.get(match.params, 'challengeId', null)
@@ -153,6 +155,7 @@ class ChallengeEditor extends Component {
             projectDetail={projectDetail}
             assignedMemberDetails={assignedMemberDetails}
             updateChallengeDetails={updateChallengeDetails}
+            createChallenge={createChallenge}
             partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
           />
         ))
@@ -236,6 +239,7 @@ ChallengeEditor.propTypes = {
   loadMemberDetails: PropTypes.func,
   updateChallengeDetails: PropTypes.func.isRequired,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
+  createChallenge: PropTypes.func.isRequired,
   members: PropTypes.arrayOf(PropTypes.shape())
 }
 
@@ -267,7 +271,8 @@ const mapDispatchToProps = {
   loadResourceRoles,
   loadMemberDetails,
   updateChallengeDetails,
-  partiallyUpdateChallengeDetails
+  partiallyUpdateChallengeDetails,
+  createChallenge
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChallengeEditor))
