@@ -40,7 +40,6 @@ import LastSavedDisplay from './LastSaved-Display'
 import styles from './ChallengeEditor.module.scss'
 import Track from '../Track'
 import {
-  createChallenge,
   createResource,
   deleteResource
 } from '../../services/challenges'
@@ -713,7 +712,7 @@ class ChallengeEditor extends Component {
 
   async createNewChallenge () {
     if (!this.props.isNew) return
-    const { metadata } = this.props
+    const { metadata, createChallenge } = this.props
     const { name, trackId, typeId } = this.state.challenge
     const { timelineTemplates } = metadata
 
@@ -743,7 +742,10 @@ class ChallengeEditor extends Component {
       // prizeSets: this.getDefaultPrizeSets()
     }
     try {
-      const draftChallenge = await createChallenge(newChallenge)
+      const action = await createChallenge(newChallenge)
+      const draftChallenge = {
+        data: action.challengeDetails
+      }
       this.goToEdit(draftChallenge.data.id)
       this.setState({ isSaving: false, draftChallenge })
     } catch (e) {
@@ -1365,6 +1367,7 @@ ChallengeEditor.propTypes = {
   history: PropTypes.any.isRequired,
   assignedMemberDetails: PropTypes.shape(),
   updateChallengeDetails: PropTypes.func.isRequired,
+  createChallenge: PropTypes.func,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired
 }
 

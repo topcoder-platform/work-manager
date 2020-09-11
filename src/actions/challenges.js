@@ -14,7 +14,8 @@ import {
   fetchChallengeTimelines,
   fetchChallengeTracks,
   updateChallenge,
-  patchChallenge
+  patchChallenge,
+  createChallenge as createChallengeAPI
 } from '../services/challenges'
 import {
   LOAD_CHALLENGE_DETAILS_PENDING,
@@ -35,7 +36,10 @@ import {
   PAGE_SIZE,
   UPDATE_CHALLENGE_DETAILS_PENDING,
   UPDATE_CHALLENGE_DETAILS_SUCCESS,
-  UPDATE_CHALLENGE_DETAILS_FAILURE
+  UPDATE_CHALLENGE_DETAILS_FAILURE,
+  CREATE_CHALLENGE_PENDING,
+  CREATE_CHALLENGE_SUCCESS,
+  CREATE_CHALLENGE_FAILURE
 } from '../config/constants'
 import { fetchProjectById } from '../services/projects'
 import { loadProject } from './projects'
@@ -224,6 +228,32 @@ export function updateChallengeDetails (challengeId, challengeDetails) {
     }).catch(() => {
       dispatch({
         type: UPDATE_CHALLENGE_DETAILS_FAILURE
+      })
+    })
+  }
+}
+
+/**
+ * Create a new challenge
+ *
+ * @param {Object} challengeDetails challenge data
+ *
+ * @returns {Promise<{ type: string, challengeDetails: object }>} action object
+ */
+export function createChallenge (challengeDetails) {
+  return async (dispatch) => {
+    dispatch({
+      type: CREATE_CHALLENGE_PENDING
+    })
+
+    return createChallengeAPI(challengeDetails).then((challenge) => {
+      return dispatch({
+        type: CREATE_CHALLENGE_SUCCESS,
+        challengeDetails: challenge
+      })
+    }).catch(() => {
+      dispatch({
+        type: CREATE_CHALLENGE_FAILURE
       })
     })
   }

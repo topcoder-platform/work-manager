@@ -101,12 +101,11 @@ export async function fetchChallenge (challengeId) {
 /**
  * Api request for creating new challenge
  * @param challenge challenge data
- * @returns {Promise<*>}
+ * @returns {Promise<*>} challenge data
  */
 export function createChallenge (challenge) {
-  return axiosInstance.post(CHALLENGE_API_URL, updateChallengePhaseBeforeSendRequest(challenge)).then(rs => {
-    convertChallengePhaseFromSecondsToHours(rs.data.phases)
-    return rs
+  return axiosInstance.post(CHALLENGE_API_URL, updateChallengePhaseBeforeSendRequest(challenge)).then(response => {
+    return normalizeChallengeDataFromAPI(_.get(response, 'data'))
   })
 }
 
