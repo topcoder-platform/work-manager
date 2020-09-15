@@ -12,7 +12,10 @@ import {
   fetchResources,
   fetchResourceRoles,
   fetchChallengeTimelines,
-  fetchChallengeTracks
+  fetchChallengeTracks,
+  updateChallenge,
+  patchChallenge,
+  createChallenge as createChallengeAPI
 } from '../services/challenges'
 import {
   LOAD_CHALLENGE_DETAILS_PENDING,
@@ -30,7 +33,13 @@ import {
   LOAD_CHALLENGE_RESOURCES_SUCCESS,
   LOAD_CHALLENGE_RESOURCES_FAILURE,
   REMOVE_ATTACHMENT,
-  PAGE_SIZE
+  PAGE_SIZE,
+  UPDATE_CHALLENGE_DETAILS_PENDING,
+  UPDATE_CHALLENGE_DETAILS_SUCCESS,
+  UPDATE_CHALLENGE_DETAILS_FAILURE,
+  CREATE_CHALLENGE_PENDING,
+  CREATE_CHALLENGE_SUCCESS,
+  CREATE_CHALLENGE_FAILURE
 } from '../config/constants'
 import { fetchProjectById } from '../services/projects'
 import { loadProject } from './projects'
@@ -194,6 +203,88 @@ export function loadChallengeDetails (projectId, challengeId) {
         })
       }
     }
+  }
+}
+
+/**
+ * Update challenge details
+ *
+ * @param {String} challengeId      challenge id
+ * @param {Object} challengeDetails challenge data
+ *
+ * @returns {Promise<{ type: string, challengeDetails: object }>} action object
+ */
+export function updateChallengeDetails (challengeId, challengeDetails) {
+  return async (dispatch) => {
+    dispatch({
+      type: UPDATE_CHALLENGE_DETAILS_PENDING
+    })
+
+    return updateChallenge(challengeId, challengeDetails).then((challenge) => {
+      return dispatch({
+        type: UPDATE_CHALLENGE_DETAILS_SUCCESS,
+        challengeDetails: challenge
+      })
+    }).catch(() => {
+      dispatch({
+        type: UPDATE_CHALLENGE_DETAILS_FAILURE
+      })
+    })
+  }
+}
+
+/**
+ * Create a new challenge
+ *
+ * @param {Object} challengeDetails challenge data
+ *
+ * @returns {Promise<{ type: string, challengeDetails: object }>} action object
+ */
+export function createChallenge (challengeDetails) {
+  return async (dispatch) => {
+    dispatch({
+      type: CREATE_CHALLENGE_PENDING
+    })
+
+    return createChallengeAPI(challengeDetails).then((challenge) => {
+      return dispatch({
+        type: CREATE_CHALLENGE_SUCCESS,
+        challengeDetails: challenge
+      })
+    }).catch(() => {
+      dispatch({
+        type: CREATE_CHALLENGE_FAILURE
+      })
+    })
+  }
+}
+
+/**
+ * Partially update challenge details
+ *
+ * The difference from `updateChallengeDetails` that this method internally uses `PATCH` API method instead of `PUT`.
+ *
+ * @param {String} challengeId             challenge id
+ * @param {Object} partialChallengeDetails partial challenge data
+ *
+ * @returns {Promise<{ type: string, challengeDetails: object }>} action object
+ */
+export function partiallyUpdateChallengeDetails (challengeId, partialChallengeDetails) {
+  return async (dispatch) => {
+    dispatch({
+      type: UPDATE_CHALLENGE_DETAILS_PENDING
+    })
+
+    return patchChallenge(challengeId, partialChallengeDetails).then((challenge) => {
+      return dispatch({
+        type: UPDATE_CHALLENGE_DETAILS_SUCCESS,
+        challengeDetails: challenge
+      })
+    }).catch(() => {
+      dispatch({
+        type: UPDATE_CHALLENGE_DETAILS_FAILURE
+      })
+    })
   }
 }
 

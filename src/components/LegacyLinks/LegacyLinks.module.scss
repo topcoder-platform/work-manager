@@ -1,0 +1,21 @@
+@import "../../styles/includes";
+.container {
+  display: flex;
+  margin-top: auto;
+
+  a {
+    height: 40px;
+    &:hover {
+      text-decoration: none;
+    }
+    &:focus,
+    &:active,
+    &:visited {
+      outline: none;
+    }
+
+    button:focus {
+      outline: none;
+    }
+  }
+}

@@ -35,7 +35,7 @@ const ConfirmationModal = ({ title, message, errorMessage, theme, isProcessing, 
 
 ConfirmationModal.propTypes = {
   title: PropTypes.string,
-  message: PropTypes.string,
+  message: PropTypes.oneOf(PropTypes.string, PropTypes.node),
   errorMessage: PropTypes.string,
   theme: PropTypes.shape(),
   isProcessing: PropTypes.bool,

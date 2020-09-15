@@ -8,6 +8,7 @@ import challenges from './challenges'
 import projects from './projects'
 import challengeSubmissions from './challengeSubmissions'
 import sidebar from './sidebar'
+import members from './members'
 
 export default combineReducers({
   auth,
@@ -15,5 +16,6 @@ export default combineReducers({
   challengeSubmissions,
   sidebar,
   toastr: toastrReducer,
-  projects
+  projects,
+  members
 })

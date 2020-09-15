@@ -59,12 +59,13 @@ class ChallengePrizesField extends Component {
 
   renderPrizes () {
     const { currentPrizeIndex } = this.state
-    const { readOnly } = this.props
+    const { readOnly, challenge } = this.props
+    const isTask = _.get(challenge, 'task.isTask', false)
     return _.map(this.getChallengePrize().prizes, (prize, index, { length }) => (
       <div key={`${index}-${prize.amount}-edit`}>
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)}>
-            <label htmlFor={`${index}-prize`}>Prize {index + 1} {!readOnly && (<span>*</span>)}:</label>
+            <label htmlFor={`${index}-prize`}>Prize {!isTask ? index + 1 : ''} {!readOnly && (<span>*</span>)}:</label>
           </div>
           {readOnly ? (
             <span>${prize.value}</span>
@@ -83,20 +84,23 @@ class ChallengePrizesField extends Component {
             }
           </div>)}
         </div>
-        {!readOnly && (prize.value === '' || (length > 1 && +prize.value === 0)) && <div className={styles.row}>
-          <div className={cn(styles.field, styles.col1)} />
-          <div className={cn(styles.field, styles.col2, styles.error)}>
-            {prize.value === ''
-              ? 'Prize amount is required field'
-              : 'Prize amount must be more than zero'}
+        {!readOnly && challenge.submitTriggered && (prize.value === '' || (+prize.value <= 0 || +prize.value > 1000000)) && (
+          <div className={styles.row}>
+            <div className={cn(styles.field, styles.col1)} />
+            <div className={cn(styles.field, styles.col2, styles.error)}>
+              {prize.value === ''
+                ? 'Prize amount is required field'
+                : 'Prize amount must be more than 0 and no more than 1000000'}
+            </div>
           </div>
-        </div>}
+        )}
       </div>
     ))
   }
 
   render () {
-    const { readOnly } = this.props
+    const { readOnly, challenge } = this.props
+    const isTask = _.get(challenge, 'task.isTask', false)
     return (
       <div className={styles.container}>
         <div className={styles.row}>
@@ -105,7 +109,7 @@ class ChallengePrizesField extends Component {
           </div>
         </div>
         { this.renderPrizes() }
-        {!readOnly && (<div className={styles.button} onClick={this.addNewPrize}>
+        {!readOnly && !isTask && (<div className={styles.button} onClick={this.addNewPrize}>
           <PrimaryButton text={'Add New Prize'} type={'info'} />
         </div>)}
       </div>

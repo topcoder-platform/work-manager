@@ -13,14 +13,20 @@ import {
   loadChallengeTracks,
   loadChallengeTimelines,
   loadChallengeTags,
-  loadChallengeTerms,
+  // loadChallengeTerms,
   loadGroups,
   loadChallengeDetails,
   createAttachment,
   removeAttachment,
   loadResources,
-  loadResourceRoles
+  loadResourceRoles,
+  updateChallengeDetails,
+  partiallyUpdateChallengeDetails,
+  createChallenge
 } from '../../actions/challenges'
+import {
+  loadMemberDetails
+} from '../../actions/members'
 
 import { connect } from 'react-redux'
 
@@ -34,7 +40,7 @@ class ChallengeEditor extends Component {
       loadChallengeTracks,
       loadChallengeTimelines,
       loadChallengeTags,
-      loadChallengeTerms,
+      // loadChallengeTerms,
       loadGroups,
       loadResourceRoles,
       loadChallengeDetails,
@@ -46,7 +52,7 @@ class ChallengeEditor extends Component {
     loadChallengeTracks()
     loadChallengeTimelines()
     loadChallengeTags()
-    loadChallengeTerms()
+    // loadChallengeTerms()
     loadGroups()
     loadResourceRoles()
     this.fetchChallengeDetails(match, loadChallengeDetails, loadResources)
@@ -65,12 +71,35 @@ class ChallengeEditor extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    const { match } = this.props
-    const { match: newMatch, loadChallengeDetails, loadResources } = nextProps
+    const { match, challengeDetails } = this.props
+    const { match: newMatch, loadChallengeDetails, loadResources, challengeDetails: nextChallengeDetails } = nextProps
     const projectId = _.get(newMatch.params, 'projectId', null)
     const challengeId = _.get(newMatch.params, 'challengeId', null)
     if (_.get(match.params, 'projectId', null) !== projectId || _.get(match.params, 'challengeId', null) !== challengeId) {
       this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources)
+    }
+
+    // this section is called only one time as soon challenge details are loaded
+    if (
+      _.get(challengeDetails, 'id') !== _.get(nextChallengeDetails, 'id') &&
+      challengeId === _.get(nextChallengeDetails, 'id')
+    ) {
+      this.loadAssignedMemberDetails(nextProps)
+    }
+  }
+
+  /**
+   * Load assign member details if challenge has a member assigned
+   * @param {Object} nextProps the latest props
+   */
+  loadAssignedMemberDetails (nextProps) {
+    // cannot use `loadMemberDetails` form the `nextProps` because linter complains about unused prop
+    const { loadMemberDetails } = this.props
+    const { challengeDetails } = nextProps
+    const assignedMemberId = _.get(challengeDetails, 'task.memberId')
+
+    if (assignedMemberId) {
+      loadMemberDetails(assignedMemberId)
     }
   }
 
@@ -93,12 +122,18 @@ class ChallengeEditor extends Component {
       token,
       removeAttachment,
       failedToLoad,
-      projectDetail
+      projectDetail,
+      updateChallengeDetails,
+      partiallyUpdateChallengeDetails,
+      createChallenge,
+      members
     } = this.props
     const challengeId = _.get(match.params, 'challengeId', null)
     if (challengeId && (!challengeDetails || !challengeDetails.id)) {
       return (<Loader />)
     }
+    const assignedMemberId = _.get(challengeDetails, 'task.memberId')
+    const assignedMemberDetails = _.find(members, (member) => member.userId.toString() === assignedMemberId)
     return <div>
       <Route
         exact
@@ -118,6 +153,10 @@ class ChallengeEditor extends Component {
             removeAttachment={removeAttachment}
             failedToLoad={failedToLoad}
             projectDetail={projectDetail}
+            assignedMemberDetails={assignedMemberDetails}
+            updateChallengeDetails={updateChallengeDetails}
+            createChallenge={createChallenge}
+            partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
           />
         ))
         } />
@@ -139,6 +178,9 @@ class ChallengeEditor extends Component {
             removeAttachment={removeAttachment}
             failedToLoad={failedToLoad}
             projectDetail={projectDetail}
+            assignedMemberDetails={assignedMemberDetails}
+            updateChallengeDetails={updateChallengeDetails}
+            partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
           />
         ))
         } />
@@ -154,6 +196,7 @@ class ChallengeEditor extends Component {
             challengeResources={challengeResources}
             token={token}
             challengeId={challengeId}
+            assignedMemberDetails={assignedMemberDetails}
           />
         ))
         } />
@@ -175,7 +218,7 @@ ChallengeEditor.propTypes = {
   loadChallengeTracks: PropTypes.func,
   loadChallengeTimelines: PropTypes.func,
   loadChallengeTags: PropTypes.func,
-  loadChallengeTerms: PropTypes.func,
+  // loadChallengeTerms: PropTypes.func,
   loadGroups: PropTypes.func,
   loadChallengeDetails: PropTypes.func,
   loadResources: PropTypes.func,
@@ -192,10 +235,15 @@ ChallengeEditor.propTypes = {
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string,
   removeAttachment: PropTypes.func,
-  failedToLoad: PropTypes.bool
+  failedToLoad: PropTypes.bool,
+  loadMemberDetails: PropTypes.func,
+  updateChallengeDetails: PropTypes.func.isRequired,
+  partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
+  createChallenge: PropTypes.func.isRequired,
+  members: PropTypes.arrayOf(PropTypes.shape())
 }
 
-const mapStateToProps = ({ projects: { projectDetail }, challenges: { challengeDetails, challengeResources, metadata, isLoading, attachments, failedToLoad }, auth: { token } }) => ({
+const mapStateToProps = ({ projects: { projectDetail }, challenges: { challengeDetails, challengeResources, metadata, isLoading, attachments, failedToLoad }, auth: { token }, members: { members } }) => ({
   challengeDetails,
   projectDetail,
   challengeResources,
@@ -203,7 +251,8 @@ const mapStateToProps = ({ projects: { projectDetail }, challenges: { challengeD
   isLoading,
   attachments,
   token,
-  failedToLoad
+  failedToLoad,
+  members
 })
 
 const mapDispatchToProps = {
@@ -217,9 +266,13 @@ const mapDispatchToProps = {
   loadGroups,
   createAttachment,
   removeAttachment,
-  loadChallengeTerms,
+  // loadChallengeTerms,
   loadResources,
-  loadResourceRoles
+  loadResourceRoles,
+  loadMemberDetails,
+  updateChallengeDetails,
+  partiallyUpdateChallengeDetails,
+  createChallenge
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChallengeEditor))

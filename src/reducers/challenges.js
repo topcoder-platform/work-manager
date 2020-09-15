@@ -19,7 +19,11 @@ import {
   UPLOAD_ATTACHMENT_SUCCESS,
   UPLOAD_ATTACHMENT_PENDING,
   REMOVE_ATTACHMENT,
-  SET_FILTER_CHALLENGE_VALUE
+  SET_FILTER_CHALLENGE_VALUE,
+  UPDATE_CHALLENGE_DETAILS_FAILURE,
+  UPDATE_CHALLENGE_DETAILS_SUCCESS,
+  CREATE_CHALLENGE_SUCCESS,
+  CREATE_CHALLENGE_FAILURE
 } from '../config/constants'
 
 const initialState = {
@@ -79,6 +83,8 @@ export default function (state = initialState, action) {
     case LOAD_CHALLENGES_FAILURE:
       return { ...state, isLoading: false }
     case LOAD_CHALLENGE_DETAILS_FAILURE:
+    case UPDATE_CHALLENGE_DETAILS_FAILURE:
+    case CREATE_CHALLENGE_FAILURE:
       return { ...state, isLoading: false, attachments: [], challenge: null, failedToLoad: true }
     case LOAD_CHALLENGE_DETAILS_SUCCESS:
       return {
@@ -88,6 +94,65 @@ export default function (state = initialState, action) {
         attachments: _.has(action.challengeDetails, 'attachments') ? action.challengeDetails.attachments : [],
         failedToLoad: false
       }
+    case UPDATE_CHALLENGE_DETAILS_SUCCESS: {
+      // During editing the challenge we might change its status, so when we came back to the challenge list
+      // updated challenge might have to be removed from the list, or added to the list, or just updated
+      //
+      // NOTE: all this logic with updating challenge list could be removed,
+      //       if we always reload the challenge list when we Back from the challenge editing page
+      let updatedChallenges = state.challenges
+      const updatedChallengeIndex = _.findIndex(state.challenges, { id: action.challengeDetails.id })
+      const isSameStatus = state.status.toLowerCase() === action.challengeDetails.status.toLowerCase()
+      // 1. we updated the challenge status so it's no more on the current challenge list
+      //    so we have to remove it from the list
+      if (updatedChallengeIndex > -1 && !isSameStatus) {
+        updatedChallenges = [
+          ...state.challenges.slice(0, updatedChallengeIndex),
+          ...state.challenges.slice(updatedChallengeIndex + 1)
+        ]
+
+      // 2. we updated the challenge status so now it's on the current challenge list, but before it wasn't there as it had another status
+      //    so we have to add it to the list
+      } else if (updatedChallengeIndex === -1 && isSameStatus) {
+        updatedChallenges = [
+          action.challengeDetails,
+          ...state.challenges
+        ]
+
+      // 3. if the challenge is already on the list and didn't change its status,
+      //    then we just update the details of the challenge in the list
+      } else if (updatedChallengeIndex > -1 && isSameStatus) {
+        updatedChallenges = [
+          ...state.challenges.slice(0, updatedChallengeIndex),
+          action.challengeDetails,
+          ...state.challenges.slice(updatedChallengeIndex + 1)
+        ]
+      }
+
+      return {
+        ...state,
+        challenges: updatedChallenges,
+        challengeDetails: action.challengeDetails,
+        isLoading: false,
+        attachments: _.has(action.challengeDetails, 'attachments') ? action.challengeDetails.attachments : [],
+        failedToLoad: false
+      }
+    }
+    case CREATE_CHALLENGE_SUCCESS: {
+      // if we are showing the list of challenges with the same status as we just created,
+      // then add the new challenge to the beginning of the current challenge list
+      const updatedChallenges = state.status.toLowerCase() === action.challengeDetails.status.toLowerCase()
+        ? [action.challengeDetails, ...state.challenges]
+        : state.challenges
+      return {
+        ...state,
+        challenges: updatedChallenges,
+        challengeDetails: action.challengeDetails,
+        isLoading: false,
+        attachments: _.has(action.challengeDetails, 'attachments') ? action.challengeDetails.attachments : [],
+        failedToLoad: false
+      }
+    }
     case LOAD_CHALLENGE_RESOURCES_PENDING:
       return { ...state, isLoading: true, failedToLoad: false }
     case LOAD_CHALLENGE_RESOURCES_FAILURE:

@@ -41,11 +41,12 @@
     }
   }
 
-  &.disable {
+  &.disable,
+  &[disabled] {
     @include roboto-light();
     font-weight: 300;
-
     border: 1px solid $tc-gray-40;
+    cursor: default;
 
     span {
       color: $tc-gray-40;
