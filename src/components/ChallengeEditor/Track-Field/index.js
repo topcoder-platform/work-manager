@@ -24,7 +24,7 @@ const TrackField = ({ challenge, tracks, onUpdateOthers, disabled }) => {
           }
         </div>
       </div>
-      { challenge.submitTriggered && !challenge.track && <div className={styles.row}>
+      { challenge.submitTriggered && !challenge.trackId && <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)} />
         <div className={cn(styles.field, styles.col2, styles.error)}>
           Work Type is required field
