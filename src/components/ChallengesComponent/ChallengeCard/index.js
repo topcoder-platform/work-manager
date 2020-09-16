@@ -258,11 +258,11 @@ class ChallengeCard extends React.Component {
         <div className={cn(styles.col4, styles.iconsContainer)}>
           <div className={styles.faIconContainer}>
             <FontAwesomeIcon icon={faUser} className={styles.faIcon} />
-            <span>{challenge.numRegistrants || 0}</span>
+            <span>{challenge.numOfRegistrants || 0}</span>
           </div>
           <div className={styles.faIconContainer}>
             <FontAwesomeIcon icon={faFile} className={styles.faIcon} />
-            <span>{challenge.numSubmissions || 0}</span>
+            <span>{challenge.numOfSubmissions || 0}</span>
           </div>
         </div>
       </div>
