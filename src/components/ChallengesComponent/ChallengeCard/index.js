@@ -1,7 +1,7 @@
 /**
  * Component to render a row for ChallengeList component
  */
-import _ from 'lodash'
+// import _ from 'lodash'
 import React from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
@@ -39,17 +39,16 @@ const getTimeLeft = (phase, status) => {
   if (phase.phaseType === 'Final Fix') {
     return FF_TIME_LEFT_MSG
   }
-
-  let time = moment(phase.scheduledEndTime).diff()
+  let time = moment(phase.scheduledEndDate).diff()
   const late = time < 0
   if (late) time = -time
 
-  if (status !== CHALLENGE_STATUS.COMPLETED) {
+  if (status !== CHALLENGE_STATUS.COMPLETED.toLowerCase()) {
     const duration = getFormattedDuration(time)
     return late ? `Late by ${duration}` : `${duration} to go`
   }
 
-  return moment(phase.scheduledEndTime).format('DD/MM/YYYY')
+  return moment(phase.scheduledEndDate).format('DD/MM/YYYY')
 }
 
 /**
@@ -58,8 +57,8 @@ const getTimeLeft = (phase, status) => {
  * @returns {{phaseMessage: string, endTime: {late, text}}}
  */
 const getPhaseInfo = (c) => {
-  const { allPhases, currentPhases, subTrack, status } = c
-  let checkPhases = (currentPhases && currentPhases.length > 0 ? currentPhases : allPhases)
+  const { currentPhaseNames, status, startDate, phases } = c
+  /* let checkPhases = (currentPhases && currentPhases.length > 0 ? currentPhases : allPhases)
   if (_.isEmpty(checkPhases)) checkPhases = []
   let statusPhase = checkPhases
     .filter(p => p.phaseType !== 'Registration')
@@ -68,12 +67,26 @@ const getPhaseInfo = (c) => {
   if (!statusPhase && subTrack === 'FIRST_2_FINISH' && checkPhases.length) {
     statusPhase = Object.clone(checkPhases[0])
     statusPhase.phaseType = 'Submission'
-  }
+  } */
   let phaseMessage = STALLED_MSG
-  if (statusPhase) phaseMessage = statusPhase.phaseType
-  else if (status === 'DRAFT') phaseMessage = DRAFT_MSG
-
-  const endTime = getTimeLeft(statusPhase)
+  // if (statusPhase) phaseMessage = statusPhase.phaseType
+  // else if (status === 'DRAFT') phaseMessage = DRAFT_MSG
+  var lowerStatus = status.toLowerCase()
+  if (lowerStatus === 'draft') {
+    phaseMessage = DRAFT_MSG
+  } else if (lowerStatus === 'active') {
+    if (!currentPhaseNames || currentPhaseNames.length === 0) {
+      var timeToStart = moment(startDate).diff()
+      if (timeToStart > 0) {
+        phaseMessage = `Scheduled in ${getFormattedDuration(timeToStart)}`
+      }
+    } else {
+      phaseMessage = currentPhaseNames.join('/')
+    }
+  }
+  const activePhases = phases.filter(p => !!p.isOpen)
+  const activePhase = activePhases.length > 0 ? activePhases[0] : null
+  const endTime = getTimeLeft(activePhase, lowerStatus)
   return { phaseMessage, endTime }
 }
 
