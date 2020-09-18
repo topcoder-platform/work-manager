@@ -1,7 +1,7 @@
 /**
  * Component to render a row for ChallengeList component
  */
-// import _ from 'lodash'
+import _ from 'lodash'
 import React from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
@@ -11,13 +11,13 @@ import 'moment-duration-format'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFile, faUser } from '@fortawesome/free-solid-svg-icons'
 import ChallengeStatus from '../ChallengeStatus'
-import Modal from '../../Modal'
 import ChallengeTag from '../ChallengeTag'
 import styles from './ChallengeCard.module.scss'
 import { getFormattedDuration } from '../../../util/date'
 import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, ONLINE_REVIEW_URL } from '../../../config/constants'
-import { OutlineButton, PrimaryButton } from '../../Buttons'
 import { patchChallenge } from '../../../services/challenges'
+import ConfirmationModal from '../../Modal/ConfirmationModal'
+import AlertModal from '../../Modal/AlertModal'
 
 const theme = {
   container: styles.modalContainer
@@ -208,7 +208,8 @@ class ChallengeCard extends React.Component {
       const response = await patchChallenge(challenge.id, { status: 'Active' })
       this.setState({ isLaunch: true, isConfirm: response.data.id, isSaving: false })
     } catch (e) {
-      this.setState({ isSaving: false })
+      const error = _.get(e, 'response.data.message', 'Unable to activate the challenge')
+      this.setState({ isSaving: false, error })
     }
   }
 
@@ -219,37 +220,28 @@ class ChallengeCard extends React.Component {
     return (
       <div className={styles.item}>
         { isLaunch && !isConfirm && (
-          <Modal theme={theme} onCancel={() => this.resetModal()}>
-            <div className={styles.contentContainer}>
-              <div className={styles.title}>Launch Challenge Confirmation</div>
-              <span>{`Do you want to launch ${challenge.type} challenge "${challenge.name}"?`}</span>
-              <div className={styles.buttonGroup}>
-                <div className={styles.button}>
-                  <OutlineButton className={cn({ disabled: isSaving })} text={'Cancel'} type={'danger'} onClick={() => this.resetModal()} />
-                </div>
-                <div className={styles.button}>
-                  <PrimaryButton text={isSaving ? 'Launching...' : 'Confirm'} type={'info'} onClick={() => this.onLaunchChallenge()} />
-                </div>
-              </div>
-            </div>
-          </Modal>
+          <ConfirmationModal
+            title='Confirm Launch'
+            message={`Do you want to launch "${challenge.name}"?`}
+            theme={theme}
+            isProcessing={isSaving}
+            errorMessage={this.state.error}
+            onCancel={this.resetModal}
+            onConfirm={this.onLaunchChallenge}
+          />
         )
         }
         { isLaunch && isConfirm && (
-          <Modal theme={theme} onCancel={reloadChallengeList}>
-            <div className={cn(styles.contentContainer, styles.confirm)}>
-              <div className={styles.title}>Success</div>
-              <span>Your challenge is saved as active</span>
-              <div className={styles.buttonGroup}>
-                <div className={styles.buttonSizeA} onClick={reloadChallengeList}>
-                  <PrimaryButton text={'Close'} type={'info'} />
-                </div>
-                <div className={styles.buttonSizeA} onClick={() => this.resetModal()}>
-                  <OutlineButton text={'View Challenge'} type={'success'} link={`/projects/${challenge.projectId}/challenges/${isConfirm}/view`} />
-                </div>
-              </div>
-            </div>
-          </Modal>
+          <AlertModal
+            title='Success'
+            message={`Challenge "${challenge.name}" is activated successfuly`}
+            theme={theme}
+            onCancel={reloadChallengeList}
+            closeText='Close'
+            okText='View Challenge'
+            okLink='./view'
+            onClose={this.resetModal}
+          />
         ) }
 
         <Link className={styles.col1} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
