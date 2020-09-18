@@ -11,13 +11,13 @@ import 'moment-duration-format'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFile, faUser } from '@fortawesome/free-solid-svg-icons'
 import ChallengeStatus from '../ChallengeStatus'
-import Modal from '../../Modal'
 import ChallengeTag from '../ChallengeTag'
 import styles from './ChallengeCard.module.scss'
 import { getFormattedDuration } from '../../../util/date'
 import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, ONLINE_REVIEW_URL } from '../../../config/constants'
-import { OutlineButton, PrimaryButton } from '../../Buttons'
 import { patchChallenge } from '../../../services/challenges'
+import ConfirmationModal from '../../Modal/ConfirmationModal'
+import AlertModal from '../../Modal/AlertModal'
 
 const theme = {
   container: styles.modalContainer
@@ -39,17 +39,16 @@ const getTimeLeft = (phase, status) => {
   if (phase.phaseType === 'Final Fix') {
     return FF_TIME_LEFT_MSG
   }
-
-  let time = moment(phase.scheduledEndTime).diff()
+  let time = moment(phase.scheduledEndDate).diff()
   const late = time < 0
   if (late) time = -time
 
-  if (status !== CHALLENGE_STATUS.COMPLETED) {
+  if (status !== CHALLENGE_STATUS.COMPLETED.toLowerCase()) {
     const duration = getFormattedDuration(time)
     return late ? `Late by ${duration}` : `${duration} to go`
   }
 
-  return moment(phase.scheduledEndTime).format('DD/MM/YYYY')
+  return moment(phase.scheduledEndDate).format('DD/MM/YYYY')
 }
 
 /**
@@ -58,8 +57,8 @@ const getTimeLeft = (phase, status) => {
  * @returns {{phaseMessage: string, endTime: {late, text}}}
  */
 const getPhaseInfo = (c) => {
-  const { allPhases, currentPhases, subTrack, status } = c
-  let checkPhases = (currentPhases && currentPhases.length > 0 ? currentPhases : allPhases)
+  const { currentPhaseNames, status, startDate, phases } = c
+  /* let checkPhases = (currentPhases && currentPhases.length > 0 ? currentPhases : allPhases)
   if (_.isEmpty(checkPhases)) checkPhases = []
   let statusPhase = checkPhases
     .filter(p => p.phaseType !== 'Registration')
@@ -68,12 +67,26 @@ const getPhaseInfo = (c) => {
   if (!statusPhase && subTrack === 'FIRST_2_FINISH' && checkPhases.length) {
     statusPhase = Object.clone(checkPhases[0])
     statusPhase.phaseType = 'Submission'
-  }
+  } */
   let phaseMessage = STALLED_MSG
-  if (statusPhase) phaseMessage = statusPhase.phaseType
-  else if (status === 'DRAFT') phaseMessage = DRAFT_MSG
-
-  const endTime = getTimeLeft(statusPhase)
+  // if (statusPhase) phaseMessage = statusPhase.phaseType
+  // else if (status === 'DRAFT') phaseMessage = DRAFT_MSG
+  var lowerStatus = status.toLowerCase()
+  if (lowerStatus === 'draft') {
+    phaseMessage = DRAFT_MSG
+  } else if (lowerStatus === 'active') {
+    if (!currentPhaseNames || currentPhaseNames.length === 0) {
+      var timeToStart = moment(startDate).diff()
+      if (timeToStart > 0) {
+        phaseMessage = `Scheduled in ${getFormattedDuration(timeToStart)}`
+      }
+    } else {
+      phaseMessage = currentPhaseNames.join('/')
+    }
+  }
+  const activePhases = phases.filter(p => !!p.isOpen)
+  const activePhase = activePhases.length > 0 ? activePhases[0] : null
+  const endTime = getTimeLeft(activePhase, lowerStatus)
   return { phaseMessage, endTime }
 }
 
@@ -195,7 +208,8 @@ class ChallengeCard extends React.Component {
       const response = await patchChallenge(challenge.id, { status: 'Active' })
       this.setState({ isLaunch: true, isConfirm: response.data.id, isSaving: false })
     } catch (e) {
-      this.setState({ isSaving: false })
+      const error = _.get(e, 'response.data.message', 'Unable to activate the challenge')
+      this.setState({ isSaving: false, error })
     }
   }
 
@@ -206,37 +220,28 @@ class ChallengeCard extends React.Component {
     return (
       <div className={styles.item}>
         { isLaunch && !isConfirm && (
-          <Modal theme={theme} onCancel={() => this.resetModal()}>
-            <div className={styles.contentContainer}>
-              <div className={styles.title}>Launch Challenge Confirmation</div>
-              <span>{`Do you want to launch ${challenge.type} challenge "${challenge.name}"?`}</span>
-              <div className={styles.buttonGroup}>
-                <div className={styles.button}>
-                  <OutlineButton className={cn({ disabled: isSaving })} text={'Cancel'} type={'danger'} onClick={() => this.resetModal()} />
-                </div>
-                <div className={styles.button}>
-                  <PrimaryButton text={isSaving ? 'Launching...' : 'Confirm'} type={'info'} onClick={() => this.onLaunchChallenge()} />
-                </div>
-              </div>
-            </div>
-          </Modal>
+          <ConfirmationModal
+            title='Confirm Launch'
+            message={`Do you want to launch "${challenge.name}"?`}
+            theme={theme}
+            isProcessing={isSaving}
+            errorMessage={this.state.error}
+            onCancel={this.resetModal}
+            onConfirm={this.onLaunchChallenge}
+          />
         )
         }
         { isLaunch && isConfirm && (
-          <Modal theme={theme} onCancel={reloadChallengeList}>
-            <div className={cn(styles.contentContainer, styles.confirm)}>
-              <div className={styles.title}>Success</div>
-              <span>Your challenge is saved as active</span>
-              <div className={styles.buttonGroup}>
-                <div className={styles.buttonSizeA} onClick={reloadChallengeList}>
-                  <PrimaryButton text={'Close'} type={'info'} />
-                </div>
-                <div className={styles.buttonSizeA} onClick={() => this.resetModal()}>
-                  <OutlineButton text={'View Challenge'} type={'success'} link={`/projects/${challenge.projectId}/challenges/${isConfirm}/view`} />
-                </div>
-              </div>
-            </div>
-          </Modal>
+          <AlertModal
+            title='Success'
+            message={`Challenge "${challenge.name}" is activated successfuly`}
+            theme={theme}
+            onCancel={reloadChallengeList}
+            closeText='Close'
+            okText='View Challenge'
+            okLink='./view'
+            onClose={this.resetModal}
+          />
         ) }
 
         <Link className={styles.col1} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
@@ -258,11 +263,11 @@ class ChallengeCard extends React.Component {
         <div className={cn(styles.col4, styles.iconsContainer)}>
           <div className={styles.faIconContainer}>
             <FontAwesomeIcon icon={faUser} className={styles.faIcon} />
-            <span>{challenge.numRegistrants || 0}</span>
+            <span>{challenge.numOfRegistrants || 0}</span>
           </div>
           <div className={styles.faIconContainer}>
             <FontAwesomeIcon icon={faFile} className={styles.faIcon} />
-            <span>{challenge.numSubmissions || 0}</span>
+            <span>{challenge.numOfSubmissions || 0}</span>
           </div>
         </div>
       </div>
