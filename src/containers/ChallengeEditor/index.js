@@ -133,7 +133,7 @@ class ChallengeEditor extends Component {
     if (challengeId && (!challengeDetails || !challengeDetails.id)) {
       return (<Loader />)
     }
-    const submitters = challengeResources.filter(cr => cr.roleId === SUBMITTER_ROLE_UUID)
+    const submitters = challengeResources && challengeResources.filter(cr => cr.roleId === SUBMITTER_ROLE_UUID)
     var assignedMemberDetails = null
     if (submitters && submitters.length === 1) {
       assignedMemberDetails = {
