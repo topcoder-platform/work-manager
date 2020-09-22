@@ -310,18 +310,18 @@ class ChallengeEditor extends Component {
     let assignedMemberDetails
 
     if (option && option.value) {
-      newChallenge.task = {
+      /* newChallenge.task = {
         ...oldChallenge.task,
         memberId: option.value
         // TODO uncomment as soon as issue in API is fixed https://github.com/topcoder-platform/challenge-api/issues/272
         // isAssigned: true
-      }
+      } */
       assignedMemberDetails = {
         handle: option.label,
         userId: parseInt(option.value, 10)
       }
     } else {
-      newChallenge.task = _.omit(oldChallenge.task, ['memberId', 'isAssigned'])
+      // newChallenge.task = _.omit(oldChallenge.task, ['memberId', 'isAssigned'])
       assignedMemberDetails = null
     }
 
@@ -851,7 +851,7 @@ class ChallengeEditor extends Component {
   }
 
   async updateAllChallengeInfo (status, cb = () => {}) {
-    const { updateChallengeDetails } = this.props
+    const { updateChallengeDetails, assignedMemberDetails: oldAssignedMember } = this.props
     if (this.state.isSaving) return
     this.setState({ isSaving: true })
     const challenge = this.collectChallengeData(status)
@@ -861,9 +861,17 @@ class ChallengeEditor extends Component {
       const challengeId = this.getCurrentChallengeId()
       const action = await updateChallengeDetails(challengeId, challenge)
       const { copilot: previousCopilot, reviewer: previousReviewer } = this.state.draftChallenge.data
-      const { copilot, reviewer } = this.state.challenge
+      const { challenge: { copilot, reviewer }, assignedMemberDetails: assignedMember } = this.state
       if (copilot) await this.updateResource(challengeId, 'Copilot', copilot, previousCopilot)
       if (reviewer) await this.updateResource(challengeId, 'Reviewer', reviewer, previousReviewer)
+      console.log(oldAssignedMember, 'oldAssignedMember')
+      console.log(assignedMember, 'assignedMember')
+      const oldMemberHandle = _.get(oldAssignedMember, 'handle')
+      // assigned member has been updated
+      if (assignedMember && assignedMember.handle !== oldMemberHandle) {
+        await this.updateResource(challengeId, 'Submitter', assignedMember.handle, oldMemberHandle)
+      }
+      this.updateTimeLastSaved()
 
       const draftChallenge = { data: action.challengeDetails }
       draftChallenge.data.copilot = copilot
@@ -911,11 +919,19 @@ class ChallengeEditor extends Component {
       roleId: resourceRole ? resourceRole.id : null
     }
     if (prevValue) {
-      const oldResource = _.pick(newResource, ['challengeId', 'roleId'])
-      oldResource.memberHandle = prevValue
-      await deleteResource(oldResource)
+      try {
+        const oldResource = _.pick(newResource, ['challengeId', 'roleId'])
+        oldResource.memberHandle = prevValue
+        await deleteResource(oldResource)
+      } catch (err) {
+        const errorMessage = _.get(err, 'response.data.message')
+        // ignore error where the resource does not exist already
+        if (errorMessage.indexOf('doesn\'t have resource with roleId') === -1) {
+          throw err
+        }
+      }
     }
-
+    console.log('creating new resource')
     await createResource(newResource)
   }
 
