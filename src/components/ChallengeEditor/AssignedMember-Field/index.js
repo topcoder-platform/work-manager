@@ -8,12 +8,11 @@ import styles from './AssignedMember-Field.module.scss'
 import SelectUserAutocomplete from '../../SelectUserAutocomplete'
 
 const AssignedMemberField = ({ challenge, onChange, assignedMemberDetails, readOnly }) => {
-  const value = challenge.task.memberId ? {
+  const value = assignedMemberDetails ? {
     // if we know assigned member details, then show user `handle`, otherwise fallback to `userId`
-    label: assignedMemberDetails ? assignedMemberDetails.handle : `User id: ${challenge.task.memberId}`,
-    value: challenge.task.memberId
+    label: assignedMemberDetails.handle,
+    value: assignedMemberDetails.userId + ''
   } : null
-
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>

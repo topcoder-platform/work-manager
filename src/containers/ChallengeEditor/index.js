@@ -29,6 +29,7 @@ import {
 } from '../../actions/members'
 
 import { connect } from 'react-redux'
+import { SUBMITTER_ROLE_UUID } from '../../config/constants'
 
 class ChallengeEditor extends Component {
   componentDidMount () {
@@ -125,15 +126,21 @@ class ChallengeEditor extends Component {
       projectDetail,
       updateChallengeDetails,
       partiallyUpdateChallengeDetails,
-      createChallenge,
-      members
+      createChallenge
+      // members
     } = this.props
     const challengeId = _.get(match.params, 'challengeId', null)
     if (challengeId && (!challengeDetails || !challengeDetails.id)) {
       return (<Loader />)
     }
-    const assignedMemberId = _.get(challengeDetails, 'task.memberId')
-    const assignedMemberDetails = _.find(members, (member) => member.userId.toString() === assignedMemberId)
+    const submitters = challengeResources && challengeResources.filter(cr => cr.roleId === SUBMITTER_ROLE_UUID)
+    var assignedMemberDetails = null
+    if (submitters && submitters.length === 1) {
+      assignedMemberDetails = {
+        userId: submitters[0].memberId,
+        handle: submitters[0].memberHandle
+      }
+    }
     return <div>
       <Route
         exact
@@ -239,8 +246,8 @@ ChallengeEditor.propTypes = {
   loadMemberDetails: PropTypes.func,
   updateChallengeDetails: PropTypes.func.isRequired,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
-  createChallenge: PropTypes.func.isRequired,
-  members: PropTypes.arrayOf(PropTypes.shape())
+  createChallenge: PropTypes.func.isRequired
+  // members: PropTypes.arrayOf(PropTypes.shape())
 }
 
 const mapStateToProps = ({ projects: { projectDetail }, challenges: { challengeDetails, challengeResources, metadata, isLoading, attachments, failedToLoad }, auth: { token }, members: { members } }) => ({
@@ -251,8 +258,8 @@ const mapStateToProps = ({ projects: { projectDetail }, challenges: { challengeD
   isLoading,
   attachments,
   token,
-  failedToLoad,
-  members
+  failedToLoad
+  // members
 })
 
 const mapDispatchToProps = {
