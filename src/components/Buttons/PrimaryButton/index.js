@@ -6,10 +6,10 @@ import cn from 'classnames'
 
 import styles from './PrimaryButton.module.scss'
 
-const PrimaryButton = ({ type, text, link, onClick, submit }) => {
+const PrimaryButton = ({ type, text, link, onClick, submit, disabled }) => {
   if (_.isEmpty(link)) {
     return (
-      <button type={submit ? 'submit' : 'button'} className={cn(styles.container, styles[type])} onClick={submit ? null : onClick}>
+      <button type={submit ? 'submit' : 'button'} className={cn(styles.container, styles[type])} onClick={submit ? null : onClick} disabled={disabled}>
         <span>{text}</span>
       </button>
     )
@@ -26,7 +26,8 @@ PrimaryButton.propTypes = {
   text: PropTypes.string.isRequired,
   link: PropTypes.string,
   onClick: PropTypes.func,
-  submit: PropTypes.bool
+  submit: PropTypes.bool,
+  disabled: PropTypes.bool
 }
 
 export default PrimaryButton

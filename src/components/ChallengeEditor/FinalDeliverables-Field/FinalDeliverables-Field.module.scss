@@ -47,104 +47,55 @@
     }
   }
 
-  .tcCheckbox {
-    @include tc-checkbox;
-
-    .tc-checkbox-label {
-      @include roboto-light();
-
-      line-height: 17px;
-      font-weight: 300;
-      margin-left: 21px;
-      user-select: none;
-      cursor: pointer;
-      width: 195px;
-      font-size: 14px;
-      color: #3d3d3d;
-    }
-
-    height: 18px;
-    width: 210px;
+  .fileTypeList {
     margin: 0;
     padding: 0;
-    vertical-align: bottom;
-    position: relative;
-    display: inline-block;
-    margin-bottom: 18px;
-
-    input[type='checkbox'] {
-      display: none;
-
-      &:checked ~ label {
-        background: $tc-blue-20;
-      }
-
-      &:checked + label::after {
-        border-color: $white;
-      }
-    }
-
-    label {
-      @include roboto-light();
-
-      line-height: 17px;
-      font-weight: 300;
-      cursor: pointer;
-      position: absolute;
-      display: inline-block;
-      width: 14px;
-      height: 14px;
-      top: 0;
-      left: 0;
-      border: none;
-      box-shadow: none;
-      background: $tc-gray-30;
-      transition: all 0.15s ease-in-out;
-
-      &.readOnly {
-        cursor: auto;
-      }
-
-      &::after {
-        opacity: 0;
-        content: '';
-        position: absolute;
-        width: 9px;
-        height: 5px;
-        background: transparent;
-        top: 2px;
-        left: 2px;
-        border-top: none;
-        border-right: none;
-        transform: rotate(-45deg);
-        transition: all 0.15s ease-in-out;
-      }
-
-      &:hover::after {
-        opacity: 0.3;
-      }
-      &:hover:read-only::after {
-        opacity: 0;
-      }
-
-      div {
-        margin-left: 24px;
-        width: 500px;
-      }
-    }
   }
 
-  .checkList {
+  .fileTypeListEditable {
+
+  }
+
+  .fileTypeItem {
+    background-color: #2C95D7;
+    border-radius: 2px;
+    border: 1px solid #c9e6f2;
+    color: #ffffff;
+    display: inline-block;
+    font-size: 14px;
+    margin-right: 5px;
+    padding: 2px 30px 2px 5px;
+    position: relative;
+    vertical-align: top;
+  }
+
+  .fileTypeDelete {
+    align-items: center;
+    background-color: #c6def1;
+    border: 0;
+    color: #2C95D7;
+    cursor: pointer;
     display: flex;
-    flex-direction: column;
-    margin-left: 30px;
+    border-radius: 50%;
+    font-size: 14px;
+    height: 16px;
+    justify-content: center;
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+
+    &:hover {
+      background-color: #fff;
+    }
   }
 
   form {
     display: flex;
     flex-direction: row;
   }
-  
+
   .button {
     width: 137px;
     height: 40px;

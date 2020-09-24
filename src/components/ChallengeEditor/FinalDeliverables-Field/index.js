@@ -17,12 +17,12 @@ class FinalDeliverablesField extends Component {
   }
 
   onChangeInput (value) {
-    this.setState({ newFileType: _.trim(value) })
+    this.setState({ newFileType: value })
   }
 
   onAddFileType (event) {
     if (!_.isEmpty(this.state.newFileType)) {
-      this.props.addFileType(this.state.newFileType)
+      this.props.addFileType(this.state.newFileType.trim())
       this.setState({ newFileType: '' })
     }
 
@@ -31,7 +31,11 @@ class FinalDeliverablesField extends Component {
   }
 
   render () {
-    const { challenge, onUpdateCheckbox, readOnly } = this.props
+    const { challenge, readOnly, removeFileType } = this.props
+    const fileTypesMetadata = _.find(challenge.metadata, { name: 'fileTypes' })
+    const fileTypes = (fileTypesMetadata && JSON.parse(fileTypesMetadata.value)) || []
+    const isDuplicateValue = _.includes(fileTypes, this.state.newFileType.trim())
+
     return (
       <React.Fragment>
         <div className={styles.row}>
@@ -40,27 +44,18 @@ class FinalDeliverablesField extends Component {
           </div>
         </div>
         <div className={styles.row}>
-          <div className={styles.checkList}>
-            {
-              _.map(challenge.fileTypes, (type, index) => (
-                <div className={styles.tcCheckbox} key={type.name}>
-                  <input
-                    name={type.name}
-                    type='checkbox'
-                    id={type.name}
-                    checked={type.check}
-                    onChange={(e) => onUpdateCheckbox(type.name, e.target.checked, 'fileTypes', index)}
-                    readOnly={readOnly}
-                  />
-                  <label htmlFor={type.name} className={cn({ [styles.readOnly]: readOnly })}>
-                    <div className={styles.checkboxLabel}>
-                      {type.name}
-                    </div>
-                  </label>
-                </div>
-              ))
-            }
-          </div>
+          {!readOnly ? (
+            <ul className={styles.fileTypeList}>
+              {_.map(fileTypes, (type) => (
+                <li key={type} htmlFor={type} className={styles.fileTypeItem}>
+                  {type}
+                  <button className={styles.fileTypeDelete} type='button' onClick={() => removeFileType(type)}>×</button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            fileTypes.join(', ')
+          )}
         </div>
         {!readOnly && (<div className={styles.row}>
           <form name='add-file-type-form' autoComplete='off' onSubmit={this.onAddFileType}>
@@ -76,6 +71,7 @@ class FinalDeliverablesField extends Component {
               <PrimaryButton
                 text={'Add File Type'}
                 type={'info'}
+                disabled={!this.state.newFileType.trim() || isDuplicateValue}
                 submit
               />
             </div>
@@ -93,8 +89,8 @@ FinalDeliverablesField.defaultProps = {
 
 FinalDeliverablesField.propTypes = {
   challenge: PropTypes.shape().isRequired,
-  onUpdateCheckbox: PropTypes.func.isRequired,
   addFileType: PropTypes.func.isRequired,
+  removeFileType: PropTypes.func.isRequired,
   readOnly: PropTypes.bool
 }
 
