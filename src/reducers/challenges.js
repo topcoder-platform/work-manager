@@ -23,7 +23,11 @@ import {
   UPDATE_CHALLENGE_DETAILS_FAILURE,
   UPDATE_CHALLENGE_DETAILS_SUCCESS,
   CREATE_CHALLENGE_SUCCESS,
-  CREATE_CHALLENGE_FAILURE
+  CREATE_CHALLENGE_FAILURE,
+  CREATE_CHALLENGE_RESOURCE_SUCCESS,
+  DELETE_CHALLENGE_RESOURCE_SUCCESS,
+  DELETE_CHALLENGE_RESOURCE_FAILURE,
+  CREATE_CHALLENGE_RESOURCE_FAILURE
 } from '../config/constants'
 
 const initialState = {
@@ -164,6 +168,43 @@ export default function (state = initialState, action) {
         isLoading: false,
         failedToLoad: false
       }
+    case CREATE_CHALLENGE_RESOURCE_SUCCESS: {
+      const resource = action.payload
+      const challengeResources = _.clone(state.challengeResources)
+      challengeResources.push(resource)
+      return {
+        ...state,
+        challengeResources,
+        isLoading: false,
+        failedToLoad: false
+      }
+    }
+    case CREATE_CHALLENGE_RESOURCE_FAILURE: {
+      const resource = action.payload
+      console.log(resource)
+      return { ...state, isLoading: false, failedToCreate: true }
+    }
+    case DELETE_CHALLENGE_RESOURCE_SUCCESS: {
+      const resource = action.payload
+      const challengeResources = _.clone(state.challengeResources)
+      _.remove(challengeResources,
+        r => r.challengeId === resource.challengeId && r.roleId === resource.roleId && r.memberHandle === resource.memberHandle)
+      return {
+        ...state,
+        challengeResources,
+        isLoading: false,
+        failedToLoad: false
+      }
+    }
+    case DELETE_CHALLENGE_RESOURCE_FAILURE: {
+      const err = action.payload
+      const errorMessage = _.get(err, 'response.data.message')
+      // ignore error where the resource does not exist already
+      if (errorMessage.indexOf('doesn\'t have resource with roleId') === -1) {
+        return { ...state, isLoading: false, failedToDelete: true }
+      }
+      return { ...state, isLoading: false, failedToDelete: false }
+    }
     case LOAD_CHALLENGE_METADATA_SUCCESS:
       return {
         ...state,

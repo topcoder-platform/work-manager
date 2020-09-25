@@ -6,7 +6,6 @@ import { Helmet } from 'react-helmet'
 import cn from 'classnames'
 import moment from 'moment'
 import { pick } from 'lodash/fp'
-// import Modal from '../Modal'
 import { withRouter } from 'react-router-dom'
 import { toastr } from 'react-redux-toastr'
 import xss from 'xss'
@@ -39,10 +38,6 @@ import dropdowns from './mock-data/dropdowns'
 import LastSavedDisplay from './LastSaved-Display'
 import styles from './ChallengeEditor.module.scss'
 import Track from '../Track'
-import {
-  createResource,
-  deleteResource
-} from '../../services/challenges'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import AlertModal from '../Modal/AlertModal'
 import PhaseInput from '../PhaseInput'
@@ -306,22 +301,15 @@ class ChallengeEditor extends Component {
    */
   onUpdateAssignedMember (option) {
     const { challenge: oldChallenge } = this.state
-    const newChallenge = { ...oldChallenge }
+    const newChallenge = { ...oldChallenge, task: { isAssigned: false, memberId: null, isTask: true } }
     let assignedMemberDetails
 
     if (option && option.value) {
-      /* newChallenge.task = {
-        ...oldChallenge.task,
-        memberId: option.value
-        // TODO uncomment as soon as issue in API is fixed https://github.com/topcoder-platform/challenge-api/issues/272
-        // isAssigned: true
-      } */
       assignedMemberDetails = {
         handle: option.label,
         userId: parseInt(option.value, 10)
       }
     } else {
-      // newChallenge.task = _.omit(oldChallenge.task, ['memberId', 'isAssigned'])
       assignedMemberDetails = null
     }
 
@@ -864,14 +852,11 @@ class ChallengeEditor extends Component {
       const { challenge: { copilot, reviewer }, assignedMemberDetails: assignedMember } = this.state
       if (copilot) await this.updateResource(challengeId, 'Copilot', copilot, previousCopilot)
       if (reviewer) await this.updateResource(challengeId, 'Reviewer', reviewer, previousReviewer)
-      console.log(oldAssignedMember, 'oldAssignedMember')
-      console.log(assignedMember, 'assignedMember')
       const oldMemberHandle = _.get(oldAssignedMember, 'handle')
       // assigned member has been updated
       if (assignedMember && assignedMember.handle !== oldMemberHandle) {
         await this.updateResource(challengeId, 'Submitter', assignedMember.handle, oldMemberHandle)
       }
-      this.updateTimeLastSaved()
 
       const draftChallenge = { data: action.challengeDetails }
       draftChallenge.data.copilot = copilot
@@ -910,29 +895,8 @@ class ChallengeEditor extends Component {
 
   async updateResource (challengeId, name, value, prevValue) {
     const resourceRole = this.getResourceRoleByName(name)
-    if (value === prevValue) {
-      return
-    }
-    const newResource = {
-      challengeId,
-      memberHandle: value,
-      roleId: resourceRole ? resourceRole.id : null
-    }
-    if (prevValue) {
-      try {
-        const oldResource = _.pick(newResource, ['challengeId', 'roleId'])
-        oldResource.memberHandle = prevValue
-        await deleteResource(oldResource)
-      } catch (err) {
-        const errorMessage = _.get(err, 'response.data.message')
-        // ignore error where the resource does not exist already
-        if (errorMessage.indexOf('doesn\'t have resource with roleId') === -1) {
-          throw err
-        }
-      }
-    }
-    console.log('creating new resource')
-    await createResource(newResource)
+    const roleId = resourceRole.id
+    await this.props.replaceResourceInRole(challengeId, roleId, value, prevValue)
   }
 
   updateAttachmentlist (challenge, attachments) {
@@ -1141,7 +1105,6 @@ class ChallengeEditor extends Component {
         )
       }
     }
-
     if (!isNew && challenge.status !== 'New' && isLaunch && isConfirm) {
       draftModal = (
         <AlertModal
@@ -1384,6 +1347,7 @@ ChallengeEditor.propTypes = {
   assignedMemberDetails: PropTypes.shape(),
   updateChallengeDetails: PropTypes.func.isRequired,
   createChallenge: PropTypes.func,
+  replaceResourceInRole: PropTypes.func,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired
 }
 

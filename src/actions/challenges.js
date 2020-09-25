@@ -15,7 +15,9 @@ import {
   fetchChallengeTracks,
   updateChallenge,
   patchChallenge,
-  createChallenge as createChallengeAPI
+  createChallenge as createChallengeAPI,
+  createResource as createResourceAPI,
+  deleteResource as deleteResourceAPI
 } from '../services/challenges'
 import {
   LOAD_CHALLENGE_DETAILS_PENDING,
@@ -32,6 +34,8 @@ import {
   LOAD_CHALLENGE_RESOURCES_PENDING,
   LOAD_CHALLENGE_RESOURCES_SUCCESS,
   LOAD_CHALLENGE_RESOURCES_FAILURE,
+  CREATE_CHALLENGE_RESOURCE,
+  DELETE_CHALLENGE_RESOURCE,
   REMOVE_ATTACHMENT,
   PAGE_SIZE,
   UPDATE_CHALLENGE_DETAILS_PENDING,
@@ -450,5 +454,53 @@ export function loadResourceRoles () {
       metadataKey: 'resourceRoles',
       metadataValue: resourceRoles
     })
+  }
+}
+
+export function deleteResource (challengeId, roleId, memberHandle) {
+  const resource = {
+    challengeId,
+    roleId,
+    memberHandle
+  }
+  return (dispatch, getState) => {
+    return dispatch({
+      type: DELETE_CHALLENGE_RESOURCE,
+      payload: deleteResourceAPI(resource)
+    })
+  }
+}
+
+export function createResource (challengeId, roleId, memberHandle) {
+  const resource = {
+    challengeId,
+    roleId,
+    memberHandle
+  }
+  return (dispatch, getState) => {
+    return dispatch({
+      type: CREATE_CHALLENGE_RESOURCE,
+      payload: createResourceAPI(resource)
+    })
+  }
+}
+
+export function replaceResourceInRole (challengeId, roleId, newMember, oldMember) {
+  return async (dispatch) => {
+    if (newMember === oldMember) {
+      return
+    }
+    if (oldMember) {
+      try {
+        await dispatch(deleteResource(challengeId, roleId, oldMember))
+      } catch (error) {
+        const errorMessage = _.get(error, 'response.data.message')
+        // ignore error where the resource does not exist already
+        if (errorMessage.indexOf('doesn\'t have resource with roleId') === -1) {
+          return Promise.reject(new Error('Unable to delete resource'))
+        }
+      }
+    }
+    await dispatch(createResource(challengeId, roleId, newMember))
   }
 }
