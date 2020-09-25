@@ -29,6 +29,7 @@ class TextEditorField extends Component {
       challenge,
       onUpdateCheckbox,
       addFileType,
+      removeFileType,
       onUpdateDescription,
       onUpdateMultiSelect,
       shouldShowPrivateDescription,
@@ -87,6 +88,7 @@ class TextEditorField extends Component {
               challenge={challenge}
               onUpdateCheckbox={onUpdateCheckbox}
               addFileType={addFileType}
+              removeFileType={removeFileType}
               readOnly={readOnly}
             />
             <StockArtsField
@@ -128,6 +130,7 @@ TextEditorField.propTypes = {
   challenge: PropTypes.shape().isRequired,
   onUpdateCheckbox: PropTypes.func,
   addFileType: PropTypes.func,
+  removeFileType: PropTypes.func,
   onUpdateMetadata: PropTypes.func,
   onUpdateDescription: PropTypes.func,
   onUpdateMultiSelect: PropTypes.func,

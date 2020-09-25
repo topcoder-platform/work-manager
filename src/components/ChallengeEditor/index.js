@@ -84,6 +84,8 @@ class ChallengeEditor extends Component {
     this.onUpdateCheckbox = this.onUpdateCheckbox.bind(this)
     this.onUpdateAssignedMember = this.onUpdateAssignedMember.bind(this)
     this.addFileType = this.addFileType.bind(this)
+    this.removeFileType = this.removeFileType.bind(this)
+    this.updateFileTypesMetadata = this.updateFileTypesMetadata.bind(this)
     this.toggleAdvanceSettings = this.toggleAdvanceSettings.bind(this)
     this.toggleNdaRequire = this.toggleNdaRequire.bind(this)
     this.removeAttachment = this.removeAttachment.bind(this)
@@ -400,17 +402,65 @@ class ChallengeEditor extends Component {
   }
 
   /**
+   * Helper method which updates the value of `fileTypes` metadata without mutation of the challenge object.
+   *
+   * @param {Function} processValue callback function to update the value
+   */
+  updateFileTypesMetadata (processValue) {
+    const { challenge: oldChallenge } = this.state
+    // avoid mutation of `challenge` object
+    const newChallenge = {
+      ...oldChallenge,
+      // avoid mutation of `metadata` array
+      metadata: [
+        ...(oldChallenge.metadata || [])
+      ]
+    }
+
+    // find existent fileType metadata
+    let fileTypesMetadataIndex = _.findIndex(newChallenge.metadata, { name: 'fileTypes' })
+    let fileTypesMetadata
+
+    // if found existent fileType metadata we have to recreate the record to avoid mutation
+    if (fileTypesMetadataIndex > -1) {
+      fileTypesMetadata = { ...newChallenge.metadata[fileTypesMetadataIndex] }
+      newChallenge.metadata[fileTypesMetadataIndex] = fileTypesMetadata
+    // if not yet, create an empty record in metadata
+    } else {
+      fileTypesMetadata = { name: 'fileTypes', value: '[]' }
+      newChallenge.metadata.push(fileTypesMetadata)
+    }
+
+    // as values in metadata are always stored as string, we have to parse it, update and stringify again
+    const oldFileTypes = JSON.parse(fileTypesMetadata.value)
+    const newFileTypes = processValue(oldFileTypes)
+    fileTypesMetadata.value = JSON.stringify(newFileTypes)
+
+    this.setState({ challenge: newChallenge })
+  }
+
+  /**
    * Add new file type
    * @param {String} newFileType The new file type
    */
   addFileType (newFileType) {
-    const { challenge: oldChallenge } = this.state
-    const newChallenge = { ...oldChallenge }
-    if (!_.isArray(newChallenge.fileTypes)) {
-      newChallenge.fileTypes = []
-    }
-    newChallenge.fileTypes.push({ name: newFileType, check: false })
-    this.setState({ challenge: newChallenge })
+    this.updateFileTypesMetadata((oldFileTypes) => {
+      const newFileTypes = [...oldFileTypes, newFileType]
+
+      return newFileTypes
+    })
+  }
+
+  /**
+   * Remove file type
+   * @param {String} fileType file type
+   */
+  removeFileType (fileType) {
+    this.updateFileTypesMetadata((oldFileTypes) => {
+      const newFileTypes = _.reject(oldFileTypes, (type) => type === fileType)
+
+      return newFileTypes
+    })
   }
 
   /**
@@ -1275,6 +1325,7 @@ class ChallengeEditor extends Component {
               challenge={challenge}
               onUpdateCheckbox={this.onUpdateCheckbox}
               addFileType={this.addFileType}
+              removeFileType={this.removeFileType}
               onUpdateInput={this.onUpdateInput}
               onUpdateDescription={this.onUpdateDescription}
               onUpdateMultiSelect={this.onUpdateMultiSelect}
