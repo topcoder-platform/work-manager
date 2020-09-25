@@ -20,13 +20,28 @@
 
   &.danger {
     background-color: $tc-red;
+
+    &:disabled {
+      cursor: default;
+      background-color: $inactive;
+    }
   }
 
   &.info {
     background-color: $tc-blue-20;
+
+    &:disabled {
+      cursor: default;
+      background-color: $inactive;
+    }
   }
 
   &.success {
     background-color: $tc-green-40;
+
+    &:disabled {
+      cursor: default;
+      background-color: $inactive;
+    }
   }
 }

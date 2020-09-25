@@ -6,7 +6,6 @@ import { Helmet } from 'react-helmet'
 import cn from 'classnames'
 import moment from 'moment'
 import { pick } from 'lodash/fp'
-// import Modal from '../Modal'
 import { withRouter } from 'react-router-dom'
 import { toastr } from 'react-redux-toastr'
 import xss from 'xss'
@@ -39,10 +38,6 @@ import dropdowns from './mock-data/dropdowns'
 import LastSavedDisplay from './LastSaved-Display'
 import styles from './ChallengeEditor.module.scss'
 import Track from '../Track'
-import {
-  createResource,
-  deleteResource
-} from '../../services/challenges'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import AlertModal from '../Modal/AlertModal'
 import PhaseInput from '../PhaseInput'
@@ -89,6 +84,8 @@ class ChallengeEditor extends Component {
     this.onUpdateCheckbox = this.onUpdateCheckbox.bind(this)
     this.onUpdateAssignedMember = this.onUpdateAssignedMember.bind(this)
     this.addFileType = this.addFileType.bind(this)
+    this.removeFileType = this.removeFileType.bind(this)
+    this.updateFileTypesMetadata = this.updateFileTypesMetadata.bind(this)
     this.toggleAdvanceSettings = this.toggleAdvanceSettings.bind(this)
     this.toggleNdaRequire = this.toggleNdaRequire.bind(this)
     this.removeAttachment = this.removeAttachment.bind(this)
@@ -306,22 +303,15 @@ class ChallengeEditor extends Component {
    */
   onUpdateAssignedMember (option) {
     const { challenge: oldChallenge } = this.state
-    const newChallenge = { ...oldChallenge }
+    const newChallenge = { ...oldChallenge, task: { isAssigned: false, memberId: null, isTask: true } }
     let assignedMemberDetails
 
     if (option && option.value) {
-      newChallenge.task = {
-        ...oldChallenge.task,
-        memberId: option.value
-        // TODO uncomment as soon as issue in API is fixed https://github.com/topcoder-platform/challenge-api/issues/272
-        // isAssigned: true
-      }
       assignedMemberDetails = {
         handle: option.label,
         userId: parseInt(option.value, 10)
       }
     } else {
-      newChallenge.task = _.omit(oldChallenge.task, ['memberId', 'isAssigned'])
       assignedMemberDetails = null
     }
 
@@ -412,17 +402,65 @@ class ChallengeEditor extends Component {
   }
 
   /**
+   * Helper method which updates the value of `fileTypes` metadata without mutation of the challenge object.
+   *
+   * @param {Function} processValue callback function to update the value
+   */
+  updateFileTypesMetadata (processValue) {
+    const { challenge: oldChallenge } = this.state
+    // avoid mutation of `challenge` object
+    const newChallenge = {
+      ...oldChallenge,
+      // avoid mutation of `metadata` array
+      metadata: [
+        ...(oldChallenge.metadata || [])
+      ]
+    }
+
+    // find existent fileType metadata
+    let fileTypesMetadataIndex = _.findIndex(newChallenge.metadata, { name: 'fileTypes' })
+    let fileTypesMetadata
+
+    // if found existent fileType metadata we have to recreate the record to avoid mutation
+    if (fileTypesMetadataIndex > -1) {
+      fileTypesMetadata = { ...newChallenge.metadata[fileTypesMetadataIndex] }
+      newChallenge.metadata[fileTypesMetadataIndex] = fileTypesMetadata
+    // if not yet, create an empty record in metadata
+    } else {
+      fileTypesMetadata = { name: 'fileTypes', value: '[]' }
+      newChallenge.metadata.push(fileTypesMetadata)
+    }
+
+    // as values in metadata are always stored as string, we have to parse it, update and stringify again
+    const oldFileTypes = JSON.parse(fileTypesMetadata.value)
+    const newFileTypes = processValue(oldFileTypes)
+    fileTypesMetadata.value = JSON.stringify(newFileTypes)
+
+    this.setState({ challenge: newChallenge })
+  }
+
+  /**
    * Add new file type
    * @param {String} newFileType The new file type
    */
   addFileType (newFileType) {
-    const { challenge: oldChallenge } = this.state
-    const newChallenge = { ...oldChallenge }
-    if (!_.isArray(newChallenge.fileTypes)) {
-      newChallenge.fileTypes = []
-    }
-    newChallenge.fileTypes.push({ name: newFileType, check: false })
-    this.setState({ challenge: newChallenge })
+    this.updateFileTypesMetadata((oldFileTypes) => {
+      const newFileTypes = [...oldFileTypes, newFileType]
+
+      return newFileTypes
+    })
+  }
+
+  /**
+   * Remove file type
+   * @param {String} fileType file type
+   */
+  removeFileType (fileType) {
+    this.updateFileTypesMetadata((oldFileTypes) => {
+      const newFileTypes = _.reject(oldFileTypes, (type) => type === fileType)
+
+      return newFileTypes
+    })
   }
 
   /**
@@ -851,7 +889,7 @@ class ChallengeEditor extends Component {
   }
 
   async updateAllChallengeInfo (status, cb = () => {}) {
-    const { updateChallengeDetails } = this.props
+    const { updateChallengeDetails, assignedMemberDetails: oldAssignedMember } = this.props
     if (this.state.isSaving) return
     this.setState({ isSaving: true })
     const challenge = this.collectChallengeData(status)
@@ -861,9 +899,14 @@ class ChallengeEditor extends Component {
       const challengeId = this.getCurrentChallengeId()
       const action = await updateChallengeDetails(challengeId, challenge)
       const { copilot: previousCopilot, reviewer: previousReviewer } = this.state.draftChallenge.data
-      const { copilot, reviewer } = this.state.challenge
+      const { challenge: { copilot, reviewer }, assignedMemberDetails: assignedMember } = this.state
       if (copilot) await this.updateResource(challengeId, 'Copilot', copilot, previousCopilot)
       if (reviewer) await this.updateResource(challengeId, 'Reviewer', reviewer, previousReviewer)
+      const oldMemberHandle = _.get(oldAssignedMember, 'handle')
+      // assigned member has been updated
+      if (assignedMember && assignedMember.handle !== oldMemberHandle) {
+        await this.updateResource(challengeId, 'Submitter', assignedMember.handle, oldMemberHandle)
+      }
 
       const draftChallenge = { data: action.challengeDetails }
       draftChallenge.data.copilot = copilot
@@ -902,21 +945,8 @@ class ChallengeEditor extends Component {
 
   async updateResource (challengeId, name, value, prevValue) {
     const resourceRole = this.getResourceRoleByName(name)
-    if (value === prevValue) {
-      return
-    }
-    const newResource = {
-      challengeId,
-      memberHandle: value,
-      roleId: resourceRole ? resourceRole.id : null
-    }
-    if (prevValue) {
-      const oldResource = _.pick(newResource, ['challengeId', 'roleId'])
-      oldResource.memberHandle = prevValue
-      await deleteResource(oldResource)
-    }
-
-    await createResource(newResource)
+    const roleId = resourceRole.id
+    await this.props.replaceResourceInRole(challengeId, roleId, value, prevValue)
   }
 
   updateAttachmentlist (challenge, attachments) {
@@ -1125,7 +1155,6 @@ class ChallengeEditor extends Component {
         )
       }
     }
-
     if (!isNew && challenge.status !== 'New' && isLaunch && isConfirm) {
       draftModal = (
         <AlertModal
@@ -1296,6 +1325,7 @@ class ChallengeEditor extends Component {
               challenge={challenge}
               onUpdateCheckbox={this.onUpdateCheckbox}
               addFileType={this.addFileType}
+              removeFileType={this.removeFileType}
               onUpdateInput={this.onUpdateInput}
               onUpdateDescription={this.onUpdateDescription}
               onUpdateMultiSelect={this.onUpdateMultiSelect}
@@ -1368,6 +1398,7 @@ ChallengeEditor.propTypes = {
   assignedMemberDetails: PropTypes.shape(),
   updateChallengeDetails: PropTypes.func.isRequired,
   createChallenge: PropTypes.func,
+  replaceResourceInRole: PropTypes.func,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired
 }
 
