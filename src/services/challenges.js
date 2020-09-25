@@ -172,8 +172,9 @@ export async function fetchChallengeTerms () {
  * @param challenge challenge data
  * @returns {Promise<*>}
  */
-export function createResource (resource) {
-  return axiosInstance.post(RESOURCES_API_URL, resource)
+export async function createResource (resource) {
+  const resp = await axiosInstance.post(RESOURCES_API_URL, resource)
+  return _.get(resp, 'data', {})
 }
 
 /**
@@ -200,6 +201,7 @@ export async function fetchResourceRoles () {
  * @param {object} resource to delete
  * @returns {Promise<*>}
  */
-export function deleteResource (resource) {
-  return axiosInstance.delete(RESOURCES_API_URL, { data: resource })
+export async function deleteResource (resource) {
+  const resp = await axiosInstance.delete(RESOURCES_API_URL, { data: resource })
+  return _.get(resp, 'data', {})
 }
