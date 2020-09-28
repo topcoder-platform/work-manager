@@ -13,10 +13,49 @@ import ChallengeList from './containers/Challenges'
 import ChallengeEditor from './containers/ChallengeEditor'
 import { getFreshToken } from 'tc-accounts'
 import { saveToken } from './actions/auth'
+import { loadChallengeDetails } from './actions/challenges'
 import { connect } from 'react-redux'
 import { checkAllowedRoles } from './util/tc'
 
 const { ACCOUNTS_APP_LOGIN_URL } = process.env
+
+class RedirectToChallenge extends React.Component {
+  componentWillMount () {
+    const { match, loadChallengeDetails } = this.props
+    const challengeId = match.params.challengeId
+    loadChallengeDetails(null, challengeId)
+  }
+
+  componentWillReceiveProps (nextProps) {
+    const projectId = _.get(nextProps.challengeDetails, 'projectId')
+    const challengeId = _.get(nextProps.challengeDetails, 'id')
+    if (projectId && challengeId) {
+      console.log('Redircting to full URL')
+      this.props.history.replace(`/projects/${projectId}/challenges/${challengeId}/view`)
+    }
+  }
+
+  render () {
+    return <div>Redirecting...</div>
+  }
+}
+
+let mapStateToProps = ({ challenges: { challengeDetails } }) => ({
+  challengeDetails
+})
+
+let mapDispatchToProps = {
+  loadChallengeDetails
+}
+
+RedirectToChallenge.propTypes = {
+  loadChallengeDetails: PropTypes.func,
+  challengeDetails: PropTypes.object,
+  match: PropTypes.object,
+  history: PropTypes.object
+}
+
+const ConnectRedirectToChallenge = connect(mapStateToProps, mapDispatchToProps)(RedirectToChallenge)
 
 class Routes extends React.Component {
   componentWillMount () {
@@ -72,6 +111,7 @@ class Routes extends React.Component {
             <TopBarContainer />,
             <Sidebar projectId={match.params.projectId} menu={'New Challenge'} />
           )()} />
+        <Route exact path='/challenges/:challengeId' component={ConnectRedirectToChallenge} />
         <Route
           path='/projects/:projectId/challenges/:challengeId'
           render={({ match }) => renderApp(
@@ -92,11 +132,11 @@ class Routes extends React.Component {
   }
 }
 
-const mapStateToProps = ({ auth }) => ({
+mapStateToProps = ({ auth }) => ({
   ...auth
 })
 
-const mapDispatchToProps = {
+mapDispatchToProps = {
   saveToken
 }
 
