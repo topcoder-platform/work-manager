@@ -24,8 +24,8 @@ module.exports = {
   CONNECT_APP_URL: `https://connect.${DOMAIN}`,
   DIRECT_PROJECT_URL: `https://www.${DOMAIN}/direct`,
   ONLINE_REVIEW_URL: `https://software.${DOMAIN}`,
-  DEFAULT_TERM_UUID: '5e217280-1413-4d4f-b183-454f348805ab', // Terms & Conditions of Use at TopCoder
-  DEFAULT_NDA_UUID: '05342dcb-3405-445e-95b2-8ea2a3834b0d', // Appirio NDA v2.0
+  DEFAULT_TERM_UUID: '9ef9dec4-dddb-48c9-9cce-659db68bc5ac', // Terms & Conditions of Use at TopCoder
+  DEFAULT_NDA_UUID: '876e9802-eb2c-4779-a2a8-8dd8e7fb783d', // Appirio NDA v2.0
   SUBMITTER_ROLE_UUID: '732339e7-8e30-49d7-9198-cccf9451e221',
   DEV_TRACK_ID: '9b6fc876-f4d9-4ccb-9dfd-419247628825',
   DES_TRACK_ID: '5fa04185-041f-49a6-bfd1-fe82533cd6c8',
