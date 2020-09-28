@@ -206,7 +206,7 @@ class ChallengeCard extends React.Component {
     try {
       this.setState({ isSaving: true })
       const response = await patchChallenge(challenge.id, { status: 'Active' })
-      this.setState({ isLaunch: true, isConfirm: response.data.id, isSaving: false })
+      this.setState({ isLaunch: true, isConfirm: response.id, isSaving: false })
     } catch (e) {
       const error = _.get(e, 'response.data.message', 'Unable to activate the challenge')
       this.setState({ isSaving: false, error })
