@@ -303,7 +303,7 @@ class ChallengeEditor extends Component {
    */
   onUpdateAssignedMember (option) {
     const { challenge: oldChallenge } = this.state
-    const newChallenge = { ...oldChallenge, task: { isAssigned: false, memberId: null, isTask: true } }
+    const newChallenge = { ...oldChallenge }
     let assignedMemberDetails
 
     if (option && option.value) {
@@ -716,7 +716,6 @@ class ChallengeEditor extends Component {
       'startDate',
       'terms',
       'prizeSets',
-      'task',
       'winners'
     ], this.state.challenge)
     challenge.legacy = _.assign(this.state.challenge.legacy, {
