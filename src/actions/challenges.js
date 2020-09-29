@@ -427,7 +427,7 @@ export function loadResources (challengeId) {
     })
 
     if (challengeId) {
-      fetchResources(challengeId).then((resources) => {
+      return fetchResources(challengeId).then((resources) => {
         dispatch({
           type: LOAD_CHALLENGE_RESOURCES_SUCCESS,
           challengeResources: resources
