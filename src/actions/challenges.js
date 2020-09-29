@@ -184,9 +184,10 @@ export function loadChallengeDetails (projectId, challengeId) {
           challengeDetails: challenge
         })
         loadProject(challenge.projectId)(dispatch, getState)
-      }).catch(() => {
+      }).catch((error) => {
         dispatch({
-          type: LOAD_CHALLENGE_DETAILS_FAILURE
+          type: LOAD_CHALLENGE_DETAILS_FAILURE,
+          error
         })
       })
     } else {
