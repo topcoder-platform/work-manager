@@ -113,30 +113,18 @@ class ChallengeEditor extends Component {
     this.getTemplatePhases = this.getTemplatePhases.bind(this)
     this.getAvailableTimelineTemplates = this.getAvailableTimelineTemplates.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000) // 3s
-    this.resetChallengeData((newState, finish) => {
-      this.state = {
-        ...this.state,
-        ...newState
-      }
-      if (finish) {
-        finish()
-      }
-    })
+  }
+
+  componentDidMount () {
+    this.resetChallengeData(this.setState.bind(this))
   }
 
   componentDidUpdate () {
     this.resetChallengeData(this.setState.bind(this))
   }
 
-  componentWillReceiveProps (nextProps) {
-    // if member details weren't initially loaded and now they got loaded, then set them to the state
-    if (!this.state.assignedMemberDetails && nextProps.assignedMemberDetails) {
-      this.setState({ assignedMemberDetails: nextProps.assignedMemberDetails })
-    }
-  }
-
   async resetChallengeData (setState = () => {}) {
-    const { isNew, challengeDetails, metadata, attachments, challengeId } = this.props
+    const { isNew, challengeDetails, metadata, attachments, challengeId, assignedMemberDetails } = this.props
     if (
       challengeDetails &&
       challengeDetails.id &&
@@ -160,10 +148,11 @@ class ChallengeEditor extends Component {
         }
         challengeData.copilot = copilot || copilotFromResources
         challengeData.reviewer = reviewer || reviewerFromResources
-        const challengeDetail = { ...dropdowns['newChallenge'], ...challengeData }
+        const challengeDetail = { ...challengeData }
         const isOpenAdvanceSettings = challengeDetail.groups.length > 0
         setState({
           challenge: challengeDetail,
+          assignedMemberDetails,
           draftChallenge: { data: {
             ..._.cloneDeep(challengeDetails),
             copilot: challengeData.copilot,
