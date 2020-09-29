@@ -21,7 +21,7 @@ export default function (state = initialState, action) {
     case LOAD_PROJECT_DETAILS_SUCCESS:
       return {
         ...state,
-        projectDetail: action.projectDetail,
+        projectDetail: action.payload,
         isLoading: false
       }
     default:

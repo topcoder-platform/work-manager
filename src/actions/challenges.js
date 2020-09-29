@@ -20,10 +20,7 @@ import {
   deleteResource as deleteResourceAPI
 } from '../services/challenges'
 import {
-  LOAD_CHALLENGE_DETAILS_PENDING,
-  LOAD_CHALLENGE_DETAILS_SUCCESS,
-  LOAD_CHALLENGE_DETAILS_FAILURE,
-  LOAD_CHALLENGE_MEMBERS_SUCCESS,
+  LOAD_CHALLENGE_DETAILS,
   LOAD_CHALLENGE_METADATA_SUCCESS,
   LOAD_CHALLENGES_FAILURE,
   LOAD_CHALLENGES_PENDING,
@@ -45,7 +42,6 @@ import {
   CREATE_CHALLENGE_SUCCESS,
   CREATE_CHALLENGE_FAILURE
 } from '../config/constants'
-import { fetchProjectById } from '../services/projects'
 import { loadProject } from './projects'
 
 /**
@@ -171,43 +167,18 @@ export function loadChallenges (projectId, status, filterChallengeName = null) {
  * Loads Challenge details
  */
 export function loadChallengeDetails (projectId, challengeId) {
-  return async (dispatch, getState) => {
-    dispatch({
-      type: LOAD_CHALLENGE_DETAILS_PENDING,
-      challengeDetails: {}
+  return (dispatch, getState) => {
+    return dispatch({
+      type: LOAD_CHALLENGE_DETAILS,
+      payload: fetchChallenge(challengeId).then((challenge) => {
+        // TODO remove this unncessary check, or better utilize the the case when given project id
+        // does not match with challenge's project id
+        if (challenge.projectId === projectId) {
+          dispatch(loadProject(projectId))
+        }
+        return challenge
+      })
     })
-
-    if (challengeId) {
-      fetchChallenge(challengeId).then((challenge) => {
-        dispatch({
-          type: LOAD_CHALLENGE_DETAILS_SUCCESS,
-          challengeDetails: challenge
-        })
-        loadProject(challenge.projectId)(dispatch, getState)
-      }).catch((error) => {
-        dispatch({
-          type: LOAD_CHALLENGE_DETAILS_FAILURE,
-          error
-        })
-      })
-    } else {
-      dispatch({
-        type: LOAD_CHALLENGE_DETAILS_SUCCESS,
-        challengeDetails: null
-      })
-
-      if (projectId) {
-        fetchProjectById(projectId).then((selectedProject) => {
-          if (!selectedProject) return
-          const members = selectedProject.members
-            .filter(m => m.role === 'manager' || m.role === 'copilot')
-          dispatch({
-            type: LOAD_CHALLENGE_MEMBERS_SUCCESS,
-            members
-          })
-        })
-      }
-    }
   }
 }
 
@@ -458,6 +429,12 @@ export function loadResourceRoles () {
   }
 }
 
+/**
+ * Deletes a resource for the given challenge in given role
+ * @param {UUID} challengeId id of the challenge for which resource is to be deleted
+ * @param {UUID} roleId id of the role, the resource is in
+ * @param {String} memberHandle handle of the resource
+ */
 export function deleteResource (challengeId, roleId, memberHandle) {
   const resource = {
     challengeId,
@@ -472,6 +449,12 @@ export function deleteResource (challengeId, roleId, memberHandle) {
   }
 }
 
+/**
+ * Creates a resource for the given challenge in given role
+ * @param {UUID} challengeId id of the challenge for which resource is to be created
+ * @param {UUID} roleId id of the role, the resource should be in
+ * @param {String} memberHandle handle of the resource
+ */
 export function createResource (challengeId, roleId, memberHandle) {
   const resource = {
     challengeId,
@@ -486,6 +469,13 @@ export function createResource (challengeId, roleId, memberHandle) {
   }
 }
 
+/**
+ * Replaces the given resource in given role with new resource for the provided challenge
+ * @param {UUID} challengeId id of the challenge for which resource is to be  replaced
+ * @param {UUID} roleId id of the role, the resource is in
+ * @param {String} newMember handle of the new resource
+ * @param {String} oldMember handle of the existing resource
+ */
 export function replaceResourceInRole (challengeId, roleId, newMember, oldMember) {
   return async (dispatch) => {
     if (newMember === oldMember) {
