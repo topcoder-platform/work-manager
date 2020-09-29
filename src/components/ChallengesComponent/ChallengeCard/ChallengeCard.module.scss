@@ -85,6 +85,7 @@
       flex: 6;
       flex-wrap: nowrap;
       display: flex;
+      text-decoration: none;
 
       .name {
         flex:1;
@@ -102,6 +103,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      text-decoration: none;
     }
 
     .col3 {
@@ -178,6 +180,26 @@
           font-size: 12px;
         }
       }
+    }
+  }
+
+  .createdAt {
+    color: $gray;
+    font-size: 10px;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+
+  .lastUpdated {
+    text-decoration: none;
+    .lastUpdatedAt {
+      color: $tc-black;
+    }
+    .lastUpdatedBy {
+      color: $gray;
+      font-size: 10px;
     }
   }
 }
