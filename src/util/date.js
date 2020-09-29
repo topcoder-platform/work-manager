@@ -18,6 +18,15 @@ export const getLastDate = (dates) => {
 }
 
 /**
+ * Get formatted date
+ * @param {Date} date date to be formatted
+ * @returns formatted Date
+ */
+export const formatDate = (date) => {
+  return moment(date).format('DD/MM/YYYY')
+}
+
+/**
  * Formats duration
  * @param duration Duration
  * @returns formatted duration

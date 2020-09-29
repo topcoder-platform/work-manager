@@ -7,14 +7,14 @@ import styles from './Track.module.scss'
 const assets = require.context('../../assets/images/tracks', false, /svg/)
 
 const Track = ({ type, isActive, onUpdateOthers, disabled }) => {
-  const icon = `./${type.abbreviation.toLowerCase()}.svg`
+  const icon = type ? `./${type.abbreviation.toLowerCase()}.svg` : ''
 
   return (
     <div className={cn(styles.container, { [styles.active]: isActive, [styles.disabled]: disabled })} onClick={() => onUpdateOthers({ field: 'trackId', value: type.id })}>
       <div className={styles.icon}>
         { assets && assets.keys().includes(icon) ? <ReactSVG path={assets(`${icon}`)} /> : '' }
       </div>
-      <span className={styles.name}>{type.name}</span>
+      <span className={styles.name}>{type ? type.name : 'Unkown'}</span>
     </div>
   )
 }
