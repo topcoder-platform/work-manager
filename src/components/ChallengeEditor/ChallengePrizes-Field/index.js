@@ -48,8 +48,9 @@ class ChallengePrizesField extends Component {
   onUpdateValue (challengePrize) {
     const type = PRIZE_SETS_TYPE.CHALLENGE_PRIZES
     const { onUpdateOthers, challenge } = this.props
+    const existingPrizes = challenge.prizeSets ? challenge.prizeSets.filter(p => p.type !== type) : []
 
-    onUpdateOthers({ field: 'prizeSets', value: [...challenge.prizeSets.filter(p => p.type !== type), challengePrize] })
+    onUpdateOthers({ field: 'prizeSets', value: [...existingPrizes, challengePrize] })
   }
 
   getChallengePrize () {
