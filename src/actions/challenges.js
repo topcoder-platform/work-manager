@@ -168,17 +168,19 @@ export function loadChallenges (projectId, status, filterChallengeName = null) {
  */
 export function loadChallengeDetails (projectId, challengeId) {
   return (dispatch, getState) => {
-    return dispatch({
-      type: LOAD_CHALLENGE_DETAILS,
-      payload: fetchChallenge(challengeId).then((challenge) => {
-        // TODO remove this unncessary check, or better utilize the the case when given project id
-        // does not match with challenge's project id
-        if (challenge.projectId === projectId) {
-          dispatch(loadProject(projectId))
-        }
-        return challenge
+    if (challengeId) {
+      return dispatch({
+        type: LOAD_CHALLENGE_DETAILS,
+        payload: fetchChallenge(challengeId).then((challenge) => {
+          // TODO remove this unncessary check, or better utilize the the case when given project id
+          // does not match with challenge's project id
+          if (challenge.projectId === projectId) {
+            dispatch(loadProject(projectId))
+          }
+          return challenge
+        })
       })
-    })
+    }
   }
 }
 
