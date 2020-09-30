@@ -20,7 +20,7 @@ const Sidebar = ({
           Active challenges
         </div>
       </Link>
-      <Link to='#' className='chameleon-feedback'>
+      <Link to='https://forms.gle/CsaVawSDkdR5E92B8' target='_blank' rel='noopener noreferrer' className='chameleon-feedback'>
         <div className={cn(styles.homeLink, { [styles.active]: !projectId })}>
           Give Application Feedback
         </div>
