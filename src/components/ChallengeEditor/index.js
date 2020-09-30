@@ -15,7 +15,8 @@ import {
   PRIZE_SETS_TYPE,
   DEFAULT_TERM_UUID,
   DEFAULT_NDA_UUID,
-  SUBMITTER_ROLE_UUID
+  SUBMITTER_ROLE_UUID,
+  CREATE_FORUM_TYPE_IDS
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
@@ -767,6 +768,10 @@ class ChallengeEditor extends Component {
       phases: this.getTemplatePhases(defaultTemplate)
       // prizeSets: this.getDefaultPrizeSets()
     }
+    const discussions = this.getDiscussionsConfig(newChallenge)
+    if (discussions) {
+      newChallenge.discussions = discussions
+    }
     try {
       const action = await createChallenge(newChallenge)
       const draftChallenge = {
@@ -776,6 +781,18 @@ class ChallengeEditor extends Component {
       this.setState({ isSaving: false, draftChallenge })
     } catch (e) {
       this.setState({ isSaving: false })
+    }
+  }
+
+  getDiscussionsConfig (challenge) {
+    if (_.includes(CREATE_FORUM_TYPE_IDS, challenge.typeId)) {
+      return ([
+        {
+          name: `${challenge.name} Discussion`,
+          type: 'challenge',
+          provider: 'vanilla'
+        }
+      ])
     }
   }
 

@@ -16,6 +16,7 @@ export const {
   QA_TRACK_ID,
   SEGMENT_API_KEY
 } = process.env
+export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
 
 // Actions
 export const LOAD_PROJECTS_SUCCESS = 'LOAD_PROJECTS_SUCCESS'
