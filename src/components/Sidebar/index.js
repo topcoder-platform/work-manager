@@ -20,11 +20,11 @@ const Sidebar = ({
           Active challenges
         </div>
       </Link>
-      <Link to='https://forms.gle/CsaVawSDkdR5E92B8' target='_blank' rel='noopener noreferrer' className='chameleon-feedback'>
+      <a href='https://forms.gle/CsaVawSDkdR5E92B8' target='_blank' rel='noopener noreferrer' className='chameleon-feedback'>
         <div className={cn(styles.homeLink, { [styles.active]: !projectId })}>
           Give Application Feedback
         </div>
-      </Link>
+      </a>
       <p className={styles.supportLink}>
         Have an urgent issue?<br />
         E: <a href='mailto:support@topcoder.com'>support@topcoder.com</a>
