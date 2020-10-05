@@ -4,17 +4,17 @@ import styles from './CheckpointPrizes-Field.module.scss'
 import cn from 'classnames'
 import { range } from 'lodash'
 import { validateValue } from '../../../util/input-check'
-import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE } from '../../../config/constants'
+import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE, CHALLENGE_PRIZE_TYPE } from '../../../config/constants'
 
 const CheckpointPrizesField = ({ challenge, onUpdateOthers }) => {
   const type = PRIZE_SETS_TYPE.CHECKPOINT_PRIZES
-  const checkpointPrize = challenge.prizeSets.find(p => p.type === type) || { type, prizes: [] }
+  const checkpointPrize = challenge.prizeSets.find(p => p.type === type) || { type: CHALLENGE_PRIZE_TYPE.USD, prizes: [] }
   const number = checkpointPrize.prizes.length
   const amount = checkpointPrize.prizes.length ? checkpointPrize.prizes[0].value : 0
 
   function onChange (number, amount) {
     checkpointPrize.prizes = range(validateValue(number, VALIDATION_VALUE_TYPE.INTEGER))
-      .map(i => ({ type: 'Prize ' + i, value: validateValue(amount, VALIDATION_VALUE_TYPE.INTEGER, '$') }))
+      .map(i => ({ type: CHALLENGE_PRIZE_TYPE.USD, value: validateValue(amount, VALIDATION_VALUE_TYPE.INTEGER, '$') }))
     onUpdateOthers({ field: 'prizeSets', value: [...challenge.prizeSets.filter(p => p.type !== type), +number && checkpointPrize].filter(p => p) })
   }
   return (

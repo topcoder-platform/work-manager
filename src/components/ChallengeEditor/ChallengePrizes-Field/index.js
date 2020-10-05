@@ -26,7 +26,7 @@ class ChallengePrizesField extends Component {
 
   addNewPrize () {
     const challengePrize = this.getChallengePrize()
-    challengePrize.prizes = [...challengePrize.prizes, { type: CHALLENGE_PRIZE_TYPE.MONEY, value: 1 }]
+    challengePrize.prizes = [...challengePrize.prizes, { type: CHALLENGE_PRIZE_TYPE.USD, value: 1 }]
     this.onUpdateValue(challengePrize)
   }
 
@@ -55,7 +55,7 @@ class ChallengePrizesField extends Component {
 
   getChallengePrize () {
     const type = PRIZE_SETS_TYPE.CHALLENGE_PRIZES
-    return (this.props.challenge.prizeSets && this.props.challenge.prizeSets.length && this.props.challenge.prizeSets.find(p => p.type === type)) || { type, prizes: [{ type: CHALLENGE_PRIZE_TYPE.MONEY, value: 0 }] }
+    return (this.props.challenge.prizeSets && this.props.challenge.prizeSets.length && this.props.challenge.prizeSets.find(p => p.type === type)) || { type, prizes: [{ type: CHALLENGE_PRIZE_TYPE.USD, value: 0 }] }
   }
 
   renderPrizes () {

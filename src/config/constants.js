@@ -135,7 +135,7 @@ export const VALIDATION_VALUE_TYPE = {
 }
 
 export const CHALLENGE_PRIZE_TYPE = {
-  MONEY: 'money'
+  USD: 'USD'
 }
 
 export const ALLOWED_USER_ROLES = [
