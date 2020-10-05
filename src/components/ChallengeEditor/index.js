@@ -1199,7 +1199,7 @@ class ChallengeEditor extends Component {
                 <OutlineButton text={'Save Draft'} type={'success'} onClick={this.createDraftHandler} />
               </div>
               { isDraft && <div className={styles.button}>
-                <PrimaryButton text={'Launch as Active'} type={'info'} submit />
+                <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
               </div>}
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
@@ -1231,7 +1231,7 @@ class ChallengeEditor extends Component {
           { actionButtons }
         </form>
       ) : (
-        <form name='challenge-info-form' noValidate autoComplete='off' onSubmit={this.toggleLaunch}>
+        <form name='challenge-info-form' noValidate autoComplete='off' onSubmit={(e) => e.preventDefault()}>
           <div className={styles.group}>
 
             <div className={cn(styles.row, styles.topRow)}>
