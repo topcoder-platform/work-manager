@@ -87,7 +87,6 @@ export default function (state = initialState, action) {
     case LOAD_CHALLENGES_FAILURE:
       return { ...state, isLoading: false }
     case LOAD_CHALLENGE_DETAILS_FAILURE:
-    case UPDATE_CHALLENGE_DETAILS_FAILURE:
     case CREATE_CHALLENGE_FAILURE:
       return { ...state, isLoading: false, attachments: [], challenge: null, failedToLoad: true }
     case LOAD_CHALLENGE_DETAILS_SUCCESS: {
@@ -143,6 +142,8 @@ export default function (state = initialState, action) {
         failedToLoad: false
       }
     }
+    case UPDATE_CHALLENGE_DETAILS_FAILURE:
+      return { ...state, isLoading: false, attachments: [], challenge: null, failedToLoad: false, failedToUpdate: true }
     case CREATE_CHALLENGE_SUCCESS: {
       // if we are showing the list of challenges with the same status as we just created,
       // then add the new challenge to the beginning of the current challenge list

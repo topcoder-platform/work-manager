@@ -203,10 +203,12 @@ export function updateChallengeDetails (challengeId, challengeDetails) {
         type: UPDATE_CHALLENGE_DETAILS_SUCCESS,
         challengeDetails: challenge
       })
-    }).catch(() => {
+    }).catch((error) => {
       dispatch({
-        type: UPDATE_CHALLENGE_DETAILS_FAILURE
+        type: UPDATE_CHALLENGE_DETAILS_FAILURE,
+        error
       })
+      return Promise.reject(error)
     })
   }
 }
