@@ -192,6 +192,7 @@ class ChallengeList extends Component {
           challenges.length > 0 && (
             <div className={styles.header}>
               <div className={styles.col1}>Challenges Name</div>
+              <div className={styles.col2}>Last Updated</div>
               <div className={styles.col2}>Status</div>
               {(selectedTab === 0) && (<div className={styles.col3}>Current phase</div>)}
               <div className={styles.col4}>&nbsp;</div>

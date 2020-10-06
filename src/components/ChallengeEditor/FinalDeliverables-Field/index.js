@@ -34,7 +34,7 @@ class FinalDeliverablesField extends Component {
     const { challenge, readOnly, removeFileType } = this.props
     const fileTypesMetadata = _.find(challenge.metadata, { name: 'fileTypes' })
     const fileTypes = (fileTypesMetadata && JSON.parse(fileTypesMetadata.value)) || []
-    const isDuplicateValue = _.includes(fileTypes, this.state.newFileType.trim())
+    const isDuplicateValue = _.includes(fileTypes.map((fileType) => fileType.toLowerCase()), this.state.newFileType.toLowerCase().trim())
 
     return (
       <React.Fragment>

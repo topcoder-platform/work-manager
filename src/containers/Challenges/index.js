@@ -35,9 +35,9 @@ class Challenges extends Component {
     if (menu === 'NULL' && activeProjectId !== -1) {
       resetSidebarActiveParams()
     } else {
-      // this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, CHALLENGE_STATUS.ACTIVE, '')
       if (projectId) {
         this.props.loadProject(projectId)
+        this.reloadChallenges(this.props)
       }
     }
   }

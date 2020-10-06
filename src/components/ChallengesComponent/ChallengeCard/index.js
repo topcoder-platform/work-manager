@@ -13,7 +13,7 @@ import { faFile, faUser } from '@fortawesome/free-solid-svg-icons'
 import ChallengeStatus from '../ChallengeStatus'
 import ChallengeTag from '../ChallengeTag'
 import styles from './ChallengeCard.module.scss'
-import { getFormattedDuration } from '../../../util/date'
+import { getFormattedDuration, formatDate } from '../../../util/date'
 import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, ONLINE_REVIEW_URL } from '../../../config/constants'
 import { patchChallenge } from '../../../services/challenges'
 import ConfirmationModal from '../../Modal/ConfirmationModal'
@@ -172,6 +172,15 @@ const renderStatus = (status) => {
   }
 }
 
+const renderLastUpdated = (challenge) => {
+  return (
+    <Link className={cn(styles.col2, styles.lastUpdated)} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
+      <div className={styles.lastUpdatedAt}>{formatDate(challenge.updated)}</div>
+      <div className={styles.lastUpdatedBy}>{challenge.updatedBy}</div>
+    </Link>
+  )
+}
+
 class ChallengeCard extends React.Component {
   constructor (props) {
     super(props)
@@ -248,8 +257,10 @@ class ChallengeCard extends React.Component {
           <div className={styles.name}>
             <span className={styles.block}>{challenge.name}</span>
             <ChallengeTag track={challenge.trackId} challengeType={challenge.type} />
+            <span className={styles.createdAt}>{`Created by ${challenge.createdBy} at ${formatDate(challenge.created)}`}</span>
           </div>
         </Link>
+        {renderLastUpdated(challenge)}
         <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
           {renderStatus(challenge.status.toUpperCase())}
         </Link>

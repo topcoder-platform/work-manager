@@ -87,17 +87,17 @@ export default function (state = initialState, action) {
     case LOAD_CHALLENGES_FAILURE:
       return { ...state, isLoading: false }
     case LOAD_CHALLENGE_DETAILS_FAILURE:
-    case UPDATE_CHALLENGE_DETAILS_FAILURE:
     case CREATE_CHALLENGE_FAILURE:
       return { ...state, isLoading: false, attachments: [], challenge: null, failedToLoad: true }
-    case LOAD_CHALLENGE_DETAILS_SUCCESS:
+    case LOAD_CHALLENGE_DETAILS_SUCCESS: {
       return {
         ...state,
-        challengeDetails: action.challengeDetails,
+        challengeDetails: action.payload,
         isLoading: false,
-        attachments: _.has(action.challengeDetails, 'attachments') ? action.challengeDetails.attachments : [],
+        attachments: _.has(action.payload, 'attachments') ? action.payload.attachments : [],
         failedToLoad: false
       }
+    }
     case UPDATE_CHALLENGE_DETAILS_SUCCESS: {
       // During editing the challenge we might change its status, so when we came back to the challenge list
       // updated challenge might have to be removed from the list, or added to the list, or just updated
@@ -142,6 +142,8 @@ export default function (state = initialState, action) {
         failedToLoad: false
       }
     }
+    case UPDATE_CHALLENGE_DETAILS_FAILURE:
+      return { ...state, isLoading: false, attachments: [], challenge: null, failedToLoad: false, failedToUpdate: true }
     case CREATE_CHALLENGE_SUCCESS: {
       // if we are showing the list of challenges with the same status as we just created,
       // then add the new challenge to the beginning of the current challenge list
@@ -213,8 +215,9 @@ export default function (state = initialState, action) {
           [action.metadataKey]: action.metadataValue
         }
       }
-    case LOAD_CHALLENGE_MEMBERS_SUCCESS:
+    case LOAD_CHALLENGE_MEMBERS_SUCCESS: {
       return { ...state, metadata: { ...state.metadata, members: action.members } }
+    }
     case UPLOAD_ATTACHMENT_PENDING:
       return { ...state, isUploading: true, isSuccess: false, uploadingId: action.challengeId }
     case UPLOAD_ATTACHMENT_SUCCESS:

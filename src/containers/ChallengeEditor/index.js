@@ -105,10 +105,11 @@ class ChallengeEditor extends Component {
     }
   }
 
-  fetchChallengeDetails (newMatch, loadChallengeDetails, loadResources) {
-    const projectId = _.get(newMatch.params, 'projectId', null)
+  async fetchChallengeDetails (newMatch, loadChallengeDetails, loadResources) {
+    let projectId = _.get(newMatch.params, 'projectId', null)
+    projectId = projectId ? parseInt(projectId) : null
     const challengeId = _.get(newMatch.params, 'challengeId', null)
-    loadResources(challengeId)
+    await loadResources(challengeId)
     loadChallengeDetails(projectId, challengeId)
   }
 

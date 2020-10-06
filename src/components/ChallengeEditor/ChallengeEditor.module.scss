@@ -397,3 +397,9 @@
   align-items: center;
 }
 
+.errorContainer {
+  .errorMessage {
+    color: $red;
+  }
+}
+
