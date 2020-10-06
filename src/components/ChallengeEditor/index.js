@@ -936,11 +936,7 @@ class ChallengeEditor extends Component {
   }
 
   async onlySave () {
-    this.updateAllChallengeInfo(this.state.challenge.status, () => {
-      this.resetModal()
-      const { history } = this.props
-      history.push('./view')
-    })
+    this.updateAllChallengeInfo(this.state.challenge.status)
   }
 
   getResourceRoleByName (name) {
