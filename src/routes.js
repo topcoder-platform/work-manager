@@ -4,7 +4,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { Redirect, Route, Switch, withRouter } from 'react-router-dom'
-import jwtDecode from 'jwt-decode'
+import { decodeToken } from 'tc-auth-lib'
 import _ from 'lodash'
 import renderApp from './components/App'
 import TopBarContainer from './containers/TopbarContainer'
@@ -78,7 +78,7 @@ class Routes extends React.Component {
       return null
     }
 
-    let isAllowed = checkAllowedRoles(_.get(jwtDecode(this.props.token), 'roles'))
+    let isAllowed = checkAllowedRoles(_.get(decodeToken(this.props.token), 'roles'))
 
     if (!isAllowed) {
       let warnMessage = 'You are not authorized to use this application'
