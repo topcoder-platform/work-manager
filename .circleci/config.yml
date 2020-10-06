@@ -73,7 +73,7 @@ workflows:
           filters:
             branches:
               only:
-                - develop
+                - "feature/Auth0-RS256-Token"
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.
