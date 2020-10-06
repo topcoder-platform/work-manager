@@ -1025,7 +1025,7 @@ class ChallengeEditor extends Component {
       return <div>Error loading challenge</div>
     }
     const isTask = _.get(challenge, 'task.isTask', false)
-    const { assignedMemberDetails } = this.state
+    const { assignedMemberDetails, error } = this.state
     let isActive = false
     let isDraft = false
     let isCompleted = false
@@ -1179,6 +1179,8 @@ class ChallengeEditor extends Component {
       )
     }
 
+    const errorContainer = <div className={styles.errorContainer}><div className={styles.errorMessage}>{error}</div></div>
+
     const actionButtons = <React.Fragment>
       {!isLoading && this.state.hasValidationErrors && <div className={styles.error}>Please fix the errors before saving</div>}
       {
@@ -1228,6 +1230,7 @@ class ChallengeEditor extends Component {
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
           </div>
+          { errorContainer }
           { actionButtons }
         </form>
       ) : (
@@ -1348,6 +1351,7 @@ class ChallengeEditor extends Component {
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <ChallengeTotalField challenge={challenge} />
           </div>
+          { errorContainer }
           { actionButtons }
         </form>
       )
