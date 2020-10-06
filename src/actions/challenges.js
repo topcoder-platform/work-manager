@@ -174,7 +174,7 @@ export function loadChallengeDetails (projectId, challengeId) {
         payload: fetchChallenge(challengeId).then((challenge) => {
           // TODO remove this unncessary check, or better utilize the the case when given project id
           // does not match with challenge's project id
-          if (challenge.projectId === projectId) {
+          if (challenge.projectId == projectId) { // eslint-disable-line
             dispatch(loadProject(projectId))
           }
           return challenge
