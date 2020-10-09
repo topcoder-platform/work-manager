@@ -28,9 +28,6 @@ import {
   UPLOAD_ATTACHMENT_FAILURE,
   UPLOAD_ATTACHMENT_PENDING,
   UPLOAD_ATTACHMENT_SUCCESS,
-  LOAD_CHALLENGE_RESOURCES_PENDING,
-  LOAD_CHALLENGE_RESOURCES_SUCCESS,
-  LOAD_CHALLENGE_RESOURCES_FAILURE,
   CREATE_CHALLENGE_RESOURCE,
   DELETE_CHALLENGE_RESOURCE,
   REMOVE_ATTACHMENT,
@@ -40,7 +37,8 @@ import {
   UPDATE_CHALLENGE_DETAILS_FAILURE,
   CREATE_CHALLENGE_PENDING,
   CREATE_CHALLENGE_SUCCESS,
-  CREATE_CHALLENGE_FAILURE
+  CREATE_CHALLENGE_FAILURE,
+  LOAD_CHALLENGE_RESOURCES
 } from '../config/constants'
 import { loadProject } from './projects'
 
@@ -174,7 +172,7 @@ export function loadChallengeDetails (projectId, challengeId) {
         payload: fetchChallenge(challengeId).then((challenge) => {
           // TODO remove this unncessary check, or better utilize the the case when given project id
           // does not match with challenge's project id
-          if (challenge.projectId === projectId) {
+          if (challenge.projectId == projectId) { // eslint-disable-line
             dispatch(loadProject(projectId))
           }
           return challenge
@@ -203,10 +201,12 @@ export function updateChallengeDetails (challengeId, challengeDetails) {
         type: UPDATE_CHALLENGE_DETAILS_SUCCESS,
         challengeDetails: challenge
       })
-    }).catch(() => {
+    }).catch((error) => {
       dispatch({
-        type: UPDATE_CHALLENGE_DETAILS_FAILURE
+        type: UPDATE_CHALLENGE_DETAILS_FAILURE,
+        error
       })
+      return Promise.reject(error)
     })
   }
 }
@@ -394,27 +394,11 @@ export function loadChallengeTerms () {
 }
 
 export function loadResources (challengeId) {
-  return async (dispatch) => {
-    dispatch({
-      type: LOAD_CHALLENGE_RESOURCES_PENDING,
-      challengeResources: {}
-    })
-
+  return (dispatch, getState) => {
     if (challengeId) {
-      return fetchResources(challengeId).then((resources) => {
-        dispatch({
-          type: LOAD_CHALLENGE_RESOURCES_SUCCESS,
-          challengeResources: resources
-        })
-      }).catch(() => {
-        dispatch({
-          type: LOAD_CHALLENGE_RESOURCES_FAILURE
-        })
-      })
-    } else {
-      dispatch({
-        type: LOAD_CHALLENGE_RESOURCES_SUCCESS,
-        challengeResources: null
+      return dispatch({
+        type: LOAD_CHALLENGE_RESOURCES,
+        payload: fetchResources(challengeId)
       })
     }
   }

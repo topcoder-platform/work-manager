@@ -15,7 +15,8 @@ import {
   PRIZE_SETS_TYPE,
   DEFAULT_TERM_UUID,
   DEFAULT_NDA_UUID,
-  SUBMITTER_ROLE_UUID
+  SUBMITTER_ROLE_UUID,
+  CREATE_FORUM_TYPE_IDS
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
@@ -767,6 +768,10 @@ class ChallengeEditor extends Component {
       phases: this.getTemplatePhases(defaultTemplate)
       // prizeSets: this.getDefaultPrizeSets()
     }
+    const discussions = this.getDiscussionsConfig(newChallenge)
+    if (discussions) {
+      newChallenge.discussions = discussions
+    }
     try {
       const action = await createChallenge(newChallenge)
       const draftChallenge = {
@@ -776,6 +781,18 @@ class ChallengeEditor extends Component {
       this.setState({ isSaving: false, draftChallenge })
     } catch (e) {
       this.setState({ isSaving: false })
+    }
+  }
+
+  getDiscussionsConfig (challenge) {
+    if (_.includes(CREATE_FORUM_TYPE_IDS, challenge.typeId)) {
+      return ([
+        {
+          name: `${challenge.name} Discussion`,
+          type: 'challenge',
+          provider: 'vanilla'
+        }
+      ])
     }
   }
 
@@ -919,11 +936,7 @@ class ChallengeEditor extends Component {
   }
 
   async onlySave () {
-    this.updateAllChallengeInfo(this.state.challenge.status, () => {
-      this.resetModal()
-      const { history } = this.props
-      history.push('./view')
-    })
+    this.updateAllChallengeInfo(this.state.challenge.status)
   }
 
   getResourceRoleByName (name) {
@@ -1008,7 +1021,7 @@ class ChallengeEditor extends Component {
       return <div>Error loading challenge</div>
     }
     const isTask = _.get(challenge, 'task.isTask', false)
-    const { assignedMemberDetails } = this.state
+    const { assignedMemberDetails, error } = this.state
     let isActive = false
     let isDraft = false
     let isCompleted = false
@@ -1044,7 +1057,6 @@ class ChallengeEditor extends Component {
     let activateModal = null
     let closeTaskModal = null
     let draftModal = null
-    let savedModal = null
 
     let { type } = challenge
     if (!type) {
@@ -1055,20 +1067,6 @@ class ChallengeEditor extends Component {
           type = selectedType.name
         }
       }
-    }
-    if (!isNew && challenge.status === 'New' && isLaunch && isConfirm) {
-      savedModal = (
-        <AlertModal
-          title='Saved Challenge'
-          message={`Challenge "${challenge.name}" is saved successfuly`}
-          theme={theme}
-          onCancel={this.resetModal}
-          closeText='Close'
-          okText='View Challenge'
-          okLink='./view'
-          onClose={this.resetModal}
-        />
-      )
     }
 
     if (!isNew && isLaunch && !isConfirm) {
@@ -1162,6 +1160,8 @@ class ChallengeEditor extends Component {
       )
     }
 
+    const errorContainer = <div className={styles.errorContainer}><div className={styles.errorMessage}>{error}</div></div>
+
     const actionButtons = <React.Fragment>
       {!isLoading && this.state.hasValidationErrors && <div className={styles.error}>Please fix the errors before saving</div>}
       {
@@ -1182,7 +1182,7 @@ class ChallengeEditor extends Component {
                 <OutlineButton text={'Save Draft'} type={'success'} onClick={this.createDraftHandler} />
               </div>
               { isDraft && <div className={styles.button}>
-                <PrimaryButton text={'Launch as Active'} type={'info'} submit />
+                <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
               </div>}
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
@@ -1211,10 +1211,11 @@ class ChallengeEditor extends Component {
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
           </div>
+          { errorContainer }
           { actionButtons }
         </form>
       ) : (
-        <form name='challenge-info-form' noValidate autoComplete='off' onSubmit={this.toggleLaunch}>
+        <form name='challenge-info-form' noValidate autoComplete='off' onSubmit={(e) => e.preventDefault()}>
           <div className={styles.group}>
 
             <div className={cn(styles.row, styles.topRow)}>
@@ -1331,6 +1332,7 @@ class ChallengeEditor extends Component {
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <ChallengeTotalField challenge={challenge} />
           </div>
+          { errorContainer }
           { actionButtons }
         </form>
       )
@@ -1349,7 +1351,6 @@ class ChallengeEditor extends Component {
         <div className={styles.container}>
           { activateModal }
           { draftModal }
-          { savedModal }
           { closeTaskModal }
           <div className={styles.formContainer}>
             { challengeForm }

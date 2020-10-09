@@ -3,16 +3,16 @@ import PropTypes from 'prop-types'
 import styles from './ReviewCost-Field.module.scss'
 import cn from 'classnames'
 import { validateValue } from '../../../util/input-check'
-import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE } from '../../../config/constants'
+import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE, CHALLENGE_PRIZE_TYPE } from '../../../config/constants'
 
 const ReviewCostField = ({ challenge, onUpdateOthers }) => {
   const type = PRIZE_SETS_TYPE.REVIEWER_PAYMENT
-  const reviewCost = challenge.prizeSets.find(p => p.type === type) || { type, prizes: [{ type, value: 0 }] }
+  const reviewCost = challenge.prizeSets.find(p => p.type === type) || { type, prizes: [{ type: CHALLENGE_PRIZE_TYPE.USD, value: 0 }] }
   const value = reviewCost.prizes[0].value
 
   function onChange (e) {
     const value = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER, '$')
-    reviewCost.prizes = [{ type, value }]
+    reviewCost.prizes = [{ type: CHALLENGE_PRIZE_TYPE.USD, value }]
     onUpdateOthers({ field: 'prizeSets', value: [...challenge.prizeSets.filter(p => p.type !== type), reviewCost] })
   }
 
