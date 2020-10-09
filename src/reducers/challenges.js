@@ -166,7 +166,7 @@ export default function (state = initialState, action) {
     case LOAD_CHALLENGE_RESOURCES_SUCCESS:
       return {
         ...state,
-        challengeResources: action.challengeResources,
+        challengeResources: action.payload,
         isLoading: false,
         failedToLoad: false
       }
