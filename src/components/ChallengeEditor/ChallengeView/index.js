@@ -21,7 +21,16 @@ import PhaseInput from '../../PhaseInput'
 import LegacyLinks from '../../LegacyLinks'
 import AssignedMemberField from '../AssignedMember-Field'
 
-const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources, token, isLoading, challengeId, assignedMemberDetails }) => {
+const ChallengeView = ({
+  projectDetail,
+  challenge,
+  metadata,
+  challengeResources,
+  token,
+  isLoading,
+  challengeId,
+  assignedMemberDetails,
+  enableEdit }) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
 
@@ -64,7 +73,7 @@ const ChallengeView = ({ projectDetail, challenge, metadata, challengeResources,
       </div>
       <div className={styles.title}>View Details</div>
       <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsRight)}>
-        <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} />
+        { enableEdit && <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} /> }
         <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
       </div>
       <div className={styles.container}>
@@ -202,7 +211,8 @@ ChallengeView.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   challengeId: PropTypes.string.isRequired,
   challengeResources: PropTypes.arrayOf(PropTypes.object),
-  assignedMemberDetails: PropTypes.shape()
+  assignedMemberDetails: PropTypes.shape(),
+  enableEdit: PropTypes.bool
 }
 
 export default withRouter(ChallengeView)

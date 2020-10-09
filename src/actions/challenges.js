@@ -28,9 +28,6 @@ import {
   UPLOAD_ATTACHMENT_FAILURE,
   UPLOAD_ATTACHMENT_PENDING,
   UPLOAD_ATTACHMENT_SUCCESS,
-  LOAD_CHALLENGE_RESOURCES_PENDING,
-  LOAD_CHALLENGE_RESOURCES_SUCCESS,
-  LOAD_CHALLENGE_RESOURCES_FAILURE,
   CREATE_CHALLENGE_RESOURCE,
   DELETE_CHALLENGE_RESOURCE,
   REMOVE_ATTACHMENT,
@@ -40,7 +37,8 @@ import {
   UPDATE_CHALLENGE_DETAILS_FAILURE,
   CREATE_CHALLENGE_PENDING,
   CREATE_CHALLENGE_SUCCESS,
-  CREATE_CHALLENGE_FAILURE
+  CREATE_CHALLENGE_FAILURE,
+  LOAD_CHALLENGE_RESOURCES
 } from '../config/constants'
 import { loadProject } from './projects'
 
@@ -396,27 +394,11 @@ export function loadChallengeTerms () {
 }
 
 export function loadResources (challengeId) {
-  return async (dispatch) => {
-    dispatch({
-      type: LOAD_CHALLENGE_RESOURCES_PENDING,
-      challengeResources: {}
-    })
-
+  return (dispatch, getState) => {
     if (challengeId) {
-      return fetchResources(challengeId).then((resources) => {
-        dispatch({
-          type: LOAD_CHALLENGE_RESOURCES_SUCCESS,
-          challengeResources: resources
-        })
-      }).catch(() => {
-        dispatch({
-          type: LOAD_CHALLENGE_RESOURCES_FAILURE
-        })
-      })
-    } else {
-      dispatch({
-        type: LOAD_CHALLENGE_RESOURCES_SUCCESS,
-        challengeResources: null
+      return dispatch({
+        type: LOAD_CHALLENGE_RESOURCES,
+        payload: fetchResources(challengeId)
       })
     }
   }

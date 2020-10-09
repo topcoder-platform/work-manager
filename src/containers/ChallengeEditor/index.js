@@ -5,6 +5,7 @@ import { withRouter, Route } from 'react-router-dom'
 import ChallengeEditorComponent from '../../components/ChallengeEditor'
 import ChallengeViewComponent from '../../components/ChallengeEditor/ChallengeView'
 import Loader from '../../components/Loader'
+import styles from './ChallengeEditor.module.scss'
 
 import {
   loadTimelineTemplates,
@@ -113,10 +114,21 @@ class ChallengeEditor extends Component {
     loadChallengeDetails(projectId, challengeId)
   }
 
+  isEditable () {
+    const { hasProjectAccess, metadata: { resourceRoles }, challengeResources, loggedInUser } = this.props
+    if (!hasProjectAccess) {
+      return false
+    }
+    const userRoles = _.filter(challengeResources, cr => cr.memberId === `${loggedInUser.userId}`)
+    const userResourceRoles = _.filter(resourceRoles, rr => _.some(userRoles, ur => ur.roleId === rr.id))
+    return _.some(userResourceRoles, urr => urr.fullAccess && urr.isActive)
+  }
+
   render () {
     const {
       match,
       isLoading,
+      isProjectLoading,
       challengeDetails,
       challengeResources,
       metadata,
@@ -132,6 +144,7 @@ class ChallengeEditor extends Component {
       replaceResourceInRole
       // members
     } = this.props
+    if (isProjectLoading || isLoading) return <Loader />
     const challengeId = _.get(match.params, 'challengeId', null)
     if (challengeId && (!challengeDetails || !challengeDetails.id)) {
       return (<Loader />)
@@ -144,6 +157,7 @@ class ChallengeEditor extends Component {
         handle: submitters[0].memberHandle
       }
     }
+    const enableEdit = this.isEditable()
     return <div>
       <Route
         exact
@@ -171,7 +185,8 @@ class ChallengeEditor extends Component {
           />
         ))
         } />
-      <Route
+      { !enableEdit && <div className={styles.errorContainer}>You don't have access to edit the challenge</div>}
+      { enableEdit && <Route
         exact
         path={`${this.props.match.path}/edit`}
         render={({ match }) => ((
@@ -196,6 +211,7 @@ class ChallengeEditor extends Component {
           />
         ))
         } />
+      }
       <Route
         exact
         path={`${this.props.match.path}/view`}
@@ -209,6 +225,7 @@ class ChallengeEditor extends Component {
             token={token}
             challengeId={challengeId}
             assignedMemberDetails={assignedMemberDetails}
+            enableEdit={enableEdit}
           />
         ))
         } />
@@ -237,6 +254,8 @@ ChallengeEditor.propTypes = {
   loadResourceRoles: PropTypes.func,
   challengeResources: PropTypes.arrayOf(PropTypes.object),
   challengeDetails: PropTypes.object,
+  isProjectLoading: PropTypes.bool,
+  hasProjectAccess: PropTypes.bool,
   projectDetail: PropTypes.object,
   // history: PropTypes.object,
   metadata: PropTypes.shape({
@@ -246,6 +265,7 @@ ChallengeEditor.propTypes = {
   createAttachment: PropTypes.func,
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string,
+  loggedInUser: PropTypes.object,
   removeAttachment: PropTypes.func,
   failedToLoad: PropTypes.bool,
   loadMemberDetails: PropTypes.func,
@@ -256,14 +276,17 @@ ChallengeEditor.propTypes = {
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
 
-const mapStateToProps = ({ projects: { projectDetail }, challenges: { challengeDetails, challengeResources, metadata, isLoading, attachments, failedToLoad }, auth: { token }, members: { members } }) => ({
+const mapStateToProps = ({ projects, challenges: { challengeDetails, challengeResources, metadata, isLoading, attachments, failedToLoad }, auth: { token, user }, members: { members } }) => ({
   challengeDetails,
-  projectDetail,
+  hasProjectAccess: projects.hasProjectAccess,
+  projectDetail: projects.projectDetail,
   challengeResources,
   metadata,
   isLoading,
+  isProjectLoading: projects.isLoading,
   attachments,
   token,
+  loggedInUser: user,
   failedToLoad
   // members
 })
