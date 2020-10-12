@@ -157,7 +157,7 @@ class ChallengeEditor extends Component {
         handle: submitters[0].memberHandle
       }
     }
-    const enableEdit = this.isEditable()
+    const enableEdit = true // this.isEditable()
     return <div>
       <Route
         exact
