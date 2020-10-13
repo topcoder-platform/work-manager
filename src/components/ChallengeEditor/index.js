@@ -936,11 +936,7 @@ class ChallengeEditor extends Component {
   }
 
   async onlySave () {
-    this.updateAllChallengeInfo(this.state.challenge.status, () => {
-      this.resetModal()
-      const { history } = this.props
-      history.push('./view')
-    })
+    this.updateAllChallengeInfo(this.state.challenge.status)
   }
 
   getResourceRoleByName (name) {
@@ -1061,7 +1057,6 @@ class ChallengeEditor extends Component {
     let activateModal = null
     let closeTaskModal = null
     let draftModal = null
-    let savedModal = null
 
     let { type } = challenge
     if (!type) {
@@ -1072,20 +1067,6 @@ class ChallengeEditor extends Component {
           type = selectedType.name
         }
       }
-    }
-    if (!isNew && challenge.status === 'New' && isLaunch && isConfirm) {
-      savedModal = (
-        <AlertModal
-          title='Saved Challenge'
-          message={`Challenge "${challenge.name}" is saved successfuly`}
-          theme={theme}
-          onCancel={this.resetModal}
-          closeText='Close'
-          okText='View Challenge'
-          okLink='./view'
-          onClose={this.resetModal}
-        />
-      )
     }
 
     if (!isNew && isLaunch && !isConfirm) {
@@ -1370,7 +1351,6 @@ class ChallengeEditor extends Component {
         <div className={styles.container}>
           { activateModal }
           { draftModal }
-          { savedModal }
           { closeTaskModal }
           <div className={styles.formContainer}>
             { challengeForm }
