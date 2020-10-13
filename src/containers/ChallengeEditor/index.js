@@ -34,6 +34,11 @@ import { connect } from 'react-redux'
 import { SUBMITTER_ROLE_UUID } from '../../config/constants'
 
 class ChallengeEditor extends Component {
+  constructor (props) {
+    super(props)
+    const mountedWithCreatePage = props.match.path.endsWith('/new')
+    this.state = { mountedWithCreatePage }
+  }
   componentDidMount () {
     const {
       match,
@@ -144,6 +149,7 @@ class ChallengeEditor extends Component {
       replaceResourceInRole
       // members
     } = this.props
+    const { mountedWithCreatePage } = this.state
     if (isProjectLoading || isLoading) return <Loader />
     const challengeId = _.get(match.params, 'challengeId', null)
     if (challengeId && (!challengeDetails || !challengeDetails.id)) {
@@ -157,7 +163,8 @@ class ChallengeEditor extends Component {
         handle: submitters[0].memberHandle
       }
     }
-    const enableEdit = true // this.isEditable()
+    const enableEdit = this.isEditable()
+    const isCreatePage = this.props.match.path.endsWith('/new')
     return <div>
       <Route
         exact
@@ -185,8 +192,8 @@ class ChallengeEditor extends Component {
           />
         ))
         } />
-      { !enableEdit && <div className={styles.errorContainer}>You don't have access to edit the challenge</div>}
-      { enableEdit && <Route
+      { !isCreatePage && !mountedWithCreatePage && !enableEdit && <div className={styles.errorContainer}>You don't have access to edit the challenge</div>}
+      { (mountedWithCreatePage || enableEdit) && <Route
         exact
         path={`${this.props.match.path}/edit`}
         render={({ match }) => ((
