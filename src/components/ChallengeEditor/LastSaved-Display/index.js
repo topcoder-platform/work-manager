@@ -10,6 +10,6 @@ const LastSavedDisplay = ({ timeLastSaved }) =>
   </div>
 
 LastSavedDisplay.propTypes = {
-  timeLastSaved: PropTypes.string.isRequired
+  timeLastSaved: PropTypes.string
 }
 export default LastSavedDisplay

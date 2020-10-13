@@ -25,7 +25,7 @@ Track.defaultProps = {
 }
 
 Track.propTypes = {
-  type: PropTypes.object.isRequired,
+  type: PropTypes.object,
   isActive: PropTypes.bool,
   disabled: PropTypes.bool,
   onUpdateOthers: PropTypes.func.isRequired
