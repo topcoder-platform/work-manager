@@ -6,6 +6,7 @@ import styles from './Tags-Field.module.scss'
 
 const TagsField = ({ challengeTags, challenge, onUpdateMultiSelect, readOnly }) => {
   const mapOps = item => ({ label: item.name, value: item.id })
+  const existingTags = (challenge.tags && challenge.tags.length) ? challenge.tags.join(',') : ''
   return (
     <>
       <div className={styles.row}>
@@ -15,19 +16,19 @@ const TagsField = ({ challengeTags, challenge, onUpdateMultiSelect, readOnly }) 
         <div className={cn(styles.field, styles.col2)}>
           <input type='hidden' />
           {readOnly ? (
-            <span>{(challenge.tags && challenge.tags.length) ? challenge.tags.join(', ') : ''}</span>
+            <span>{existingTags}</span>
           ) : (<Select
             id='track-select'
             multi
             options={challengeTags.map(mapOps)}
             simpleValue
-            value={(challenge.tags && challenge.tags.length) ? challenge.tags.join(',') : ''}
+            value={existingTags}
             onChange={(value) => onUpdateMultiSelect(value, 'tags')}
           />)}
         </div>
       </div>
 
-      { !readOnly && challenge.submitTriggered && !challenge.tags.length && <div className={styles.row}>
+      { !readOnly && challenge.submitTriggered && (!challenge.tags || !challenge.tags.length) && <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)} />
         <div className={cn(styles.field, styles.col2, styles.error)}>
           Select at least one tag
