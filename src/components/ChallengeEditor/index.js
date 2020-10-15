@@ -282,7 +282,9 @@ class ChallengeEditor extends Component {
     }
 
     // calculate total cost of challenge
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.validateChallenge()
+    })
   }
 
   /**
@@ -331,7 +333,9 @@ class ChallengeEditor extends Component {
           newChallenge[field][index][option.key] = option.name
         }
       }
-      this.setState({ challenge: newChallenge })
+      this.setState({ challenge: newChallenge }, () => {
+        this.validateChallenge()
+      })
     }
   }
 
@@ -350,7 +354,9 @@ class ChallengeEditor extends Component {
       value = value.filter(val => _.values(PRIZE_SETS_TYPE).includes(val.type))
     }
     newChallenge[field] = value
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.validateChallenge()
+    })
   }
 
   /**
@@ -388,7 +394,9 @@ class ChallengeEditor extends Component {
     } else {
       _.set(newChallenge, `${field}.${index}.check`, checked)
     }
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.validateChallenge()
+    })
   }
 
   /**
@@ -668,7 +676,9 @@ class ChallengeEditor extends Component {
     let newChallenge = { ...challenge }
     newChallenge[field] = options ? options.split(',') : []
 
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.validateChallenge()
+    })
   }
 
   onUpdatePhase (newValue, property, index) {
