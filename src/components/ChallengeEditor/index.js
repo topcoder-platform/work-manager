@@ -597,7 +597,7 @@ class ChallengeEditor extends Component {
   }
 
   isValidChallengePrizes () {
-    const challengePrizes = this.state.challenge.prizeSets.find(p => p.type === PRIZE_SETS_TYPE.CHALLENGE_PRIZES)
+    const challengePrizes = _.find(this.state.challenge.prizeSets, p => p.type === PRIZE_SETS_TYPE.CHALLENGE_PRIZES, [])
     if (!challengePrizes || !challengePrizes.prizes || challengePrizes.prizes.length === 0) {
       return false
     }
