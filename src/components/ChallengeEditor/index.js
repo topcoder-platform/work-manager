@@ -282,7 +282,9 @@ class ChallengeEditor extends Component {
     }
 
     // calculate total cost of challenge
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.validateChallenge()
+    })
   }
 
   /**
@@ -331,7 +333,9 @@ class ChallengeEditor extends Component {
           newChallenge[field][index][option.key] = option.name
         }
       }
-      this.setState({ challenge: newChallenge })
+      this.setState({ challenge: newChallenge }, () => {
+        this.validateChallenge()
+      })
     }
   }
 
@@ -350,7 +354,9 @@ class ChallengeEditor extends Component {
       value = value.filter(val => _.values(PRIZE_SETS_TYPE).includes(val.type))
     }
     newChallenge[field] = value
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.validateChallenge()
+    })
   }
 
   /**
@@ -388,7 +394,9 @@ class ChallengeEditor extends Component {
     } else {
       _.set(newChallenge, `${field}.${index}.check`, checked)
     }
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.validateChallenge()
+    })
   }
 
   /**
@@ -597,7 +605,7 @@ class ChallengeEditor extends Component {
   }
 
   isValidChallengePrizes () {
-    const challengePrizes = this.state.challenge.prizeSets.find(p => p.type === PRIZE_SETS_TYPE.CHALLENGE_PRIZES)
+    const challengePrizes = _.find(this.state.challenge.prizeSets, p => p.type === PRIZE_SETS_TYPE.CHALLENGE_PRIZES, [])
     if (!challengePrizes || !challengePrizes.prizes || challengePrizes.prizes.length === 0) {
       return false
     }
@@ -668,7 +676,9 @@ class ChallengeEditor extends Component {
     let newChallenge = { ...challenge }
     newChallenge[field] = options ? options.split(',') : []
 
-    this.setState({ challenge: newChallenge })
+    this.setState({ challenge: newChallenge }, () => {
+      this.validateChallenge()
+    })
   }
 
   onUpdatePhase (newValue, property, index) {
@@ -1179,16 +1189,16 @@ class ChallengeEditor extends Component {
             {!isLoading && <LastSavedDisplay timeLastSaved={draftChallenge.data.updated} />}
             {!isLoading && (!isActive) && (!isCompleted) && <div className={styles.buttonContainer}>
               <div className={styles.button}>
-                <OutlineButton text={'Save Draft'} type={'success'} onClick={this.createDraftHandler} />
+                <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
+              </div>
+              <div className={styles.button}>
+                <PrimaryButton text={'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
               </div>
               { isDraft && <div className={styles.button}>
                 <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
               </div>}
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
-              <div className={styles.button}>
-                <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
-              </div>
               {isTask && (
                 <div className={styles.button}>
                   <PrimaryButton text={'Close Task'} type={'danger'} onClick={this.openCloseTaskConfirmation} />

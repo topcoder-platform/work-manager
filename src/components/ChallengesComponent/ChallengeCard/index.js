@@ -248,7 +248,7 @@ class ChallengeCard extends React.Component {
             onCancel={reloadChallengeList}
             closeText='Close'
             okText='View Challenge'
-            okLink='./view'
+            okLink={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}
             onClose={this.resetModal}
           />
         ) }
