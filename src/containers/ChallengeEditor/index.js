@@ -5,6 +5,7 @@ import { withRouter, Route } from 'react-router-dom'
 import ChallengeEditorComponent from '../../components/ChallengeEditor'
 import ChallengeViewComponent from '../../components/ChallengeEditor/ChallengeView'
 import Loader from '../../components/Loader'
+import { checkAdmin } from '../../util/tc'
 import styles from './ChallengeEditor.module.scss'
 
 import {
@@ -120,7 +121,11 @@ class ChallengeEditor extends Component {
   }
 
   isEditable () {
-    const { hasProjectAccess, metadata: { resourceRoles }, challengeResources, loggedInUser } = this.props
+    const { hasProjectAccess, metadata: { resourceRoles }, challengeResources, loggedInUser, token } = this.props
+    const isAdmin = checkAdmin(token)
+    if (isAdmin) {
+      return true
+    }
     if (!hasProjectAccess) {
       return false
     }
