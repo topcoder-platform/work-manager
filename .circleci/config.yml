@@ -30,9 +30,9 @@ builddeploy_steps: &builddeploy_steps
       - run: *install_deploysuite
       - restore_cache: *restore_cache_settings_for_build
       - command: |
-        cd $(npm root -g)/npm
-        npm install fs-extra
-        sed -i -e s/graceful-fs/fs-extra/ -e s/fs.rename/fs.move/ ./lib/utils/rename.js
+          cd $(npm root -g)/npm
+          npm install fs-extra
+          sed -i -e s/graceful-fs/fs-extra/ -e s/fs.rename/fs.move/ ./lib/utils/rename.js
       - run: ./build.sh ${APPNAME}
       - save_cache: *save_cache_settings
       - deploy:
