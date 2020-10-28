@@ -1,7 +1,9 @@
 /**
  * Topcoder related utilities
  */
-import { MARATHON_MATCH_SUBTRACKS, CHALLENGE_TRACKS, ALLOWED_USER_ROLES } from '../config/constants'
+import { MARATHON_MATCH_SUBTRACKS, CHALLENGE_TRACKS, ALLOWED_USER_ROLES, ADMIN_ROLES } from '../config/constants'
+import _ from 'lodash'
+import jwtDecode from 'jwt-decode'
 
 export const RATING_COLORS = [{
   color: '#9D9FA0' /* Grey */,
@@ -48,3 +50,12 @@ export function fixedTrack (track, subTrack) {
  * @param  roles
  */
 export const checkAllowedRoles = (roles) => roles.some(val => ALLOWED_USER_ROLES.indexOf(val.toLowerCase()) > -1)
+
+/**
+ * Checks if token has any of the admin roles
+ * @param  token
+ */
+export const checkAdmin = (token) => {
+  const roles = _.get(jwtDecode(token), 'roles')
+  return roles.some(val => ADMIN_ROLES.indexOf(val.toLowerCase()) > -1)
+}

@@ -147,6 +147,11 @@ export const ALLOWED_USER_ROLES = [
   'connect copilot'
 ]
 
+export const ADMIN_ROLES = [
+  'administrator',
+  'connect admin'
+]
+
 export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
   `${CHALLENGE_API_URL}/${challengeId}/attachments/${attachmentId}?token=${token}`
 
