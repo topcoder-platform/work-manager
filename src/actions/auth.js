@@ -1,4 +1,4 @@
-import { configureConnector, decodeToken } from 'tc-accounts'
+import { configureConnector, decodeToken } from 'tc-auth-lib'
 import { fetchProfile } from '../services/user'
 import {
   LOAD_USER_SUCCESS,
