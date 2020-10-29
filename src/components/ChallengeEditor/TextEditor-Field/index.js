@@ -115,8 +115,7 @@ class TextEditorField extends Component {
 
 TextEditorField.defaultProps = {
   challengeTags: [],
-  // TODO: For our first go-live, we're probably going to have this UI in production before the Community App work to display data from V5 is available. Only hide the UI elements for private description for now. Don't take out any code or functionality.
-  shouldShowPrivateDescription: false,
+  shouldShowPrivateDescription: true,
   onUpdateMetadata: () => {},
   onUpdateCheckbox: () => {},
   addFileType: () => {},
