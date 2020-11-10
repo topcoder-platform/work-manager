@@ -131,7 +131,7 @@ class ChallengeEditor extends Component {
     }
     const userRoles = _.filter(challengeResources, cr => cr.memberId === `${loggedInUser.userId}`)
     const userResourceRoles = _.filter(resourceRoles, rr => _.some(userRoles, ur => ur.roleId === rr.id))
-    return _.some(userResourceRoles, urr => urr.fullAccess && urr.isActive)
+    return _.some(userResourceRoles, urr => urr.fullWriteAccess && urr.isActive)
   }
 
   render () {

@@ -1031,6 +1031,7 @@ class ChallengeEditor extends Component {
       return <div>Error loading challenge</div>
     }
     const isTask = _.get(challenge, 'task.isTask', false)
+    console.log(this.props.assignedMemberDetails)
     const { assignedMemberDetails, error } = this.state
     let isActive = false
     let isDraft = false
@@ -1098,21 +1099,12 @@ class ChallengeEditor extends Component {
     */
     if (isCloseTask && !isConfirm) {
       const taskPrize = _.get(_.find(challenge.prizeSets, { type: 'placement' }), 'prizes[0].value')
-      const assignedMember = assignedMemberDetails ? assignedMemberDetails.handle : `User id: ${_.get(challenge, 'task.memberId')}`
-      const copilotFee = _.get(_.find(challenge.prizeSets, { type: 'copilot' }), 'prizes[0].value')
-      const copilot = challenge.copilot
+      const assignedMemberId = _.get(assignedMemberDetails, 'userId')
+      const assignedMember = _.get(assignedMemberDetails, 'handle', `User Id: ${assignedMemberId}`)
 
       const validationErrors = []
-      if (!_.get(challenge, 'task.memberId')) {
+      if (!assignedMemberId) {
         validationErrors.push('assign task member')
-      }
-
-      if (!copilot) {
-        validationErrors.push('select copilot')
-      }
-
-      if (!copilotFee) {
-        validationErrors.push('set copilot fee')
       }
 
       // if all data for closing task is there, show confirmation modal
@@ -1122,9 +1114,7 @@ class ChallengeEditor extends Component {
             title='Close Task Confirmation'
             message={
               <p>
-                Are you sure want to close task <strong>"{challenge.name}"</strong> with the prize <strong>${taskPrize}</strong> for <strong>{assignedMember}</strong>
-                {' '}
-                and copilot fee <strong>${copilotFee}</strong> for <strong>{copilot}</strong>?
+                Are you sure want to close task <strong>"{challenge.name}"</strong> with the prize <strong>${taskPrize}</strong> for <strong>{assignedMember}</strong>?
               </p>
             }
             theme={theme}
