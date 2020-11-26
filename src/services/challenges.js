@@ -3,6 +3,7 @@ import qs from 'qs'
 import { axiosInstance } from './axiosWithAuth'
 import { updateChallengePhaseBeforeSendRequest, convertChallengePhaseFromSecondsToHours, normalizeChallengeDataFromAPI } from '../util/date'
 import FormData from 'form-data'
+import { GROUPS_DROPDOWN_PER_PAGE } from '../config/constants'
 const {
   CHALLENGE_API_URL,
   CHALLENGE_TYPES_URL,
@@ -56,7 +57,11 @@ export async function fetchChallengeTags () {
  * @returns {Promise<*>}
  */
 export async function fetchGroups (filters) {
-  const response = await axiosInstance.get(`${GROUPS_API_URL}?${qs.stringify(filters, { encode: false })}`)
+  const finalFilters = {
+    ...filters,
+    perPage: GROUPS_DROPDOWN_PER_PAGE // make sure that we are retrieving all the groups
+  }
+  const response = await axiosInstance.get(`${GROUPS_API_URL}?${qs.stringify(finalFilters, { encode: false })}`)
   return _.get(response, 'data', [])
 }
 
