@@ -3,8 +3,13 @@
   display: flex;
   margin-top: auto;
 
-  a {
+  button {
     height: 40px;
+    outline: none;
+    white-space: nowrap;
+  }
+
+  a {
     &:hover {
       text-decoration: none;
     }

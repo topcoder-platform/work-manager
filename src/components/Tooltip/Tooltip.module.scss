@@ -1,0 +1,22 @@
+@import "../../styles/includes";
+
+.popover {
+  background-color: $darker-gray;
+  border-radius: 7px;
+  z-index: 1000;
+}
+
+.popoverArrow {
+  border-style: solid;
+  border-width: 7px 7px 0 7px;
+  border-color: $darker-gray transparent transparent transparent;
+  height: 0;
+  bottom: -6px;
+  width: 0;
+}
+
+.content {
+  color: #fff;
+  font-size: 12px;
+  padding: 10px;
+}

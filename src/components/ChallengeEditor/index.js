@@ -1344,7 +1344,7 @@ class ChallengeEditor extends Component {
       <div className={styles.wrapper}>
         <Helmet title={getTitle(isNew)} />
         <div className={cn(styles.actionButtons, styles.actionButtonsLeft)}>
-          {challenge.legacyId && <LegacyLinks challenge={challenge} />}
+          <LegacyLinks challenge={challenge} />
         </div>
         <div className={styles.title}>{getTitle(isNew)}</div>
         <div className={cn(styles.actionButtons, styles.actionButtonsRight)}>

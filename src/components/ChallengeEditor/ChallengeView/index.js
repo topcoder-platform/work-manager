@@ -69,7 +69,7 @@ const ChallengeView = ({
     <div className={styles.wrapper}>
       <Helmet title='View Details' />
       <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsLeft)}>
-        {challenge.legacyId && <LegacyLinks challenge={challenge} />}
+        <LegacyLinks challenge={challenge} />
       </div>
       <div className={styles.title}>View Details</div>
       <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsRight)}>
