@@ -41,12 +41,13 @@ const Tooltip = ({ content, children }) => {
         {
           name: 'offset',
           options: {
+            // Y-offset should be equal to the height of the arrow
             offset: [0, 6]
           }
         },
         {
           name: 'arrow',
-          // padding should be equal to border-radius of the dropdown
+          // padding should be equal to border-radius of the tooltip
           options: { element: arrowElement, padding: 7 }
         },
         {
