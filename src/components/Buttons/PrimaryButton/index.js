@@ -6,44 +6,39 @@ import cn from 'classnames'
 
 import styles from './PrimaryButton.module.scss'
 
-const PrimaryButton = ({
-  type,
-  text,
-  link,
-  onClick,
-  submit,
-  disabled,
-  onMouseEnter,
-  onMouseLeave,
-  innerRef
-}) => {
-  if (_.isEmpty(link)) {
+const PrimaryButton = React.forwardRef(
+  (
+    { type, text, link, onClick, submit, disabled, onMouseEnter, onMouseLeave },
+    ref
+  ) => {
+    if (_.isEmpty(link)) {
+      return (
+        <button
+          type={submit ? 'submit' : 'button'}
+          className={cn(styles.container, styles[type])}
+          onClick={submit ? null : onClick}
+          disabled={disabled}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          ref={ref}
+        >
+          <span>{text}</span>
+        </button>
+      )
+    }
     return (
-      <button
-        type={submit ? 'submit' : 'button'}
+      <Link
         className={cn(styles.container, styles[type])}
-        onClick={submit ? null : onClick}
-        disabled={disabled}
+        to={`${link}`}
+        ref={ref}
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        ref={innerRef}
       >
         <span>{text}</span>
-      </button>
+      </Link>
     )
   }
-  return (
-    <Link
-      className={cn(styles.container, styles[type])}
-      to={`${link}`}
-      ref={innerRef}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-    >
-      <span>{text}</span>
-    </Link>
-  )
-}
+)
 
 PrimaryButton.propTypes = {
   type: PropTypes.string.isRequired,

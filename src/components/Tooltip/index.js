@@ -12,9 +12,9 @@
  * <AnyComponent /> component should support the next props:
  * - `onMouseEnter`
  * - `onMouseLeave`
- * - `innerRef` to pass reference to its DOM element
+ * - `ref` to pass reference to its DOM element
  *
- * All the basic DOM components like <div>, <span> and so on are supported.
+ * All the basic DOM components like <div>, <span> and so on are supported by default.
  */
 import React, { useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
