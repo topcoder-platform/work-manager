@@ -33,7 +33,13 @@ const PrimaryButton = ({
     )
   }
   return (
-    <Link className={cn(styles.container, styles[type])} to={`${link}`} ref={innerRef}>
+    <Link
+      className={cn(styles.container, styles[type])}
+      to={`${link}`}
+      ref={innerRef}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+    >
       <span>{text}</span>
     </Link>
   )
