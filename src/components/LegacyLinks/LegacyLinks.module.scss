@@ -3,6 +3,11 @@
   display: flex;
   margin-top: auto;
 
+  button:not(:first-child),
+  a:not(:first-child) {
+    margin-left: 20px;
+  }
+
   a {
     height: 40px;
     &:hover {
