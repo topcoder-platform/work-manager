@@ -4,6 +4,7 @@ import cn from 'classnames'
 import _ from 'lodash'
 
 import styles from './MaximumSubmissions-Field.module.scss'
+import { formatInteger } from '../../../util/format'
 
 class MaximumSubmissionsField extends Component {
   render () {
@@ -30,7 +31,7 @@ class MaximumSubmissionsField extends Component {
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)}>
             <label htmlFor='maximum'>Maximum Number of Submissions :</label>
-            {readOnly && (<span> {isUnlimited ? 'Unlimited' : count}</span>)}
+            {readOnly && (<span> {isUnlimited ? 'Unlimited' : formatInteger(count)}</span>)}
           </div>
         </div>
         {!readOnly && (<div className={styles.row}>
@@ -75,7 +76,7 @@ class MaximumSubmissionsField extends Component {
                 placeholder=''
                 value={count}
                 maxLength='200'
-                onChange={(e) => onUpdateMetadata('submissionLimit', e.target.value, 'count')}
+                onChange={(e) => onUpdateMetadata('submissionLimit', e.target.value.replace(/[^\d]+/g, ''), 'count')}
               />
             </div>
           </div>
