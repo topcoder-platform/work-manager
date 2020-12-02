@@ -44,4 +44,16 @@
       background-color: $inactive;
     }
   }
+
+  /* this style just visually simulates the disable status of the button */
+  &.disabled {
+    cursor: default;
+    background-color: $inactive;
+
+    // override possible styles for
+    &:not(:disabled),
+    &:disabled {
+      cursor: default;
+    }
+  }
 }
