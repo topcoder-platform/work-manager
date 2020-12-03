@@ -52,7 +52,6 @@ const AttachmentField = ({ challengeId, attachments, removeAttachment, onUploadF
               fileSize: file.size,
               url: getAWSContainerFileURL(file.key)
             })}
-            onUploadDone={(files) => console.log('onUploadDone', files)}
           />
         </div>
       )}
