@@ -75,7 +75,7 @@ class MaximumSubmissionsField extends Component {
                 placeholder=''
                 value={count}
                 maxLength='200'
-                onChange={(e) => onUpdateMetadata('submissionLimit', e.target.value, 'count')}
+                onChange={(e) => onUpdateMetadata('submissionLimit', e.target.value.replace(/[^\d]+/g, ''), 'count')}
               />
             </div>
           </div>

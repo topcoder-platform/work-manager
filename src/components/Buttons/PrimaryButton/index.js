@@ -6,20 +6,39 @@ import cn from 'classnames'
 
 import styles from './PrimaryButton.module.scss'
 
-const PrimaryButton = ({ type, text, link, onClick, submit, disabled }) => {
-  if (_.isEmpty(link)) {
+const PrimaryButton = React.forwardRef(
+  (
+    { type, text, link, onClick, submit, disabled, onMouseEnter, onMouseLeave },
+    ref
+  ) => {
+    if (_.isEmpty(link)) {
+      return (
+        <button
+          type={submit ? 'submit' : 'button'}
+          className={cn(styles.container, styles[type])}
+          onClick={submit ? null : onClick}
+          disabled={disabled}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          ref={ref}
+        >
+          <span>{text}</span>
+        </button>
+      )
+    }
     return (
-      <button type={submit ? 'submit' : 'button'} className={cn(styles.container, styles[type])} onClick={submit ? null : onClick} disabled={disabled}>
+      <Link
+        className={cn(styles.container, styles[type])}
+        to={`${link}`}
+        ref={ref}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      >
         <span>{text}</span>
-      </button>
+      </Link>
     )
   }
-  return (
-    <Link className={cn(styles.container, styles[type])} to={`${link}`}>
-      <span>{text}</span>
-    </Link>
-  )
-}
+)
 
 PrimaryButton.propTypes = {
   type: PropTypes.string.isRequired,
@@ -27,7 +46,10 @@ PrimaryButton.propTypes = {
   link: PropTypes.string,
   onClick: PropTypes.func,
   submit: PropTypes.bool,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  onMouseEnter: PropTypes.func,
+  onMouseLeave: PropTypes.func,
+  innerRef: PropTypes.any
 }
 
 export default PrimaryButton

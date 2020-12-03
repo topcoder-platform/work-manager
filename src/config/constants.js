@@ -166,3 +166,13 @@ export const AUTOCOMPLETE_MIN_LENGTH = 3
  * Debounce timeout in ms for calling API for getting autocomplete suggestions
  */
 export const AUTOCOMPLETE_DEBOUNCE_TIME_MS = 150
+
+/**
+ * Number of groups to retrieve for group dropdown
+ */
+export const GROUPS_DROPDOWN_PER_PAGE = 1000000 // make sure we are getting all the groups with one request
+
+/**
+ * The list of challenge types which can have multiple prizes
+ */
+export const CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES = ['Challenge']

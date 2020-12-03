@@ -8,7 +8,7 @@ import PrizeInput from '../../PrizeInput'
 import styles from './ChallengePrizes-Field.module.scss'
 import cn from 'classnames'
 import { PrimaryButton } from '../../Buttons'
-import { CHALLENGE_PRIZE_TYPE, VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE } from '../../../config/constants'
+import { CHALLENGE_PRIZE_TYPE, VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE, CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES } from '../../../config/constants'
 import { validateValue } from '../../../util/input-check'
 
 class ChallengePrizesField extends Component {
@@ -61,12 +61,12 @@ class ChallengePrizesField extends Component {
   renderPrizes () {
     const { currentPrizeIndex } = this.state
     const { readOnly, challenge } = this.props
-    const isTask = _.get(challenge, 'task.isTask', false)
+    const allowMultiplePrizes = _.includes(CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES, challenge.type)
     return _.map(this.getChallengePrize().prizes, (prize, index, { length }) => (
       <div key={`${index}-${prize.amount}-edit`}>
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)}>
-            <label htmlFor={`${index}-prize`}>Prize {!isTask ? index + 1 : ''} {!readOnly && (<span>*</span>)}:</label>
+            <label htmlFor={`${index}-prize`}>Prize {allowMultiplePrizes ? index + 1 : ''} {!readOnly && (<span>*</span>)}:</label>
           </div>
           {readOnly ? (
             <span>${prize.value}</span>
@@ -101,7 +101,7 @@ class ChallengePrizesField extends Component {
 
   render () {
     const { readOnly, challenge } = this.props
-    const isTask = _.get(challenge, 'task.isTask', false)
+    const allowMultiplePrizes = _.includes(CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES, challenge.type)
     return (
       <div className={styles.container}>
         <div className={styles.row}>
@@ -110,7 +110,7 @@ class ChallengePrizesField extends Component {
           </div>
         </div>
         { this.renderPrizes() }
-        {!readOnly && !isTask && (<div className={styles.button} onClick={this.addNewPrize}>
+        {!readOnly && allowMultiplePrizes && (<div className={styles.button} onClick={this.addNewPrize}>
           <PrimaryButton text={'Add New Prize'} type={'info'} />
         </div>)}
       </div>
