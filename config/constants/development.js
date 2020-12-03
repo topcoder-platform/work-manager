@@ -2,8 +2,8 @@ const DOMAIN = 'topcoder-dev.com'
 const DEV_API_HOSTNAME = `https://api.${DOMAIN}`
 
 module.exports = {
-  ACCOUNTS_APP_CONNECTOR_URL: `https://accounts-auth0.${DOMAIN}`,
-  ACCOUNTS_APP_LOGIN_URL: `https://accounts-auth0.${DOMAIN}`,
+  ACCOUNTS_APP_CONNECTOR_URL: `http://localhost:5000`,
+  ACCOUNTS_APP_LOGIN_URL: `http://localhost:5000`,
   COMMUNITY_APP_URL: `https://www.${DOMAIN}`,
   MEMBER_API_URL: `${DEV_API_HOSTNAME}/v4/members`,
   MEMBER_API_V3_URL: `${DEV_API_HOSTNAME}/v3/members`,
@@ -32,5 +32,9 @@ module.exports = {
   DS_TRACK_ID: 'c0f5d461-8219-4c14-878a-c3a3f356466d',
   QA_TRACK_ID: '36e6a8d0-7e1e-4608-a673-64279d99c115',
   SEGMENT_API_KEY: 'QBtLgV8vCiuRX1lDikbMjcoe9aCHkF6n',
-  CREATE_FORUM_TYPE_IDS: ['927abff4-7af9-4145-8ba1-577c16e64e2e', 'dc876fa4-ef2d-4eee-b701-b555fcc6544c']
+  CREATE_FORUM_TYPE_IDS: ['927abff4-7af9-4145-8ba1-577c16e64e2e', 'dc876fa4-ef2d-4eee-b701-b555fcc6544c'],
+  FILE_PICKER_API_KEY: process.env.FILE_PICKER_API_KEY,
+  FILE_PICKER_CONTAINER_NAME: 'tc-challenge-v5-dev',
+  FILE_PICKER_REGION: 'us-east-1',
+  FILE_PICKER_CNAME: 'fs.topcoder.com'
 }
