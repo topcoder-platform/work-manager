@@ -1002,7 +1002,7 @@ class ChallengeEditor extends Component {
     const { challengeTimelines, timelineTemplates } = metadata
 
     // all timeline template ids available for the challenge type
-    const availableTemplateIds = _.filter(challengeTimelines, tt => tt.typeId === challenge.typeId).map(tt => tt.timelineTemplateId)
+    const availableTemplateIds = _.filter(challengeTimelines, ct => ct.typeId === challenge.typeId && ct.trackId === challenge.trackId).map(tt => tt.timelineTemplateId)
     // filter and return timeline templates that are available for this challenge type
     return _.filter(timelineTemplates, tt => availableTemplateIds.indexOf(tt.id) !== -1)
   }
