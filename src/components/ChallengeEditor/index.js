@@ -1178,9 +1178,9 @@ class ChallengeEditor extends Component {
           <div className={styles.bottomContainer}>
             {!isLoading && <LastSavedDisplay timeLastSaved={draftChallenge.data.updated} />}
             {!isLoading && (!isActive) && (!isCompleted) && <div className={styles.buttonContainer}>
-              <div className={styles.button}>
+              {/* <div className={styles.button}>
                 <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
-              </div>
+              </div> */}
               <div className={styles.button}>
                 <PrimaryButton text={'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
               </div>
@@ -1189,9 +1189,9 @@ class ChallengeEditor extends Component {
               </div>}
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
-              <div className={styles.button}>
+              {/* <div className={styles.button}>
                 <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
-              </div>
+              </div> */}
               {isTask && (
                 <div className={styles.button}>
                   <PrimaryButton text={'Close Task'} type={'danger'} onClick={this.openCloseTaskConfirmation} />
