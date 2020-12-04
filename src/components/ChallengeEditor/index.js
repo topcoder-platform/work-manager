@@ -639,15 +639,24 @@ class ChallengeEditor extends Component {
       return false
     }
 
-    return !(Object.values(pick([
+    const requiredFields = [
       'trackId',
       'typeId',
       'name',
       'description',
       'tags',
       'prizeSets'
-    ], challenge)).filter(v => !v.length).length ||
-      _.isEmpty(this.state.currentTemplate))
+    ]
+    let isRequiredMissing = false
+
+    requiredFields.forEach((key) => {
+      const value = challenge[key]
+
+      // this check works for string and array values
+      isRequiredMissing = isRequiredMissing || !value || !value.length
+    })
+
+    return !(isRequiredMissing || _.isEmpty(this.state.currentTemplate))
   }
 
   validateChallenge () {
