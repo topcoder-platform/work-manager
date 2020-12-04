@@ -197,22 +197,25 @@ class ChallengeEditor extends Component {
    * Close task when user confirm it
    */
   onCloseTask () {
-    const { challenge: oldChallenge, assignedMemberDetails } = this.state
+    // before marking challenge as complete, save all the changes user might have made
+    this.updateAllChallengeInfo(this.state.challenge.status, () => {
+      const { challenge: oldChallenge, assignedMemberDetails } = this.state
 
-    // set assigned user as the only one winner
-    const newChallenge = {
-      ...oldChallenge,
-      winners: [{
-        userId: assignedMemberDetails.userId,
-        handle: assignedMemberDetails.handle,
-        placement: 1
-      }]
-    }
+      // set assigned user as the only one winner
+      const newChallenge = {
+        ...oldChallenge,
+        winners: [{
+          userId: assignedMemberDetails.userId,
+          handle: assignedMemberDetails.handle,
+          placement: 1
+        }]
+      }
 
-    this.setState({
-      challenge: newChallenge
-    }, () => {
-      this.updateAllChallengeInfo('Completed')
+      this.setState({
+        challenge: newChallenge
+      }, () => {
+        this.updateAllChallengeInfo('Completed')
+      })
     })
   }
 
