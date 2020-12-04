@@ -44,6 +44,7 @@ import AlertModal from '../Modal/AlertModal'
 import PhaseInput from '../PhaseInput'
 import LegacyLinks from '../LegacyLinks'
 import AssignedMemberField from './AssignedMember-Field'
+import Tooltip from '../Tooltip'
 
 const theme = {
   container: styles.modalContainer
@@ -639,15 +640,24 @@ class ChallengeEditor extends Component {
       return false
     }
 
-    return !(Object.values(pick([
+    const requiredFields = [
       'trackId',
       'typeId',
       'name',
       'description',
       'tags',
       'prizeSets'
-    ], challenge)).filter(v => !v.length).length ||
-      _.isEmpty(this.state.currentTemplate))
+    ]
+    let isRequiredMissing = false
+
+    requiredFields.forEach((key) => {
+      const value = challenge[key]
+
+      // this check works for string and array values
+      isRequiredMissing = isRequiredMissing || !value || !value.length
+    })
+
+    return !(isRequiredMissing || _.isEmpty(this.state.currentTemplate))
   }
 
   validateChallenge () {
@@ -1184,9 +1194,18 @@ class ChallengeEditor extends Component {
               <div className={styles.button}>
                 <PrimaryButton text={'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
               </div>
-              { isDraft && <div className={styles.button}>
-                <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
-              </div>}
+              {isDraft && (
+                <div className={styles.button}>
+                  {challenge.legacyId ? (
+                    <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
+                  ) : (
+                    <Tooltip content='Legacy project is not yet created'>
+                      {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
+                      <PrimaryButton text={'Launch as Active'} type={'disabled'} />
+                    </Tooltip>
+                  )}
+                </div>
+              )}
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
               {/* <div className={styles.button}>

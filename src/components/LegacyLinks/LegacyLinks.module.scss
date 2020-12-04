@@ -13,19 +13,4 @@
     outline: none;
     white-space: nowrap;
   }
-
-  a {
-    &:hover {
-      text-decoration: none;
-    }
-    &:focus,
-    &:active,
-    &:visited {
-      outline: none;
-    }
-
-    button:focus {
-      outline: none;
-    }
-  }
 }
