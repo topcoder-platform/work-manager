@@ -1,7 +1,7 @@
 /**
  * Topcoder related utilities
  */
-import { MARATHON_MATCH_SUBTRACKS, CHALLENGE_TRACKS, ALLOWED_USER_ROLES, ADMIN_ROLES } from '../config/constants'
+import { MARATHON_MATCH_SUBTRACKS, CHALLENGE_TRACKS, ALLOWED_USER_ROLES, ADMIN_ROLES, SUBMITTER_ROLE_UUID } from '../config/constants'
 import _ from 'lodash'
 import { decodeToken } from 'tc-auth-lib'
 
@@ -58,4 +58,22 @@ export const checkAllowedRoles = (roles) => roles.some(val => ALLOWED_USER_ROLES
 export const checkAdmin = (token) => {
   const roles = _.get(decodeToken(token), 'roles')
   return roles.some(val => ADMIN_ROLES.indexOf(val.toLowerCase()) > -1)
+}
+
+/**
+ * Get resource role by name
+ *
+ * @param {Object[]} resourceRoles list of resource roles
+ * @param {String}   name          resource role name
+ *
+ * @returns {Object} resource role or `null`
+ */
+export const getResourceRoleByName = (resourceRoles, name) => {
+  // there are multiple junk resource roles with 'Submitter' name,
+  // so we use `id` from config to find the correct one
+  if (name === 'Submitter') {
+    return _.find(resourceRoles, { id: SUBMITTER_ROLE_UUID }) || null
+  } else {
+    return _.find(resourceRoles, { name }) || null
+  }
 }

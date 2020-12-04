@@ -27,9 +27,6 @@ import {
   createChallenge,
   replaceResourceInRole
 } from '../../actions/challenges'
-import {
-  loadMemberDetails
-} from '../../actions/members'
 
 import { connect } from 'react-redux'
 import { SUBMITTER_ROLE_UUID } from '../../config/constants'
@@ -80,35 +77,12 @@ class ChallengeEditor extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    const { match, challengeDetails } = this.props
-    const { match: newMatch, loadChallengeDetails, loadResources, challengeDetails: nextChallengeDetails } = nextProps
+    const { match } = this.props
+    const { match: newMatch, loadChallengeDetails, loadResources } = nextProps
     const projectId = _.get(newMatch.params, 'projectId', null)
     const challengeId = _.get(newMatch.params, 'challengeId', null)
     if (_.get(match.params, 'projectId', null) !== projectId || _.get(match.params, 'challengeId', null) !== challengeId) {
       this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources)
-    }
-
-    // this section is called only one time as soon challenge details are loaded
-    if (
-      _.get(challengeDetails, 'id') !== _.get(nextChallengeDetails, 'id') &&
-      challengeId === _.get(nextChallengeDetails, 'id')
-    ) {
-      this.loadAssignedMemberDetails(nextProps)
-    }
-  }
-
-  /**
-   * Load assign member details if challenge has a member assigned
-   * @param {Object} nextProps the latest props
-   */
-  loadAssignedMemberDetails (nextProps) {
-    // cannot use `loadMemberDetails` form the `nextProps` because linter complains about unused prop
-    const { loadMemberDetails } = this.props
-    const { challengeDetails } = nextProps
-    const assignedMemberId = _.get(challengeDetails, 'task.memberId')
-
-    if (assignedMemberId) {
-      loadMemberDetails(assignedMemberId)
     }
   }
 
@@ -280,7 +254,6 @@ ChallengeEditor.propTypes = {
   loggedInUser: PropTypes.object,
   removeAttachment: PropTypes.func,
   failedToLoad: PropTypes.bool,
-  loadMemberDetails: PropTypes.func,
   updateChallengeDetails: PropTypes.func.isRequired,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   createChallenge: PropTypes.func.isRequired,
@@ -317,7 +290,6 @@ const mapDispatchToProps = {
   // loadChallengeTerms,
   loadResources,
   loadResourceRoles,
-  loadMemberDetails,
   updateChallengeDetails,
   partiallyUpdateChallengeDetails,
   createChallenge,
