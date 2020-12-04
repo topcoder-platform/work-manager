@@ -20,6 +20,7 @@ import Loader from '../../Loader'
 import PhaseInput from '../../PhaseInput'
 import LegacyLinks from '../../LegacyLinks'
 import AssignedMemberField from '../AssignedMember-Field'
+import { getResourceRoleByName } from '../../../util/tc'
 
 const ChallengeView = ({
   projectDetail,
@@ -36,13 +37,9 @@ const ChallengeView = ({
 
   const [openAdvanceSettings, setOpenAdvanceSettings] = useState(false)
 
-  const getResourceRoleByName = (name) => {
-    const { resourceRoles } = metadata
-    return resourceRoles ? resourceRoles.find(role => role.name === name) : null
-  }
-
   const getResourceFromProps = (name) => {
-    const role = getResourceRoleByName(name)
+    const { resourceRoles } = metadata
+    const role = getResourceRoleByName(resourceRoles, name)
     return challengeResources && role && challengeResources.find(resource => resource.roleId === role.id)
   }
 

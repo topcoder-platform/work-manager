@@ -45,6 +45,7 @@ import PhaseInput from '../PhaseInput'
 import LegacyLinks from '../LegacyLinks'
 import AssignedMemberField from './AssignedMember-Field'
 import Tooltip from '../Tooltip'
+import { getResourceRoleByName } from '../../util/tc'
 
 const theme = {
   container: styles.modalContainer
@@ -115,6 +116,7 @@ class ChallengeEditor extends Component {
     this.getTemplatePhases = this.getTemplatePhases.bind(this)
     this.getAvailableTimelineTemplates = this.getAvailableTimelineTemplates.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000) // 3s
+    this.updateResource = this.updateResource.bind(this)
   }
 
   componentDidMount () {
@@ -959,13 +961,9 @@ class ChallengeEditor extends Component {
     this.updateAllChallengeInfo(this.state.challenge.status)
   }
 
-  getResourceRoleByName (name) {
-    const { resourceRoles } = this.props.metadata
-    return resourceRoles ? resourceRoles.find(role => role.name === name) : null
-  }
-
   async updateResource (challengeId, name, value, prevValue) {
-    const resourceRole = this.getResourceRoleByName(name)
+    const { resourceRoles } = this.props.metadata
+    const resourceRole = getResourceRoleByName(resourceRoles, name)
     const roleId = resourceRole.id
     await this.props.replaceResourceInRole(challengeId, roleId, value, prevValue)
   }
@@ -986,8 +984,8 @@ class ChallengeEditor extends Component {
   }
 
   getResourceFromProps (name) {
-    const { challengeResources } = this.props
-    const role = this.getResourceRoleByName(name)
+    const { challengeResources, metadata: { resourceRoles } } = this.props
+    const role = getResourceRoleByName(resourceRoles, name)
     return challengeResources && role && challengeResources.find(resource => resource.roleId === role.id)
   }
 
