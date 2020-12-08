@@ -21,6 +21,7 @@ import PhaseInput from '../../PhaseInput'
 import LegacyLinks from '../../LegacyLinks'
 import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
+import Tooltip from '../../Tooltip'
 
 const ChallengeView = ({
   projectDetail,
@@ -73,7 +74,16 @@ const ChallengeView = ({
       <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsRight)}>
         {
           challenge.status === 'Draft' && (
-            <PrimaryButton text={'Launch'} type={'info'} onClick={onLaunchChallenge} />
+            <div className={styles.button}>
+              {challenge.legacyId ? (
+                <PrimaryButton text={'Launch'} type={'info'} onClick={onLaunchChallenge} />
+              ) : (
+                <Tooltip content='Legacy project is not yet created'>
+                  {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
+                  <PrimaryButton text={'Launch'} type={'disabled'} />
+                </Tooltip>
+              )}
+            </div>
           )
         }
         { enableEdit && <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} /> }
