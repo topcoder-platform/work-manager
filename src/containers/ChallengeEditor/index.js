@@ -30,12 +30,24 @@ import {
 
 import { connect } from 'react-redux'
 import { SUBMITTER_ROLE_UUID } from '../../config/constants'
+import { patchChallenge } from '../../services/challenges'
+import ConfirmationModal from '../../components/Modal/ConfirmationModal'
+import AlertModal from '../../components/Modal/AlertModal'
+
+const theme = {
+  container: styles.modalContainer
+}
 
 class ChallengeEditor extends Component {
   constructor (props) {
     super(props)
     const mountedWithCreatePage = props.match.path.endsWith('/new')
-    this.state = { mountedWithCreatePage }
+    this.state = { mountedWithCreatePage, isLaunching: false, showSuccessModal: false, showLaunchModal: false }
+
+    this.onLaunchChallenge = this.onLaunchChallenge.bind(this)
+    this.activateChallenge = this.activateChallenge.bind(this)
+    this.closeLaunchModal = this.closeLaunchModal.bind(this)
+    this.closeSuccessModal = this.closeSuccessModal.bind(this)
   }
   componentDidMount () {
     const {
@@ -108,6 +120,31 @@ class ChallengeEditor extends Component {
     return _.some(userResourceRoles, urr => urr.fullWriteAccess && urr.isActive)
   }
 
+  onLaunchChallenge () {
+    this.setState({ showLaunchModal: true })
+  }
+
+  closeLaunchModal () {
+    this.setState({ showLaunchModal: false })
+  }
+
+  closeSuccessModal () {
+    this.setState({ showSuccessModal: false })
+  }
+
+  async activateChallenge () {
+    if (this.state.isLaunching) return
+    const { challengeDetails } = this.props
+    try {
+      this.setState({ isLaunching: true })
+      await patchChallenge(challengeDetails.id, { status: 'Active' })
+      this.setState({ isLaunching: false, showLaunchModal: false, showSuccessModal: true })
+    } catch (e) {
+      const error = _.get(e, 'response.data.message', 'Unable to activate the challenge')
+      this.setState({ isLaunching: false, showLaunchModal: false, launchError: error })
+    }
+  }
+
   render () {
     const {
       match,
@@ -128,7 +165,7 @@ class ChallengeEditor extends Component {
       replaceResourceInRole
       // members
     } = this.props
-    const { mountedWithCreatePage } = this.state
+    const { mountedWithCreatePage, isLaunching, showLaunchModal, showSuccessModal } = this.state
     if (isProjectLoading || isLoading) return <Loader />
     const challengeId = _.get(match.params, 'challengeId', null)
     if (challengeId && (!challengeDetails || !challengeDetails.id)) {
@@ -144,7 +181,26 @@ class ChallengeEditor extends Component {
     }
     const enableEdit = this.isEditable()
     const isCreatePage = this.props.match.path.endsWith('/new')
+
+    const activateModal = <ConfirmationModal
+      title='Confirm Launch'
+      message={`Do you want to launch "${challengeDetails.name}"?`}
+      theme={theme}
+      isProcessing={isLaunching}
+      errorMessage={this.state.launchError}
+      onCancel={this.closeLaunchModal}
+      onConfirm={this.activateChallenge}
+    />
+    const successModal = <AlertModal
+      title='Success'
+      message='Challenge is activated successfully'
+      theme={theme}
+      closeText='Ok'
+      onClose={this.closeSuccessModal}
+    />
     return <div>
+      { showLaunchModal && activateModal }
+      { showSuccessModal && successModal }
       <Route
         exact
         path={this.props.match.path}
@@ -212,6 +268,7 @@ class ChallengeEditor extends Component {
             challengeId={challengeId}
             assignedMemberDetails={assignedMemberDetails}
             enableEdit={enableEdit}
+            onLaunchChallenge={this.onLaunchChallenge}
           />
         ))
         } />

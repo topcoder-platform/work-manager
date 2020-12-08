@@ -31,7 +31,8 @@ const ChallengeView = ({
   isLoading,
   challengeId,
   assignedMemberDetails,
-  enableEdit }) => {
+  enableEdit,
+  onLaunchChallenge }) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
 
@@ -70,6 +71,11 @@ const ChallengeView = ({
       </div>
       <div className={styles.title}>View Details</div>
       <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsRight)}>
+        {
+          challenge.status === 'Draft' && (
+            <PrimaryButton text={'Launch'} type={'info'} onClick={onLaunchChallenge} />
+          )
+        }
         { enableEdit && <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} /> }
         <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
       </div>
@@ -218,7 +224,8 @@ ChallengeView.propTypes = {
   challengeId: PropTypes.string.isRequired,
   challengeResources: PropTypes.arrayOf(PropTypes.object),
   assignedMemberDetails: PropTypes.shape(),
-  enableEdit: PropTypes.bool
+  enableEdit: PropTypes.bool,
+  onLaunchChallenge: PropTypes.func
 }
 
 export default withRouter(ChallengeView)
