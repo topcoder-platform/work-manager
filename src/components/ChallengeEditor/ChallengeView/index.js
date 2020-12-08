@@ -22,6 +22,7 @@ import LegacyLinks from '../../LegacyLinks'
 import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
 import Tooltip from '../../Tooltip'
+import { MESSAGE } from '../../../config/constants'
 
 const ChallengeView = ({
   projectDetail,
@@ -78,7 +79,7 @@ const ChallengeView = ({
               {challenge.legacyId ? (
                 <PrimaryButton text={'Launch'} type={'info'} onClick={onLaunchChallenge} />
               ) : (
-                <Tooltip content='Legacy project is not yet created'>
+                <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
                   {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
                   <PrimaryButton text={'Launch'} type={'disabled'} />
                 </Tooltip>
