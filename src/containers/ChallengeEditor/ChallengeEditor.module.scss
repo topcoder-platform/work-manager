@@ -5,3 +5,24 @@
   color: $red;
   padding: 10px;
 }
+
+.modalContainer {
+  padding: 0;
+  position: fixed;
+  overflow: auto;
+  z-index: 10000;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: auto;
+  max-width: none;
+  transform: none;
+  background: transparent;
+  color: $text-color;
+  opacity: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

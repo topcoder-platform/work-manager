@@ -21,6 +21,7 @@ import PhaseInput from '../../PhaseInput'
 import LegacyLinks from '../../LegacyLinks'
 import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
+import Tooltip from '../../Tooltip'
 
 const ChallengeView = ({
   projectDetail,
@@ -31,7 +32,8 @@ const ChallengeView = ({
   isLoading,
   challengeId,
   assignedMemberDetails,
-  enableEdit }) => {
+  enableEdit,
+  onLaunchChallenge }) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
 
@@ -70,6 +72,20 @@ const ChallengeView = ({
       </div>
       <div className={styles.title}>View Details</div>
       <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsRight)}>
+        {
+          challenge.status === 'Draft' && (
+            <div className={styles.button}>
+              {challenge.legacyId ? (
+                <PrimaryButton text={'Launch'} type={'info'} onClick={onLaunchChallenge} />
+              ) : (
+                <Tooltip content='Legacy project is not yet created'>
+                  {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
+                  <PrimaryButton text={'Launch'} type={'disabled'} />
+                </Tooltip>
+              )}
+            </div>
+          )
+        }
         { enableEdit && <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} /> }
         <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
       </div>
@@ -218,7 +234,8 @@ ChallengeView.propTypes = {
   challengeId: PropTypes.string.isRequired,
   challengeResources: PropTypes.arrayOf(PropTypes.object),
   assignedMemberDetails: PropTypes.shape(),
-  enableEdit: PropTypes.bool
+  enableEdit: PropTypes.bool,
+  onLaunchChallenge: PropTypes.func
 }
 
 export default withRouter(ChallengeView)
