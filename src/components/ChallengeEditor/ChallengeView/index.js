@@ -20,6 +20,9 @@ import Loader from '../../Loader'
 import PhaseInput from '../../PhaseInput'
 import LegacyLinks from '../../LegacyLinks'
 import AssignedMemberField from '../AssignedMember-Field'
+import { getResourceRoleByName } from '../../../util/tc'
+import Tooltip from '../../Tooltip'
+import { MESSAGE } from '../../../config/constants'
 
 const ChallengeView = ({
   projectDetail,
@@ -31,19 +34,17 @@ const ChallengeView = ({
   isLoading,
   challengeId,
   assignedMemberDetails,
-  enableEdit }) => {
+  enableEdit,
+  onLaunchChallenge,
+  onCloseTask }) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
 
   const [openAdvanceSettings, setOpenAdvanceSettings] = useState(false)
 
-  const getResourceRoleByName = (name) => {
-    const { resourceRoles } = metadata
-    return resourceRoles ? resourceRoles.find(role => role.name === name) : null
-  }
-
   const getResourceFromProps = (name) => {
-    const role = getResourceRoleByName(name)
+    const { resourceRoles } = metadata
+    const role = getResourceRoleByName(resourceRoles, name)
     return challengeResources && role && challengeResources.find(resource => resource.roleId === role.id)
   }
 
@@ -74,6 +75,34 @@ const ChallengeView = ({
       </div>
       <div className={styles.title}>View Details</div>
       <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsRight)}>
+        {
+          challenge.status === 'Draft' && (
+            <div className={styles.button}>
+              {challenge.legacyId ? (
+                <PrimaryButton text={'Launch'} type={'info'} onClick={onLaunchChallenge} />
+              ) : (
+                <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
+                  {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
+                  <PrimaryButton text={'Launch'} type={'disabled'} />
+                </Tooltip>
+              )}
+            </div>
+          )
+        }
+        {
+          isTask && challenge.status === 'Active' && (
+            <div className={styles.button}>
+              { assignedMemberDetails ? (
+                <PrimaryButton text={'Close Task'} type={'danger'} onClick={onCloseTask} />
+              ) : (
+                <Tooltip content={MESSAGE.NO_TASK_ASSIGNEE}>
+                  {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
+                  <PrimaryButton text={'Close Task'} type={'disabled'} />
+                </Tooltip>
+              )}
+            </div>
+          )
+        }
         { enableEdit && <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} /> }
         <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
       </div>
@@ -222,7 +251,9 @@ ChallengeView.propTypes = {
   challengeId: PropTypes.string.isRequired,
   challengeResources: PropTypes.arrayOf(PropTypes.object),
   assignedMemberDetails: PropTypes.shape(),
-  enableEdit: PropTypes.bool
+  enableEdit: PropTypes.bool,
+  onLaunchChallenge: PropTypes.func,
+  onCloseTask: PropTypes.func
 }
 
 export default withRouter(ChallengeView)

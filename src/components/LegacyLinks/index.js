@@ -4,7 +4,7 @@
 import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import styles from './LegacyLinks.module.scss'
-import { DIRECT_PROJECT_URL, ONLINE_REVIEW_URL } from '../../config/constants'
+import { DIRECT_PROJECT_URL, MESSAGE, ONLINE_REVIEW_URL } from '../../config/constants'
 import PrimaryButton from '../Buttons/PrimaryButton'
 import Tooltip from '../Tooltip'
 
@@ -28,11 +28,11 @@ const LegacyLinks = ({ challenge }) => {
         </>
       ) : (
         <>
-          <Tooltip content='Legacy project is not yet created'>
+          <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
             {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
             <PrimaryButton text={'Direct'} type={'disabled'} />
           </Tooltip>
-          <Tooltip content='Legacy project is not yet created'>
+          <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
             {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
             <PrimaryButton text={'Online Review'} type={'disabled'} />
           </Tooltip>

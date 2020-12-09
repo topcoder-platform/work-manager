@@ -200,3 +200,15 @@ export const GROUPS_DROPDOWN_PER_PAGE = 1000000 // make sure we are getting all 
  * The list of challenge types which can have multiple prizes
  */
 export const CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES = ['Challenge']
+
+/**
+ * All the repeating messages.
+ *
+ * To have the same wording across the app.
+ */
+export const MESSAGE = {
+  NO_LEGACY_CHALLENGE: 'Legacy challenge is not yet created',
+  NO_TASK_ASSIGNEE: 'Task is not assigned yet',
+  TASK_CLOSE_SUCCESS: 'Task closed successfully',
+  CHALLENGE_LAUNCH_SUCCESS: 'Challenge activated successfully'
+}

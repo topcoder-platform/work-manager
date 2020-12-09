@@ -16,7 +16,8 @@ import {
   DEFAULT_TERM_UUID,
   DEFAULT_NDA_UUID,
   SUBMITTER_ROLE_UUID,
-  CREATE_FORUM_TYPE_IDS
+  CREATE_FORUM_TYPE_IDS,
+  MESSAGE
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
@@ -44,6 +45,8 @@ import AlertModal from '../Modal/AlertModal'
 import PhaseInput from '../PhaseInput'
 import LegacyLinks from '../LegacyLinks'
 import AssignedMemberField from './AssignedMember-Field'
+import Tooltip from '../Tooltip'
+import { getResourceRoleByName } from '../../util/tc'
 
 const theme = {
   container: styles.modalContainer
@@ -113,6 +116,7 @@ class ChallengeEditor extends Component {
     this.getTemplatePhases = this.getTemplatePhases.bind(this)
     this.getAvailableTimelineTemplates = this.getAvailableTimelineTemplates.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000) // 3s
+    this.updateResource = this.updateResource.bind(this)
   }
 
   componentDidMount () {
@@ -193,22 +197,25 @@ class ChallengeEditor extends Component {
    * Close task when user confirm it
    */
   onCloseTask () {
-    const { challenge: oldChallenge, assignedMemberDetails } = this.state
+    // before marking challenge as complete, save all the changes user might have made
+    this.updateAllChallengeInfo(this.state.challenge.status, () => {
+      const { challenge: oldChallenge, assignedMemberDetails } = this.state
 
-    // set assigned user as the only one winner
-    const newChallenge = {
-      ...oldChallenge,
-      winners: [{
-        userId: assignedMemberDetails.userId,
-        handle: assignedMemberDetails.handle,
-        placement: 1
-      }]
-    }
+      // set assigned user as the only one winner
+      const newChallenge = {
+        ...oldChallenge,
+        winners: [{
+          userId: assignedMemberDetails.userId,
+          handle: assignedMemberDetails.handle,
+          placement: 1
+        }]
+      }
 
-    this.setState({
-      challenge: newChallenge
-    }, () => {
-      this.updateAllChallengeInfo('Completed')
+      this.setState({
+        challenge: newChallenge
+      }, () => {
+        this.updateAllChallengeInfo('Completed')
+      })
     })
   }
 
@@ -629,15 +636,24 @@ class ChallengeEditor extends Component {
       return false
     }
 
-    return !(Object.values(pick([
+    const requiredFields = [
       'trackId',
       'typeId',
       'name',
       'description',
       'tags',
       'prizeSets'
-    ], challenge)).filter(v => !v.length).length ||
-      _.isEmpty(this.state.currentTemplate))
+    ]
+    let isRequiredMissing = false
+
+    requiredFields.forEach((key) => {
+      const value = challenge[key]
+
+      // this check works for string and array values
+      isRequiredMissing = isRequiredMissing || !value || !value.length
+    })
+
+    return !(isRequiredMissing || _.isEmpty(this.state.currentTemplate))
   }
 
   validateChallenge () {
@@ -939,13 +955,9 @@ class ChallengeEditor extends Component {
     this.updateAllChallengeInfo(this.state.challenge.status)
   }
 
-  getResourceRoleByName (name) {
-    const { resourceRoles } = this.props.metadata
-    return resourceRoles ? resourceRoles.find(role => role.name === name) : null
-  }
-
   async updateResource (challengeId, name, value, prevValue) {
-    const resourceRole = this.getResourceRoleByName(name)
+    const { resourceRoles } = this.props.metadata
+    const resourceRole = getResourceRoleByName(resourceRoles, name)
     const roleId = resourceRole.id
     await this.props.replaceResourceInRole(challengeId, roleId, value, prevValue)
   }
@@ -966,8 +978,8 @@ class ChallengeEditor extends Component {
   }
 
   getResourceFromProps (name) {
-    const { challengeResources } = this.props
-    const role = this.getResourceRoleByName(name)
+    const { challengeResources, metadata: { resourceRoles } } = this.props
+    const role = getResourceRoleByName(resourceRoles, name)
     return challengeResources && role && challengeResources.find(resource => resource.roleId === role.id)
   }
 
@@ -1175,9 +1187,18 @@ class ChallengeEditor extends Component {
               <div className={styles.button}>
                 <PrimaryButton text={'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
               </div>
-              { isDraft && <div className={styles.button}>
-                <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
-              </div>}
+              {isDraft && (
+                <div className={styles.button}>
+                  {challenge.legacyId ? (
+                    <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
+                  ) : (
+                    <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
+                      {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
+                      <PrimaryButton text={'Launch as Active'} type={'disabled'} />
+                    </Tooltip>
+                  )}
+                </div>
+              )}
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
               {/* <div className={styles.button}>
