@@ -34,7 +34,8 @@ const ChallengeView = ({
   challengeId,
   assignedMemberDetails,
   enableEdit,
-  onLaunchChallenge }) => {
+  onLaunchChallenge,
+  onCloseTask }) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
 
@@ -82,6 +83,20 @@ const ChallengeView = ({
                 <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
                   {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
                   <PrimaryButton text={'Launch'} type={'disabled'} />
+                </Tooltip>
+              )}
+            </div>
+          )
+        }
+        {
+          isTask && challenge.status === 'Active' && (
+            <div className={styles.button}>
+              { assignedMemberDetails ? (
+                <PrimaryButton text={'Close Task'} type={'danger'} onClick={onCloseTask} />
+              ) : (
+                <Tooltip content={MESSAGE.NO_TASK_ASSIGNEE}>
+                  {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
+                  <PrimaryButton text={'Close Task'} type={'disabled'} />
                 </Tooltip>
               )}
             </div>
@@ -236,7 +251,8 @@ ChallengeView.propTypes = {
   challengeResources: PropTypes.arrayOf(PropTypes.object),
   assignedMemberDetails: PropTypes.shape(),
   enableEdit: PropTypes.bool,
-  onLaunchChallenge: PropTypes.func
+  onLaunchChallenge: PropTypes.func,
+  onCloseTask: PropTypes.func
 }
 
 export default withRouter(ChallengeView)
