@@ -14,10 +14,11 @@ import ChallengeStatus from '../ChallengeStatus'
 import ChallengeTag from '../ChallengeTag'
 import styles from './ChallengeCard.module.scss'
 import { getFormattedDuration, formatDate } from '../../../util/date'
-import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, ONLINE_REVIEW_URL } from '../../../config/constants'
+import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, MESSAGE, ONLINE_REVIEW_URL } from '../../../config/constants'
 import { patchChallenge } from '../../../services/challenges'
 import ConfirmationModal from '../../Modal/ConfirmationModal'
 import AlertModal from '../../Modal/AlertModal'
+import Tooltip from '../../Tooltip'
 
 const theme = {
   container: styles.modalContainer
@@ -96,68 +97,58 @@ const getPhaseInfo = (c) => {
  * @param onUpdateLaunch
  * @returns {*}
  */
-const hoverComponents = (challenge, onUpdateLaunch, showError) => {
+const hoverComponents = (challenge, onUpdateLaunch) => {
   const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.id}`
   const directUrl = `${DIRECT_PROJECT_URL}/contest/detail?projectId=${challenge.legacyId}`
   const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
-  const showLegacyError = () => {
-    if (showError) {
-      showError((<span>The legacy processor has not yet given this challenge a legacy ID. Please wait a few minutes or contact <a href='mailto: support@topcoder.com'>support@topcoder.com</a></span>))
-    }
+
+  // NEW projects never have Legacy challenge created, so don't show links and "Activate" button for them at all
+  if (challenge.status.toUpperCase() === CHALLENGE_STATUS.NEW) {
+    return null
   }
 
-  switch (challenge.status.toUpperCase()) {
-    case CHALLENGE_STATUS.DRAFT:
-    case CHALLENGE_STATUS.ACTIVE:
-    default:
-      return challenge.legacyId ? (
-        <div className={styles.linkGroup}>
-          <div className={styles.linkGroupLeft} onClick={() => {
-            window.location.href = communityAppUrl
-          }}>
-            <a className={styles.link} href={communityAppUrl}>View Challenge</a>
-            <div className={styles.linkGroupLeftBottom}>
-              <a onClick={(e) => e.stopPropagation()} className={styles.link} href={directUrl} target='_blank'>Direct</a>
-              <span>|</span>
-              <a onClick={(e) => e.stopPropagation()} className={styles.link} href={orUrl} target='_blank'>OR</a>
-            </div>
-          </div>
-          {
-            challenge.status === 'Draft' && (
-              <button className={styles.activateButton} onClick={() => onUpdateLaunch()}>
-                <span>Activate</span>
-              </button>
-            )
-          }
+  return challenge.legacyId ? (
+    <div className={styles.linkGroup}>
+      <div className={styles.linkGroupLeft}>
+        <a className={styles.link} href={communityAppUrl} target='_blank'>View Challenge</a>
+        <div className={styles.linkGroupLeftBottom}>
+          <a className={styles.link} href={directUrl} target='_blank'>Direct</a>
+          <span className={styles.linkDivider}>|</span>
+          <a className={styles.link} href={orUrl} target='_blank'>OR</a>
         </div>
-      ) : (
-        <div className={styles.linkGroup}>
-          <div className={styles.linkGroupLeft} onClick={() => {
-            window.location.href = communityAppUrl
-          }}>
-            <a className={styles.link} href={communityAppUrl}>View Challenge</a>
-            <div className={styles.linkGroupLeftBottom}>
-              <a onClick={(e) => {
-                e.stopPropagation()
-                showLegacyError()
-              }} className={styles.link}>Direct</a>
-              <span>|</span>
-              <a onClick={(e) => {
-                e.stopPropagation()
-                showLegacyError()
-              }} className={styles.link}>OR</a>
-            </div>
-          </div>
-          {
-            challenge.status === 'Draft' && (
-              <button className={styles.activateButton} onClick={() => onUpdateLaunch()}>
-                <span>Activate</span>
-              </button>
-            )
-          }
+      </div>
+      {challenge.status.toUpperCase() === CHALLENGE_STATUS.DRAFT && (
+        <button className={styles.activateButton} onClick={() => onUpdateLaunch()}>
+          <span>Activate</span>
+        </button>
+      )}
+    </div>
+  ) : (
+    <div className={styles.linkGroup}>
+      <div className={styles.linkGroupLeft}>
+        <a className={styles.link} href={communityAppUrl}>View Challenge</a>
+        <div className={styles.linkGroupLeftBottom}>
+          <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
+            <span className={styles.link}>Direct</span>
+          </Tooltip>
+          <span className={styles.linkDivider}>|</span>
+          <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
+            <span className={styles.link}>OR</span>
+          </Tooltip>
         </div>
-      )
-  }
+      </div>
+      {
+        challenge.status === 'Draft' && (
+          <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
+            {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
+            <button className={cn(styles.activateButton, styles.activateButtonDisabled)}>
+              <span>Activate</span>
+            </button>
+          </Tooltip>
+        )
+      }
+    </div>
+  )
 }
 
 const renderStatus = (status) => {

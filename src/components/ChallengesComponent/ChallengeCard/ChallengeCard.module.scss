@@ -49,6 +49,13 @@
           text-decoration-line: underline;
         }
 
+        span.link,
+        span.link:hover,
+        span.link:visited {
+          color: $inactive;
+          cursor: default;
+        }
+
         &.onlyOne {
           justify-content: center;
         }
@@ -160,6 +167,13 @@
       text-decoration-line: underline;
     }
 
+    span.link,
+    span.link:hover,
+    span.link:visited {
+      color: $inactive;
+      cursor: default;
+    }
+
     &.onlyOne {
       justify-content: center;
     }
@@ -171,13 +185,18 @@
       height: 100%;
       justify-content: center;
 
-      span {
+      span.linkDivider {
         margin: 0 5px;
       }
 
       .linkGroupLeftBottom {
-        a {
+        a,
+        span {
           font-size: 12px;
+        }
+
+        span.linkDivider {
+          font-size: 16px;
         }
       }
     }
@@ -226,6 +245,15 @@
     justify-content: center;
     align-items: center;
     color: $status-green;
+  }
+
+  &.activateButtonDisabled {
+    border-color: $inactive;
+    cursor: default;
+
+    > span {
+      color: $inactive;
+    }
   }
 }
 

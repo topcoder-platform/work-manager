@@ -16,7 +16,8 @@ import {
   DEFAULT_TERM_UUID,
   DEFAULT_NDA_UUID,
   SUBMITTER_ROLE_UUID,
-  CREATE_FORUM_TYPE_IDS
+  CREATE_FORUM_TYPE_IDS,
+  MESSAGE
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
@@ -1200,7 +1201,7 @@ class ChallengeEditor extends Component {
                   {challenge.legacyId ? (
                     <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
                   ) : (
-                    <Tooltip content='Legacy project is not yet created'>
+                    <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
                       {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
                       <PrimaryButton text={'Launch as Active'} type={'disabled'} />
                     </Tooltip>
