@@ -29,7 +29,7 @@ import {
 } from '../../actions/challenges'
 
 import { connect } from 'react-redux'
-import { SUBMITTER_ROLE_UUID } from '../../config/constants'
+import { SUBMITTER_ROLE_UUID, MESSAGE } from '../../config/constants'
 import { patchChallenge } from '../../services/challenges'
 import ConfirmationModal from '../../components/Modal/ConfirmationModal'
 import AlertModal from '../../components/Modal/AlertModal'
@@ -42,13 +42,23 @@ class ChallengeEditor extends Component {
   constructor (props) {
     super(props)
     const mountedWithCreatePage = props.match.path.endsWith('/new')
-    this.state = { mountedWithCreatePage, isLaunching: false, showSuccessModal: false, showLaunchModal: false }
+    this.state = {
+      challengeDetails: props.challengeDetails,
+      mountedWithCreatePage,
+      isLaunching: false,
+      showSuccessModal: false,
+      showLaunchModal: false
+    }
 
     this.onLaunchChallenge = this.onLaunchChallenge.bind(this)
     this.activateChallenge = this.activateChallenge.bind(this)
     this.closeLaunchModal = this.closeLaunchModal.bind(this)
+    this.closeCloseTaskModal = this.closeCloseTaskModal.bind(this)
     this.closeSuccessModal = this.closeSuccessModal.bind(this)
+    this.onCloseTask = this.onCloseTask.bind(this)
+    this.closeTask = this.closeTask.bind(this)
   }
+
   componentDidMount () {
     const {
       match,
@@ -95,6 +105,8 @@ class ChallengeEditor extends Component {
     const challengeId = _.get(newMatch.params, 'challengeId', null)
     if (_.get(match.params, 'projectId', null) !== projectId || _.get(match.params, 'challengeId', null) !== challengeId) {
       this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources)
+    } else {
+      this.setState({ challengeDetails: nextProps.challengeDetails })
     }
   }
 
@@ -124,8 +136,16 @@ class ChallengeEditor extends Component {
     this.setState({ showLaunchModal: true })
   }
 
+  onCloseTask () {
+    this.setState({ showCloseTaskModal: true })
+  }
+
   closeLaunchModal () {
     this.setState({ showLaunchModal: false })
+  }
+
+  closeCloseTaskModal () {
+    this.setState({ showCloseTaskModal: false })
   }
 
   closeSuccessModal () {
@@ -137,11 +157,54 @@ class ChallengeEditor extends Component {
     const { challengeDetails } = this.props
     try {
       this.setState({ isLaunching: true })
-      await patchChallenge(challengeDetails.id, { status: 'Active' })
-      this.setState({ isLaunching: false, showLaunchModal: false, showSuccessModal: true })
+      const response = await patchChallenge(challengeDetails.id, { status: 'Active' })
+      this.setState({
+        isLaunching: false,
+        showLaunchModal: false,
+        showSuccessModal: true,
+        suceessMessage: MESSAGE.CHALLENGE_LAUNCH_SUCCESS,
+        challengeDetails: { ...challengeDetails, status: response.status }
+      })
     } catch (e) {
       const error = _.get(e, 'response.data.message', 'Unable to activate the challenge')
       this.setState({ isLaunching: false, showLaunchModal: false, launchError: error })
+    }
+  }
+
+  /**
+   * Close task when user confirm it
+   */
+  async closeTask () {
+    const { challengeResources } = this.props
+    const { challengeDetails } = this.state
+    const submitters = challengeResources && challengeResources.filter(cr => cr.roleId === SUBMITTER_ROLE_UUID)
+    var assignedMemberDetails = null
+    if (submitters && submitters.length === 1) {
+      assignedMemberDetails = {
+        userId: submitters[0].memberId,
+        handle: submitters[0].memberHandle
+      }
+    }
+
+    // set assigned user as the only one winner
+    const winners = [{
+      userId: assignedMemberDetails.userId,
+      handle: assignedMemberDetails.handle,
+      placement: 1
+    }]
+    try {
+      this.setState({ isLaunching: true })
+      const response = await patchChallenge(challengeDetails.id, { winners, status: 'Completed' })
+      this.setState({
+        isLaunching: false,
+        showCloseTaskModal: false,
+        showSuccessModal: true,
+        suceessMessage: MESSAGE.TASK_CLOSE_SUCCESS,
+        challengeDetails: { ...challengeDetails, status: response.status }
+      })
+    } catch (e) {
+      const error = _.get(e, 'response.data.message', 'Unable to close the task')
+      this.setState({ isLaunching: false, showCloseTaskModal: false, launchError: error })
     }
   }
 
@@ -150,7 +213,7 @@ class ChallengeEditor extends Component {
       match,
       isLoading,
       isProjectLoading,
-      challengeDetails,
+      // challengeDetails,
       challengeResources,
       metadata,
       createAttachment,
@@ -165,7 +228,15 @@ class ChallengeEditor extends Component {
       replaceResourceInRole
       // members
     } = this.props
-    const { mountedWithCreatePage, isLaunching, showLaunchModal, showSuccessModal } = this.state
+    const {
+      mountedWithCreatePage,
+      isLaunching,
+      showLaunchModal,
+      showCloseTaskModal,
+      showSuccessModal,
+      suceessMessage,
+      challengeDetails
+    } = this.state
     if (isProjectLoading || isLoading) return <Loader />
     const challengeId = _.get(match.params, 'challengeId', null)
     if (challengeId && (!challengeDetails || !challengeDetails.id)) {
@@ -191,15 +262,25 @@ class ChallengeEditor extends Component {
       onCancel={this.closeLaunchModal}
       onConfirm={this.activateChallenge}
     />
+    const closeTaskModal = <ConfirmationModal
+      title='Confirm Close Task'
+      message={`Do you want to close task "${challengeDetails.name}"?`}
+      theme={theme}
+      isProcessing={isLaunching}
+      errorMessage={this.state.launchError}
+      onCancel={this.closeCloseTaskModal}
+      onConfirm={this.closeTask}
+    />
     const successModal = <AlertModal
       title='Success'
-      message='Challenge is activated successfully'
+      message={suceessMessage}
       theme={theme}
       closeText='Ok'
       onClose={this.closeSuccessModal}
     />
     return <div>
       { showLaunchModal && activateModal }
+      { showCloseTaskModal && closeTaskModal }
       { showSuccessModal && successModal }
       <Route
         exact
@@ -269,6 +350,7 @@ class ChallengeEditor extends Component {
             assignedMemberDetails={assignedMemberDetails}
             enableEdit={enableEdit}
             onLaunchChallenge={this.onLaunchChallenge}
+            onCloseTask={this.onCloseTask}
           />
         ))
         } />
