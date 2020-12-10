@@ -17,7 +17,8 @@ import {
   DEFAULT_NDA_UUID,
   SUBMITTER_ROLE_UUID,
   CREATE_FORUM_TYPE_IDS,
-  MESSAGE
+  MESSAGE,
+  COMMUNITY_APP_URL
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
@@ -948,9 +949,38 @@ class ChallengeEditor extends Component {
         challenge: newChallenge,
         isSaving: false }, cb)
     } catch (e) {
-      const error = _.get(e, 'response.data.message', `Unable to update the challenge to status ${status}`)
+      const error = this.formatResponseError(e) || `Unable to update the challenge to status ${status}`
       this.setState({ isSaving: false, error }, cb)
     }
+  }
+
+  /**
+   * Format the error we might get from some API endpoint.
+   *
+   * @param {Error} error error
+   *
+   * @returns {import('react').ReactNode}
+   */
+  formatResponseError (error) {
+    const errorMessage = _.get(error, 'response.data.message')
+    const errorMetadata = _.get(error, 'response.data.metadata')
+
+    if (errorMetadata.missingTerms && errorMetadata.missingTerms.length > 0) {
+      return <>
+        {errorMessage}
+        <ul className={styles.linkList}>{' '}
+          {errorMetadata.missingTerms.map((terms, index) => {
+            const termsNumber = errorMetadata.missingTerms.length > 1 ? ` ${index + 1}` : ''
+            return (
+              <li key={index}><a href={`${COMMUNITY_APP_URL}/challenges/terms/detail/${terms.termId}`} target='_blank'>link to terms{termsNumber}</a></li>
+            )
+          })}
+        </ul>
+      </>
+    }
+
+    // if no special error data, just use message
+    return errorMessage
   }
 
   async onActiveChallenge () {
