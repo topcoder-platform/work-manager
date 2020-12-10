@@ -17,10 +17,10 @@ const Sidebar = ({
       <div className={styles.title}>Work Manager</div>
       <Link to='/'>
         <div className={cn(styles.homeLink, { [styles.active]: !projectId })} onClick={resetSidebarActiveParams}>
-          Active challenges
+          All Work
         </div>
       </Link>
-      <a href='https://github.com/topcoder-platform/work-manager/issues/new' target='_blank' rel='noopener noreferrer' className='chameleon-feedback'>
+      <a href='https://github.com/topcoder-platform/work-manager/issues/newsid' target='_blank' rel='noopener noreferrer' className='chameleon-feedback'>
         <div className={cn(styles.homeLink, { [styles.active]: !projectId })}>
           Give Application Feedback
         </div>
