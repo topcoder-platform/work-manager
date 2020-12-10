@@ -478,6 +478,8 @@ export function replaceResourceInRole (challengeId, roleId, newMember, oldMember
         }
       }
     }
-    await dispatch(createResource(challengeId, roleId, newMember))
+    if (newMember) {
+      await dispatch(createResource(challengeId, roleId, newMember))
+    }
   }
 }
