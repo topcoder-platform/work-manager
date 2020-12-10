@@ -116,7 +116,7 @@ class ChallengeEditor extends Component {
     this.onUpdateMetadata = this.onUpdateMetadata.bind(this)
     this.getTemplatePhases = this.getTemplatePhases.bind(this)
     this.getAvailableTimelineTemplates = this.getAvailableTimelineTemplates.bind(this)
-    this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000) // 3s
+    this.autoUpdateChallengeThrottled = _.throttle(this.validateAndAutoUpdateChallenge.bind(this), 3000) // 3s
     this.updateResource = this.updateResource.bind(this)
   }
 
@@ -126,6 +126,18 @@ class ChallengeEditor extends Component {
 
   componentDidUpdate () {
     this.resetChallengeData(this.setState.bind(this))
+  }
+
+  /**
+   * Validates challenge and if its valid calling an autosave method
+   *
+   * @param {string} changedField changed field
+   * @param {any} prevValue previous value
+   */
+  async validateAndAutoUpdateChallenge (changedField, prevValue) {
+    if (this.validateChallenge()) {
+      this.autoUpdateChallenge(changedField, prevValue)
+    }
   }
 
   async resetChallengeData (setState = () => {}) {
