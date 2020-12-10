@@ -117,7 +117,7 @@ class ChallengeEditor extends Component {
     this.onUpdateMetadata = this.onUpdateMetadata.bind(this)
     this.getTemplatePhases = this.getTemplatePhases.bind(this)
     this.getAvailableTimelineTemplates = this.getAvailableTimelineTemplates.bind(this)
-    this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000) // 3s
+    this.autoUpdateChallengeThrottled = _.throttle(this.validateAndAutoUpdateChallenge.bind(this), 3000) // 3s
     this.updateResource = this.updateResource.bind(this)
   }
 
@@ -127,6 +127,18 @@ class ChallengeEditor extends Component {
 
   componentDidUpdate () {
     this.resetChallengeData(this.setState.bind(this))
+  }
+
+  /**
+   * Validates challenge and if its valid calling an autosave method
+   *
+   * @param {string} changedField changed field
+   * @param {any} prevValue previous value
+   */
+  async validateAndAutoUpdateChallenge (changedField, prevValue) {
+    if (this.validateChallenge()) {
+      this.autoUpdateChallenge(changedField, prevValue)
+    }
   }
 
   async resetChallengeData (setState = () => {}) {
@@ -923,35 +935,38 @@ class ChallengeEditor extends Component {
   async updateAllChallengeInfo (status, cb = () => {}) {
     const { updateChallengeDetails, assignedMemberDetails: oldAssignedMember } = this.props
     if (this.state.isSaving) return
-    this.setState({ isSaving: true })
-    const challenge = this.collectChallengeData(status)
-    let newChallenge = _.cloneDeep(this.state.challenge)
-    newChallenge.status = status
-    try {
-      const challengeId = this.getCurrentChallengeId()
-      const action = await updateChallengeDetails(challengeId, challenge)
-      const { copilot: previousCopilot, reviewer: previousReviewer } = this.state.draftChallenge.data
-      const { challenge: { copilot, reviewer }, assignedMemberDetails: assignedMember } = this.state
-      if (copilot) await this.updateResource(challengeId, 'Copilot', copilot, previousCopilot)
-      if (reviewer) await this.updateResource(challengeId, 'Reviewer', reviewer, previousReviewer)
-      const oldMemberHandle = _.get(oldAssignedMember, 'handle')
-      // assigned member has been updated
-      if (assignedMember && assignedMember.handle !== oldMemberHandle) {
-        await this.updateResource(challengeId, 'Submitter', assignedMember.handle, oldMemberHandle)
-      }
+    this.setState({ isSaving: true }, async () => {
+      const challenge = this.collectChallengeData(status)
+      let newChallenge = _.cloneDeep(this.state.challenge)
+      newChallenge.status = status
+      try {
+        const challengeId = this.getCurrentChallengeId()
+        // state can have updated assigned member (in cases where user changes assignments without refreshing the page)
+        const { challenge: { copilot, reviewer }, assignedMemberDetails: assignedMember } = this.state
+        const oldMemberHandle = _.get(oldAssignedMember, 'handle')
+        const assignedMemberHandle = _.get(assignedMember, 'handle')
+        // assigned member has been updated
+        if (assignedMemberHandle !== oldMemberHandle) {
+          await this.updateResource(challengeId, 'Submitter', assignedMemberHandle, oldMemberHandle)
+        }
+        const action = await updateChallengeDetails(challengeId, challenge)
+        const { copilot: previousCopilot, reviewer: previousReviewer } = this.state.draftChallenge.data
+        if (copilot !== previousCopilot) await this.updateResource(challengeId, 'Copilot', copilot, previousCopilot)
+        if (reviewer !== previousReviewer) await this.updateResource(challengeId, 'Reviewer', reviewer, previousReviewer)
 
-      const draftChallenge = { data: action.challengeDetails }
-      draftChallenge.data.copilot = copilot
-      draftChallenge.data.reviewer = reviewer
-      this.setState({ isLaunch: true,
-        isConfirm: newChallenge.id,
-        draftChallenge,
-        challenge: newChallenge,
-        isSaving: false }, cb)
-    } catch (e) {
-      const error = this.formatResponseError(e) || `Unable to update the challenge to status ${status}`
-      this.setState({ isSaving: false, error }, cb)
-    }
+        const draftChallenge = { data: action.challengeDetails }
+        draftChallenge.data.copilot = copilot
+        draftChallenge.data.reviewer = reviewer
+        this.setState({ isLaunch: true,
+          isConfirm: newChallenge.id,
+          draftChallenge,
+          challenge: newChallenge,
+          isSaving: false }, cb)
+      } catch (e) {
+        const error = this.formatResponseError(e) || `Unable to update the challenge to status ${status}`
+        this.setState({ isSaving: false, error }, cb)
+      }
+    })
   }
 
   /**
@@ -1073,7 +1088,6 @@ class ChallengeEditor extends Component {
       return <div>Error loading challenge</div>
     }
     const isTask = _.get(challenge, 'task.isTask', false)
-    console.log(this.props.assignedMemberDetails)
     const { assignedMemberDetails, error } = this.state
     let isActive = false
     let isDraft = false
@@ -1224,7 +1238,7 @@ class ChallengeEditor extends Component {
                 <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
               </div> */}
               <div className={styles.button}>
-                <PrimaryButton text={'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
+                <PrimaryButton text={isSaving ? 'Saving...' : 'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
               </div>
               {isDraft && (
                 <div className={styles.button}>
@@ -1240,9 +1254,9 @@ class ChallengeEditor extends Component {
               )}
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
-              {/* <div className={styles.button}>
+              <div className={styles.button}>
                 <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
-              </div> */}
+              </div>
               {isTask && (
                 <div className={styles.button}>
                   <PrimaryButton text={'Close Task'} type={'danger'} onClick={this.openCloseTaskConfirmation} />
