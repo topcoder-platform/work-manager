@@ -1212,9 +1212,9 @@ class ChallengeEditor extends Component {
               )}
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
-              {/* <div className={styles.button}>
+              <div className={styles.button}>
                 <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
-              </div> */}
+              </div>
               {isTask && (
                 <div className={styles.button}>
                   <PrimaryButton text={'Close Task'} type={'danger'} onClick={this.openCloseTaskConfirmation} />
