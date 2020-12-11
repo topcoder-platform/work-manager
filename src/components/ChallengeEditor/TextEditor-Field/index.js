@@ -52,7 +52,7 @@ class TextEditorField extends Component {
             readOnly={readOnly}
           />
         </div>)}
-        {challenge.submitTriggered && !challenge.description && (
+        {challenge.submitTriggered && (challenge.description || '').trim().length === 0 && (
           <div className={styles.error}>Public Specification is required</div>
         )}
         {!readOnly && shouldShowPrivateDescription && !showShowPrivateDescriptionField && (<div className={styles.button} onClick={this.addNewPrivateDescription}>
