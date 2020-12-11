@@ -673,7 +673,10 @@ class ChallengeEditor extends Component {
       const value = challenge[key]
 
       // this check works for string and array values
-      isRequiredMissing = isRequiredMissing || !value || !value.length
+      isRequiredMissing = isRequiredMissing ||
+        !value ||
+        (_.isString(value) && value.trim().length === 0) ||
+        (_.isArray(value) && value.length === 0)
     })
 
     return !(isRequiredMissing || _.isEmpty(this.state.currentTemplate))
