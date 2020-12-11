@@ -980,7 +980,7 @@ class ChallengeEditor extends Component {
     const errorMessage = _.get(error, 'response.data.message')
     const errorMetadata = _.get(error, 'response.data.metadata')
 
-    if (errorMetadata.missingTerms && errorMetadata.missingTerms.length > 0) {
+    if (errorMetadata && errorMetadata.missingTerms && errorMetadata.missingTerms.length > 0) {
       return <>
         {errorMessage}
         <ul className={styles.linkList}>{' '}
