@@ -1390,6 +1390,7 @@ class ChallengeEditor extends Component {
               onUpdateDescription={this.onUpdateDescription}
               onUpdateMultiSelect={this.onUpdateMultiSelect}
               onUpdateMetadata={this.onUpdateMetadata}
+              shouldShowPrivateDescription={false}
             />
             { false && (
               <AttachmentField
