@@ -15,7 +15,6 @@ import ChallengeTag from '../ChallengeTag'
 import styles from './ChallengeCard.module.scss'
 import { getFormattedDuration, formatDate } from '../../../util/date'
 import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, MESSAGE, ONLINE_REVIEW_URL } from '../../../config/constants'
-import { patchChallenge } from '../../../services/challenges'
 import ConfirmationModal from '../../Modal/ConfirmationModal'
 import AlertModal from '../../Modal/AlertModal'
 import Tooltip from '../../Tooltip'
@@ -201,12 +200,16 @@ class ChallengeCard extends React.Component {
   }
 
   async onLaunchChallenge () {
+    const { partiallyUpdateChallengeDetails } = this.props
     if (this.state.isSaving) return
     const { challenge } = this.props
     try {
       this.setState({ isSaving: true })
-      const response = await patchChallenge(challenge.id, { status: 'Active' })
-      this.setState({ isLaunch: true, isConfirm: response.id, isSaving: false })
+      // call action to update the challenge with a new status
+      await partiallyUpdateChallengeDetails(challenge.id, {
+        status: 'Active'
+      })
+      this.setState({ isLaunch: true, isConfirm: challenge.id, isSaving: false })
     } catch (e) {
       const error = _.get(e, 'response.data.message', 'Unable to activate the challenge')
       this.setState({ isSaving: false, error })
@@ -287,7 +290,8 @@ ChallengeCard.propTypes = {
   challenge: PropTypes.object,
   shouldShowCurrentPhase: PropTypes.bool,
   showError: PropTypes.func,
-  reloadChallengeList: PropTypes.func
+  reloadChallengeList: PropTypes.func,
+  partiallyUpdateChallengeDetails: PropTypes.func.isRequired
 }
 
 export default withRouter(ChallengeCard)

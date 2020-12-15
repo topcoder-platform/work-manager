@@ -101,7 +101,9 @@ class ChallengeList extends Component {
       status,
       page,
       perPage,
-      totalChallenges } = this.props
+      totalChallenges,
+      partiallyUpdateChallengeDetails
+    } = this.props
     if (warnMessage) {
       return <Message warnMessage={warnMessage} />
     }
@@ -206,7 +208,13 @@ class ChallengeList extends Component {
                 map(challenges, (c) => {
                   return (
                     <li className={styles.challengeItem} key={`challenge-card-${c.id}`}>
-                      <ChallengeCard shouldShowCurrentPhase={selectedTab === 0} challenge={c} showError={this.showError} reloadChallengeList={this.reloadChallengeList} />
+                      <ChallengeCard
+                        shouldShowCurrentPhase={selectedTab === 0}
+                        challenge={c}
+                        showError={this.showError}
+                        reloadChallengeList={this.reloadChallengeList}
+                        partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
+                      />
                     </li>
                   )
                 })
@@ -247,7 +255,8 @@ ChallengeList.propTypes = {
   loadChallengesByPage: PropTypes.func.isRequired,
   page: PropTypes.number.isRequired,
   perPage: PropTypes.number.isRequired,
-  totalChallenges: PropTypes.number.isRequired
+  totalChallenges: PropTypes.number.isRequired,
+  partiallyUpdateChallengeDetails: PropTypes.func.isRequired
 }
 
 export default ChallengeList
