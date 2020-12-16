@@ -258,10 +258,11 @@ export function partiallyUpdateChallengeDetails (challengeId, partialChallengeDe
         type: UPDATE_CHALLENGE_DETAILS_SUCCESS,
         challengeDetails: challenge
       })
-    }).catch(() => {
+    }).catch((error) => {
       dispatch({
         type: UPDATE_CHALLENGE_DETAILS_FAILURE
       })
+      throw error
     })
   }
 }

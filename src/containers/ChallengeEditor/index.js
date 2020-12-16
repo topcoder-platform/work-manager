@@ -153,21 +153,25 @@ class ChallengeEditor extends Component {
   }
 
   async activateChallenge () {
+    const { partiallyUpdateChallengeDetails } = this.props
     if (this.state.isLaunching) return
     const { challengeDetails } = this.props
     try {
       this.setState({ isLaunching: true })
-      const response = await patchChallenge(challengeDetails.id, { status: 'Active' })
+      // call action to update the challenge status
+      const action = await partiallyUpdateChallengeDetails(challengeDetails.id, {
+        status: 'Active'
+      })
       this.setState({
         isLaunching: false,
         showLaunchModal: false,
         showSuccessModal: true,
         suceessMessage: MESSAGE.CHALLENGE_LAUNCH_SUCCESS,
-        challengeDetails: { ...challengeDetails, status: response.status }
+        challengeDetails: action.challengeDetails
       })
     } catch (e) {
       const error = _.get(e, 'response.data.message', 'Unable to activate the challenge')
-      this.setState({ isLaunching: false, showLaunchModal: false, launchError: error })
+      this.setState({ isLaunching: false, launchError: error })
     }
   }
 
