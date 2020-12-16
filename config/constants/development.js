@@ -24,7 +24,7 @@ module.exports = {
   CONNECT_APP_URL: `https://connect.${DOMAIN}`,
   DIRECT_PROJECT_URL: `https://www.${DOMAIN}/direct`,
   ONLINE_REVIEW_URL: `https://software.${DOMAIN}`,
-  DEFAULT_TERM_UUID: '64d6e249-d7a5-4591-8ff5-e872f8a051f9', // Terms & Conditions of Use at TopCoder
+  DEFAULT_TERM_UUID: '317cd8f9-d66c-4f2a-8774-63c612d99cd4', // Terms & Conditions of Use at TopCoder
   DEFAULT_NDA_UUID: 'e5811a7b-43d1-407a-a064-69e5015b4900', // NDA v3.0
   SUBMITTER_ROLE_UUID: '732339e7-8e30-49d7-9198-cccf9451e221',
   DEV_TRACK_ID: '9b6fc876-f4d9-4ccb-9dfd-419247628825',

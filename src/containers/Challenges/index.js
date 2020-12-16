@@ -10,7 +10,7 @@ import { DebounceInput } from 'react-debounce-input'
 import ChallengesComponent from '../../components/ChallengesComponent'
 import ProjectCard from '../../components/ProjectCard'
 import Loader from '../../components/Loader'
-import { loadChallengesByPage } from '../../actions/challenges'
+import { loadChallengesByPage, partiallyUpdateChallengeDetails } from '../../actions/challenges'
 import { loadProject } from '../../actions/projects'
 import { loadProjects, setActiveProject, resetSidebarActiveParams } from '../../actions/sidebar'
 import {
@@ -85,7 +85,8 @@ class Challenges extends Component {
       page,
       perPage,
       totalChallenges,
-      setActiveProject
+      setActiveProject,
+      partiallyUpdateChallengeDetails
     } = this.props
     const { searchProjectName, onlyMyProjects } = this.state
     const projectInfo = _.find(projects, { id: activeProjectId }) || {}
@@ -145,6 +146,7 @@ class Challenges extends Component {
           page={page}
           perPage={perPage}
           totalChallenges={totalChallenges}
+          partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
         />
         }
       </Fragment>
@@ -170,7 +172,8 @@ Challenges.propTypes = {
   perPage: PropTypes.number.isRequired,
   totalChallenges: PropTypes.number.isRequired,
   loadProjects: PropTypes.func.isRequired,
-  setActiveProject: PropTypes.func.isRequired
+  setActiveProject: PropTypes.func.isRequired,
+  partiallyUpdateChallengeDetails: PropTypes.func.isRequired
 }
 
 const mapStateToProps = ({ challenges, sidebar, projects }) => ({
@@ -187,7 +190,8 @@ const mapDispatchToProps = {
   resetSidebarActiveParams,
   loadProject,
   loadProjects,
-  setActiveProject
+  setActiveProject,
+  partiallyUpdateChallengeDetails
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Challenges)

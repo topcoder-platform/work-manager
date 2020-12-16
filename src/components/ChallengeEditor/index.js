@@ -18,7 +18,9 @@ import {
   SUBMITTER_ROLE_UUID,
   CREATE_FORUM_TYPE_IDS,
   MESSAGE,
-  COMMUNITY_APP_URL
+  COMMUNITY_APP_URL,
+  DES_TRACK_ID,
+  REVIEW_TYPES
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
@@ -784,6 +786,7 @@ class ChallengeEditor extends Component {
     const { metadata, createChallenge } = this.props
     const { name, trackId, typeId } = this.state.challenge
     const { timelineTemplates } = metadata
+    const isDesignChallenge = trackId === DES_TRACK_ID
 
     // indicate that creating process has started
     this.setState({ isSaving: true })
@@ -802,7 +805,7 @@ class ChallengeEditor extends Component {
       trackId,
       startDate: moment().add(1, 'days').format(),
       legacy: {
-        reviewType: 'community'
+        reviewType: isDesignChallenge ? REVIEW_TYPES.INTERNAL : REVIEW_TYPES.COMMUNITY
       },
       descriptionFormat: 'markdown',
       timelineTemplateId: defaultTemplate.id,
