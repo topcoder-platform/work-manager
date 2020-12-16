@@ -192,5 +192,6 @@ export const MESSAGE = {
   NO_TASK_ASSIGNEE: 'Task is not assigned yet',
   TASK_CLOSE_SUCCESS: 'Task closed successfully',
   CHALLENGE_LAUNCH_SUCCESS: 'Challenge activated successfully',
-  COMMUNITY_REVIEW_DISABLED: 'Community review is NOT available for design challenges'
+  COMMUNITY_REVIEW_DISABLED: 'Community review is NOT available for Design challenges',
+  INTERNAL_REVIEW_DISABLED: 'Internal review is NOT available for QA challenges'
 }
