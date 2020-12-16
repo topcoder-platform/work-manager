@@ -4,10 +4,11 @@ import Select from '../../Select'
 import cn from 'classnames'
 import styles from './ReviewType-Field.module.scss'
 import Tooltip from '../../Tooltip'
-import { DES_TRACK_ID, REVIEW_TYPES, MESSAGE } from '../../../config/constants'
+import { DES_TRACK_ID, REVIEW_TYPES, MESSAGE, QA_TRACK_ID } from '../../../config/constants'
 
 const ReviewTypeField = ({ reviewers, challenge, onUpdateOthers, onUpdateSelect }) => {
   const isDesignChallenge = challenge.trackId === DES_TRACK_ID
+  const isQAChallenge = challenge.trackId === QA_TRACK_ID
   const defaultReviewType = isDesignChallenge ? REVIEW_TYPES.INTERNAL : REVIEW_TYPES.COMMUNITY
   const reviewType = challenge.reviewType ? challenge.reviewType.toLowerCase() : defaultReviewType
   const isCommunity = reviewType === REVIEW_TYPES.COMMUNITY
@@ -19,11 +20,27 @@ const ReviewTypeField = ({ reviewers, challenge, onUpdateOthers, onUpdateSelect 
       id='community'
       checked={isCommunity}
       disabled={disabled}
-      onChange={(e) => e.target.checked && onUpdateOthers({ field: 'reviewType', value: 'community' })}
+      onChange={(e) => e.target.checked && onUpdateOthers({ field: 'reviewType', value: REVIEW_TYPES.COMMUNITY })}
     />
     <label htmlFor='community'>
       <div className={styles.radioButtonLabel}>
         Community
+      </div>
+      <input type='hidden' />
+    </label>
+  </div>)
+  const internalOption = (disabled) => (<div className={styles.tcRadioButton}>
+    <input
+      name='internal'
+      type='radio'
+      id='internal'
+      disabled={disabled}
+      checked={isInternal}
+      onChange={(e) => e.target.checked && onUpdateOthers({ field: 'reviewType', value: REVIEW_TYPES.INTERNAL })}
+    />
+    <label htmlFor='internal'>
+      <div className={styles.radioButtonLabel}>
+        Internal
       </div>
       <input type='hidden' />
     </label>
@@ -47,21 +64,15 @@ const ReviewTypeField = ({ reviewers, challenge, onUpdateOthers, onUpdateSelect 
               }
             </div>
             <div className={styles.subRow}>
-              <div className={styles.tcRadioButton}>
-                <input
-                  name='internal'
-                  type='radio'
-                  id='internal'
-                  checked={isInternal}
-                  onChange={(e) => e.target.checked && onUpdateOthers({ field: 'reviewType', value: 'internal' })}
-                />
-                <label htmlFor='internal'>
-                  <div className={styles.radioButtonLabel}>
-                    Internal
-                  </div>
-                  <input type='hidden' />
-                </label>
-              </div>
+              {
+                isQAChallenge &&
+                <Tooltip content={MESSAGE.INTERNAL_REVIEW_DISABLED}>
+                  { internalOption(true) }
+                </Tooltip>
+              }
+              { !isQAChallenge &&
+                internalOption()
+              }
               {
                 isInternal && (
                   <Select
