@@ -110,6 +110,11 @@ export const PRIZE_SETS_TYPE = {
   CHECKPOINT_PRIZES: 'checkpoint'
 }
 
+export const REVIEW_TYPES = {
+  INTERNAL: 'internal',
+  COMMUNITY: 'community'
+}
+
 // List of subtracks that should be considered as Marathon Matches
 export const MARATHON_MATCH_SUBTRACKS = [
   'DEVELOP_MARATHON_MATCH'
@@ -186,5 +191,6 @@ export const MESSAGE = {
   NO_LEGACY_CHALLENGE: 'Legacy challenge is not yet created',
   NO_TASK_ASSIGNEE: 'Task is not assigned yet',
   TASK_CLOSE_SUCCESS: 'Task closed successfully',
-  CHALLENGE_LAUNCH_SUCCESS: 'Challenge activated successfully'
+  CHALLENGE_LAUNCH_SUCCESS: 'Challenge activated successfully',
+  COMMUNITY_REVIEW_DISABLED: 'Community review is NOT available for design challenges'
 }
