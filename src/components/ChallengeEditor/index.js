@@ -651,8 +651,8 @@ class ChallengeEditor extends Component {
       return !!name && !!trackId && !!typeId
     }
 
-    const reviewType = challenge.reviewType ? challenge.reviewType.toLowerCase() : 'community'
-    const isInternal = reviewType === 'internal'
+    const reviewType = challenge.reviewType ? challenge.reviewType.toUpperCase() : REVIEW_TYPES.COMMUNITY
+    const isInternal = reviewType === REVIEW_TYPES.INTERNAL
     if (isInternal && !challenge.reviewer) {
       return false
     }

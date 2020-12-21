@@ -111,8 +111,8 @@ export const PRIZE_SETS_TYPE = {
 }
 
 export const REVIEW_TYPES = {
-  INTERNAL: 'internal',
-  COMMUNITY: 'community'
+  INTERNAL: 'INTERNAL',
+  COMMUNITY: 'COMMUNITY'
 }
 
 // List of subtracks that should be considered as Marathon Matches
