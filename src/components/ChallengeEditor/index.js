@@ -651,8 +651,8 @@ class ChallengeEditor extends Component {
       return !!name && !!trackId && !!typeId
     }
 
-    const reviewType = challenge.reviewType ? challenge.reviewType.toLowerCase() : 'community'
-    const isInternal = reviewType === 'internal'
+    const reviewType = challenge.reviewType ? challenge.reviewType.toUpperCase() : REVIEW_TYPES.COMMUNITY
+    const isInternal = reviewType === REVIEW_TYPES.INTERNAL
     if (isInternal && !challenge.reviewer) {
       return false
     }
@@ -809,8 +809,7 @@ class ChallengeEditor extends Component {
       },
       descriptionFormat: 'markdown',
       timelineTemplateId: defaultTemplate.id,
-      terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }],
-      phases: this.getTemplatePhases(defaultTemplate)
+      terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }]
       // prizeSets: this.getDefaultPrizeSets()
     }
     const discussions = this.getDiscussionsConfig(newChallenge)
@@ -841,6 +840,14 @@ class ChallengeEditor extends Component {
     }
   }
 
+  /*
+    TODO
+
+    IMPORTANT!!!
+
+    This method might be wrong. We might need to fix it when enabling editing phases UI.
+    See issue which caused by using of this method https://github.com/topcoder-platform/work-manager/issues/1012
+  */
   getTemplatePhases (template) {
     const timelinePhaseIds = template.phases.map(timelinePhase => timelinePhase.phaseId || timelinePhase)
     const validPhases = _.cloneDeep(this.props.metadata.challengePhases).filter(challengePhase => {

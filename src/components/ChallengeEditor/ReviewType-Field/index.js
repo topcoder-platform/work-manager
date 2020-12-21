@@ -10,7 +10,7 @@ const ReviewTypeField = ({ reviewers, challenge, onUpdateOthers, onUpdateSelect 
   const isDesignChallenge = challenge.trackId === DES_TRACK_ID
   const isQAChallenge = challenge.trackId === QA_TRACK_ID
   const defaultReviewType = isDesignChallenge ? REVIEW_TYPES.INTERNAL : REVIEW_TYPES.COMMUNITY
-  const reviewType = challenge.reviewType ? challenge.reviewType.toLowerCase() : defaultReviewType
+  const reviewType = challenge.reviewType ? challenge.reviewType.toUpperCase() : defaultReviewType
   const isCommunity = reviewType === REVIEW_TYPES.COMMUNITY
   const isInternal = reviewType === REVIEW_TYPES.INTERNAL
   const communityOption = (disabled) => (<div className={styles.tcRadioButton}>

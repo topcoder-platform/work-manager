@@ -91,7 +91,7 @@
     "sass-loader": "7.1.0",
     "simplemde": "^1.11.2",
     "style-loader": "0.23.0",
-    "tc-auth-lib": "topcoder-platform/tc-auth-lib#1.0.3",
+    "tc-auth-lib": "topcoder-platform/tc-auth-lib#1.0.4",
     "terser": "^3.16.1",
     "terser-webpack-plugin": "1.1.0",
     "topcoder-healthcheck-dropin": "^1.0.3",

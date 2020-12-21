@@ -22,7 +22,7 @@ import LegacyLinks from '../../LegacyLinks'
 import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
 import Tooltip from '../../Tooltip'
-import { MESSAGE } from '../../../config/constants'
+import { MESSAGE, REVIEW_TYPES } from '../../../config/constants'
 
 const ChallengeView = ({
   projectDetail,
@@ -59,9 +59,9 @@ const ChallengeView = ({
   copilot = copilot || copilotFromResources
   reviewer = reviewer || reviewerFromResources
 
-  const reviewType = challenge.reviewType ? challenge.reviewType.toLowerCase() : 'community'
-  const isCommunity = reviewType === 'community'
-  const isInternal = reviewType === 'internal'
+  const reviewType = challenge.reviewType ? challenge.reviewType.toUpperCase() : REVIEW_TYPES.COMMUNITY
+  const isCommunity = reviewType === REVIEW_TYPES.COMMUNITY
+  const isInternal = reviewType === REVIEW_TYPES.INTERNAL
   const timeLineTemplate = _.find(metadata.timelineTemplates, { id: challenge.timelineTemplateId })
   if (isLoading || _.isEmpty(metadata.challengePhases) || challenge.id !== challengeId) return <Loader />
   const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
