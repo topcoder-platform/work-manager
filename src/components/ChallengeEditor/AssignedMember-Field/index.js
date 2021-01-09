@@ -6,13 +6,15 @@ import PropTypes from 'prop-types'
 import cn from 'classnames'
 import styles from './AssignedMember-Field.module.scss'
 import SelectUserAutocomplete from '../../SelectUserAutocomplete'
+import { PrimaryButton } from '../../Buttons'
 
-const AssignedMemberField = ({ challenge, onChange, assignedMemberDetails, readOnly }) => {
+const AssignedMemberField = ({ challenge, onAssignSelf, onChange, assignedMemberDetails, readOnly }) => {
   const value = assignedMemberDetails ? {
     // if we know assigned member details, then show user `handle`, otherwise fallback to `userId`
     label: assignedMemberDetails.handle,
     value: assignedMemberDetails.userId + ''
   } : null
+
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
@@ -28,6 +30,13 @@ const AssignedMemberField = ({ challenge, onChange, assignedMemberDetails, readO
           />
         )}
       </div>
+      <div className={styles.assignSelfField}>
+        <PrimaryButton
+          text='Assign to me'
+          type='info'
+          onClick={onAssignSelf}
+        />
+      </div>
     </div>
   )
 }
@@ -41,7 +50,8 @@ AssignedMemberField.propTypes = {
   challenge: PropTypes.shape().isRequired,
   onChange: PropTypes.func,
   assignedMemberDetails: PropTypes.shape(),
-  readOnly: PropTypes.bool
+  readOnly: PropTypes.bool,
+  onAssignSelf: PropTypes.func
 }
 
 export default AssignedMemberField
