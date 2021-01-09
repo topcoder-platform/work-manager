@@ -63,6 +63,8 @@ const getTitle = (isNew) => {
   return 'Set-Up Work'
 }
 
+const checkTaskType = (type) => type === 'Task'
+
 class ChallengeEditor extends Component {
   constructor (props) {
     super(props)
@@ -167,7 +169,8 @@ class ChallengeEditor extends Component {
           reviewer = challenge.reviewer
         }
         challengeData.copilot = copilot || copilotFromResources
-        challengeData.reviewer = reviewer || reviewerFromResources
+        challengeData.reviewer = reviewer || reviewerFromResources || (checkTaskType(challengeData.type) ? challengeData.createdBy : '')
+        challengeData.startDate = (checkTaskType(challengeData.type) ? moment().format() : challengeData.startDate)
         const challengeDetail = { ...challengeData }
         const isOpenAdvanceSettings = challengeDetail.groups.length > 0
         setState({
@@ -1100,6 +1103,7 @@ class ChallengeEditor extends Component {
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
     }
+    const isTaskType = checkTaskType(challenge.type)
     const isTask = _.get(challenge, 'task.isTask', false)
     const { assignedMemberDetails, error } = this.state
     let isActive = false
@@ -1357,7 +1361,7 @@ class ChallengeEditor extends Component {
                 <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
               </React.Fragment>
             )}
-            {
+            {!isTaskType && (
               <div className={styles.PhaseRow}>
                 <PhaseInput
                   withDates
@@ -1372,7 +1376,7 @@ class ChallengeEditor extends Component {
                   readOnly={false}
                 />
               </div>
-            }
+            )}
             { showTimeline && (
               <ChallengeScheduleField
                 templates={this.getAvailableTimelineTemplates()}
