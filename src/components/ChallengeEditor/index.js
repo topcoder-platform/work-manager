@@ -1354,7 +1354,7 @@ class ChallengeEditor extends Component {
               <React.Fragment>
                 {/* remove terms field and use default term */}
                 {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}
-                <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
+                <GroupsField onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
               </React.Fragment>
             )}
             {
