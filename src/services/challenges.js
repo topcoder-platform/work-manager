@@ -160,6 +160,14 @@ export function patchChallenge (challengeId, params) {
   })
 }
 
+/*
+* Deletes the challenge with the provided id.
+* @param challengeId
+*/
+export function deleteChallenge (challengeId) {
+  return axiosInstance.delete(`${CHALLENGE_API_URL}/${challengeId}`).then(rs => rs)
+}
+
 /**
  * Api request for fetching challenge terms
  * @returns {Promise<*>}
