@@ -708,7 +708,7 @@ class ChallengeEditor extends Component {
   onUpdateMultiSelect (options, field) {
     const { challenge } = this.state
     let newChallenge = { ...challenge }
-    newChallenge[field] = options ? options.split(',') : []
+    newChallenge[field] = options ? options.map(option => option.value) : []
 
     this.setState({ challenge: newChallenge }, () => {
       this.validateChallenge()

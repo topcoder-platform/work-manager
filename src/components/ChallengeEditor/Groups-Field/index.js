@@ -10,8 +10,6 @@ import { AUTOCOMPLETE_MIN_LENGTH, AUTOCOMPLETE_DEBOUNCE_TIME_MS, GROUPS_API_URL 
 const GroupsField = ({ onUpdateMultiSelect, challenge }) => {
   async function fetchGroups (name) {
     if (!name) return []
-    console.log('url')
-    console.log(GROUPS_API_URL)
     const url = `${GROUPS_API_URL}?name=${name}`
     return axiosInstance.get(url)
   }
@@ -38,12 +36,12 @@ const GroupsField = ({ onUpdateMultiSelect, challenge }) => {
       <div className={cn(styles.field, styles.col2)}>
         <AsyncSelect
           name='group'
-          multi
+          isMulti
           loadOptions={(inputValue, callback) => {
             onInputChange(inputValue, callback)
           }}
           simpleValue
-          value={challenge.groups.join(',')}
+          multivalue={challenge.groups}
           placeholder='Select groups'
           onChange={(e) => onUpdateMultiSelect(e, 'groups')}
         />

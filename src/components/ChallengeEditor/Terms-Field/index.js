@@ -15,10 +15,10 @@ const TermsField = ({ terms, challenge, onUpdateMultiSelect }) => {
         <input type='hidden' />
         <Select
           id='track-select'
-          multi
+          isMulti
           options={terms.map(mapOps)}
           simpleValue
-          value={challenge.terms}
+          multivalue={challenge.terms}
           onChange={(value) => onUpdateMultiSelect(value, 'terms')}
         />
       </div>

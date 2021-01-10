@@ -13,14 +13,12 @@ const BillingAccountField = ({ accounts, onUpdateSelect, challenge }) => {
       <div className={cn(styles.field, styles.col2)}>
         <Select
           name='billingAccount'
-          options={accounts}
-          value={challenge.billingAccount}
+          options={accounts.map(account => ({ label: account.name, value: account.name, name: account.name }))}
+          value={{ label: challenge.billingAccount, value: challenge.billingAccount }}
           placeholder='Select an existing account'
-          labelKey='name'
-          valueKey='name'
-          clearable={false}
+          isClearable={false}
           onChange={(e) => onUpdateSelect(e)}
-          disabled={false}
+          isDisabled={false}
         />
       </div>
     </div>

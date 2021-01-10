@@ -19,10 +19,10 @@ const TagsField = ({ challengeTags, challenge, onUpdateMultiSelect, readOnly }) 
             <span>{existingTags}</span>
           ) : (<Select
             id='track-select'
-            multi
+            isMulti
             options={challengeTags.map(mapOps)}
             simpleValue
-            value={existingTags}
+            multivalue={challenge.tags && challenge.tags.map(tag => ({ label: tag, value: tag }))}
             onChange={(value) => onUpdateMultiSelect(value, 'tags')}
           />)}
         </div>
