@@ -26,8 +26,7 @@ const ChallengesComponent = ({
   page,
   perPage,
   totalChallenges,
-  partiallyUpdateChallengeDetails,
-  deleteChallenge
+  partiallyUpdateChallengeDetails
 }) => {
   return (
     <Sticky top={10}>
@@ -87,7 +86,6 @@ const ChallengesComponent = ({
               perPage={perPage}
               totalChallenges={totalChallenges}
               partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
-              deleteChallenge={deleteChallenge}
             />
           )}
         </div>
@@ -111,8 +109,7 @@ ChallengesComponent.propTypes = {
   page: PropTypes.number.isRequired,
   perPage: PropTypes.number.isRequired,
   totalChallenges: PropTypes.number.isRequired,
-  partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
-  deleteChallenge: PropTypes.func.isRequired
+  partiallyUpdateChallengeDetails: PropTypes.func.isRequired
 }
 
 ChallengesComponent.defaultProps = {
