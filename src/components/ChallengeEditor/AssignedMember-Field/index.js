@@ -29,12 +29,15 @@ const AssignedMemberField = ({ challenge, onAssignSelf, onChange, assignedMember
           />
         )}
       </div>
-      <div className={styles.assignSelfField}>
-        <a href='#' onClick={(e) => {
-          e.preventDefault()
-          onAssignSelf()
-        }}>Assign to me</a>
-      </div>
+      {
+        !readOnly &&
+          <div className={styles.assignSelfField}>
+            <a href='#' onClick={(e) => {
+              e.preventDefault()
+              onAssignSelf()
+            }}>Assign to me</a>
+          </div>
+      }
     </div>
   )
 }
