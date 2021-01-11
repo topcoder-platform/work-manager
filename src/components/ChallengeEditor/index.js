@@ -90,6 +90,7 @@ class ChallengeEditor extends Component {
     this.onUpdateOthers = this.onUpdateOthers.bind(this)
     this.onUpdateCheckbox = this.onUpdateCheckbox.bind(this)
     this.onUpdateAssignedMember = this.onUpdateAssignedMember.bind(this)
+    this.onAssignSelf = this.onAssignSelf.bind(this)
     this.addFileType = this.addFileType.bind(this)
     this.removeFileType = this.removeFileType.bind(this)
     this.updateFileTypesMetadata = this.updateFileTypesMetadata.bind(this)
@@ -331,6 +332,22 @@ class ChallengeEditor extends Component {
 
     this.setState({
       challenge: newChallenge,
+      assignedMemberDetails
+    })
+  }
+
+  /**
+   * Update Assigned Member to Current User
+   */
+  onAssignSelf () {
+    const { loggedInUser } = this.props
+
+    const assignedMemberDetails = {
+      handle: loggedInUser.handle,
+      userId: loggedInUser.userId
+    }
+
+    this.setState({
       assignedMemberDetails
     })
   }
@@ -1326,6 +1343,7 @@ class ChallengeEditor extends Component {
                 challenge={challenge}
                 onChange={this.onUpdateAssignedMember}
                 assignedMemberDetails={assignedMemberDetails}
+                onAssignSelf={this.onAssignSelf}
               />
             )}
             <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
@@ -1469,7 +1487,8 @@ ChallengeEditor.propTypes = {
   updateChallengeDetails: PropTypes.func.isRequired,
   createChallenge: PropTypes.func,
   replaceResourceInRole: PropTypes.func,
-  partiallyUpdateChallengeDetails: PropTypes.func.isRequired
+  partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
+  loggedInUser: PropTypes.shape().isRequired
 }
 
 export default withRouter(ChallengeEditor)
