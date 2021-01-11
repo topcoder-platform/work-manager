@@ -257,31 +257,6 @@
   }
 }
 
-.deleteButton {
-  height: 22px;
-  width: 86px;
-  border-radius: 11.5px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: $tc-red;
-  border-color: $tc-red;
-  cursor: pointer;
-
-  span {
-    @include roboto;
-
-    font-size: 14px;
-    font-weight: 400;
-    line-height: 17px;
-    color: $white;
-    text-transform: capitalize;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-}
-
 .icon {
   vertical-align: bottom;
 }
