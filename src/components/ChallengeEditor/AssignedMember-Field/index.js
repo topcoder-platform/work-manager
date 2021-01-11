@@ -6,7 +6,6 @@ import PropTypes from 'prop-types'
 import cn from 'classnames'
 import styles from './AssignedMember-Field.module.scss'
 import SelectUserAutocomplete from '../../SelectUserAutocomplete'
-import { PrimaryButton } from '../../Buttons'
 
 const AssignedMemberField = ({ challenge, onAssignSelf, onChange, assignedMemberDetails, readOnly }) => {
   const value = assignedMemberDetails ? {
@@ -31,11 +30,7 @@ const AssignedMemberField = ({ challenge, onAssignSelf, onChange, assignedMember
         )}
       </div>
       <div className={styles.assignSelfField}>
-        <PrimaryButton
-          text='Assign to me'
-          type='info'
-          onClick={onAssignSelf}
-        />
+        <a href='#' onClick={onAssignSelf}>Assign to me</a>
       </div>
     </div>
   )
