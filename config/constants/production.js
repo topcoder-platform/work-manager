@@ -7,7 +7,6 @@ module.exports = {
   COMMUNITY_APP_URL: `https://www.${DOMAIN}`,
   MEMBER_API_URL: `${PROD_API_HOSTNAME}/v4/members`,
   MEMBER_API_V3_URL: `${PROD_API_HOSTNAME}/v3/members`,
-  DEV_APP_URL: `https://submission-review.${DOMAIN}`,
   CHALLENGE_API_URL: `${PROD_API_HOSTNAME}/v5/challenges`,
   CHALLENGE_TIMELINE_TEMPLATES_URL: `${PROD_API_HOSTNAME}/v5/timeline-templates`,
   CHALLENGE_TYPES_URL: `${PROD_API_HOSTNAME}/v5/challenge-types`,
