@@ -105,7 +105,7 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
   if (challenge.status.toUpperCase() === CHALLENGE_STATUS.NEW) {
     if (challenge.status.toUpperCase() === CHALLENGE_STATUS.NEW) {
       return (
-        <button className={styles.deleteButton} onClick={() => deleteModalLaunch()}>
+        <button className={styles.deleteButton} onClick={deleteModalLaunch}>
           <span>Delete</span>
         </button>
       )
@@ -324,14 +324,12 @@ class ChallengeCard extends React.Component {
 
 ChallengeCard.defaultPrps = {
   shouldShowCurrentPhase: true,
-  // showError: () => {},
   reloadChallengeList: () => {}
 }
 
 ChallengeCard.propTypes = {
   challenge: PropTypes.object,
   shouldShowCurrentPhase: PropTypes.bool,
-  // showError: PropTypes.func,
   reloadChallengeList: PropTypes.func,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired

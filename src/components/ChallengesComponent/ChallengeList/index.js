@@ -212,7 +212,6 @@ class ChallengeList extends Component {
                       <ChallengeCard
                         shouldShowCurrentPhase={selectedTab === 0}
                         challenge={c}
-                        showError={this.showError}
                         reloadChallengeList={this.reloadChallengeList}
                         partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
                         deleteChallenge={deleteChallenge}

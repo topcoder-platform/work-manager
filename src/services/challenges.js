@@ -165,7 +165,7 @@ export function patchChallenge (challengeId, params) {
 * @param challengeId
 */
 export function deleteChallenge (challengeId) {
-  return axiosInstance.delete(`${CHALLENGE_API_URL}/${challengeId}`).then(rs => rs)
+  return axiosInstance.delete(`${CHALLENGE_API_URL}/${challengeId}`)
 }
 
 /**

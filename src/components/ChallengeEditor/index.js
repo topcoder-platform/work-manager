@@ -142,7 +142,6 @@ class ChallengeEditor extends Component {
 
   async onDeleteChallenge () {
     const { deleteChallenge, challengeDetails, history } = this.props
-    console.log(challengeDetails, deleteChallenge)
     try {
       this.setState({ isSaving: true })
       // Call action to delete the challenge
@@ -152,7 +151,6 @@ class ChallengeEditor extends Component {
       history.push(`/projects/${challengeDetails.projectId}/challenges`)
     } catch (e) {
       const error = _.get(e, 'response.data.message', 'Unable to Delete the challenge')
-      console.log(error)
       this.setState({ isSaving: false, error })
     }
   }
