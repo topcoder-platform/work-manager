@@ -24,6 +24,7 @@ import {
   loadResourceRoles,
   updateChallengeDetails,
   partiallyUpdateChallengeDetails,
+  deleteChallenge,
   createChallenge,
   replaceResourceInRole
 } from '../../actions/challenges'
@@ -229,7 +230,8 @@ class ChallengeEditor extends Component {
       updateChallengeDetails,
       partiallyUpdateChallengeDetails,
       createChallenge,
-      replaceResourceInRole
+      replaceResourceInRole,
+      deleteChallenge
       // members
     } = this.props
     const {
@@ -335,6 +337,7 @@ class ChallengeEditor extends Component {
             updateChallengeDetails={updateChallengeDetails}
             replaceResourceInRole={replaceResourceInRole}
             partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
+            deleteChallenge={deleteChallenge}
           />
         ))
         } />
@@ -400,6 +403,7 @@ ChallengeEditor.propTypes = {
   updateChallengeDetails: PropTypes.func.isRequired,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   createChallenge: PropTypes.func.isRequired,
+  deleteChallenge: PropTypes.func.isRequired,
   replaceResourceInRole: PropTypes.func
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
@@ -435,6 +439,7 @@ const mapDispatchToProps = {
   loadResourceRoles,
   updateChallengeDetails,
   partiallyUpdateChallengeDetails,
+  deleteChallenge,
   createChallenge,
   replaceResourceInRole
 }

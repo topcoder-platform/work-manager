@@ -15,6 +15,7 @@ import {
   fetchChallengeTracks,
   updateChallenge,
   patchChallenge,
+  deleteChallenge as deleteChallengeAPI,
   createChallenge as createChallengeAPI,
   createResource as createResourceAPI,
   deleteResource as deleteResourceAPI
@@ -38,6 +39,9 @@ import {
   CREATE_CHALLENGE_PENDING,
   CREATE_CHALLENGE_SUCCESS,
   CREATE_CHALLENGE_FAILURE,
+  DELETE_CHALLENGE_PENDING,
+  DELETE_CHALLENGE_SUCCESS,
+  DELETE_CHALLENGE_FAILURE,
   LOAD_CHALLENGE_RESOURCES
 } from '../config/constants'
 import { loadProject } from './projects'
@@ -261,6 +265,26 @@ export function partiallyUpdateChallengeDetails (challengeId, partialChallengeDe
     }).catch((error) => {
       dispatch({
         type: UPDATE_CHALLENGE_DETAILS_FAILURE
+      })
+      throw error
+    })
+  }
+}
+
+export function deleteChallenge (challengeId) {
+  return async (dispatch) => {
+    dispatch({
+      type: DELETE_CHALLENGE_PENDING
+    })
+
+    return deleteChallengeAPI(challengeId).then((challenge) => {
+      return dispatch({
+        type: DELETE_CHALLENGE_SUCCESS,
+        challengeDetails: challenge
+      })
+    }).catch((error) => {
+      dispatch({
+        type: DELETE_CHALLENGE_FAILURE
       })
       throw error
     })
