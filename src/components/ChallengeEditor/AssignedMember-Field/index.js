@@ -30,7 +30,10 @@ const AssignedMemberField = ({ challenge, onAssignSelf, onChange, assignedMember
         )}
       </div>
       <div className={styles.assignSelfField}>
-        <a href='#' onClick={onAssignSelf}>Assign to me</a>
+        <a href='#' onClick={(e) => {
+          e.preventDefault()
+          onAssignSelf()
+        }}>Assign to me</a>
       </div>
     </div>
   )
