@@ -776,7 +776,7 @@ class ChallengeEditor extends Component {
   }
 
   collectChallengeData (status) {
-    const { attachments } = this.props
+    const { attachments, metadata } = this.props
     const challenge = pick([
       'phases',
       'typeId',
@@ -793,6 +793,7 @@ class ChallengeEditor extends Component {
       'prizeSets',
       'winners'
     ], this.state.challenge)
+    const isTask = _.find(metadata.challengeTypes, { id: challenge.typeId, isTask: true })
     challenge.legacy = _.assign(this.state.challenge.legacy, {
       reviewType: challenge.reviewType
     })
@@ -803,6 +804,10 @@ class ChallengeEditor extends Component {
       return { ...p, prizes }
     })
     challenge.status = status
+    if (status === 'Active' && isTask) {
+      challenge.startDate = moment().format()
+    }
+
     if (this.state.challenge.id) {
       challenge.attachmentIds = _.map(attachments, item => item.id)
     }
@@ -837,7 +842,7 @@ class ChallengeEditor extends Component {
     const avlTemplates = this.getAvailableTimelineTemplates()
     // chooses first available timeline template or fallback template for the new challenge
     const defaultTemplate = avlTemplates && avlTemplates.length > 0 ? avlTemplates[0] : STD_DEV_TIMELINE_TEMPLATE
-
+    const isTask = _.find(metadata.challengeTypes, { id: typeId, isTask: true })
     const newChallenge = {
       status: 'New',
       projectId: this.props.projectId,
@@ -846,7 +851,7 @@ class ChallengeEditor extends Component {
       trackId,
       startDate: moment().add(1, 'days').format(),
       legacy: {
-        reviewType: isDesignChallenge ? REVIEW_TYPES.INTERNAL : REVIEW_TYPES.COMMUNITY
+        reviewType: isTask || isDesignChallenge ? REVIEW_TYPES.INTERNAL : REVIEW_TYPES.COMMUNITY
       },
       descriptionFormat: 'markdown',
       timelineTemplateId: defaultTemplate.id,
@@ -859,6 +864,10 @@ class ChallengeEditor extends Component {
     }
     try {
       const action = await createChallenge(newChallenge)
+      if (isTask) {
+        await this.updateResource(action.challengeDetails.id, 'Reviewer', action.challengeDetails.createdBy, action.challengeDetails.reviewer)
+        action.challengeDetails.reviewer = action.challengeDetails.createdBy
+      }
       const draftChallenge = {
         data: action.challengeDetails
       }
@@ -1399,7 +1408,7 @@ class ChallengeEditor extends Component {
                 <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
               </React.Fragment>
             )}
-            {
+            {!isTask && (
               <div className={styles.PhaseRow}>
                 <PhaseInput
                   withDates
@@ -1414,7 +1423,7 @@ class ChallengeEditor extends Component {
                   readOnly={false}
                 />
               </div>
-            }
+            )}
             {
               this.state.isDeleteLaunch && !this.state.isConfirm && (
                 <ConfirmationModal

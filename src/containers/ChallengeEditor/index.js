@@ -2,6 +2,7 @@ import _ from 'lodash'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { withRouter, Route } from 'react-router-dom'
+import moment from 'moment'
 import ChallengeEditorComponent from '../../components/ChallengeEditor'
 import ChallengeViewComponent from '../../components/ChallengeEditor/ChallengeView'
 import Loader from '../../components/Loader'
@@ -156,13 +157,18 @@ class ChallengeEditor extends Component {
   async activateChallenge () {
     const { partiallyUpdateChallengeDetails } = this.props
     if (this.state.isLaunching) return
-    const { challengeDetails } = this.props
+    const { challengeDetails, metadata } = this.props
+    const isTask = _.find(metadata.challengeTypes, { id: challengeDetails.typeId, isTask: true })
     try {
       this.setState({ isLaunching: true })
-      // call action to update the challenge status
-      const action = await partiallyUpdateChallengeDetails(challengeDetails.id, {
+      const payload = {
         status: 'Active'
-      })
+      }
+      if (isTask) {
+        payload.startDate = moment().format()
+      }
+      // call action to update the challenge status
+      const action = await partiallyUpdateChallengeDetails(challengeDetails.id, payload)
       this.setState({
         isLaunching: false,
         showLaunchModal: false,

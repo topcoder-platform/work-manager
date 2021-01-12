@@ -220,10 +220,15 @@ class ChallengeCard extends React.Component {
     const { challenge } = this.props
     try {
       this.setState({ isSaving: true })
-      // call action to update the challenge with a new status
-      await partiallyUpdateChallengeDetails(challenge.id, {
+      const isTask = _.get(challenge, 'task.isTask', false)
+      const payload = {
         status: 'Active'
-      })
+      }
+      if (isTask) {
+        payload.startDate = moment().format()
+      }
+      // call action to update the challenge with a new status
+      await partiallyUpdateChallengeDetails(challenge.id, payload)
       this.setState({ isLaunch: true, isConfirm: challenge.id, isSaving: false })
     } catch (e) {
       const error = _.get(e, 'response.data.message', 'Unable to activate the challenge')
