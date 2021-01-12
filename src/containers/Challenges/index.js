@@ -10,7 +10,7 @@ import { DebounceInput } from 'react-debounce-input'
 import ChallengesComponent from '../../components/ChallengesComponent'
 import ProjectCard from '../../components/ProjectCard'
 import Loader from '../../components/Loader'
-import { loadChallengesByPage, partiallyUpdateChallengeDetails } from '../../actions/challenges'
+import { loadChallengesByPage, partiallyUpdateChallengeDetails, deleteChallenge } from '../../actions/challenges'
 import { loadProject } from '../../actions/projects'
 import { loadProjects, setActiveProject, resetSidebarActiveParams } from '../../actions/sidebar'
 import {
@@ -86,7 +86,8 @@ class Challenges extends Component {
       perPage,
       totalChallenges,
       setActiveProject,
-      partiallyUpdateChallengeDetails
+      partiallyUpdateChallengeDetails,
+      deleteChallenge
     } = this.props
     const { searchProjectName, onlyMyProjects } = this.state
     const projectInfo = _.find(projects, { id: activeProjectId }) || {}
@@ -147,6 +148,7 @@ class Challenges extends Component {
           perPage={perPage}
           totalChallenges={totalChallenges}
           partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
+          deleteChallenge={deleteChallenge}
         />
         }
       </Fragment>
@@ -173,7 +175,8 @@ Challenges.propTypes = {
   totalChallenges: PropTypes.number.isRequired,
   loadProjects: PropTypes.func.isRequired,
   setActiveProject: PropTypes.func.isRequired,
-  partiallyUpdateChallengeDetails: PropTypes.func.isRequired
+  partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
+  deleteChallenge: PropTypes.func.isRequired
 }
 
 const mapStateToProps = ({ challenges, sidebar, projects }) => ({
@@ -191,7 +194,8 @@ const mapDispatchToProps = {
   loadProject,
   loadProjects,
   setActiveProject,
-  partiallyUpdateChallengeDetails
+  partiallyUpdateChallengeDetails,
+  deleteChallenge
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Challenges)

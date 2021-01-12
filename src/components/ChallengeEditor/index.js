@@ -68,6 +68,7 @@ class ChallengeEditor extends Component {
     super(props)
     this.state = {
       isLaunch: false,
+      isDeleteLaunch: false,
       isConfirm: false,
       isClose: false,
       isOpenAdvanceSettings: false,
@@ -90,6 +91,7 @@ class ChallengeEditor extends Component {
     this.onUpdateOthers = this.onUpdateOthers.bind(this)
     this.onUpdateCheckbox = this.onUpdateCheckbox.bind(this)
     this.onUpdateAssignedMember = this.onUpdateAssignedMember.bind(this)
+    this.onAssignSelf = this.onAssignSelf.bind(this)
     this.addFileType = this.addFileType.bind(this)
     this.removeFileType = this.removeFileType.bind(this)
     this.updateFileTypesMetadata = this.updateFileTypesMetadata.bind(this)
@@ -121,6 +123,8 @@ class ChallengeEditor extends Component {
     this.getAvailableTimelineTemplates = this.getAvailableTimelineTemplates.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.validateAndAutoUpdateChallenge.bind(this), 3000) // 3s
     this.updateResource = this.updateResource.bind(this)
+    this.onDeleteChallenge = this.onDeleteChallenge.bind(this)
+    this.deleteModalLaunch = this.deleteModalLaunch.bind(this)
   }
 
   componentDidMount () {
@@ -129,6 +133,27 @@ class ChallengeEditor extends Component {
 
   componentDidUpdate () {
     this.resetChallengeData(this.setState.bind(this))
+  }
+
+  deleteModalLaunch () {
+    if (!this.state.isDeleteLaunch) {
+      this.setState({ isDeleteLaunch: true })
+    }
+  }
+
+  async onDeleteChallenge () {
+    const { deleteChallenge, challengeDetails, history } = this.props
+    try {
+      this.setState({ isSaving: true })
+      // Call action to delete the challenge
+      await deleteChallenge(challengeDetails.id)
+      this.setState({ isSaving: false })
+      this.resetModal()
+      history.push(`/projects/${challengeDetails.projectId}/challenges`)
+    } catch (e) {
+      const error = _.get(e, 'response.data.message', 'Unable to Delete the challenge')
+      this.setState({ isSaving: false, error })
+    }
   }
 
   /**
@@ -206,7 +231,7 @@ class ChallengeEditor extends Component {
   }
 
   resetModal () {
-    this.setState({ isLoading: false, isConfirm: false, isLaunch: false, error: null, isCloseTask: false })
+    this.setState({ isLoading: false, isConfirm: false, isLaunch: false, error: null, isCloseTask: false, isDeleteLaunch: false })
   }
 
   /**
@@ -331,6 +356,22 @@ class ChallengeEditor extends Component {
 
     this.setState({
       challenge: newChallenge,
+      assignedMemberDetails
+    })
+  }
+
+  /**
+   * Update Assigned Member to Current User
+   */
+  onAssignSelf () {
+    const { loggedInUser } = this.props
+
+    const assignedMemberDetails = {
+      handle: loggedInUser.handle,
+      userId: loggedInUser.userId
+    }
+
+    this.setState({
       assignedMemberDetails
     })
   }
@@ -1336,6 +1377,7 @@ class ChallengeEditor extends Component {
                 challenge={challenge}
                 onChange={this.onUpdateAssignedMember}
                 assignedMemberDetails={assignedMemberDetails}
+                onAssignSelf={this.onAssignSelf}
               />
             )}
             <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
@@ -1383,6 +1425,19 @@ class ChallengeEditor extends Component {
                 />
               </div>
             )}
+            {
+              this.state.isDeleteLaunch && !this.state.isConfirm && (
+                <ConfirmationModal
+                  title='Confirm Delete'
+                  message={`Do you want to delete "${challenge.name}"?`}
+                  theme={theme}
+                  isProcessing={isSaving}
+                  errorMessage={this.state.error}
+                  onCancel={this.resetModal}
+                  onConfirm={this.onDeleteChallenge}
+                />
+              )
+            }
             { showTimeline && (
               <ChallengeScheduleField
                 templates={this.getAvailableTimelineTemplates()}
@@ -1436,6 +1491,7 @@ class ChallengeEditor extends Component {
         </div>
         <div className={styles.title}>{getTitle(isNew)}</div>
         <div className={cn(styles.actionButtons, styles.actionButtonsRight)}>
+          {this.props.challengeDetails.status === 'New' && <PrimaryButton text={'Delete'} type={'danger'} onClick={this.deleteModalLaunch} />}
           <PrimaryButton text={'Back'} type={'info'} submit link={`/projects/${projectDetail.id}/challenges`} />
         </div>
         <div className={styles.textRequired}>* Required</div>
@@ -1479,7 +1535,9 @@ ChallengeEditor.propTypes = {
   updateChallengeDetails: PropTypes.func.isRequired,
   createChallenge: PropTypes.func,
   replaceResourceInRole: PropTypes.func,
-  partiallyUpdateChallengeDetails: PropTypes.func.isRequired
+  partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
+  deleteChallenge: PropTypes.func.isRequired,
+  loggedInUser: PropTypes.shape().isRequired
 }
 
 export default withRouter(ChallengeEditor)
