@@ -968,7 +968,8 @@ class ChallengeEditor extends Component {
         const { copilot: previousCopilot, reviewer: previousReviewer } = this.state.draftChallenge.data
         if (copilot !== previousCopilot) await this.updateResource(challengeId, 'Copilot', copilot, previousCopilot)
         if (type === 'First2Finish' || type === 'Task') {
-          const { memberHandle: previousIterativeReviewer } = this.getResourceFromProps('Iterative Reviewer')
+          const iterativeReviewer = this.getResourceFromProps('Iterative Reviewer')
+          const previousIterativeReviewer = iterativeReviewer && iterativeReviewer.memberHandle
           if (reviewer !== previousIterativeReviewer) await this.updateResource(challengeId, 'Iterative Reviewer', reviewer, previousIterativeReviewer)
         } else {
           if (reviewer !== previousReviewer) await this.updateResource(challengeId, 'Reviewer', reviewer, previousReviewer)
