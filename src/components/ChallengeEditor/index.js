@@ -180,7 +180,9 @@ class ChallengeEditor extends Component {
       try {
         const copilotResource = this.getResourceFromProps('Copilot')
         const copilotFromResources = copilotResource ? copilotResource.memberHandle : ''
-        const reviewerResource = this.getResourceFromProps('Reviewer')
+        const reviewerResource =
+          (challengeDetails.type === 'First2Finish' || challengeDetails.type === 'Task')
+            ? this.getResourceFromProps('Iterative Reviewer') : this.getResourceFromProps('Reviewer')
         const reviewerFromResources = reviewerResource ? reviewerResource.memberHandle : ''
         setState({ isConfirm: false, isLaunch: false })
         const challengeData = this.updateAttachmentlist(challengeDetails, attachments)
@@ -1005,7 +1007,7 @@ class ChallengeEditor extends Component {
       try {
         const challengeId = this.getCurrentChallengeId()
         // state can have updated assigned member (in cases where user changes assignments without refreshing the page)
-        const { challenge: { copilot, reviewer }, assignedMemberDetails: assignedMember } = this.state
+        const { challenge: { copilot, reviewer, type }, assignedMemberDetails: assignedMember } = this.state
         const oldMemberHandle = _.get(oldAssignedMember, 'handle')
         const assignedMemberHandle = _.get(assignedMember, 'handle')
         // assigned member has been updated
@@ -1015,8 +1017,13 @@ class ChallengeEditor extends Component {
         const action = await updateChallengeDetails(challengeId, challenge)
         const { copilot: previousCopilot, reviewer: previousReviewer } = this.state.draftChallenge.data
         if (copilot !== previousCopilot) await this.updateResource(challengeId, 'Copilot', copilot, previousCopilot)
-        if (reviewer !== previousReviewer) await this.updateResource(challengeId, 'Reviewer', reviewer, previousReviewer)
-
+        if (type === 'First2Finish' || type === 'Task') {
+          const iterativeReviewer = this.getResourceFromProps('Iterative Reviewer')
+          const previousIterativeReviewer = iterativeReviewer && iterativeReviewer.memberHandle
+          if (reviewer !== previousIterativeReviewer) await this.updateResource(challengeId, 'Iterative Reviewer', reviewer, previousIterativeReviewer)
+        } else {
+          if (reviewer !== previousReviewer) await this.updateResource(challengeId, 'Reviewer', reviewer, previousReviewer)
+        }
         const draftChallenge = { data: action.challengeDetails }
         draftChallenge.data.copilot = copilot
         draftChallenge.data.reviewer = reviewer
