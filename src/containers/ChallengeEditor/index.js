@@ -231,7 +231,8 @@ class ChallengeEditor extends Component {
       partiallyUpdateChallengeDetails,
       createChallenge,
       replaceResourceInRole,
-      deleteChallenge
+      deleteChallenge,
+      loggedInUser
       // members
     } = this.props
     const {
@@ -338,6 +339,7 @@ class ChallengeEditor extends Component {
             replaceResourceInRole={replaceResourceInRole}
             partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
             deleteChallenge={deleteChallenge}
+            loggedInUser={loggedInUser}
           />
         ))
         } />

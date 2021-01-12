@@ -13,6 +13,7 @@ import {
   fetchResourceRoles,
   fetchChallengeTimelines,
   fetchChallengeTracks,
+  fetchGroupDetail,
   updateChallenge,
   patchChallenge,
   deleteChallenge as deleteChallengeAPI,
@@ -184,6 +185,14 @@ export function loadChallengeDetails (projectId, challengeId) {
       })
     }
   }
+}
+
+/**
+ * Loads group details
+ */
+export function loadGroupDetails (groupIds) {
+  const promiseAll = groupIds.map(id => fetchGroupDetail(id))
+  return Promise.all(promiseAll)
 }
 
 /**

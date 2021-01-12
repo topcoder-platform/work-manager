@@ -99,7 +99,7 @@ checkBrowsers(paths.appPath, isInteractive)
         clearConsole()
       }
       console.log(chalk.cyan('Starting the development server...\n'))
-      openBrowser(constants.DEV_APP_URL ? `${constants.DEV_APP_URL}:${process.env.PORT || 3000}` : urls.localUrlForBrowser)
+      openBrowser(urls.localUrlForBrowser)
     })
 
     const SIGNALS = ['SIGINT', 'SIGTERM']

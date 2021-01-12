@@ -66,6 +66,17 @@ export async function fetchGroups (filters) {
 }
 
 /**
+ * Api request for fetching Group Detail
+ *
+ * @param groupId
+ * @returns {Promise<*>}
+ */
+export async function fetchGroupDetail (id) {
+  const response = await axiosInstance.get(`${GROUPS_API_URL}/${id}`)
+  return _.get(response, 'data', [])
+}
+
+/**
  * Api request for fetching timeline templates
  * @returns {Promise<*>}
  */
