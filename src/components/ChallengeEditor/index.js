@@ -867,7 +867,7 @@ class ChallengeEditor extends Component {
     try {
       const action = await createChallenge(newChallenge)
       if (isTask) {
-        await this.updateResource(action.challengeDetails.id, 'Reviewer', action.challengeDetails.createdBy, action.challengeDetails.reviewer)
+        await this.updateResource(action.challengeDetails.id, 'Iterative Reviewer', action.challengeDetails.createdBy, action.challengeDetails.reviewer)
         action.challengeDetails.reviewer = action.challengeDetails.createdBy
       }
       const draftChallenge = {
@@ -932,9 +932,12 @@ class ChallengeEditor extends Component {
         case 'copilot':
           await this.updateResource(challengeId, 'Copilot', this.state.challenge.copilot, prevValue)
           break
-        case 'reviewer':
-          await this.updateResource(challengeId, 'Reviewer', this.state.challenge.reviewer, prevValue)
+        case 'reviewer': {
+          const { type } = this.state.challenge
+          const useIterativeReview = type === 'First2Finish' || type === 'Task'
+          await this.updateResource(challengeId, useIterativeReview ? 'Iterative Review' : 'Reviewer', this.state.challenge.reviewer, prevValue)
           break
+        }
       }
     } else {
       let patchObject = (changedField === 'reviewType')
