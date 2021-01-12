@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import React from 'react'
 import PropTypes from 'prop-types'
 import Select from '../../Select'
@@ -9,7 +10,7 @@ import { DES_TRACK_ID, REVIEW_TYPES, MESSAGE, QA_TRACK_ID } from '../../../confi
 const ReviewTypeField = ({ reviewers, challenge, onUpdateOthers, onUpdateSelect }) => {
   const isDesignChallenge = challenge.trackId === DES_TRACK_ID
   const isQAChallenge = challenge.trackId === QA_TRACK_ID
-  const isTask = challenge.type === 'Task'
+  const isTask = _.get(challenge, 'task.isTask', false)
   const defaultReviewType = isDesignChallenge ? REVIEW_TYPES.INTERNAL : REVIEW_TYPES.COMMUNITY
   const reviewType = challenge.reviewType ? challenge.reviewType.toUpperCase() : defaultReviewType
   const isCommunity = reviewType === REVIEW_TYPES.COMMUNITY
