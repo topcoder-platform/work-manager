@@ -27,6 +27,7 @@ import { MESSAGE, REVIEW_TYPES } from '../../../config/constants'
 const ChallengeView = ({
   projectDetail,
   challenge,
+  attachments,
   metadata,
   challengeResources,
   token,
@@ -209,13 +210,12 @@ const ChallengeView = ({
               challenge={challenge}
               readOnly
             />
-            { false && (
-              <AttachmentField
-                challenge={challenge}
-                token={token}
-                readOnly
-              />
-            )}
+            <AttachmentField
+              challengeId={challenge.id}
+              attachments={attachments}
+              token={token}
+              readOnly
+            />
             <ChallengePrizesField challenge={challenge} readOnly />
             <CopilotFeeField challenge={challenge} readOnly />
             <ChallengeTotalField challenge={challenge} />
@@ -244,6 +244,7 @@ ChallengeView.propTypes = {
   }).isRequired,
   projectDetail: PropTypes.object,
   challenge: PropTypes.object,
+  attachments: PropTypes.array,
   metadata: PropTypes.object,
   token: PropTypes.string,
   isLoading: PropTypes.bool.isRequired,
