@@ -396,7 +396,6 @@ class ChallengeEditor extends Component {
           newChallenge[field][index][option.key] = option.name
         }
       }
-      console.log(newChallenge)
       this.setState({ challenge: newChallenge }, () => {
         this.validateChallenge()
       })
