@@ -1500,7 +1500,7 @@ class ChallengeEditor extends Component {
         </div>
         <div className={styles.title}>{getTitle(isNew)}</div>
         <div className={cn(styles.actionButtons, styles.actionButtonsRight)}>
-          {this.props.challengeDetails.status === 'New' && <PrimaryButton text={'Delete'} type={'danger'} onClick={this.deleteModalLaunch} />}
+          {!isNew && this.props.challengeDetails.status === 'New' && <PrimaryButton text={'Delete'} type={'danger'} onClick={this.deleteModalLaunch} />}
           <PrimaryButton text={'Back'} type={'info'} submit link={`/projects/${projectDetail.id}/challenges`} />
         </div>
         <div className={styles.textRequired}>* Required</div>

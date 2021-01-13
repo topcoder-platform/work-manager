@@ -103,13 +103,11 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
 
   // NEW projects never have Legacy challenge created, so don't show links and "Activate" button for them at all
   if (challenge.status.toUpperCase() === CHALLENGE_STATUS.NEW) {
-    if (challenge.status.toUpperCase() === CHALLENGE_STATUS.NEW) {
-      return (
-        <button className={styles.deleteButton} onClick={deleteModalLaunch}>
-          <span>Delete</span>
-        </button>
-      )
-    }
+    return (
+      <button className={styles.deleteButton} onClick={deleteModalLaunch}>
+        <span>Delete</span>
+      </button>
+    )
   }
 
   return challenge.legacyId ? (
