@@ -751,7 +751,7 @@ class ChallengeEditor extends Component {
   onUpdateMultiSelect (options, field) {
     const { challenge } = this.state
     let newChallenge = { ...challenge }
-    newChallenge[field] = options ? options.split(',') : []
+    newChallenge[field] = options ? options.map(option => option.value) : []
 
     this.setState({ challenge: newChallenge }, () => {
       this.validateChallenge()
@@ -1415,7 +1415,7 @@ class ChallengeEditor extends Component {
               <React.Fragment>
                 {/* remove terms field and use default term */}
                 {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}
-                <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
+                <GroupsField onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
               </React.Fragment>
             )}
             {!isTask && (

@@ -1,6 +1,6 @@
 import React from 'react'
 import _ from 'lodash'
-import ReactSelect from 'react-select'
+import ReactSelect from 'react-select/async'
 import PT from 'prop-types'
 import styles from './styles'
 

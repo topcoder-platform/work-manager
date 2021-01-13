@@ -79,14 +79,12 @@ const ReviewTypeField = ({ reviewers, challenge, onUpdateOthers, onUpdateSelect 
                 isInternal && (
                   <Select
                     name='reviewer'
-                    options={reviewers}
+                    options={reviewers.map(({ handle }) => ({ label: handle, value: handle }))}
                     placeholder='Select Reviewer'
-                    labelKey='handle'
-                    valueKey='handle'
-                    clearable={false}
-                    value={challenge.reviewer}
-                    onChange={(e) => onUpdateSelect(e.handle, false, 'reviewer')}
-                    disabled={false}
+                    value={{ label: challenge.reviewer, value: challenge.reviewer }}
+                    isClearable={false}
+                    onChange={(e) => onUpdateSelect(e.value, false, 'reviewer')}
+                    isDisabled={false}
                   />
                 )
               }

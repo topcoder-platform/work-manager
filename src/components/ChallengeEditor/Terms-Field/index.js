@@ -6,6 +6,17 @@ import styles from './Terms-Field.module.scss'
 
 const TermsField = ({ terms, challenge, onUpdateMultiSelect }) => {
   const mapOps = item => ({ label: item.title, value: item.id })
+
+  const [currTerms, setCurrTerms] = React.useState([])
+
+  React.useEffect(() => {
+    const challengeTerms = new Set(challenge.terms)
+    const defaultValue = terms
+      .filter(term => challengeTerms.has(term.id))
+      .map(mapOps)
+    setCurrTerms(defaultValue)
+  }, [])
+
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
@@ -15,11 +26,14 @@ const TermsField = ({ terms, challenge, onUpdateMultiSelect }) => {
         <input type='hidden' />
         <Select
           id='track-select'
-          multi
+          isMulti
           options={terms.map(mapOps)}
           simpleValue
-          value={challenge.terms}
-          onChange={(value) => onUpdateMultiSelect(value, 'terms')}
+          value={currTerms}
+          onChange={(value) => {
+            onUpdateMultiSelect(value, 'terms')
+            setCurrTerms(setCurrTerms(terms))
+          }}
         />
       </div>
     </div>
