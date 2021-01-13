@@ -27,7 +27,10 @@ import {
   CREATE_CHALLENGE_RESOURCE_SUCCESS,
   DELETE_CHALLENGE_RESOURCE_SUCCESS,
   DELETE_CHALLENGE_RESOURCE_FAILURE,
-  CREATE_CHALLENGE_RESOURCE_FAILURE
+  CREATE_CHALLENGE_RESOURCE_FAILURE,
+  DELETE_CHALLENGE_SUCCESS,
+  DELETE_CHALLENGE_FAILURE,
+  DELETE_CHALLENGE_PENDING
 } from '../config/constants'
 
 const initialState = {
@@ -42,6 +45,7 @@ const initialState = {
   attachments: [],
   challenge: null,
   filterChallengeName: '',
+  failedToDelete: false,
   status: '',
   perPage: 0,
   page: 1,
@@ -144,6 +148,27 @@ export default function (state = initialState, action) {
     }
     case UPDATE_CHALLENGE_DETAILS_FAILURE:
       return { ...state, isLoading: false, attachments: [], challenge: null, failedToLoad: false, failedToUpdate: true }
+
+    case DELETE_CHALLENGE_PENDING:
+      return { ...state, failedToLoad: false }
+
+    case DELETE_CHALLENGE_SUCCESS: {
+      const deletedChallengeDetails = action.challengeDetails.data
+      const updatedChallenges = state.challenges.filter((challenge) => challenge.id !== deletedChallengeDetails.id)
+      toastrSuccess('Success', `Challenge deleted successfully.`)
+      return {
+        ...state,
+        challenges: updatedChallenges
+      }
+    }
+
+    case DELETE_CHALLENGE_FAILURE: {
+      return {
+        ...state,
+        failedToDelete: true
+      }
+    }
+
     case CREATE_CHALLENGE_SUCCESS: {
       // if we are showing the list of challenges with the same status as we just created,
       // then add the new challenge to the beginning of the current challenge list
