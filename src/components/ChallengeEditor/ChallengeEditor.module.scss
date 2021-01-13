@@ -241,7 +241,7 @@
 .actionButtons {
   position: absolute;
   top: 30px;
-  a,button {
+  a {
     height: 40px;
   }
 }
@@ -251,13 +251,7 @@
 }
 
 .actionButtonsRight {
-  display: flex;
-  align-items: center;
   right: 20px;
-
-  button {
-    margin-right: 20px;
-  }
 }
 
 .buttonContainer {
