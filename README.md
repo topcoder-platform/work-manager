@@ -39,8 +39,6 @@ npm install
 
 1. copy the environment file in docs/dev.env to /.env
 
-1. add `127.0.0.1 local.topcoder-dev.com` to your /etc/hosts file
-
 1. If you are using local instances of the API's, change the DEV_API_HOSTNAME in configs/constants/development.js to match your local api endpoint.
     - For example change it to 'http://localhost:3000/',
 
@@ -50,7 +48,7 @@ npm install
 npm run dev
 ```
 
-You can access the app from [http://local.topcoder-dev.com:3001/](http://local.topcoder-dev.com:3001/)
+You can access the app from [http://localhost:3000/](http://localhost:3000/)
 
 The page will reload if you make edits.
 

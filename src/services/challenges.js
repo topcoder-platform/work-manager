@@ -56,12 +56,25 @@ export async function fetchChallengeTags () {
  * @param filters
  * @returns {Promise<*>}
  */
-export async function fetchGroups (filters) {
-  const finalFilters = {
-    ...filters,
-    perPage: GROUPS_DROPDOWN_PER_PAGE // make sure that we are retrieving all the groups
-  }
-  const response = await axiosInstance.get(`${GROUPS_API_URL}?${qs.stringify(finalFilters, { encode: false })}`)
+export async function fetchGroups (filters, params = '') {
+  const finalFilters = filters && Object.keys(filters).length > 0
+    ? {
+      ...filters,
+      perPage: GROUPS_DROPDOWN_PER_PAGE // make sure that we are retrieving all the groups
+    }
+    : {}
+  const response = await axiosInstance.get(`${GROUPS_API_URL}${params}?${qs.stringify(finalFilters, { encode: false })}`)
+  return _.get(response, 'data', [])
+}
+
+/**
+ * Api request for fetching Group Detail
+ *
+ * @param groupId
+ * @returns {Promise<*>}
+ */
+export async function fetchGroupDetail (id) {
+  const response = await axiosInstance.get(`${GROUPS_API_URL}/${id}`)
   return _.get(response, 'data', [])
 }
 
@@ -158,6 +171,14 @@ export function patchChallenge (challengeId, params) {
   return axiosInstance.patch(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(params)).then(rs => {
     return normalizeChallengeDataFromAPI(_.get(rs, 'data'))
   })
+}
+
+/*
+* Deletes the challenge with the provided id.
+* @param challengeId
+*/
+export function deleteChallenge (challengeId) {
+  return axiosInstance.delete(`${CHALLENGE_API_URL}/${challengeId}`)
 }
 
 /**

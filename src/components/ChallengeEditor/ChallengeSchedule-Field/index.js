@@ -331,12 +331,10 @@ class ChallengeScheduleField extends Component {
               ) : (
                 <Select
                   name='template'
-                  options={templates}
+                  options={templates.map(template => ({ label: template.name, value: template.name, name: template.name }))}
                   placeholder='Select'
-                  labelKey='name'
-                  valueKey='name'
-                  clearable={false}
-                  value={currentTemplate}
+                  isClearable={false}
+                  value={currentTemplate && { label: currentTemplate.name, value: currentTemplate.name }}
                   onChange={(e) => resetPhase(e)}
                 />
               )}

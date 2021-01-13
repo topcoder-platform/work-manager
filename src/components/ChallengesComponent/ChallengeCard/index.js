@@ -96,14 +96,18 @@ const getPhaseInfo = (c) => {
  * @param onUpdateLaunch
  * @returns {*}
  */
-const hoverComponents = (challenge, onUpdateLaunch) => {
+const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
   const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.id}`
   const directUrl = `${DIRECT_PROJECT_URL}/contest/detail?projectId=${challenge.legacyId}`
   const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
 
   // NEW projects never have Legacy challenge created, so don't show links and "Activate" button for them at all
   if (challenge.status.toUpperCase() === CHALLENGE_STATUS.NEW) {
-    return null
+    return (
+      <button className={styles.deleteButton} onClick={deleteModalLaunch}>
+        <span>Delete</span>
+      </button>
+    )
   }
 
   return challenge.legacyId ? (
@@ -177,10 +181,13 @@ class ChallengeCard extends React.Component {
     this.state = {
       isConfirm: false,
       isLaunch: false,
+      isDeleteLaunch: false,
       isSaving: false
     }
     this.onUpdateConfirm = this.onUpdateConfirm.bind(this)
     this.onUpdateLaunch = this.onUpdateLaunch.bind(this)
+    this.onDeleteChallenge = this.onDeleteChallenge.bind(this)
+    this.deleteModalLaunch = this.deleteModalLaunch.bind(this)
     this.resetModal = this.resetModal.bind(this)
     this.onLaunchChallenge = this.onLaunchChallenge.bind(this)
   }
@@ -195,8 +202,14 @@ class ChallengeCard extends React.Component {
     }
   }
 
+  deleteModalLaunch () {
+    if (!this.state.isDeleteLaunch) {
+      this.setState({ isDeleteLaunch: true })
+    }
+  }
+
   resetModal () {
-    this.setState({ isConfirm: false, isLaunch: false })
+    this.setState({ isConfirm: false, isLaunch: false, isDeleteLaunch: false })
   }
 
   async onLaunchChallenge () {
@@ -205,10 +218,15 @@ class ChallengeCard extends React.Component {
     const { challenge } = this.props
     try {
       this.setState({ isSaving: true })
-      // call action to update the challenge with a new status
-      await partiallyUpdateChallengeDetails(challenge.id, {
+      const isTask = _.get(challenge, 'task.isTask', false)
+      const payload = {
         status: 'Active'
-      })
+      }
+      if (isTask) {
+        payload.startDate = moment().format()
+      }
+      // call action to update the challenge with a new status
+      await partiallyUpdateChallengeDetails(challenge.id, payload)
       this.setState({ isLaunch: true, isConfirm: challenge.id, isSaving: false })
     } catch (e) {
       const error = _.get(e, 'response.data.message', 'Unable to activate the challenge')
@@ -216,12 +234,39 @@ class ChallengeCard extends React.Component {
     }
   }
 
+  async onDeleteChallenge () {
+    const { deleteChallenge, challenge } = this.props
+    try {
+      this.setState({ isSaving: true })
+      // Call action to delete the challenge
+      await deleteChallenge(challenge.id)
+      this.setState({ isSaving: false })
+      this.resetModal()
+    } catch (e) {
+      const error = _.get(e, 'response.data.message', 'Unable to Delete the challenge')
+      this.setState({ isSaving: false, error })
+    }
+  }
+
   render () {
-    const { isLaunch, isConfirm, isSaving } = this.state
+    const { isLaunch, isConfirm, isSaving, isDeleteLaunch } = this.state
     const { challenge, shouldShowCurrentPhase, reloadChallengeList } = this.props
     const { phaseMessage, endTime } = getPhaseInfo(challenge)
     return (
       <div className={styles.item}>
+        {
+          isDeleteLaunch && !isConfirm && (
+            <ConfirmationModal
+              title='Confirm Delete'
+              message={`Do you want to delete "${challenge.name}"?`}
+              theme={theme}
+              isProcessing={isSaving}
+              errorMessage={this.state.error}
+              onCancel={this.resetModal}
+              onConfirm={this.onDeleteChallenge}
+            />
+          )
+        }
         { isLaunch && !isConfirm && (
           <ConfirmationModal
             title='Confirm Launch'
@@ -263,7 +308,7 @@ class ChallengeCard extends React.Component {
           <span className='block light-text'>{endTime}</span>
         </Link>)}
         <div className={cn(styles.col4, styles.editingContainer)}>
-          {hoverComponents(challenge, this.onUpdateLaunch, this.props.showError)}
+          {hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch)}
         </div>
         <div className={cn(styles.col4, styles.iconsContainer)}>
           <div className={styles.faIconContainer}>
@@ -282,16 +327,15 @@ class ChallengeCard extends React.Component {
 
 ChallengeCard.defaultPrps = {
   shouldShowCurrentPhase: true,
-  showError: () => {},
   reloadChallengeList: () => {}
 }
 
 ChallengeCard.propTypes = {
   challenge: PropTypes.object,
   shouldShowCurrentPhase: PropTypes.bool,
-  showError: PropTypes.func,
   reloadChallengeList: PropTypes.func,
-  partiallyUpdateChallengeDetails: PropTypes.func.isRequired
+  partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
+  deleteChallenge: PropTypes.func.isRequired
 }
 
 export default withRouter(ChallengeCard)
