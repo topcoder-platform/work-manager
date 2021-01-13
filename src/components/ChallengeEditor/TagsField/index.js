@@ -22,7 +22,7 @@ const TagsField = ({ challengeTags, challenge, onUpdateMultiSelect, readOnly }) 
             isMulti
             options={challengeTags.map(mapOps)}
             simpleValue
-            multivalue={challenge.tags && challenge.tags.map(tag => ({ label: tag, value: tag }))}
+            value={challenge.tags && challenge.tags.map(tag => ({ label: tag, value: tag }))}
             onChange={(value) => onUpdateMultiSelect(value, 'tags')}
           />)}
         </div>

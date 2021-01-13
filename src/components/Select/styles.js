@@ -4,8 +4,6 @@ export default {
     width: '100%'
   }),
   control: (provided, state) => {
-    console.log('state')
-    console.log(state)
     let styles = {
       ...provided,
       borderRadius: '2px !important'
@@ -46,7 +44,7 @@ export default {
     fontFamily: 'Roboto, Helvetica, Arial, sans-serif',
     fontSize: '15px',
     fontWeight: 300,
-    paddingLeft: '20px',
+    paddingLeft: '10px',
     color: '#2a2a2a'
   }),
   input: (provided) => ({
@@ -61,6 +59,10 @@ export default {
       height: 'auto !important',
       lineHeight: 'normal !important'
     }
+  }),
+  singleValue: (provided) => ({
+    ...provided,
+    paddingLeft: '10px'
   }),
   multiValue: (provided) => ({
     ...provided,

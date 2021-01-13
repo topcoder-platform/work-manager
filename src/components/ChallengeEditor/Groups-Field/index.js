@@ -4,15 +4,11 @@ import AsyncSelect from '../../Select/AsyncSelect'
 import cn from 'classnames'
 import styles from './Groups-Field.module.scss'
 import _ from 'lodash'
-import { axiosInstance } from '../../../services/axiosWithAuth'
-import { AUTOCOMPLETE_MIN_LENGTH, AUTOCOMPLETE_DEBOUNCE_TIME_MS, GROUPS_API_URL } from '../../../config/constants'
+import { fetchGroups } from '../../../services/challenges'
+import { AUTOCOMPLETE_MIN_LENGTH, AUTOCOMPLETE_DEBOUNCE_TIME_MS } from '../../../config/constants'
 
 const GroupsField = ({ onUpdateMultiSelect, challenge }) => {
-  async function fetchGroups (name) {
-    if (!name) return []
-    const url = `${GROUPS_API_URL}?name=${name}`
-    return axiosInstance.get(url)
-  }
+  const [groups, setGroups] = React.useState([])
 
   const onInputChange = React.useCallback(_.debounce(async (inputValue, callback) => {
     if (!inputValue) return
@@ -20,13 +16,25 @@ const GroupsField = ({ onUpdateMultiSelect, challenge }) => {
     if (preparedValue.length < AUTOCOMPLETE_MIN_LENGTH) {
       return []
     }
-    const { data } = await fetchGroups(inputValue)
+    const data = await fetchGroups({ name: inputValue })
     const suggestions = data.map(suggestion => ({
       label: suggestion.name,
       value: suggestion.id
     }))
     callback && callback(suggestions)
   }, AUTOCOMPLETE_DEBOUNCE_TIME_MS), [])
+
+  React.useEffect(() => {
+    Promise.all(
+      challenge.groups
+        .map(group => fetchGroups({}, `/${group}`))
+    ).then(groups => {
+      setGroups(groups.map(group => ({
+        label: group.name,
+        value: group.id
+      })))
+    }).catch(console.error)
+  }, [])
 
   return (
     <div className={styles.row}>
@@ -41,9 +49,12 @@ const GroupsField = ({ onUpdateMultiSelect, challenge }) => {
             onInputChange(inputValue, callback)
           }}
           simpleValue
-          multivalue={challenge.groups}
+          value={groups}
           placeholder='Select groups'
-          onChange={(e) => onUpdateMultiSelect(e, 'groups')}
+          onChange={(e) => {
+            onUpdateMultiSelect(e, 'groups')
+            setGroups(e)
+          }}
         />
       </div>
     </div>
