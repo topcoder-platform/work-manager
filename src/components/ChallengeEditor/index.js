@@ -97,7 +97,6 @@ class ChallengeEditor extends Component {
     this.updateFileTypesMetadata = this.updateFileTypesMetadata.bind(this)
     this.toggleAdvanceSettings = this.toggleAdvanceSettings.bind(this)
     this.toggleNdaRequire = this.toggleNdaRequire.bind(this)
-    this.removeAttachment = this.removeAttachment.bind(this)
     this.removePhase = this.removePhase.bind(this)
     this.resetPhase = this.resetPhase.bind(this)
     this.savePhases = this.savePhases.bind(this)
@@ -591,15 +590,6 @@ class ChallengeEditor extends Component {
       newTerms.push({ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID })
     }
     newChallenge.terms = newTerms
-    this.setState({ challenge: newChallenge })
-  }
-
-  removeAttachment (file) {
-    const { challenge } = this.state
-    const newChallenge = { ...challenge }
-    const { attachments: oldAttachments } = challenge
-    const newAttachments = _.remove(oldAttachments, att => att.fileName !== file)
-    newChallenge.attachments = _.clone(newAttachments)
     this.setState({ challenge: newChallenge })
   }
 
@@ -1155,7 +1145,8 @@ class ChallengeEditor extends Component {
       token,
       removeAttachment,
       failedToLoad,
-      projectDetail
+      projectDetail,
+      attachments
     } = this.props
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
@@ -1475,14 +1466,14 @@ class ChallengeEditor extends Component {
               onUpdateMultiSelect={this.onUpdateMultiSelect}
               onUpdateMetadata={this.onUpdateMetadata}
             />
-            { false && (
-              <AttachmentField
-                challenge={{ ...challenge, id: currentChallengeId }}
-                onUploadFile={uploadAttachment}
-                token={token}
-                removeAttachment={removeAttachment}
-              />
-            )}
+            <AttachmentField
+              challenge={{ ...challenge, id: currentChallengeId }}
+              challengeId={currentChallengeId}
+              attachments={attachments}
+              onUploadFile={uploadAttachment}
+              token={token}
+              removeAttachment={removeAttachment}
+            />
             <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <ChallengeTotalField challenge={challenge} />

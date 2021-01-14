@@ -2,7 +2,6 @@ import _ from 'lodash'
 import qs from 'qs'
 import { axiosInstance } from './axiosWithAuth'
 import { updateChallengePhaseBeforeSendRequest, convertChallengePhaseFromSecondsToHours, normalizeChallengeDataFromAPI } from '../util/date'
-import FormData from 'form-data'
 import { GROUPS_DROPDOWN_PER_PAGE } from '../config/constants'
 const {
   CHALLENGE_API_URL,
@@ -139,10 +138,28 @@ export function updateChallenge (challengeId, challenge) {
   })
 }
 
-export function uploadAttachment (challengeId, file) {
-  const data = new FormData()
-  data.append('attachment', file)
+/**
+ * Create attachment
+ *
+ * @param {String|Number} challengeId  challenge id
+ * @param {String|Number} attachmentId attachment id
+ *
+ * @returns {Promise<*>} attachment data
+ */
+export function createAttachment (challengeId, data) {
   return axiosInstance.post(`${CHALLENGE_API_URL}/${challengeId}/attachments`, data)
+}
+
+/**
+ * Remove attachment
+ *
+ * @param {String|Number} challengeId  challenge id
+ * @param {String|Number} attachmentId attachment id
+ *
+ * @returns {Promise<void>}
+ */
+export function removeAttachment (challengeId, attachmentId) {
+  return axiosInstance.delete(`${CHALLENGE_API_URL}/${challengeId}/attachments/${attachmentId}`)
 }
 
 /**
