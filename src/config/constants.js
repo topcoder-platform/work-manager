@@ -24,21 +24,19 @@ export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS ==
 // to be able to start the Connect App we should pass at least the dummy value for `FILE_PICKER_API_KEY`
 // but if we want to test file uploading we should provide the real value in `FILE_PICKER_API_KEY` env variable
 export const FILE_PICKER_API_KEY = process.env.FILE_PICKER_API_KEY || 'DUMMY'
-// TODO uncomment this line to use correct `tc-challenge-v5-dev` bucket for DEV
-// export const FILE_PICKER_CONTAINER_NAME = prcess.env.FILE_PICKER_CONTAINER_NAME || 'tc-challenge-v5-dev'
-export const FILE_PICKER_CONTAINER_NAME = 'submission-staging-dev'
+export const FILE_PICKER_CONTAINER_NAME = process.env.FILE_PICKER_CONTAINER_NAME || 'tc-challenge-v5-dev'
 export const FILE_PICKER_REGION = process.env.FILE_PICKER_REGION || 'us-east-1'
 export const FILE_PICKER_CNAME = process.env.FILE_PICKER_CNAME || 'fs.topcoder.com'
 export const FILE_PICKER_FROM_SOURCES = ['local_file_system', 'googledrive', 'dropbox']
 export const FILE_PICKER_ACCEPT = ['.bmp', '.gif', '.jpg', '.tex', '.xls', '.xlsx', '.doc', '.docx', '.zip', '.txt', '.pdf', '.png', '.ppt', '.pptx', '.rtf', '.csv']
 export const FILE_PICKER_MAX_FILES = 10
-export const FILE_PICKER_MAX_SIZE = 500 * 1024 * 1024
+export const FILE_PICKER_MAX_SIZE = 500 * 1024 * 1024 // 500Mb
 export const FILE_PICKER_PROGRESS_INTERVAL = 100
+export const FILE_PICKER_UPLOAD_RETRY = 2
+export const FILE_PICKER_UPLOAD_TIMEOUT = 30 * 60 * 1000 // 30 minutes
 export const SPECIFICATION_ATTACHMENTS_FOLDER = 'SPECIFICATION_ATTACHMENTS'
 
-// TODO uncomment this line to use the same bucket as we during FileStack uploading
-// export const getAWSContainerFileURL = (key) => `https://${FILE_PICKER_CONTAINER_NAME}.s3.amazonaws.com/${key}`
-export const getAWSContainerFileURL = (key) => `https://tc-challenge-v5-dev.s3.amazonaws.com/${key}`
+export const getAWSContainerFileURL = (key) => `https://${FILE_PICKER_CONTAINER_NAME}.s3.amazonaws.com/${key}`
 
 // Actions
 export const LOAD_PROJECTS_SUCCESS = 'LOAD_PROJECTS_SUCCESS'

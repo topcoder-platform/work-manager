@@ -139,15 +139,15 @@ export function updateChallenge (challengeId, challenge) {
 }
 
 /**
- * Create attachment
+ * Create attachments
  *
  * @param {String|Number} challengeId  challenge id
- * @param {String|Number} attachmentId attachment id
+ * @param {Object[]}      attachments  list of attachments
  *
- * @returns {Promise<*>} attachment data
+ * @returns {Promise<*>} attachments data
  */
-export function createAttachment (challengeId, data) {
-  return axiosInstance.post(`${CHALLENGE_API_URL}/${challengeId}/attachments`, data)
+export function createAttachments (challengeId, attachments) {
+  return axiosInstance.post(`${CHALLENGE_API_URL}/${challengeId}/attachments`, attachments)
 }
 
 /**

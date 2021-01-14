@@ -755,18 +755,6 @@ class ChallengeEditor extends Component {
     this.setState({ challenge: newChallenge })
   }
 
-  onUploadFile (files) {
-    const { challenge: oldChallenge } = this.state
-    const newChallenge = { ...oldChallenge }
-    _.forEach(files, (file) => {
-      newChallenge.attachments.push({
-        fileName: file.name,
-        size: file.size
-      })
-    })
-    this.setState({ challenge: newChallenge })
-  }
-
   collectChallengeData (status) {
     const { attachments, metadata } = this.props
     const challenge = pick([
@@ -1141,7 +1129,7 @@ class ChallengeEditor extends Component {
       isNew,
       isLoading,
       metadata,
-      uploadAttachment,
+      uploadAttachments,
       token,
       removeAttachment,
       failedToLoad,
@@ -1470,7 +1458,7 @@ class ChallengeEditor extends Component {
               challenge={{ ...challenge, id: currentChallengeId }}
               challengeId={currentChallengeId}
               attachments={attachments}
-              onUploadFile={uploadAttachment}
+              onUploadFiles={uploadAttachments}
               token={token}
               removeAttachment={removeAttachment}
             />
@@ -1525,7 +1513,7 @@ ChallengeEditor.propTypes = {
   challengeId: PropTypes.string,
   metadata: PropTypes.object.isRequired,
   isLoading: PropTypes.bool.isRequired,
-  uploadAttachment: PropTypes.func.isRequired,
+  uploadAttachments: PropTypes.func.isRequired,
   removeAttachment: PropTypes.func.isRequired,
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string.isRequired,

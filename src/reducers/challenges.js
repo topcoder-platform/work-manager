@@ -61,6 +61,12 @@ function toastrFailure (title, message) {
   })
 }
 
+function toastrSuccess (title, message) {
+  setImmediate(() => {
+    toastr.success(title, message)
+  })
+}
+
 export default function (state = initialState, action) {
   switch (action.type) {
     case LOAD_CHALLENGES_SUCCESS:
@@ -241,30 +247,32 @@ export default function (state = initialState, action) {
     case CREATE_ATTACHMENT_PENDING: {
       const attachments = [
         ...(state.attachments || []),
-        {
-          uploadingId: action.uploadingId,
-          name: action.file.name,
-          fileSize: action.file.fileSize,
-          isUploading: true
-        }
+        // file that we are uploading at the moment
+        // they are different from attachments, because they don't have `id`
+        ...action.files
       ]
       return { ...state, attachments }
     }
     case CREATE_ATTACHMENT_SUCCESS: {
       const attachments = _.map(state.attachments, item => {
-        if (item.uploadingId !== action.uploadingId) {
-          return item
-        } else {
-          return action.attachment
+        // as `url` is unique we can use to replace files which were uploading with uploaded attachments
+        const createdAttachment = _.find(action.attachments, {
+          url: item.url
+        })
+
+        if (createdAttachment) {
+          return createdAttachment
         }
+
+        return item
       })
       return { ...state, attachments }
     }
     case CREATE_ATTACHMENT_FAILURE: {
       toastrFailure('Upload failure', `Failed to upload ${action.file.name}`)
-      const attachments = _.reject(state.attachments, {
-        uploadingId: action.uploadingId
-      })
+      const attachments = _.reject(state.attachments, (attachment) =>
+        _.find(action.files, { url: attachment.url })
+      )
       return { ...state, attachments }
     }
     case REMOVE_ATTACHMENT_PENDING: {

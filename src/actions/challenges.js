@@ -5,7 +5,7 @@ import {
   fetchGroups,
   fetchTimelineTemplates,
   fetchChallengePhases,
-  createAttachment as createAttachmentAPI,
+  createAttachments as createAttachmentsAPI,
   removeAttachment as removeAttachmentAPI,
   fetchChallenge,
   fetchChallenges,
@@ -383,31 +383,24 @@ export function loadGroups () {
   }
 }
 
-export function createAttachment (challengeId, file) {
+export function createAttachments (challengeId, files) {
   return async (dispatch) => {
-    // create a temporary uploading id for each attachment
-    // so we can identify them for various actions (names theoretically can duplicate)
-    const uploadingId = _.uniqueId('uploadingId_')
-
     dispatch({
       type: CREATE_ATTACHMENT_PENDING,
       challengeId,
-      file,
-      uploadingId
+      files
     })
 
     try {
-      const attachment = await createAttachmentAPI(challengeId, file)
+      const attachment = await createAttachmentsAPI(challengeId, files)
       dispatch({
         type: CREATE_ATTACHMENT_SUCCESS,
-        attachment: attachment.data,
-        uploadingId
+        attachments: attachment.data
       })
     } catch (error) {
       dispatch({
         type: CREATE_ATTACHMENT_FAILURE,
-        file,
-        uploadingId
+        files
       })
     }
   }
