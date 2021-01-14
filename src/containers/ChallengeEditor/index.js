@@ -19,7 +19,7 @@ import {
   // loadChallengeTerms,
   loadGroups,
   loadChallengeDetails,
-  createAttachment,
+  createAttachments,
   removeAttachment,
   loadResources,
   loadResourceRoles,
@@ -227,7 +227,7 @@ class ChallengeEditor extends Component {
       // challengeDetails,
       challengeResources,
       metadata,
-      createAttachment,
+      createAttachments,
       attachments,
       token,
       removeAttachment,
@@ -307,7 +307,7 @@ class ChallengeEditor extends Component {
             projectId={_.get(match.params, 'projectId', null)}
             challengeId={challengeId}
             isNew={!_.has(match.params, 'challengeId')}
-            uploadAttachment={createAttachment}
+            uploadAttachments={createAttachments}
             attachments={attachments}
             token={token}
             removeAttachment={removeAttachment}
@@ -334,7 +334,7 @@ class ChallengeEditor extends Component {
             projectId={_.get(match.params, 'projectId', null)}
             challengeId={challengeId}
             isNew={!_.has(match.params, 'challengeId')}
-            uploadAttachment={createAttachment}
+            uploadAttachments={createAttachments}
             attachments={attachments}
             token={token}
             removeAttachment={removeAttachment}
@@ -359,6 +359,7 @@ class ChallengeEditor extends Component {
             metadata={metadata}
             projectDetail={projectDetail}
             challenge={challengeDetails}
+            attachments={attachments}
             challengeResources={challengeResources}
             token={token}
             challengeId={challengeId}
@@ -402,7 +403,7 @@ ChallengeEditor.propTypes = {
     challengeTypes: PropTypes.array
   }),
   isLoading: PropTypes.bool,
-  createAttachment: PropTypes.func,
+  createAttachments: PropTypes.func,
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string,
   loggedInUser: PropTypes.object,
@@ -440,7 +441,7 @@ const mapDispatchToProps = {
   loadChallengeTimelines,
   loadChallengeTags,
   loadGroups,
-  createAttachment,
+  createAttachments,
   removeAttachment,
   // loadChallengeTerms,
   loadResources,
