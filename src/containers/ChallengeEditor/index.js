@@ -2,6 +2,7 @@ import _ from 'lodash'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { withRouter, Route } from 'react-router-dom'
+import moment from 'moment'
 import ChallengeEditorComponent from '../../components/ChallengeEditor'
 import ChallengeViewComponent from '../../components/ChallengeEditor/ChallengeView'
 import Loader from '../../components/Loader'
@@ -24,6 +25,7 @@ import {
   loadResourceRoles,
   updateChallengeDetails,
   partiallyUpdateChallengeDetails,
+  deleteChallenge,
   createChallenge,
   replaceResourceInRole
 } from '../../actions/challenges'
@@ -153,21 +155,30 @@ class ChallengeEditor extends Component {
   }
 
   async activateChallenge () {
+    const { partiallyUpdateChallengeDetails } = this.props
     if (this.state.isLaunching) return
-    const { challengeDetails } = this.props
+    const { challengeDetails, metadata } = this.props
+    const isTask = _.find(metadata.challengeTypes, { id: challengeDetails.typeId, isTask: true })
     try {
       this.setState({ isLaunching: true })
-      const response = await patchChallenge(challengeDetails.id, { status: 'Active' })
+      const payload = {
+        status: 'Active'
+      }
+      if (isTask) {
+        payload.startDate = moment().format()
+      }
+      // call action to update the challenge status
+      const action = await partiallyUpdateChallengeDetails(challengeDetails.id, payload)
       this.setState({
         isLaunching: false,
         showLaunchModal: false,
         showSuccessModal: true,
         suceessMessage: MESSAGE.CHALLENGE_LAUNCH_SUCCESS,
-        challengeDetails: { ...challengeDetails, status: response.status }
+        challengeDetails: action.challengeDetails
       })
     } catch (e) {
       const error = _.get(e, 'response.data.message', 'Unable to activate the challenge')
-      this.setState({ isLaunching: false, showLaunchModal: false, launchError: error })
+      this.setState({ isLaunching: false, launchError: error })
     }
   }
 
@@ -225,7 +236,9 @@ class ChallengeEditor extends Component {
       updateChallengeDetails,
       partiallyUpdateChallengeDetails,
       createChallenge,
-      replaceResourceInRole
+      replaceResourceInRole,
+      deleteChallenge,
+      loggedInUser
       // members
     } = this.props
     const {
@@ -331,6 +344,8 @@ class ChallengeEditor extends Component {
             updateChallengeDetails={updateChallengeDetails}
             replaceResourceInRole={replaceResourceInRole}
             partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
+            deleteChallenge={deleteChallenge}
+            loggedInUser={loggedInUser}
           />
         ))
         } />
@@ -344,7 +359,6 @@ class ChallengeEditor extends Component {
             metadata={metadata}
             projectDetail={projectDetail}
             challenge={challengeDetails}
-            attachments={attachments}
             challengeResources={challengeResources}
             token={token}
             challengeId={challengeId}
@@ -397,6 +411,7 @@ ChallengeEditor.propTypes = {
   updateChallengeDetails: PropTypes.func.isRequired,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   createChallenge: PropTypes.func.isRequired,
+  deleteChallenge: PropTypes.func.isRequired,
   replaceResourceInRole: PropTypes.func
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
@@ -432,6 +447,7 @@ const mapDispatchToProps = {
   loadResourceRoles,
   updateChallengeDetails,
   partiallyUpdateChallengeDetails,
+  deleteChallenge,
   createChallenge,
   replaceResourceInRole
 }

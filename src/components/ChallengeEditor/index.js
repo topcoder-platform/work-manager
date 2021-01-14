@@ -17,7 +17,10 @@ import {
   DEFAULT_NDA_UUID,
   SUBMITTER_ROLE_UUID,
   CREATE_FORUM_TYPE_IDS,
-  MESSAGE
+  MESSAGE,
+  COMMUNITY_APP_URL,
+  DES_TRACK_ID,
+  REVIEW_TYPES
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
@@ -65,6 +68,7 @@ class ChallengeEditor extends Component {
     super(props)
     this.state = {
       isLaunch: false,
+      isDeleteLaunch: false,
       isConfirm: false,
       isClose: false,
       isOpenAdvanceSettings: false,
@@ -87,11 +91,13 @@ class ChallengeEditor extends Component {
     this.onUpdateOthers = this.onUpdateOthers.bind(this)
     this.onUpdateCheckbox = this.onUpdateCheckbox.bind(this)
     this.onUpdateAssignedMember = this.onUpdateAssignedMember.bind(this)
+    this.onAssignSelf = this.onAssignSelf.bind(this)
     this.addFileType = this.addFileType.bind(this)
     this.removeFileType = this.removeFileType.bind(this)
     this.updateFileTypesMetadata = this.updateFileTypesMetadata.bind(this)
     this.toggleAdvanceSettings = this.toggleAdvanceSettings.bind(this)
     this.toggleNdaRequire = this.toggleNdaRequire.bind(this)
+    this.removeAttachment = this.removeAttachment.bind(this)
     this.removePhase = this.removePhase.bind(this)
     this.resetPhase = this.resetPhase.bind(this)
     this.savePhases = this.savePhases.bind(this)
@@ -115,8 +121,10 @@ class ChallengeEditor extends Component {
     this.onUpdateMetadata = this.onUpdateMetadata.bind(this)
     this.getTemplatePhases = this.getTemplatePhases.bind(this)
     this.getAvailableTimelineTemplates = this.getAvailableTimelineTemplates.bind(this)
-    this.autoUpdateChallengeThrottled = _.throttle(this.autoUpdateChallenge.bind(this), 3000) // 3s
+    this.autoUpdateChallengeThrottled = _.throttle(this.validateAndAutoUpdateChallenge.bind(this), 3000) // 3s
     this.updateResource = this.updateResource.bind(this)
+    this.onDeleteChallenge = this.onDeleteChallenge.bind(this)
+    this.deleteModalLaunch = this.deleteModalLaunch.bind(this)
   }
 
   componentDidMount () {
@@ -125,6 +133,39 @@ class ChallengeEditor extends Component {
 
   componentDidUpdate () {
     this.resetChallengeData(this.setState.bind(this))
+  }
+
+  deleteModalLaunch () {
+    if (!this.state.isDeleteLaunch) {
+      this.setState({ isDeleteLaunch: true })
+    }
+  }
+
+  async onDeleteChallenge () {
+    const { deleteChallenge, challengeDetails, history } = this.props
+    try {
+      this.setState({ isSaving: true })
+      // Call action to delete the challenge
+      await deleteChallenge(challengeDetails.id)
+      this.setState({ isSaving: false })
+      this.resetModal()
+      history.push(`/projects/${challengeDetails.projectId}/challenges`)
+    } catch (e) {
+      const error = _.get(e, 'response.data.message', 'Unable to Delete the challenge')
+      this.setState({ isSaving: false, error })
+    }
+  }
+
+  /**
+   * Validates challenge and if its valid calling an autosave method
+   *
+   * @param {string} changedField changed field
+   * @param {any} prevValue previous value
+   */
+  async validateAndAutoUpdateChallenge (changedField, prevValue) {
+    if (this.validateChallenge()) {
+      this.autoUpdateChallenge(changedField, prevValue)
+    }
   }
 
   async resetChallengeData (setState = () => {}) {
@@ -139,7 +180,9 @@ class ChallengeEditor extends Component {
       try {
         const copilotResource = this.getResourceFromProps('Copilot')
         const copilotFromResources = copilotResource ? copilotResource.memberHandle : ''
-        const reviewerResource = this.getResourceFromProps('Reviewer')
+        const reviewerResource =
+          (challengeDetails.type === 'First2Finish' || challengeDetails.type === 'Task')
+            ? this.getResourceFromProps('Iterative Reviewer') : this.getResourceFromProps('Reviewer')
         const reviewerFromResources = reviewerResource ? reviewerResource.memberHandle : ''
         setState({ isConfirm: false, isLaunch: false })
         const challengeData = this.updateAttachmentlist(challengeDetails, attachments)
@@ -190,7 +233,7 @@ class ChallengeEditor extends Component {
   }
 
   resetModal () {
-    this.setState({ isLoading: false, isConfirm: false, isLaunch: false, error: null, isCloseTask: false })
+    this.setState({ isLoading: false, isConfirm: false, isLaunch: false, error: null, isCloseTask: false, isDeleteLaunch: false })
   }
 
   /**
@@ -315,6 +358,22 @@ class ChallengeEditor extends Component {
 
     this.setState({
       challenge: newChallenge,
+      assignedMemberDetails
+    })
+  }
+
+  /**
+   * Update Assigned Member to Current User
+   */
+  onAssignSelf () {
+    const { loggedInUser } = this.props
+
+    const assignedMemberDetails = {
+      handle: loggedInUser.handle,
+      userId: loggedInUser.userId
+    }
+
+    this.setState({
       assignedMemberDetails
     })
   }
@@ -535,6 +594,15 @@ class ChallengeEditor extends Component {
     this.setState({ challenge: newChallenge })
   }
 
+  removeAttachment (file) {
+    const { challenge } = this.state
+    const newChallenge = { ...challenge }
+    const { attachments: oldAttachments } = challenge
+    const newAttachments = _.remove(oldAttachments, att => att.fileName !== file)
+    newChallenge.attachments = _.clone(newAttachments)
+    this.setState({ challenge: newChallenge })
+  }
+
   /**
    * Remove Phase from challenge Phases list
    * @param index
@@ -626,8 +694,8 @@ class ChallengeEditor extends Component {
       return !!name && !!trackId && !!typeId
     }
 
-    const reviewType = challenge.reviewType ? challenge.reviewType.toLowerCase() : 'community'
-    const isInternal = reviewType === 'internal'
+    const reviewType = challenge.reviewType ? challenge.reviewType.toUpperCase() : REVIEW_TYPES.COMMUNITY
+    const isInternal = reviewType === REVIEW_TYPES.INTERNAL
     if (isInternal && !challenge.reviewer) {
       return false
     }
@@ -650,7 +718,10 @@ class ChallengeEditor extends Component {
       const value = challenge[key]
 
       // this check works for string and array values
-      isRequiredMissing = isRequiredMissing || !value || !value.length
+      isRequiredMissing = isRequiredMissing ||
+        !value ||
+        (_.isString(value) && value.trim().length === 0) ||
+        (_.isArray(value) && value.length === 0)
     })
 
     return !(isRequiredMissing || _.isEmpty(this.state.currentTemplate))
@@ -680,7 +751,7 @@ class ChallengeEditor extends Component {
   onUpdateMultiSelect (options, field) {
     const { challenge } = this.state
     let newChallenge = { ...challenge }
-    newChallenge[field] = options ? options.split(',') : []
+    newChallenge[field] = options ? options.map(option => option.value) : []
 
     this.setState({ challenge: newChallenge }, () => {
       this.validateChallenge()
@@ -707,7 +778,7 @@ class ChallengeEditor extends Component {
   }
 
   collectChallengeData (status) {
-    const { attachments } = this.props
+    const { attachments, metadata } = this.props
     const challenge = pick([
       'phases',
       'typeId',
@@ -724,6 +795,7 @@ class ChallengeEditor extends Component {
       'prizeSets',
       'winners'
     ], this.state.challenge)
+    const isTask = _.find(metadata.challengeTypes, { id: challenge.typeId, isTask: true })
     challenge.legacy = _.assign(this.state.challenge.legacy, {
       reviewType: challenge.reviewType
     })
@@ -734,6 +806,10 @@ class ChallengeEditor extends Component {
       return { ...p, prizes }
     })
     challenge.status = status
+    if (status === 'Active' && isTask) {
+      challenge.startDate = moment().format()
+    }
+
     if (this.state.challenge.id) {
       challenge.attachmentIds = _.map(attachments, item => item.id)
     }
@@ -758,6 +834,7 @@ class ChallengeEditor extends Component {
     const { metadata, createChallenge } = this.props
     const { name, trackId, typeId } = this.state.challenge
     const { timelineTemplates } = metadata
+    const isDesignChallenge = trackId === DES_TRACK_ID
 
     // indicate that creating process has started
     this.setState({ isSaving: true })
@@ -767,7 +844,7 @@ class ChallengeEditor extends Component {
     const avlTemplates = this.getAvailableTimelineTemplates()
     // chooses first available timeline template or fallback template for the new challenge
     const defaultTemplate = avlTemplates && avlTemplates.length > 0 ? avlTemplates[0] : STD_DEV_TIMELINE_TEMPLATE
-
+    const isTask = _.find(metadata.challengeTypes, { id: typeId, isTask: true })
     const newChallenge = {
       status: 'New',
       projectId: this.props.projectId,
@@ -776,12 +853,11 @@ class ChallengeEditor extends Component {
       trackId,
       startDate: moment().add(1, 'days').format(),
       legacy: {
-        reviewType: 'community'
+        reviewType: isTask || isDesignChallenge ? REVIEW_TYPES.INTERNAL : REVIEW_TYPES.COMMUNITY
       },
       descriptionFormat: 'markdown',
       timelineTemplateId: defaultTemplate.id,
-      terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }],
-      phases: this.getTemplatePhases(defaultTemplate)
+      terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }]
       // prizeSets: this.getDefaultPrizeSets()
     }
     const discussions = this.getDiscussionsConfig(newChallenge)
@@ -790,6 +866,10 @@ class ChallengeEditor extends Component {
     }
     try {
       const action = await createChallenge(newChallenge)
+      if (isTask) {
+        await this.updateResource(action.challengeDetails.id, 'Iterative Reviewer', action.challengeDetails.createdBy, action.challengeDetails.reviewer)
+        action.challengeDetails.reviewer = action.challengeDetails.createdBy
+      }
       const draftChallenge = {
         data: action.challengeDetails
       }
@@ -812,6 +892,14 @@ class ChallengeEditor extends Component {
     }
   }
 
+  /*
+    TODO
+
+    IMPORTANT!!!
+
+    This method might be wrong. We might need to fix it when enabling editing phases UI.
+    See issue which caused by using of this method https://github.com/topcoder-platform/work-manager/issues/1012
+  */
   getTemplatePhases (template) {
     const timelinePhaseIds = template.phases.map(timelinePhase => timelinePhase.phaseId || timelinePhase)
     const validPhases = _.cloneDeep(this.props.metadata.challengePhases).filter(challengePhase => {
@@ -844,9 +932,12 @@ class ChallengeEditor extends Component {
         case 'copilot':
           await this.updateResource(challengeId, 'Copilot', this.state.challenge.copilot, prevValue)
           break
-        case 'reviewer':
-          await this.updateResource(challengeId, 'Reviewer', this.state.challenge.reviewer, prevValue)
+        case 'reviewer': {
+          const { type } = this.state.challenge
+          const useIterativeReview = type === 'First2Finish' || type === 'Task'
+          await this.updateResource(challengeId, useIterativeReview ? 'Iterative Review' : 'Reviewer', this.state.challenge.reviewer, prevValue)
           break
+        }
       }
     } else {
       let patchObject = (changedField === 'reviewType')
@@ -912,35 +1003,72 @@ class ChallengeEditor extends Component {
   async updateAllChallengeInfo (status, cb = () => {}) {
     const { updateChallengeDetails, assignedMemberDetails: oldAssignedMember } = this.props
     if (this.state.isSaving) return
-    this.setState({ isSaving: true })
-    const challenge = this.collectChallengeData(status)
-    let newChallenge = _.cloneDeep(this.state.challenge)
-    newChallenge.status = status
-    try {
-      const challengeId = this.getCurrentChallengeId()
-      const action = await updateChallengeDetails(challengeId, challenge)
-      const { copilot: previousCopilot, reviewer: previousReviewer } = this.state.draftChallenge.data
-      const { challenge: { copilot, reviewer }, assignedMemberDetails: assignedMember } = this.state
-      if (copilot) await this.updateResource(challengeId, 'Copilot', copilot, previousCopilot)
-      if (reviewer) await this.updateResource(challengeId, 'Reviewer', reviewer, previousReviewer)
-      const oldMemberHandle = _.get(oldAssignedMember, 'handle')
-      // assigned member has been updated
-      if (assignedMember && assignedMember.handle !== oldMemberHandle) {
-        await this.updateResource(challengeId, 'Submitter', assignedMember.handle, oldMemberHandle)
+    this.setState({ isSaving: true }, async () => {
+      const challenge = this.collectChallengeData(status)
+      let newChallenge = _.cloneDeep(this.state.challenge)
+      newChallenge.status = status
+      try {
+        const challengeId = this.getCurrentChallengeId()
+        // state can have updated assigned member (in cases where user changes assignments without refreshing the page)
+        const { challenge: { copilot, reviewer, type }, assignedMemberDetails: assignedMember } = this.state
+        const oldMemberHandle = _.get(oldAssignedMember, 'handle')
+        const assignedMemberHandle = _.get(assignedMember, 'handle')
+        // assigned member has been updated
+        if (assignedMemberHandle !== oldMemberHandle) {
+          await this.updateResource(challengeId, 'Submitter', assignedMemberHandle, oldMemberHandle)
+        }
+        const action = await updateChallengeDetails(challengeId, challenge)
+        const { copilot: previousCopilot, reviewer: previousReviewer } = this.state.draftChallenge.data
+        if (copilot !== previousCopilot) await this.updateResource(challengeId, 'Copilot', copilot, previousCopilot)
+        if (type === 'First2Finish' || type === 'Task') {
+          const iterativeReviewer = this.getResourceFromProps('Iterative Reviewer')
+          const previousIterativeReviewer = iterativeReviewer && iterativeReviewer.memberHandle
+          if (reviewer !== previousIterativeReviewer) await this.updateResource(challengeId, 'Iterative Reviewer', reviewer, previousIterativeReviewer)
+        } else {
+          if (reviewer !== previousReviewer) await this.updateResource(challengeId, 'Reviewer', reviewer, previousReviewer)
+        }
+        const draftChallenge = { data: action.challengeDetails }
+        draftChallenge.data.copilot = copilot
+        draftChallenge.data.reviewer = reviewer
+        this.setState({ isLaunch: true,
+          isConfirm: newChallenge.id,
+          draftChallenge,
+          challenge: newChallenge,
+          isSaving: false }, cb)
+      } catch (e) {
+        const error = this.formatResponseError(e) || `Unable to update the challenge to status ${status}`
+        this.setState({ isSaving: false, error }, cb)
       }
+    })
+  }
 
-      const draftChallenge = { data: action.challengeDetails }
-      draftChallenge.data.copilot = copilot
-      draftChallenge.data.reviewer = reviewer
-      this.setState({ isLaunch: true,
-        isConfirm: newChallenge.id,
-        draftChallenge,
-        challenge: newChallenge,
-        isSaving: false }, cb)
-    } catch (e) {
-      const error = _.get(e, 'response.data.message', `Unable to update the challenge to status ${status}`)
-      this.setState({ isSaving: false, error }, cb)
+  /**
+   * Format the error we might get from some API endpoint.
+   *
+   * @param {Error} error error
+   *
+   * @returns {import('react').ReactNode}
+   */
+  formatResponseError (error) {
+    const errorMessage = _.get(error, 'response.data.message')
+    const errorMetadata = _.get(error, 'response.data.metadata')
+
+    if (errorMetadata && errorMetadata.missingTerms && errorMetadata.missingTerms.length > 0) {
+      return <>
+        {errorMessage}
+        <ul className={styles.linkList}>{' '}
+          {errorMetadata.missingTerms.map((terms, index) => {
+            const termsNumber = errorMetadata.missingTerms.length > 1 ? ` ${index + 1}` : ''
+            return (
+              <li key={index}><a href={`${COMMUNITY_APP_URL}/challenges/terms/detail/${terms.termId}`} target='_blank'>link to terms{termsNumber}</a></li>
+            )
+          })}
+        </ul>
+      </>
     }
+
+    // if no special error data, just use message
+    return errorMessage
   }
 
   async onActiveChallenge () {
@@ -1027,14 +1155,12 @@ class ChallengeEditor extends Component {
       token,
       removeAttachment,
       failedToLoad,
-      projectDetail,
-      attachments
+      projectDetail
     } = this.props
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
     }
     const isTask = _.get(challenge, 'task.isTask', false)
-    console.log(this.props.assignedMemberDetails)
     const { assignedMemberDetails, error } = this.state
     let isActive = false
     let isDraft = false
@@ -1185,7 +1311,7 @@ class ChallengeEditor extends Component {
                 <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
               </div> */}
               <div className={styles.button}>
-                <PrimaryButton text={'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
+                <PrimaryButton text={isSaving ? 'Saving...' : 'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
               </div>
               {isDraft && (
                 <div className={styles.button}>
@@ -1201,9 +1327,9 @@ class ChallengeEditor extends Component {
               )}
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
-              {/* <div className={styles.button}>
+              <div className={styles.button}>
                 <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
-              </div> */}
+              </div>
               {isTask && (
                 <div className={styles.button}>
                   <PrimaryButton text={'Close Task'} type={'danger'} onClick={this.openCloseTaskConfirmation} />
@@ -1260,6 +1386,7 @@ class ChallengeEditor extends Component {
                 challenge={challenge}
                 onChange={this.onUpdateAssignedMember}
                 assignedMemberDetails={assignedMemberDetails}
+                onAssignSelf={this.onAssignSelf}
               />
             )}
             <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
@@ -1288,10 +1415,10 @@ class ChallengeEditor extends Component {
               <React.Fragment>
                 {/* remove terms field and use default term */}
                 {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}
-                <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
+                <GroupsField onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
               </React.Fragment>
             )}
-            {
+            {!isTask && (
               <div className={styles.PhaseRow}>
                 <PhaseInput
                   withDates
@@ -1306,6 +1433,19 @@ class ChallengeEditor extends Component {
                   readOnly={false}
                 />
               </div>
+            )}
+            {
+              this.state.isDeleteLaunch && !this.state.isConfirm && (
+                <ConfirmationModal
+                  title='Confirm Delete'
+                  message={`Do you want to delete "${challenge.name}"?`}
+                  theme={theme}
+                  isProcessing={isSaving}
+                  errorMessage={this.state.error}
+                  onCancel={this.resetModal}
+                  onConfirm={this.onDeleteChallenge}
+                />
+              )
             }
             { showTimeline && (
               <ChallengeScheduleField
@@ -1335,14 +1475,14 @@ class ChallengeEditor extends Component {
               onUpdateMultiSelect={this.onUpdateMultiSelect}
               onUpdateMetadata={this.onUpdateMetadata}
             />
-            <AttachmentField
-              challenge={{ ...challenge, id: currentChallengeId }}
-              challengeId={currentChallengeId}
-              attachments={attachments}
-              onUploadFile={uploadAttachment}
-              token={token}
-              removeAttachment={removeAttachment}
-            />
+            { false && (
+              <AttachmentField
+                challenge={{ ...challenge, id: currentChallengeId }}
+                onUploadFile={uploadAttachment}
+                token={token}
+                removeAttachment={removeAttachment}
+              />
+            )}
             <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <ChallengeTotalField challenge={challenge} />
@@ -1360,6 +1500,7 @@ class ChallengeEditor extends Component {
         </div>
         <div className={styles.title}>{getTitle(isNew)}</div>
         <div className={cn(styles.actionButtons, styles.actionButtonsRight)}>
+          {!isNew && this.props.challengeDetails.status === 'New' && <PrimaryButton text={'Delete'} type={'danger'} onClick={this.deleteModalLaunch} />}
           <PrimaryButton text={'Back'} type={'info'} submit link={`/projects/${projectDetail.id}/challenges`} />
         </div>
         <div className={styles.textRequired}>* Required</div>
@@ -1403,7 +1544,9 @@ ChallengeEditor.propTypes = {
   updateChallengeDetails: PropTypes.func.isRequired,
   createChallenge: PropTypes.func,
   replaceResourceInRole: PropTypes.func,
-  partiallyUpdateChallengeDetails: PropTypes.func.isRequired
+  partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
+  deleteChallenge: PropTypes.func.isRequired,
+  loggedInUser: PropTypes.shape().isRequired
 }
 
 export default withRouter(ChallengeEditor)

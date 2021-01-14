@@ -15,12 +15,10 @@ import {
   LOAD_CHALLENGES_FAILURE,
   LOAD_CHALLENGES_PENDING,
   LOAD_CHALLENGES_SUCCESS,
-  CREATE_ATTACHMENT_FAILURE,
-  CREATE_ATTACHMENT_SUCCESS,
-  CREATE_ATTACHMENT_PENDING,
-  REMOVE_ATTACHMENT_FAILURE,
-  REMOVE_ATTACHMENT_SUCCESS,
-  REMOVE_ATTACHMENT_PENDING,
+  UPLOAD_ATTACHMENT_FAILURE,
+  UPLOAD_ATTACHMENT_SUCCESS,
+  UPLOAD_ATTACHMENT_PENDING,
+  REMOVE_ATTACHMENT,
   SET_FILTER_CHALLENGE_VALUE,
   UPDATE_CHALLENGE_DETAILS_FAILURE,
   UPDATE_CHALLENGE_DETAILS_SUCCESS,
@@ -29,7 +27,10 @@ import {
   CREATE_CHALLENGE_RESOURCE_SUCCESS,
   DELETE_CHALLENGE_RESOURCE_SUCCESS,
   DELETE_CHALLENGE_RESOURCE_FAILURE,
-  CREATE_CHALLENGE_RESOURCE_FAILURE
+  CREATE_CHALLENGE_RESOURCE_FAILURE,
+  DELETE_CHALLENGE_SUCCESS,
+  DELETE_CHALLENGE_FAILURE,
+  DELETE_CHALLENGE_PENDING
 } from '../config/constants'
 
 const initialState = {
@@ -44,11 +45,18 @@ const initialState = {
   attachments: [],
   challenge: null,
   filterChallengeName: '',
+  failedToDelete: false,
   status: '',
   perPage: 0,
   page: 1,
   totalChallenges: 0,
   projectId: -1
+}
+
+function toastrSuccess (title, message) {
+  setImmediate(() => {
+    toastr.success(title, message)
+  })
 }
 
 function toastrFailure (title, message) {
@@ -58,6 +66,7 @@ function toastrFailure (title, message) {
 }
 
 export default function (state = initialState, action) {
+  let attachments
   switch (action.type) {
     case LOAD_CHALLENGES_SUCCESS:
       return {
@@ -139,6 +148,27 @@ export default function (state = initialState, action) {
     }
     case UPDATE_CHALLENGE_DETAILS_FAILURE:
       return { ...state, isLoading: false, attachments: [], challenge: null, failedToLoad: false, failedToUpdate: true }
+
+    case DELETE_CHALLENGE_PENDING:
+      return { ...state, failedToLoad: false }
+
+    case DELETE_CHALLENGE_SUCCESS: {
+      const deletedChallengeDetails = action.challengeDetails.data
+      const updatedChallenges = state.challenges.filter((challenge) => challenge.id !== deletedChallengeDetails.id)
+      toastrSuccess('Success', `Challenge deleted successfully.`)
+      return {
+        ...state,
+        challenges: updatedChallenges
+      }
+    }
+
+    case DELETE_CHALLENGE_FAILURE: {
+      return {
+        ...state,
+        failedToDelete: true
+      }
+    }
+
     case CREATE_CHALLENGE_SUCCESS: {
       // if we are showing the list of challenges with the same status as we just created,
       // then add the new challenge to the beginning of the current challenge list
@@ -213,68 +243,23 @@ export default function (state = initialState, action) {
     case LOAD_CHALLENGE_MEMBERS_SUCCESS: {
       return { ...state, metadata: { ...state.metadata, members: action.members } }
     }
-    case CREATE_ATTACHMENT_PENDING: {
-      const attachments = [
-        ...(state.attachments || []),
-        {
-          uploadingId: action.uploadingId,
-          name: action.file.name,
-          fileSize: action.file.fileSize,
-          isUploading: true
-        }
-      ]
-      return { ...state, attachments }
-    }
-    case CREATE_ATTACHMENT_SUCCESS: {
-      const attachments = _.map(state.attachments, item => {
-        if (item.uploadingId !== action.uploadingId) {
-          return item
-        } else {
-          return action.attachment
-        }
-      })
-      return { ...state, attachments }
-    }
-    case CREATE_ATTACHMENT_FAILURE: {
-      toastrFailure('Upload failure', `Failed to upload ${action.file.name}`)
-      const attachments = _.reject(state.attachments, {
-        uploadingId: action.uploadingId
-      })
-      return { ...state, attachments }
-    }
-    case REMOVE_ATTACHMENT_PENDING: {
-      const attachments = _.map(state.attachments, item => {
+    case UPLOAD_ATTACHMENT_PENDING:
+      return { ...state, isUploading: true, isSuccess: false, uploadingId: action.challengeId }
+    case UPLOAD_ATTACHMENT_SUCCESS:
+      toastrSuccess('Success', `${action.filename} uploaded successfully. Save the challenge to reflect the changes!`)
+      attachments = _.cloneDeep(state.attachments)
+      attachments.push(action.attachment)
+      return { ...state, isUploading: false, isSuccess: true, uploadingId: null, attachments }
+    case UPLOAD_ATTACHMENT_FAILURE:
+      toastrFailure('Upload failure', `Failed to upload ${action.filename}`)
+      return { ...state, isUploading: false, isSuccess: false, uploadingId: null }
+    case REMOVE_ATTACHMENT:
+      attachments = _.filter(state.attachments, item => {
         if (item.id !== action.attachmentId) {
           return item
-        } else {
-          return {
-            ...item,
-            isDeleting: true
-          }
         }
       })
       return { ...state, attachments }
-    }
-    case REMOVE_ATTACHMENT_SUCCESS: {
-      const attachments = _.reject(state.attachments, {
-        id: action.attachmentId
-      })
-      return { ...state, attachments }
-    }
-    case REMOVE_ATTACHMENT_FAILURE: {
-      toastrFailure('Removing failure', `Failed to remove attachment`)
-      const attachments = _.map(state.attachments, item => {
-        if (item.id !== action.attachmentId) {
-          return item
-        } else {
-          return {
-            ...item,
-            isDeleting: false
-          }
-        }
-      })
-      return { ...state, attachments }
-    }
     case SET_FILTER_CHALLENGE_VALUE:
       return { ...state, filterChallengeName: action.value.name, status: action.value.status }
     default:

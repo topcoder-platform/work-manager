@@ -18,28 +18,6 @@ export const {
 } = process.env
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
 
-/**
- * Filepicker config
- */
-// to be able to start the Connect App we should pass at least the dummy value for `FILE_PICKER_API_KEY`
-// but if we want to test file uploading we should provide the real value in `FILE_PICKER_API_KEY` env variable
-export const FILE_PICKER_API_KEY = process.env.FILE_PICKER_API_KEY || 'DUMMY'
-// TODO uncomment this line to use correct `tc-challenge-v5-dev` bucket for DEV
-// export const FILE_PICKER_CONTAINER_NAME = prcess.env.FILE_PICKER_CONTAINER_NAME || 'tc-challenge-v5-dev'
-export const FILE_PICKER_CONTAINER_NAME = 'submission-staging-dev'
-export const FILE_PICKER_REGION = process.env.FILE_PICKER_REGION || 'us-east-1'
-export const FILE_PICKER_CNAME = process.env.FILE_PICKER_CNAME || 'fs.topcoder.com'
-export const FILE_PICKER_FROM_SOURCES = ['local_file_system', 'googledrive', 'dropbox']
-export const FILE_PICKER_ACCEPT = ['.bmp', '.gif', '.jpg', '.tex', '.xls', '.xlsx', '.doc', '.docx', '.zip', '.txt', '.pdf', '.png', '.ppt', '.pptx', '.rtf', '.csv']
-export const FILE_PICKER_MAX_FILES = 10
-export const FILE_PICKER_MAX_SIZE = 500 * 1024 * 1024
-export const FILE_PICKER_PROGRESS_INTERVAL = 100
-export const SPECIFICATION_ATTACHMENTS_FOLDER = 'SPECIFICATION_ATTACHMENTS'
-
-// TODO uncomment this line to use the same bucket as we during FileStack uploading
-// export const getAWSContainerFileURL = (key) => `https://${FILE_PICKER_CONTAINER_NAME}.s3.amazonaws.com/${key}`
-export const getAWSContainerFileURL = (key) => `https://tc-challenge-v5-dev.s3.amazonaws.com/${key}`
-
 // Actions
 export const LOAD_PROJECTS_SUCCESS = 'LOAD_PROJECTS_SUCCESS'
 export const LOAD_PROJECTS_PENDING = 'LOAD_PROJECTS_PENDING'
@@ -70,6 +48,10 @@ export const CREATE_CHALLENGE_SUCCESS = 'CREATE_CHALLENGE_SUCCESS'
 export const CREATE_CHALLENGE_PENDING = 'CREATE_CHALLENGE_PENDING'
 export const CREATE_CHALLENGE_FAILURE = 'CREATE_CHALLENGE_FAILURE'
 
+export const DELETE_CHALLENGE_SUCCESS = 'DELETE_CHALLENGE_SUCCESS'
+export const DELETE_CHALLENGE_PENDING = 'DELETE_CHALLENGE_PENDING'
+export const DELETE_CHALLENGE_FAILURE = 'DELETE_CHALLENGE_FAILURE'
+
 export const LOAD_PROJECT_DETAILS = 'LOAD_PROJECT_DETAILS'
 export const LOAD_PROJECT_DETAILS_SUCCESS = 'LOAD_PROJECT_DETAILS_SUCCESS'
 export const LOAD_PROJECT_DETAILS_PENDING = 'LOAD_PROJECT_DETAILS_PENDING'
@@ -84,13 +66,9 @@ export const LOAD_CHALLENGE_METADATA_SUCCESS = 'LOAD_CHALLENGE_METADATA_SUCCESS'
 
 export const SAVE_AUTH_TOKEN = 'SAVE_AUTH_TOKEN'
 
-export const CREATE_ATTACHMENT_PENDING = 'CREATE_ATTACHMENT_PENDING'
-export const CREATE_ATTACHMENT_FAILURE = 'CREATE_ATTACHMENT_FAILURE'
-export const CREATE_ATTACHMENT_SUCCESS = 'CREATE_ATTACHMENT_SUCCESS'
-
-export const REMOVE_ATTACHMENT_PENDING = 'REMOVE_ATTACHMENT_PENDING'
-export const REMOVE_ATTACHMENT_FAILURE = 'REMOVE_ATTACHMENT_FAILURE'
-export const REMOVE_ATTACHMENT_SUCCESS = 'REMOVE_ATTACHMENT_SUCCESS'
+export const UPLOAD_ATTACHMENT_PENDING = 'UPLOAD_ATTACHMENT_PENDING'
+export const UPLOAD_ATTACHMENT_FAILURE = 'UPLOAD_ATTACHMENT_FAILURE'
+export const UPLOAD_ATTACHMENT_SUCCESS = 'UPLOAD_ATTACHMENT_SUCCESS'
 
 export const LOAD_CHALLENGE_RESOURCES = 'LOAD_CHALLENGE_RESOURCES'
 export const LOAD_CHALLENGE_RESOURCES_SUCCESS = 'LOAD_CHALLENGE_RESOURCES_SUCCESS'
@@ -106,6 +84,8 @@ export const DELETE_CHALLENGE_RESOURCE = 'DELETE_CHALLENGE_RESOURCE'
 export const DELETE_CHALLENGE_RESOURCE_SUCCESS = 'DELETE_CHALLENGE_RESOURCE_SUCCESS'
 export const DELETE_CHALLENGE_RESOURCE_PENDING = 'DELETE_CHALLENGE_RESOURCE_PENDING'
 export const DELETE_CHALLENGE_RESOURCE_FAILURE = 'DELETE_CHALLENGE_RESOURCE_FAILURE'
+
+export const REMOVE_ATTACHMENT = 'REMOVE_ATTACHMENT'
 
 export const SET_FILTER_CHALLENGE_VALUE = 'SET_FILTER_CHALLENGE_VALUE'
 
@@ -132,6 +112,11 @@ export const PRIZE_SETS_TYPE = {
   COPILOT_PAYMENT: 'copilot',
   REVIEWER_PAYMENT: 'reviewer',
   CHECKPOINT_PRIZES: 'checkpoint'
+}
+
+export const REVIEW_TYPES = {
+  INTERNAL: 'INTERNAL',
+  COMMUNITY: 'COMMUNITY'
 }
 
 // List of subtracks that should be considered as Marathon Matches
@@ -177,7 +162,7 @@ export const ADMIN_ROLES = [
 ]
 
 export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
-  `${CHALLENGE_API_URL}/${challengeId}/attachments/${attachmentId}/download?token=${token}`
+  `${CHALLENGE_API_URL}/${challengeId}/attachments/${attachmentId}?token=${token}`
 
 export const PAGE_SIZE = 50
 
@@ -210,5 +195,7 @@ export const MESSAGE = {
   NO_LEGACY_CHALLENGE: 'Legacy challenge is not yet created',
   NO_TASK_ASSIGNEE: 'Task is not assigned yet',
   TASK_CLOSE_SUCCESS: 'Task closed successfully',
-  CHALLENGE_LAUNCH_SUCCESS: 'Challenge activated successfully'
+  CHALLENGE_LAUNCH_SUCCESS: 'Challenge activated successfully',
+  COMMUNITY_REVIEW_DISABLED: 'Community review is NOT available for Design challenges',
+  INTERNAL_REVIEW_DISABLED: 'Internal review is NOT available for QA challenges'
 }
