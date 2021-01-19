@@ -3,8 +3,13 @@ FROM node:latest
 ARG NODE_ENV
 ARG BABEL_ENV
 
+ARG FILE_PICKER_API_KEY
+ARG FORCE_DEV
+
 ENV NODE_ENV=$NODE_ENV
 ENV BABEL_ENV=$BABEL_ENV
+ENV FILE_PICKER_API_KEY=$FILE_PICKER_API_KEY
+ENV FORCE_DEV=$FORCE_DEV
 
 # Copy the current directory into the Docker image
 COPY . /challenge-engine-ui
