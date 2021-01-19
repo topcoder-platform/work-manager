@@ -15,12 +15,10 @@ import {
   LOAD_CHALLENGES_FAILURE,
   LOAD_CHALLENGES_PENDING,
   LOAD_CHALLENGES_SUCCESS,
-  CREATE_ATTACHMENT_FAILURE,
-  CREATE_ATTACHMENT_SUCCESS,
-  CREATE_ATTACHMENT_PENDING,
-  REMOVE_ATTACHMENT_FAILURE,
-  REMOVE_ATTACHMENT_SUCCESS,
-  REMOVE_ATTACHMENT_PENDING,
+  UPLOAD_ATTACHMENT_FAILURE,
+  UPLOAD_ATTACHMENT_SUCCESS,
+  UPLOAD_ATTACHMENT_PENDING,
+  REMOVE_ATTACHMENT,
   SET_FILTER_CHALLENGE_VALUE,
   UPDATE_CHALLENGE_DETAILS_FAILURE,
   UPDATE_CHALLENGE_DETAILS_SUCCESS,
@@ -55,19 +53,20 @@ const initialState = {
   projectId: -1
 }
 
-function toastrFailure (title, message) {
-  setImmediate(() => {
-    toastr.error(title, message)
-  })
-}
-
 function toastrSuccess (title, message) {
   setImmediate(() => {
     toastr.success(title, message)
   })
 }
 
+function toastrFailure (title, message) {
+  setImmediate(() => {
+    toastr.error(title, message)
+  })
+}
+
 export default function (state = initialState, action) {
+  let attachments
   switch (action.type) {
     case LOAD_CHALLENGES_SUCCESS:
       return {
@@ -244,70 +243,23 @@ export default function (state = initialState, action) {
     case LOAD_CHALLENGE_MEMBERS_SUCCESS: {
       return { ...state, metadata: { ...state.metadata, members: action.members } }
     }
-    case CREATE_ATTACHMENT_PENDING: {
-      const attachments = [
-        ...(state.attachments || []),
-        // file that we are uploading at the moment
-        // they are different from attachments, because they don't have `id`
-        ...action.files
-      ]
-      return { ...state, attachments }
-    }
-    case CREATE_ATTACHMENT_SUCCESS: {
-      const attachments = _.map(state.attachments, item => {
-        // as `url` is unique we can use to replace files which were uploading with uploaded attachments
-        const createdAttachment = _.find(action.attachments, {
-          url: item.url
-        })
-
-        if (createdAttachment) {
-          return createdAttachment
-        }
-
-        return item
-      })
-      return { ...state, attachments }
-    }
-    case CREATE_ATTACHMENT_FAILURE: {
-      toastrFailure('Upload failure', `Failed to upload ${action.file.name}`)
-      const attachments = _.reject(state.attachments, (attachment) =>
-        _.find(action.files, { url: attachment.url })
-      )
-      return { ...state, attachments }
-    }
-    case REMOVE_ATTACHMENT_PENDING: {
-      const attachments = _.map(state.attachments, item => {
+    case UPLOAD_ATTACHMENT_PENDING:
+      return { ...state, isUploading: true, isSuccess: false, uploadingId: action.challengeId }
+    case UPLOAD_ATTACHMENT_SUCCESS:
+      toastrSuccess('Success', `${action.filename} uploaded successfully. Save the challenge to reflect the changes!`)
+      attachments = _.cloneDeep(state.attachments)
+      attachments.push(action.attachment)
+      return { ...state, isUploading: false, isSuccess: true, uploadingId: null, attachments }
+    case UPLOAD_ATTACHMENT_FAILURE:
+      toastrFailure('Upload failure', `Failed to upload ${action.filename}`)
+      return { ...state, isUploading: false, isSuccess: false, uploadingId: null }
+    case REMOVE_ATTACHMENT:
+      attachments = _.filter(state.attachments, item => {
         if (item.id !== action.attachmentId) {
           return item
-        } else {
-          return {
-            ...item,
-            isDeleting: true
-          }
         }
       })
       return { ...state, attachments }
-    }
-    case REMOVE_ATTACHMENT_SUCCESS: {
-      const attachments = _.reject(state.attachments, {
-        id: action.attachmentId
-      })
-      return { ...state, attachments }
-    }
-    case REMOVE_ATTACHMENT_FAILURE: {
-      toastrFailure('Removing failure', `Failed to remove attachment`)
-      const attachments = _.map(state.attachments, item => {
-        if (item.id !== action.attachmentId) {
-          return item
-        } else {
-          return {
-            ...item,
-            isDeleting: false
-          }
-        }
-      })
-      return { ...state, attachments }
-    }
     case SET_FILTER_CHALLENGE_VALUE:
       return { ...state, filterChallengeName: action.value.name, status: action.value.status }
     default:

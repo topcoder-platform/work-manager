@@ -1,43 +1,34 @@
 import _ from 'lodash'
 import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
+import { useDropzone } from 'react-dropzone'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { downloadAttachmentURL, SPECIFICATION_ATTACHMENTS_FOLDER, getAWSContainerFileURL } from '../../../config/constants'
-import { faTrash } from '@fortawesome/free-solid-svg-icons'
-import FilestackFilePicker from '../../FilestackFilePicker'
+import { downloadAttachmentURL } from '../../../config/constants'
+import { faCloudUploadAlt, faTrash } from '@fortawesome/free-solid-svg-icons'
 import styles from './Attachment-Field.module.scss'
-import Loader from '../../Loader'
+import cn from 'classnames'
 
-const AttachmentField = ({ challengeId, attachments, removeAttachment, onUploadFiles, token, readOnly }) => {
-  // when all files are upload to the S3 this method would be called to create attachments via Challenge API
-  const onUploadDone = useCallback(({ filesUploaded }) => {
-    if (filesUploaded && filesUploaded.length > 0) {
-      onUploadFiles(
-        challengeId,
-        filesUploaded.map(file => ({
-          name: file.originalFile.name,
-          fileSize: file.originalFile.size,
-          url: encodeURI(getAWSContainerFileURL(file.key))
-        }))
-      )
-    }
-  }, [challengeId, onUploadFiles])
+const AttachmentField = ({ challenge, removeAttachment, onUploadFile, token, readOnly }) => {
+  const onDrop = useCallback(acceptedFiles => {
+    _.forEach(acceptedFiles, item => {
+      onUploadFile(challenge.id, item)
+    })
+  }, [])
+
+  const {
+    getRootProps,
+    getInputProps,
+    isDragActive
+  } = useDropzone({ onDrop })
 
   const renderAttachments = (attachments) => (
     _.map(attachments, (att, index) => (
-      <div className={styles.fileRow} key={att.id || att.url}>
-        <a className={styles.col1} href={downloadAttachmentURL(challengeId, att.id, token)} target='_blank'>{att.name}</a>
+      <div className={styles.fileRow} key={`${index}-${att.fileName}`}>
+        <a className={styles.col1} href={downloadAttachmentURL(challenge.id, att.id, token)}>{att.fileName}</a>
         <div className={styles.col2}>{formatBytes(att.fileSize)}</div>
-        {!readOnly && (
-          <div className={styles.actions}>
-            {!att.isDeleting && att.id && (
-              <FontAwesomeIcon icon={faTrash} size={'lg'} onClick={() => removeAttachment(challengeId, att.id)} className={styles.removeIcon} />
-            )}
-            {(att.isDeleting || !att.id) && (
-              <div className={styles.loader}><Loader /></div>
-            )}
-          </div>
-        )}
+        {!readOnly && (<div className={styles.icon} onClick={() => removeAttachment(att.id)}>
+          <FontAwesomeIcon icon={faTrash} size={'lg'} />
+        </div>)}
       </div>
     ))
   )
@@ -50,31 +41,45 @@ const AttachmentField = ({ challengeId, attachments, removeAttachment, onUploadF
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
   }
-
   return (
     <div className={styles.container}>
       <div className={styles.row}>
-        <label htmlFor='Attachment'>Attachments :</label>
-      </div>
-
-      {!readOnly && (
-        <div className={styles.row}>
-          <FilestackFilePicker
-            path={`challenges/${challengeId}/${SPECIFICATION_ATTACHMENTS_FOLDER}/`}
-            onUploadDone={onUploadDone}
-          />
+        <div className={cn(styles.field, styles.col1)}>
+          <label htmlFor='Attachment'>Attachment :</label>
         </div>
-      )}
-      {
-        attachments && attachments.length > 0 && (
-          <div className={styles.row}>
-            <div className={styles.header}>
-              <div className={styles.col1}>File Name</div>
-              <div className={styles.col2}>Size</div>
-              {!readOnly && <div className={styles.col3}>Action</div>}
+      </div>
+      {!readOnly && (<div className={styles.row}>
+        <div {...getRootProps({ className: `${styles.uploadPanel} ${isDragActive ? styles.isActive : ''}` })}>
+          <label htmlFor='uploadFile'>
+            <div className={styles.icon}>
+              <FontAwesomeIcon icon={faCloudUploadAlt} size='5x' />
             </div>
-            { renderAttachments(attachments) }
-          </div>
+            <div className={styles.info}>
+              <div>Drag & Drop files here</div>
+              <div>or</div>
+              <div><span>click here</span> to browse</div>
+            </div>
+          </label>
+          <input {...getInputProps()} />
+        </div>
+      </div>)}
+      {
+        _.has(challenge, 'attachments') && challenge.attachments.length > 0 && (
+          <React.Fragment>
+            <div className={styles.row}>
+              <div className={cn(styles.field, styles.col1)}>
+                <label htmlFor='fileList'>File List</label>
+              </div>
+            </div>
+            <div className={styles.row}>
+              <div className={styles.header}>
+                <div className={styles.col1}>File Name</div>
+                <div className={styles.col2}>Size</div>
+                <div className={styles.col3}>Action</div>
+              </div>
+              { renderAttachments(challenge.attachments) }
+            </div>
+          </React.Fragment>
         )
       }
     </div>
@@ -83,16 +88,14 @@ const AttachmentField = ({ challengeId, attachments, removeAttachment, onUploadF
 
 AttachmentField.defaultProps = {
   removeAttachment: () => {},
-  onUploadFiles: () => {},
-  readOnly: false,
-  attachments: []
+  onUploadFile: () => {},
+  readOnly: false
 }
 
 AttachmentField.propTypes = {
-  challengeId: PropTypes.string.isRequired,
-  attachments: PropTypes.array,
+  challenge: PropTypes.shape().isRequired,
   removeAttachment: PropTypes.func,
-  onUploadFiles: PropTypes.func,
+  onUploadFile: PropTypes.func,
   token: PropTypes.string.isRequired,
   readOnly: PropTypes.bool
 }

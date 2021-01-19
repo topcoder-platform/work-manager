@@ -18,26 +18,6 @@ export const {
 } = process.env
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
 
-/**
- * Filepicker config
- */
-// to be able to start the Connect App we should pass at least the dummy value for `FILE_PICKER_API_KEY`
-// but if we want to test file uploading we should provide the real value in `FILE_PICKER_API_KEY` env variable
-export const FILE_PICKER_API_KEY = process.env.FILE_PICKER_API_KEY || 'DUMMY'
-export const FILE_PICKER_CONTAINER_NAME = process.env.FILE_PICKER_CONTAINER_NAME || 'tc-challenge-v5-dev'
-export const FILE_PICKER_REGION = process.env.FILE_PICKER_REGION || 'us-east-1'
-export const FILE_PICKER_CNAME = process.env.FILE_PICKER_CNAME || 'fs.topcoder.com'
-export const FILE_PICKER_FROM_SOURCES = ['local_file_system', 'googledrive', 'dropbox']
-export const FILE_PICKER_ACCEPT = ['.bmp', '.gif', '.jpg', '.tex', '.xls', '.xlsx', '.doc', '.docx', '.zip', '.txt', '.pdf', '.png', '.ppt', '.pptx', '.rtf', '.csv']
-export const FILE_PICKER_MAX_FILES = 10
-export const FILE_PICKER_MAX_SIZE = 500 * 1024 * 1024 // 500Mb
-export const FILE_PICKER_PROGRESS_INTERVAL = 100
-export const FILE_PICKER_UPLOAD_RETRY = 2
-export const FILE_PICKER_UPLOAD_TIMEOUT = 30 * 60 * 1000 // 30 minutes
-export const SPECIFICATION_ATTACHMENTS_FOLDER = 'SPECIFICATION_ATTACHMENTS'
-
-export const getAWSContainerFileURL = (key) => `https://${FILE_PICKER_CONTAINER_NAME}.s3.amazonaws.com/${key}`
-
 // Actions
 export const LOAD_PROJECTS_SUCCESS = 'LOAD_PROJECTS_SUCCESS'
 export const LOAD_PROJECTS_PENDING = 'LOAD_PROJECTS_PENDING'
@@ -86,13 +66,9 @@ export const LOAD_CHALLENGE_METADATA_SUCCESS = 'LOAD_CHALLENGE_METADATA_SUCCESS'
 
 export const SAVE_AUTH_TOKEN = 'SAVE_AUTH_TOKEN'
 
-export const CREATE_ATTACHMENT_PENDING = 'CREATE_ATTACHMENT_PENDING'
-export const CREATE_ATTACHMENT_FAILURE = 'CREATE_ATTACHMENT_FAILURE'
-export const CREATE_ATTACHMENT_SUCCESS = 'CREATE_ATTACHMENT_SUCCESS'
-
-export const REMOVE_ATTACHMENT_PENDING = 'REMOVE_ATTACHMENT_PENDING'
-export const REMOVE_ATTACHMENT_FAILURE = 'REMOVE_ATTACHMENT_FAILURE'
-export const REMOVE_ATTACHMENT_SUCCESS = 'REMOVE_ATTACHMENT_SUCCESS'
+export const UPLOAD_ATTACHMENT_PENDING = 'UPLOAD_ATTACHMENT_PENDING'
+export const UPLOAD_ATTACHMENT_FAILURE = 'UPLOAD_ATTACHMENT_FAILURE'
+export const UPLOAD_ATTACHMENT_SUCCESS = 'UPLOAD_ATTACHMENT_SUCCESS'
 
 export const LOAD_CHALLENGE_RESOURCES = 'LOAD_CHALLENGE_RESOURCES'
 export const LOAD_CHALLENGE_RESOURCES_SUCCESS = 'LOAD_CHALLENGE_RESOURCES_SUCCESS'
@@ -108,6 +84,8 @@ export const DELETE_CHALLENGE_RESOURCE = 'DELETE_CHALLENGE_RESOURCE'
 export const DELETE_CHALLENGE_RESOURCE_SUCCESS = 'DELETE_CHALLENGE_RESOURCE_SUCCESS'
 export const DELETE_CHALLENGE_RESOURCE_PENDING = 'DELETE_CHALLENGE_RESOURCE_PENDING'
 export const DELETE_CHALLENGE_RESOURCE_FAILURE = 'DELETE_CHALLENGE_RESOURCE_FAILURE'
+
+export const REMOVE_ATTACHMENT = 'REMOVE_ATTACHMENT'
 
 export const SET_FILTER_CHALLENGE_VALUE = 'SET_FILTER_CHALLENGE_VALUE'
 
@@ -184,7 +162,7 @@ export const ADMIN_ROLES = [
 ]
 
 export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
-  `${CHALLENGE_API_URL}/${challengeId}/attachments/${attachmentId}/download?token=${token}`
+  `${CHALLENGE_API_URL}/${challengeId}/attachments/${attachmentId}?token=${token}`
 
 export const PAGE_SIZE = 50
 

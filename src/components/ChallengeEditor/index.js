@@ -97,6 +97,7 @@ class ChallengeEditor extends Component {
     this.updateFileTypesMetadata = this.updateFileTypesMetadata.bind(this)
     this.toggleAdvanceSettings = this.toggleAdvanceSettings.bind(this)
     this.toggleNdaRequire = this.toggleNdaRequire.bind(this)
+    this.removeAttachment = this.removeAttachment.bind(this)
     this.removePhase = this.removePhase.bind(this)
     this.resetPhase = this.resetPhase.bind(this)
     this.savePhases = this.savePhases.bind(this)
@@ -593,6 +594,15 @@ class ChallengeEditor extends Component {
     this.setState({ challenge: newChallenge })
   }
 
+  removeAttachment (file) {
+    const { challenge } = this.state
+    const newChallenge = { ...challenge }
+    const { attachments: oldAttachments } = challenge
+    const newAttachments = _.remove(oldAttachments, att => att.fileName !== file)
+    newChallenge.attachments = _.clone(newAttachments)
+    this.setState({ challenge: newChallenge })
+  }
+
   /**
    * Remove Phase from challenge Phases list
    * @param index
@@ -752,6 +762,18 @@ class ChallengeEditor extends Component {
     if (property === 'duration' && (newValue | 0) <= 0) return
     let newChallenge = _.cloneDeep(this.state.challenge)
     newChallenge.phases[index][property] = newValue
+    this.setState({ challenge: newChallenge })
+  }
+
+  onUploadFile (files) {
+    const { challenge: oldChallenge } = this.state
+    const newChallenge = { ...oldChallenge }
+    _.forEach(files, (file) => {
+      newChallenge.attachments.push({
+        fileName: file.name,
+        size: file.size
+      })
+    })
     this.setState({ challenge: newChallenge })
   }
 
@@ -1129,12 +1151,11 @@ class ChallengeEditor extends Component {
       isNew,
       isLoading,
       metadata,
-      uploadAttachments,
+      uploadAttachment,
       token,
       removeAttachment,
       failedToLoad,
-      projectDetail,
-      attachments
+      projectDetail
     } = this.props
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
@@ -1454,14 +1475,14 @@ class ChallengeEditor extends Component {
               onUpdateMultiSelect={this.onUpdateMultiSelect}
               onUpdateMetadata={this.onUpdateMetadata}
             />
-            <AttachmentField
-              challenge={{ ...challenge, id: currentChallengeId }}
-              challengeId={currentChallengeId}
-              attachments={attachments}
-              onUploadFiles={uploadAttachments}
-              token={token}
-              removeAttachment={removeAttachment}
-            />
+            { false && (
+              <AttachmentField
+                challenge={{ ...challenge, id: currentChallengeId }}
+                onUploadFile={uploadAttachment}
+                token={token}
+                removeAttachment={removeAttachment}
+              />
+            )}
             <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <ChallengeTotalField challenge={challenge} />
@@ -1513,7 +1534,7 @@ ChallengeEditor.propTypes = {
   challengeId: PropTypes.string,
   metadata: PropTypes.object.isRequired,
   isLoading: PropTypes.bool.isRequired,
-  uploadAttachments: PropTypes.func.isRequired,
+  uploadAttachment: PropTypes.func.isRequired,
   removeAttachment: PropTypes.func.isRequired,
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string.isRequired,
