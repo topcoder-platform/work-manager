@@ -68,6 +68,7 @@ class ChallengeEditor extends Component {
     super(props)
     this.state = {
       isLaunch: false,
+      isDeleteLaunch: false,
       isConfirm: false,
       isClose: false,
       isOpenAdvanceSettings: false,
@@ -90,12 +91,12 @@ class ChallengeEditor extends Component {
     this.onUpdateOthers = this.onUpdateOthers.bind(this)
     this.onUpdateCheckbox = this.onUpdateCheckbox.bind(this)
     this.onUpdateAssignedMember = this.onUpdateAssignedMember.bind(this)
+    this.onAssignSelf = this.onAssignSelf.bind(this)
     this.addFileType = this.addFileType.bind(this)
     this.removeFileType = this.removeFileType.bind(this)
     this.updateFileTypesMetadata = this.updateFileTypesMetadata.bind(this)
     this.toggleAdvanceSettings = this.toggleAdvanceSettings.bind(this)
     this.toggleNdaRequire = this.toggleNdaRequire.bind(this)
-    this.removeAttachment = this.removeAttachment.bind(this)
     this.removePhase = this.removePhase.bind(this)
     this.resetPhase = this.resetPhase.bind(this)
     this.savePhases = this.savePhases.bind(this)
@@ -121,6 +122,8 @@ class ChallengeEditor extends Component {
     this.getAvailableTimelineTemplates = this.getAvailableTimelineTemplates.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.validateAndAutoUpdateChallenge.bind(this), 3000) // 3s
     this.updateResource = this.updateResource.bind(this)
+    this.onDeleteChallenge = this.onDeleteChallenge.bind(this)
+    this.deleteModalLaunch = this.deleteModalLaunch.bind(this)
   }
 
   componentDidMount () {
@@ -129,6 +132,27 @@ class ChallengeEditor extends Component {
 
   componentDidUpdate () {
     this.resetChallengeData(this.setState.bind(this))
+  }
+
+  deleteModalLaunch () {
+    if (!this.state.isDeleteLaunch) {
+      this.setState({ isDeleteLaunch: true })
+    }
+  }
+
+  async onDeleteChallenge () {
+    const { deleteChallenge, challengeDetails, history } = this.props
+    try {
+      this.setState({ isSaving: true })
+      // Call action to delete the challenge
+      await deleteChallenge(challengeDetails.id)
+      this.setState({ isSaving: false })
+      this.resetModal()
+      history.push(`/projects/${challengeDetails.projectId}/challenges`)
+    } catch (e) {
+      const error = _.get(e, 'response.data.message', 'Unable to Delete the challenge')
+      this.setState({ isSaving: false, error })
+    }
   }
 
   /**
@@ -155,7 +179,9 @@ class ChallengeEditor extends Component {
       try {
         const copilotResource = this.getResourceFromProps('Copilot')
         const copilotFromResources = copilotResource ? copilotResource.memberHandle : ''
-        const reviewerResource = this.getResourceFromProps('Reviewer')
+        const reviewerResource =
+          (challengeDetails.type === 'First2Finish' || challengeDetails.type === 'Task')
+            ? this.getResourceFromProps('Iterative Reviewer') : this.getResourceFromProps('Reviewer')
         const reviewerFromResources = reviewerResource ? reviewerResource.memberHandle : ''
         setState({ isConfirm: false, isLaunch: false })
         const challengeData = this.updateAttachmentlist(challengeDetails, attachments)
@@ -206,7 +232,7 @@ class ChallengeEditor extends Component {
   }
 
   resetModal () {
-    this.setState({ isLoading: false, isConfirm: false, isLaunch: false, error: null, isCloseTask: false })
+    this.setState({ isLoading: false, isConfirm: false, isLaunch: false, error: null, isCloseTask: false, isDeleteLaunch: false })
   }
 
   /**
@@ -331,6 +357,22 @@ class ChallengeEditor extends Component {
 
     this.setState({
       challenge: newChallenge,
+      assignedMemberDetails
+    })
+  }
+
+  /**
+   * Update Assigned Member to Current User
+   */
+  onAssignSelf () {
+    const { loggedInUser } = this.props
+
+    const assignedMemberDetails = {
+      handle: loggedInUser.handle,
+      userId: loggedInUser.userId
+    }
+
+    this.setState({
       assignedMemberDetails
     })
   }
@@ -551,15 +593,6 @@ class ChallengeEditor extends Component {
     this.setState({ challenge: newChallenge })
   }
 
-  removeAttachment (file) {
-    const { challenge } = this.state
-    const newChallenge = { ...challenge }
-    const { attachments: oldAttachments } = challenge
-    const newAttachments = _.remove(oldAttachments, att => att.fileName !== file)
-    newChallenge.attachments = _.clone(newAttachments)
-    this.setState({ challenge: newChallenge })
-  }
-
   /**
    * Remove Phase from challenge Phases list
    * @param index
@@ -708,7 +741,7 @@ class ChallengeEditor extends Component {
   onUpdateMultiSelect (options, field) {
     const { challenge } = this.state
     let newChallenge = { ...challenge }
-    newChallenge[field] = options ? options.split(',') : []
+    newChallenge[field] = options ? options.map(option => option.value) : []
 
     this.setState({ challenge: newChallenge }, () => {
       this.validateChallenge()
@@ -722,20 +755,8 @@ class ChallengeEditor extends Component {
     this.setState({ challenge: newChallenge })
   }
 
-  onUploadFile (files) {
-    const { challenge: oldChallenge } = this.state
-    const newChallenge = { ...oldChallenge }
-    _.forEach(files, (file) => {
-      newChallenge.attachments.push({
-        fileName: file.name,
-        size: file.size
-      })
-    })
-    this.setState({ challenge: newChallenge })
-  }
-
   collectChallengeData (status) {
-    const { attachments } = this.props
+    const { attachments, metadata } = this.props
     const challenge = pick([
       'phases',
       'typeId',
@@ -752,6 +773,7 @@ class ChallengeEditor extends Component {
       'prizeSets',
       'winners'
     ], this.state.challenge)
+    const isTask = _.find(metadata.challengeTypes, { id: challenge.typeId, isTask: true })
     challenge.legacy = _.assign(this.state.challenge.legacy, {
       reviewType: challenge.reviewType
     })
@@ -762,6 +784,10 @@ class ChallengeEditor extends Component {
       return { ...p, prizes }
     })
     challenge.status = status
+    if (status === 'Active' && isTask) {
+      challenge.startDate = moment().format()
+    }
+
     if (this.state.challenge.id) {
       challenge.attachmentIds = _.map(attachments, item => item.id)
     }
@@ -796,7 +822,7 @@ class ChallengeEditor extends Component {
     const avlTemplates = this.getAvailableTimelineTemplates()
     // chooses first available timeline template or fallback template for the new challenge
     const defaultTemplate = avlTemplates && avlTemplates.length > 0 ? avlTemplates[0] : STD_DEV_TIMELINE_TEMPLATE
-
+    const isTask = _.find(metadata.challengeTypes, { id: typeId, isTask: true })
     const newChallenge = {
       status: 'New',
       projectId: this.props.projectId,
@@ -805,7 +831,7 @@ class ChallengeEditor extends Component {
       trackId,
       startDate: moment().add(1, 'days').format(),
       legacy: {
-        reviewType: isDesignChallenge ? REVIEW_TYPES.INTERNAL : REVIEW_TYPES.COMMUNITY
+        reviewType: isTask || isDesignChallenge ? REVIEW_TYPES.INTERNAL : REVIEW_TYPES.COMMUNITY
       },
       descriptionFormat: 'markdown',
       timelineTemplateId: defaultTemplate.id,
@@ -818,6 +844,10 @@ class ChallengeEditor extends Component {
     }
     try {
       const action = await createChallenge(newChallenge)
+      if (isTask) {
+        await this.updateResource(action.challengeDetails.id, 'Iterative Reviewer', action.challengeDetails.createdBy, action.challengeDetails.reviewer)
+        action.challengeDetails.reviewer = action.challengeDetails.createdBy
+      }
       const draftChallenge = {
         data: action.challengeDetails
       }
@@ -880,9 +910,12 @@ class ChallengeEditor extends Component {
         case 'copilot':
           await this.updateResource(challengeId, 'Copilot', this.state.challenge.copilot, prevValue)
           break
-        case 'reviewer':
-          await this.updateResource(challengeId, 'Reviewer', this.state.challenge.reviewer, prevValue)
+        case 'reviewer': {
+          const { type } = this.state.challenge
+          const useIterativeReview = type === 'First2Finish' || type === 'Task'
+          await this.updateResource(challengeId, useIterativeReview ? 'Iterative Review' : 'Reviewer', this.state.challenge.reviewer, prevValue)
           break
+        }
       }
     } else {
       let patchObject = (changedField === 'reviewType')
@@ -955,7 +988,7 @@ class ChallengeEditor extends Component {
       try {
         const challengeId = this.getCurrentChallengeId()
         // state can have updated assigned member (in cases where user changes assignments without refreshing the page)
-        const { challenge: { copilot, reviewer }, assignedMemberDetails: assignedMember } = this.state
+        const { challenge: { copilot, reviewer, type }, assignedMemberDetails: assignedMember } = this.state
         const oldMemberHandle = _.get(oldAssignedMember, 'handle')
         const assignedMemberHandle = _.get(assignedMember, 'handle')
         // assigned member has been updated
@@ -965,8 +998,13 @@ class ChallengeEditor extends Component {
         const action = await updateChallengeDetails(challengeId, challenge)
         const { copilot: previousCopilot, reviewer: previousReviewer } = this.state.draftChallenge.data
         if (copilot !== previousCopilot) await this.updateResource(challengeId, 'Copilot', copilot, previousCopilot)
-        if (reviewer !== previousReviewer) await this.updateResource(challengeId, 'Reviewer', reviewer, previousReviewer)
-
+        if (type === 'First2Finish' || type === 'Task') {
+          const iterativeReviewer = this.getResourceFromProps('Iterative Reviewer')
+          const previousIterativeReviewer = iterativeReviewer && iterativeReviewer.memberHandle
+          if (reviewer !== previousIterativeReviewer) await this.updateResource(challengeId, 'Iterative Reviewer', reviewer, previousIterativeReviewer)
+        } else {
+          if (reviewer !== previousReviewer) await this.updateResource(challengeId, 'Reviewer', reviewer, previousReviewer)
+        }
         const draftChallenge = { data: action.challengeDetails }
         draftChallenge.data.copilot = copilot
         draftChallenge.data.reviewer = reviewer
@@ -1091,11 +1129,12 @@ class ChallengeEditor extends Component {
       isNew,
       isLoading,
       metadata,
-      uploadAttachment,
+      uploadAttachments,
       token,
       removeAttachment,
       failedToLoad,
-      projectDetail
+      projectDetail,
+      attachments
     } = this.props
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
@@ -1326,6 +1365,7 @@ class ChallengeEditor extends Component {
                 challenge={challenge}
                 onChange={this.onUpdateAssignedMember}
                 assignedMemberDetails={assignedMemberDetails}
+                onAssignSelf={this.onAssignSelf}
               />
             )}
             <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
@@ -1354,10 +1394,10 @@ class ChallengeEditor extends Component {
               <React.Fragment>
                 {/* remove terms field and use default term */}
                 {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}
-                <GroupsField groups={metadata.groups} onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
+                <GroupsField onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
               </React.Fragment>
             )}
-            {
+            {!isTask && (
               <div className={styles.PhaseRow}>
                 <PhaseInput
                   withDates
@@ -1372,6 +1412,19 @@ class ChallengeEditor extends Component {
                   readOnly={false}
                 />
               </div>
+            )}
+            {
+              this.state.isDeleteLaunch && !this.state.isConfirm && (
+                <ConfirmationModal
+                  title='Confirm Delete'
+                  message={`Do you want to delete "${challenge.name}"?`}
+                  theme={theme}
+                  isProcessing={isSaving}
+                  errorMessage={this.state.error}
+                  onCancel={this.resetModal}
+                  onConfirm={this.onDeleteChallenge}
+                />
+              )
             }
             { showTimeline && (
               <ChallengeScheduleField
@@ -1401,14 +1454,14 @@ class ChallengeEditor extends Component {
               onUpdateMultiSelect={this.onUpdateMultiSelect}
               onUpdateMetadata={this.onUpdateMetadata}
             />
-            { false && (
-              <AttachmentField
-                challenge={{ ...challenge, id: currentChallengeId }}
-                onUploadFile={uploadAttachment}
-                token={token}
-                removeAttachment={removeAttachment}
-              />
-            )}
+            <AttachmentField
+              challenge={{ ...challenge, id: currentChallengeId }}
+              challengeId={currentChallengeId}
+              attachments={attachments}
+              onUploadFiles={uploadAttachments}
+              token={token}
+              removeAttachment={removeAttachment}
+            />
             <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <ChallengeTotalField challenge={challenge} />
@@ -1426,6 +1479,7 @@ class ChallengeEditor extends Component {
         </div>
         <div className={styles.title}>{getTitle(isNew)}</div>
         <div className={cn(styles.actionButtons, styles.actionButtonsRight)}>
+          {!isNew && this.props.challengeDetails.status === 'New' && <PrimaryButton text={'Delete'} type={'danger'} onClick={this.deleteModalLaunch} />}
           <PrimaryButton text={'Back'} type={'info'} submit link={`/projects/${projectDetail.id}/challenges`} />
         </div>
         <div className={styles.textRequired}>* Required</div>
@@ -1459,7 +1513,7 @@ ChallengeEditor.propTypes = {
   challengeId: PropTypes.string,
   metadata: PropTypes.object.isRequired,
   isLoading: PropTypes.bool.isRequired,
-  uploadAttachment: PropTypes.func.isRequired,
+  uploadAttachments: PropTypes.func.isRequired,
   removeAttachment: PropTypes.func.isRequired,
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string.isRequired,
@@ -1469,7 +1523,9 @@ ChallengeEditor.propTypes = {
   updateChallengeDetails: PropTypes.func.isRequired,
   createChallenge: PropTypes.func,
   replaceResourceInRole: PropTypes.func,
-  partiallyUpdateChallengeDetails: PropTypes.func.isRequired
+  partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
+  deleteChallenge: PropTypes.func.isRequired,
+  loggedInUser: PropTypes.shape().isRequired
 }
 
 export default withRouter(ChallengeEditor)

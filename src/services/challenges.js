@@ -2,7 +2,6 @@ import _ from 'lodash'
 import qs from 'qs'
 import { axiosInstance } from './axiosWithAuth'
 import { updateChallengePhaseBeforeSendRequest, convertChallengePhaseFromSecondsToHours, normalizeChallengeDataFromAPI } from '../util/date'
-import FormData from 'form-data'
 import { GROUPS_DROPDOWN_PER_PAGE } from '../config/constants'
 const {
   CHALLENGE_API_URL,
@@ -56,12 +55,25 @@ export async function fetchChallengeTags () {
  * @param filters
  * @returns {Promise<*>}
  */
-export async function fetchGroups (filters) {
-  const finalFilters = {
-    ...filters,
-    perPage: GROUPS_DROPDOWN_PER_PAGE // make sure that we are retrieving all the groups
-  }
-  const response = await axiosInstance.get(`${GROUPS_API_URL}?${qs.stringify(finalFilters, { encode: false })}`)
+export async function fetchGroups (filters, params = '') {
+  const finalFilters = filters && Object.keys(filters).length > 0
+    ? {
+      ...filters,
+      perPage: GROUPS_DROPDOWN_PER_PAGE // make sure that we are retrieving all the groups
+    }
+    : {}
+  const response = await axiosInstance.get(`${GROUPS_API_URL}${params}?${qs.stringify(finalFilters, { encode: false })}`)
+  return _.get(response, 'data', [])
+}
+
+/**
+ * Api request for fetching Group Detail
+ *
+ * @param groupId
+ * @returns {Promise<*>}
+ */
+export async function fetchGroupDetail (id) {
+  const response = await axiosInstance.get(`${GROUPS_API_URL}/${id}`)
   return _.get(response, 'data', [])
 }
 
@@ -126,10 +138,28 @@ export function updateChallenge (challengeId, challenge) {
   })
 }
 
-export function uploadAttachment (challengeId, file) {
-  const data = new FormData()
-  data.append('attachment', file)
-  return axiosInstance.post(`${CHALLENGE_API_URL}/${challengeId}/attachments`, data)
+/**
+ * Create attachments
+ *
+ * @param {String|Number} challengeId  challenge id
+ * @param {Object[]}      attachments  list of attachments
+ *
+ * @returns {Promise<*>} attachments data
+ */
+export function createAttachments (challengeId, attachments) {
+  return axiosInstance.post(`${CHALLENGE_API_URL}/${challengeId}/attachments`, attachments)
+}
+
+/**
+ * Remove attachment
+ *
+ * @param {String|Number} challengeId  challenge id
+ * @param {String|Number} attachmentId attachment id
+ *
+ * @returns {Promise<void>}
+ */
+export function removeAttachment (challengeId, attachmentId) {
+  return axiosInstance.delete(`${CHALLENGE_API_URL}/${challengeId}/attachments/${attachmentId}`)
 }
 
 /**
@@ -158,6 +188,14 @@ export function patchChallenge (challengeId, params) {
   return axiosInstance.patch(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(params)).then(rs => {
     return normalizeChallengeDataFromAPI(_.get(rs, 'data'))
   })
+}
+
+/*
+* Deletes the challenge with the provided id.
+* @param challengeId
+*/
+export function deleteChallenge (challengeId) {
+  return axiosInstance.delete(`${CHALLENGE_API_URL}/${challengeId}`)
 }
 
 /**

@@ -77,11 +77,9 @@ class PhaseInput extends Component {
                 <div className={styles.scorecards}>
                   <Select
                     name='scorecard'
-                    options={phase.scorecards}
+                    options={phase.scorecards.map(({ name }) => ({ label: name, value: name, name }))}
                     placeholder='Select Scorecard'
-                    labelKey='name'
-                    valueKey='name'
-                    clearable={false}
+                    isClearable={false}
                     value={phase.scorecard}
                     onChange={(e) => onUpdateSelect(e, true, 'phases')}
                   />

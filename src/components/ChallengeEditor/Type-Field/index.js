@@ -15,14 +15,11 @@ const TypeField = ({ types, onUpdateSelect, challenge, disabled }) => {
         <div className={cn(styles.field, styles.col2, { [styles.disabled]: disabled })}>
           <Select
             name='track'
-            options={_.filter(types, t => t.isActive)}
-            value={challenge.typeId}
+            options={_.filter(types, t => t.isActive).map(type => ({ label: type.name, value: type.id }))}
             placeholder='Work Format'
-            labelKey='name'
-            valueKey='id'
-            clearable={false}
-            onChange={(e) => onUpdateSelect(e.id, false, 'typeId')}
-            disabled={disabled}
+            isClearable={false}
+            onChange={(e) => onUpdateSelect(e.value, false, 'typeId')}
+            isDisabled={disabled}
           />
         </div>
       </div>

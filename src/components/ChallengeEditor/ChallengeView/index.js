@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import _ from 'lodash'
 import { Helmet } from 'react-helmet'
 import PropTypes from 'prop-types'
@@ -21,12 +21,14 @@ import PhaseInput from '../../PhaseInput'
 import LegacyLinks from '../../LegacyLinks'
 import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
+import { loadGroupDetails } from '../../../actions/challenges'
 import Tooltip from '../../Tooltip'
 import { MESSAGE, REVIEW_TYPES } from '../../../config/constants'
 
 const ChallengeView = ({
   projectDetail,
   challenge,
+  attachments,
   metadata,
   challengeResources,
   token,
@@ -40,6 +42,18 @@ const ChallengeView = ({
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
 
   const [openAdvanceSettings, setOpenAdvanceSettings] = useState(false)
+  const [groups, setGroups] = useState('')
+
+  useEffect(() => {
+    if (challenge.groups && challenge.groups.length > 0) {
+      loadGroupDetails(challenge.groups).then(res => {
+        const groups = _.map(res, 'name').join(', ')
+        setGroups(groups)
+      })
+    } else {
+      setGroups('')
+    }
+  }, [challenge.groups])
 
   const getResourceFromProps = (name) => {
     const { resourceRoles } = metadata
@@ -167,7 +181,7 @@ const ChallengeView = ({
             </div>
             {openAdvanceSettings && (<div className={cn(styles.row, styles.topRow)}>
               <div className={styles.col}>
-                <span><span className={styles.fieldTitle}>Groups:</span> {challenge.groups ? challenge.groups.join(', ') : ''}</span>
+                <span><span className={styles.fieldTitle}>Groups:</span> {groups}</span>
               </div>
             </div>)}
             {
@@ -209,13 +223,12 @@ const ChallengeView = ({
               challenge={challenge}
               readOnly
             />
-            { false && (
-              <AttachmentField
-                challenge={challenge}
-                token={token}
-                readOnly
-              />
-            )}
+            <AttachmentField
+              challengeId={challenge.id}
+              attachments={attachments}
+              token={token}
+              readOnly
+            />
             <ChallengePrizesField challenge={challenge} readOnly />
             <CopilotFeeField challenge={challenge} readOnly />
             <ChallengeTotalField challenge={challenge} />
@@ -244,6 +257,7 @@ ChallengeView.propTypes = {
   }).isRequired,
   projectDetail: PropTypes.object,
   challenge: PropTypes.object,
+  attachments: PropTypes.array,
   metadata: PropTypes.object,
   token: PropTypes.string,
   isLoading: PropTypes.bool.isRequired,
