@@ -1454,14 +1454,15 @@ class ChallengeEditor extends Component {
               onUpdateMultiSelect={this.onUpdateMultiSelect}
               onUpdateMetadata={this.onUpdateMetadata}
             />
-            <AttachmentField
+            {/* hide until challenge API change is pushed to PROD https://github.com/topcoder-platform/challenge-api/issues/348 */}
+            { false && <AttachmentField
               challenge={{ ...challenge, id: currentChallengeId }}
               challengeId={currentChallengeId}
               attachments={attachments}
               onUploadFiles={uploadAttachments}
               token={token}
               removeAttachment={removeAttachment}
-            />
+            />}
             <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <ChallengeTotalField challenge={challenge} />
