@@ -223,12 +223,13 @@ const ChallengeView = ({
               challenge={challenge}
               readOnly
             />
-            <AttachmentField
+            {/* hide until challenge API change is pushed to PROD https://github.com/topcoder-platform/challenge-api/issues/348 */}
+            {false && <AttachmentField
               challengeId={challenge.id}
               attachments={attachments}
               token={token}
               readOnly
-            />
+            />}
             <ChallengePrizesField challenge={challenge} readOnly />
             <CopilotFeeField challenge={challenge} readOnly />
             <ChallengeTotalField challenge={challenge} />
