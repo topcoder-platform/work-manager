@@ -49,6 +49,7 @@ import PhaseInput from '../PhaseInput'
 import LegacyLinks from '../LegacyLinks'
 import AssignedMemberField from './AssignedMember-Field'
 import Tooltip from '../Tooltip'
+import UseSchedulingAPIField from './UseSchedulingAPIField'
 import { getResourceRoleByName } from '../../util/tc'
 
 const theme = {
@@ -97,6 +98,7 @@ class ChallengeEditor extends Component {
     this.updateFileTypesMetadata = this.updateFileTypesMetadata.bind(this)
     this.toggleAdvanceSettings = this.toggleAdvanceSettings.bind(this)
     this.toggleNdaRequire = this.toggleNdaRequire.bind(this)
+    this.toggleUseSchedulingAPI = this.toggleUseSchedulingAPI.bind(this)
     this.removePhase = this.removePhase.bind(this)
     this.resetPhase = this.resetPhase.bind(this)
     this.savePhases = this.savePhases.bind(this)
@@ -590,6 +592,14 @@ class ChallengeEditor extends Component {
       newTerms.push({ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID })
     }
     newChallenge.terms = newTerms
+    this.setState({ challenge: newChallenge })
+  }
+
+  toggleUseSchedulingAPI () {
+    const { challenge } = this.state
+    const newChallenge = { ...challenge }
+    const useSchedulingApi = !_.get(newChallenge, 'legacy.useSchedulingAPI', false)
+    _.set(newChallenge, 'legacy.useSchedulingAPI', useSchedulingApi)
     this.setState({ challenge: newChallenge })
   }
 
@@ -1395,6 +1405,7 @@ class ChallengeEditor extends Component {
                 {/* remove terms field and use default term */}
                 {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}
                 <GroupsField onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
+                <UseSchedulingAPIField challenge={challenge} toggleUseSchedulingAPI={this.toggleUseSchedulingAPI} />
               </React.Fragment>
             )}
             {!isTask && (
