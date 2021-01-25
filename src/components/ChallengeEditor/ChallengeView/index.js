@@ -36,7 +36,9 @@ const ChallengeView = ({
   assignedMemberDetails,
   enableEdit,
   onLaunchChallenge,
-  onCloseTask }) => {
+  onCloseTask,
+  location }) => {
+  const params = new URLSearchParams(location.search)
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
 
@@ -178,11 +180,25 @@ const ChallengeView = ({
                 </label>
               </div>
             </div>
-            {openAdvanceSettings && (<div className={cn(styles.row, styles.topRow)}>
-              <div className={styles.col}>
-                <span><span className={styles.fieldTitle}>Groups:</span> {groups}</span>
-              </div>
-            </div>)}
+            {openAdvanceSettings && (
+              <React.Fragment>
+                <div className={cn(styles.row, styles.topRow)}>
+                  <div className={styles.col}>
+                    <span><span className={styles.fieldTitle}>Groups:</span> {groups}</span>
+                  </div>
+                </div>
+                {params.get('beta') && (
+                  <div className={styles.row}>
+                    <div className={styles.col}>
+                      <span>
+                        <span className={styles.fieldTitle}>Billing Account Id:</span>
+                        {projectDetail.billingAccountId}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </React.Fragment>
+            )}
             {
               <div className={styles.PhaseRow}>
                 <PhaseInput
@@ -265,7 +281,8 @@ ChallengeView.propTypes = {
   assignedMemberDetails: PropTypes.shape(),
   enableEdit: PropTypes.bool,
   onLaunchChallenge: PropTypes.func,
-  onCloseTask: PropTypes.func
+  onCloseTask: PropTypes.func,
+  location: PropTypes.object
 }
 
 export default withRouter(ChallengeView)
