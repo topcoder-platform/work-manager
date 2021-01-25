@@ -50,7 +50,7 @@ const GroupsField = ({ onUpdateMultiSelect, challenge }) => {
           }}
           simpleValue
           value={groups}
-          placeholder='Select groups'
+          placeholder='Search groups'
           onChange={(e) => {
             onUpdateMultiSelect(e, 'groups')
             setGroups(e)
