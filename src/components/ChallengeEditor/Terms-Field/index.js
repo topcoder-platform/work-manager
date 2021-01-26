@@ -4,16 +4,17 @@ import Select from '../../Select'
 import cn from 'classnames'
 import styles from './Terms-Field.module.scss'
 
-const TermsField = ({ terms, projectTerms, challenge, onUpdateMultiSelect }) => {
-  const mapOps = item => ({ label: item, value: item })
+const TermsField = ({ terms, challenge, onUpdateMultiSelect }) => {
+  const mapOps = item => ({ label: item.title, value: item.id })
 
   const [currTerms, setCurrTerms] = React.useState([])
 
   React.useEffect(() => {
-    const challengeTermsIds = challenge.terms.map(({ id }) => id)
-    const allTerms = [...new Set([...projectTerms, ...challengeTermsIds])]
+    const challengeTerms = new Set(challenge.terms)
+    const defaultValue = terms
+      .filter(term => challengeTerms.has(term.id))
       .map(mapOps)
-    setCurrTerms(allTerms)
+    setCurrTerms(defaultValue)
   }, [])
 
   return (
@@ -31,7 +32,7 @@ const TermsField = ({ terms, projectTerms, challenge, onUpdateMultiSelect }) => 
           value={currTerms}
           onChange={(value) => {
             onUpdateMultiSelect(value, 'terms')
-            setCurrTerms(value)
+            setCurrTerms(setCurrTerms(terms))
           }}
         />
       </div>
@@ -46,8 +47,7 @@ TermsField.defaultProps = {
 TermsField.propTypes = {
   challenge: PropTypes.shape().isRequired,
   terms: PropTypes.arrayOf(PropTypes.shape()).isRequired,
-  onUpdateMultiSelect: PropTypes.func.isRequired,
-  projectTerms: PropTypes.array
+  onUpdateMultiSelect: PropTypes.func.isRequired
 }
 
 export default TermsField

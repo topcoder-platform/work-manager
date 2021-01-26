@@ -8,6 +8,21 @@ import { DEFAULT_NDA_UUID } from '../../../config/constants'
 const NDAField = ({ challenge, toggleNdaRequire, readOnly }) => {
   const isRequiredNda = challenge.terms && _.some(challenge.terms, { id: DEFAULT_NDA_UUID })
 
+  if (readOnly) {
+    return (
+      <div className={styles.row}>
+        <div className={cn(styles.field, styles.col1, styles.fieldTitle)}>NDA Required :</div>
+        <div className={cn(styles.field, styles.col2)}>
+          {
+            isRequiredNda
+              ? <div>Yes</div>
+              : <div>No</div>
+          }
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1, styles.fieldTitle)}>NDA Required :</div>
@@ -18,7 +33,7 @@ const NDAField = ({ challenge, toggleNdaRequire, readOnly }) => {
             type='radio'
             id='nda-yes'
             checked={isRequiredNda}
-            onChange={!readOnly && toggleNdaRequire}
+            onChange={toggleNdaRequire}
           />
           <label className={styles['tc-RadioButton-label']} htmlFor='nda-yes'>
             <div>yes</div>
@@ -31,7 +46,7 @@ const NDAField = ({ challenge, toggleNdaRequire, readOnly }) => {
             type='radio'
             id='nda-no'
             checked={!isRequiredNda}
-            onChange={!readOnly && toggleNdaRequire}
+            onChange={toggleNdaRequire}
           />
           <label className={styles['tc-RadioButton-label']} htmlFor='nda-no'>
             <div>No</div>

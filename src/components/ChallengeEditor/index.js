@@ -810,7 +810,7 @@ class ChallengeEditor extends Component {
 
   async createNewChallenge () {
     if (!this.props.isNew) return
-    const { metadata, createChallenge } = this.props
+    const { metadata, createChallenge, projectDetail } = this.props
     const { name, trackId, typeId } = this.state.challenge
     const { timelineTemplates } = metadata
     const isDesignChallenge = trackId === DES_TRACK_ID
@@ -838,6 +838,14 @@ class ChallengeEditor extends Component {
       timelineTemplateId: defaultTemplate.id,
       terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }]
       // prizeSets: this.getDefaultPrizeSets()
+    }
+    if (projectDetail.terms) {
+      const currTerms = new Set(newChallenge.terms.map(term => term.id))
+      newChallenge.terms.push(
+        ...projectDetail.terms
+          .filter(term => !currTerms.has(term))
+          .map(term => ({ id: term, roleId: SUBMITTER_ROLE_UUID }))
+      )
     }
     const discussions = this.getDiscussionsConfig(newChallenge)
     if (discussions) {
@@ -1117,8 +1125,6 @@ class ChallengeEditor extends Component {
   }
 
   render () {
-    const params = new URLSearchParams(this.props.location.search)
-
     const {
       isLaunch,
       isConfirm,
@@ -1395,14 +1401,8 @@ class ChallengeEditor extends Component {
             { isOpenAdvanceSettings && (
               <React.Fragment>
                 <NDAField challenge={challenge} toggleNdaRequire={this.toggleNdaRequire} />
-                {params.get('beta') && (
-                  <TermsField
-                    terms={metadata.challengeTerms}
-                    projectTerms={projectDetail.terms}
-                    challenge={challenge}
-                    onUpdateMultiSelect={this.onUpdateMultiSelect}
-                  />
-                )}
+                {/* remove terms field and use default term */}
+                {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}
                 <GroupsField onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
               </React.Fragment>
             )}
@@ -1535,8 +1535,7 @@ ChallengeEditor.propTypes = {
   replaceResourceInRole: PropTypes.func,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
-  loggedInUser: PropTypes.shape().isRequired,
-  location: PropTypes.object
+  loggedInUser: PropTypes.shape().isRequired
 }
 
 export default withRouter(ChallengeEditor)

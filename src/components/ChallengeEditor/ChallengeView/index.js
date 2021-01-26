@@ -37,9 +37,7 @@ const ChallengeView = ({
   assignedMemberDetails,
   enableEdit,
   onLaunchChallenge,
-  onCloseTask,
-  location }) => {
-  const params = new URLSearchParams(location.search)
+  onCloseTask }) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
 
@@ -183,16 +181,6 @@ const ChallengeView = ({
             {openAdvanceSettings && (
               <>
                 <NDAField beta challenge={challenge} readOnly />
-                {params.get('beta') === 'true' && (
-                  <div className={styles.row}>
-                    <div className={styles.col}>
-                      <span>
-                        <span className={styles.fieldTitle}>Terms:</span>
-                        {challenge.terms.map(term => term.id).join(', ')}
-                      </span>
-                    </div>
-                  </div>
-                )}
                 <div className={cn(styles.row, styles.topRow)}>
                   <div className={styles.col}>
                     <span><span className={styles.fieldTitle}>Groups:</span> {groups}</span>
@@ -283,8 +271,7 @@ ChallengeView.propTypes = {
   assignedMemberDetails: PropTypes.shape(),
   enableEdit: PropTypes.bool,
   onLaunchChallenge: PropTypes.func,
-  onCloseTask: PropTypes.func,
-  location: PropTypes.object
+  onCloseTask: PropTypes.func
 }
 
 export default withRouter(ChallengeView)
