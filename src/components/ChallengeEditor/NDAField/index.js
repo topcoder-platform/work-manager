@@ -1,26 +1,43 @@
 import _ from 'lodash'
 import React from 'react'
 import PropTypes from 'prop-types'
+import cn from 'classnames'
 import styles from './NDAField.module.scss'
 import { DEFAULT_NDA_UUID } from '../../../config/constants'
 
 const NDAField = ({ challenge, toggleNdaRequire, readOnly }) => {
   const isRequiredNda = challenge.terms && _.some(challenge.terms, { id: DEFAULT_NDA_UUID })
+
   return (
     <div className={styles.row}>
-      <div className={styles.tcCheckbox}>
-        <input
-          name='isRequiredNda'
-          type='checkbox'
-          id='isRequiredNda'
-          checked={isRequiredNda}
-          onChange={toggleNdaRequire}
-          readOnly={readOnly}
-        />
-        <label htmlFor='isRequiredNda' className={readOnly ? styles.readOnly : ''}>
-          <div>NDA Required</div>
-          <input type='hidden' />
-        </label>
+      <div className={cn(styles.field, styles.col1, styles.fieldTitle)}>NDA Required :</div>
+      <div className={cn(styles.field, styles.col2)}>
+        <div className={styles.tcRadioButton}>
+          <input
+            name='nda'
+            type='radio'
+            id='nda-yes'
+            checked={isRequiredNda}
+            onChange={!readOnly && toggleNdaRequire}
+          />
+          <label className={styles['tc-RadioButton-label']} htmlFor='nda-yes'>
+            <div>yes</div>
+            <input type='hidden' />
+          </label>
+        </div>
+        <div className={styles.tcRadioButton}>
+          <input
+            name='nda'
+            type='radio'
+            id='nda-no'
+            checked={!isRequiredNda}
+            onChange={!readOnly && toggleNdaRequire}
+          />
+          <label className={styles['tc-RadioButton-label']} htmlFor='nda-no'>
+            <div>No</div>
+            <input type='hidden' />
+          </label>
+        </div>
       </div>
     </div>
   )

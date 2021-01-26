@@ -37,7 +37,9 @@ const ChallengeView = ({
   assignedMemberDetails,
   enableEdit,
   onLaunchChallenge,
-  onCloseTask }) => {
+  onCloseTask,
+  location }) => {
+  const params = new URLSearchParams(location.search)
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
 
@@ -148,7 +150,6 @@ const ChallengeView = ({
                 <span><span className={styles.fieldTitle}>Challenge Name:</span> {challenge.name}</span>
               </div>
             </div>
-            <NDAField challenge={challenge} readOnly />
             {isTask && <AssignedMemberField challenge={challenge} assignedMemberDetails={assignedMemberDetails} readOnly /> }
             <CopilotField challenge={{
               copilot
@@ -179,11 +180,26 @@ const ChallengeView = ({
                 </label>
               </div>
             </div>
-            {openAdvanceSettings && (<div className={cn(styles.row, styles.topRow)}>
-              <div className={styles.col}>
-                <span><span className={styles.fieldTitle}>Groups:</span> {groups}</span>
-              </div>
-            </div>)}
+            {openAdvanceSettings && (
+              <>
+                <NDAField beta challenge={challenge} readOnly />
+                {params.get('beta') === 'true' && (
+                  <div className={styles.row}>
+                    <div className={styles.col}>
+                      <span>
+                        <span className={styles.fieldTitle}>Terms:</span>
+                        {challenge.terms.map(term => term.id).join(', ')}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                <div className={cn(styles.row, styles.topRow)}>
+                  <div className={styles.col}>
+                    <span><span className={styles.fieldTitle}>Groups:</span> {groups}</span>
+                  </div>
+                </div>
+              </>
+            )}
             {
               <div className={styles.PhaseRow}>
                 <PhaseInput
@@ -267,7 +283,8 @@ ChallengeView.propTypes = {
   assignedMemberDetails: PropTypes.shape(),
   enableEdit: PropTypes.bool,
   onLaunchChallenge: PropTypes.func,
-  onCloseTask: PropTypes.func
+  onCloseTask: PropTypes.func,
+  location: PropTypes.object
 }
 
 export default withRouter(ChallengeView)

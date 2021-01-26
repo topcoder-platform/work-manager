@@ -195,7 +195,8 @@ class ChallengeEditor extends Component {
         challengeData.copilot = copilot || copilotFromResources
         challengeData.reviewer = reviewer || reviewerFromResources
         const challengeDetail = { ...challengeData }
-        const isOpenAdvanceSettings = challengeDetail.groups.length > 0
+        const isRequiredNda = challengeDetail.terms && _.some(challengeDetail.terms, { id: DEFAULT_NDA_UUID })
+        const isOpenAdvanceSettings = challengeDetail.groups.length > 0 || isRequiredNda
         setState({
           challenge: challengeDetail,
           assignedMemberDetails,
@@ -1116,6 +1117,8 @@ class ChallengeEditor extends Component {
   }
 
   render () {
+    const params = new URLSearchParams(this.props.location.search)
+
     const {
       isLaunch,
       isConfirm,
@@ -1359,7 +1362,6 @@ class ChallengeEditor extends Component {
               </div>
             </div>
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
-            <NDAField challenge={challenge} toggleNdaRequire={this.toggleNdaRequire} />
             {isTask && (
               <AssignedMemberField
                 challenge={challenge}
@@ -1392,8 +1394,15 @@ class ChallengeEditor extends Component {
             </div>
             { isOpenAdvanceSettings && (
               <React.Fragment>
-                {/* remove terms field and use default term */}
-                {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}
+                <NDAField challenge={challenge} toggleNdaRequire={this.toggleNdaRequire} />
+                {params.get('beta') && (
+                  <TermsField
+                    terms={metadata.challengeTerms}
+                    projectTerms={projectDetail.terms}
+                    challenge={challenge}
+                    onUpdateMultiSelect={this.onUpdateMultiSelect}
+                  />
+                )}
                 <GroupsField onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
               </React.Fragment>
             )}
@@ -1526,7 +1535,8 @@ ChallengeEditor.propTypes = {
   replaceResourceInRole: PropTypes.func,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
-  loggedInUser: PropTypes.shape().isRequired
+  loggedInUser: PropTypes.shape().isRequired,
+  location: PropTypes.object
 }
 
 export default withRouter(ChallengeEditor)
