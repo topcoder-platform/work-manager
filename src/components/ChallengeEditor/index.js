@@ -1116,6 +1116,8 @@ class ChallengeEditor extends Component {
   }
 
   render () {
+    const params = new URLSearchParams(this.props.location.search)
+
     const {
       isLaunch,
       isConfirm,
@@ -1395,6 +1397,16 @@ class ChallengeEditor extends Component {
                 {/* remove terms field and use default term */}
                 {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}
                 <GroupsField onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
+                {params.get('beta') && (
+                  <div className={styles.row}>
+                    <div className={styles.col}>
+                      <span>
+                        <span className={styles.fieldTitle}>Billing Account Id:</span>
+                        {projectDetail.billingAccountId}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </React.Fragment>
             )}
             {!isTask && (
@@ -1526,7 +1538,8 @@ ChallengeEditor.propTypes = {
   replaceResourceInRole: PropTypes.func,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
-  loggedInUser: PropTypes.shape().isRequired
+  loggedInUser: PropTypes.shape().isRequired,
+  location: PropTypes.object
 }
 
 export default withRouter(ChallengeEditor)
