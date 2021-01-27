@@ -150,7 +150,6 @@ const ChallengeView = ({
                 <span><span className={styles.fieldTitle}>Challenge Name:</span> {challenge.name}</span>
               </div>
             </div>
-            <NDAField challenge={challenge} readOnly />
             {isTask && <AssignedMemberField challenge={challenge} assignedMemberDetails={assignedMemberDetails} readOnly /> }
             <CopilotField challenge={{
               copilot
@@ -182,7 +181,8 @@ const ChallengeView = ({
               </div>
             </div>
             {openAdvanceSettings && (
-              <React.Fragment>
+              <>
+                <NDAField beta challenge={challenge} readOnly />
                 <div className={cn(styles.row, styles.topRow)}>
                   <div className={styles.col}>
                     <span><span className={styles.fieldTitle}>Groups:</span> {groups}</span>
@@ -198,7 +198,7 @@ const ChallengeView = ({
                     </div>
                   </div>
                 )}
-              </React.Fragment>
+              </>
             )}
             {
               <div className={styles.PhaseRow}>

@@ -195,7 +195,8 @@ class ChallengeEditor extends Component {
         challengeData.copilot = copilot || copilotFromResources
         challengeData.reviewer = reviewer || reviewerFromResources
         const challengeDetail = { ...challengeData }
-        const isOpenAdvanceSettings = challengeDetail.groups.length > 0
+        const isRequiredNda = challengeDetail.terms && _.some(challengeDetail.terms, { id: DEFAULT_NDA_UUID })
+        const isOpenAdvanceSettings = challengeDetail.groups.length > 0 || isRequiredNda
         setState({
           challenge: challengeDetail,
           assignedMemberDetails,
@@ -809,7 +810,7 @@ class ChallengeEditor extends Component {
 
   async createNewChallenge () {
     if (!this.props.isNew) return
-    const { metadata, createChallenge } = this.props
+    const { metadata, createChallenge, projectDetail } = this.props
     const { name, trackId, typeId } = this.state.challenge
     const { timelineTemplates } = metadata
     const isDesignChallenge = trackId === DES_TRACK_ID
@@ -837,6 +838,14 @@ class ChallengeEditor extends Component {
       timelineTemplateId: defaultTemplate.id,
       terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }]
       // prizeSets: this.getDefaultPrizeSets()
+    }
+    if (projectDetail.terms) {
+      const currTerms = new Set(newChallenge.terms.map(term => term.id))
+      newChallenge.terms.push(
+        ...projectDetail.terms
+          .filter(term => !currTerms.has(term))
+          .map(term => ({ id: term, roleId: SUBMITTER_ROLE_UUID }))
+      )
     }
     const discussions = this.getDiscussionsConfig(newChallenge)
     if (discussions) {
@@ -1361,7 +1370,6 @@ class ChallengeEditor extends Component {
               </div>
             </div>
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
-            <NDAField challenge={challenge} toggleNdaRequire={this.toggleNdaRequire} />
             {isTask && (
               <AssignedMemberField
                 challenge={challenge}
@@ -1394,6 +1402,7 @@ class ChallengeEditor extends Component {
             </div>
             { isOpenAdvanceSettings && (
               <React.Fragment>
+                <NDAField challenge={challenge} toggleNdaRequire={this.toggleNdaRequire} />
                 {/* remove terms field and use default term */}
                 {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}
                 <GroupsField onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
