@@ -13,11 +13,7 @@ const NDAField = ({ challenge, toggleNdaRequire, readOnly }) => {
       <div className={styles.row}>
         <div className={cn(styles.field, styles.col1, styles.fieldTitle)}>NDA Required :</div>
         <div className={cn(styles.field, styles.col2)}>
-          {
-            isRequiredNda
-              ? <div>Yes</div>
-              : <div>No</div>
-          }
+          { isRequiredNda ? 'Yes' : 'No' }
         </div>
       </div>
     )
@@ -36,8 +32,7 @@ const NDAField = ({ challenge, toggleNdaRequire, readOnly }) => {
             onChange={toggleNdaRequire}
           />
           <label className={styles['tc-RadioButton-label']} htmlFor='nda-yes'>
-            <div>yes</div>
-            <input type='hidden' />
+            <div>Yes</div>
           </label>
         </div>
         <div className={styles.tcRadioButton}>
@@ -50,7 +45,6 @@ const NDAField = ({ challenge, toggleNdaRequire, readOnly }) => {
           />
           <label className={styles['tc-RadioButton-label']} htmlFor='nda-no'>
             <div>No</div>
-            <input type='hidden' />
           </label>
         </div>
       </div>
