@@ -810,7 +810,8 @@ class ChallengeEditor extends Component {
 
   async createNewChallenge () {
     if (!this.props.isNew) return
-    const { metadata, createChallenge, projectDetail } = this.props
+    const { metadata, createChallenge, projectDetail, location } = this.props
+    const params = new URLSearchParams(location.search)
     const { name, trackId, typeId } = this.state.challenge
     const { timelineTemplates } = metadata
     const isDesignChallenge = trackId === DES_TRACK_ID
@@ -839,7 +840,7 @@ class ChallengeEditor extends Component {
       terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }]
       // prizeSets: this.getDefaultPrizeSets()
     }
-    if (projectDetail.terms) {
+    if (params.get('beta') === 'true' && projectDetail.terms) {
       const currTerms = new Set(newChallenge.terms.map(term => term.id))
       newChallenge.terms.push(
         ...projectDetail.terms

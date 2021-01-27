@@ -30,6 +30,8 @@ import {
   replaceResourceInRole
 } from '../../actions/challenges'
 
+import { loadProject } from '../../actions/projects'
+
 import { connect } from 'react-redux'
 import { SUBMITTER_ROLE_UUID, MESSAGE } from '../../config/constants'
 import { patchChallenge } from '../../services/challenges'
@@ -74,7 +76,8 @@ class ChallengeEditor extends Component {
       loadGroups,
       loadResourceRoles,
       loadChallengeDetails,
-      loadResources
+      loadResources,
+      loadProject
     } = this.props
     loadTimelineTemplates()
     loadChallengePhases()
@@ -85,6 +88,7 @@ class ChallengeEditor extends Component {
     // loadChallengeTerms()
     loadGroups()
     loadResourceRoles()
+    this.fetchProjectDetails(match, loadProject)
     this.fetchChallengeDetails(match, loadChallengeDetails, loadResources)
 
     // this.unlisten = this.props.history.listen(() => {
@@ -109,6 +113,14 @@ class ChallengeEditor extends Component {
       this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources)
     } else {
       this.setState({ challengeDetails: nextProps.challengeDetails })
+    }
+  }
+
+  async fetchProjectDetails (newMatch, loadProject) {
+    let projectId = _.get(newMatch.params, 'projectId', null)
+    projectId = projectId ? parseInt(projectId) : null
+    if (projectId) {
+      await loadProject(projectId)
     }
   }
 
@@ -413,7 +425,8 @@ ChallengeEditor.propTypes = {
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   createChallenge: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
-  replaceResourceInRole: PropTypes.func
+  replaceResourceInRole: PropTypes.func,
+  loadProject: PropTypes.func
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
 
@@ -450,7 +463,8 @@ const mapDispatchToProps = {
   partiallyUpdateChallengeDetails,
   deleteChallenge,
   createChallenge,
-  replaceResourceInRole
+  replaceResourceInRole,
+  loadProject
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChallengeEditor))
