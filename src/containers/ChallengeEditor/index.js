@@ -77,7 +77,8 @@ class ChallengeEditor extends Component {
       loadResourceRoles,
       loadChallengeDetails,
       loadResources,
-      loadProject
+      loadProject,
+      projectDetail
     } = this.props
     loadTimelineTemplates()
     loadChallengePhases()
@@ -88,7 +89,9 @@ class ChallengeEditor extends Component {
     // loadChallengeTerms()
     loadGroups()
     loadResourceRoles()
-    this.fetchProjectDetails(match, loadProject)
+    if (!projectDetail.terms) {
+      this.fetchProjectDetails(match, loadProject)
+    }
     this.fetchChallengeDetails(match, loadChallengeDetails, loadResources)
 
     // this.unlisten = this.props.history.listen(() => {
