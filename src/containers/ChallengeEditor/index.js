@@ -61,6 +61,7 @@ class ChallengeEditor extends Component {
     this.closeSuccessModal = this.closeSuccessModal.bind(this)
     this.onCloseTask = this.onCloseTask.bind(this)
     this.closeTask = this.closeTask.bind(this)
+    this.fetchProjectDetails = this.fetchProjectDetails.bind(this)
   }
 
   componentDidMount () {
@@ -76,9 +77,7 @@ class ChallengeEditor extends Component {
       loadGroups,
       loadResourceRoles,
       loadChallengeDetails,
-      loadResources,
-      loadProject,
-      projectDetail
+      loadResources
     } = this.props
     loadTimelineTemplates()
     loadChallengePhases()
@@ -89,11 +88,7 @@ class ChallengeEditor extends Component {
     // loadChallengeTerms()
     loadGroups()
     loadResourceRoles()
-    if (!projectDetail.terms) {
-      this.fetchProjectDetails(match, loadProject)
-    }
     this.fetchChallengeDetails(match, loadChallengeDetails, loadResources)
-
     // this.unlisten = this.props.history.listen(() => {
     //   const { isLoading } = this.props
     //   if (!isLoading) {
@@ -119,11 +114,11 @@ class ChallengeEditor extends Component {
     }
   }
 
-  async fetchProjectDetails (newMatch, loadProject) {
+  async fetchProjectDetails (newMatch) {
     let projectId = _.get(newMatch.params, 'projectId', null)
     projectId = projectId ? parseInt(projectId) : null
     if (projectId) {
-      await loadProject(projectId)
+      await this.props.loadProject(projectId)
     }
   }
 
@@ -133,6 +128,9 @@ class ChallengeEditor extends Component {
     const challengeId = _.get(newMatch.params, 'challengeId', null)
     await loadResources(challengeId)
     loadChallengeDetails(projectId, challengeId)
+    if (!challengeId) {
+      this.fetchProjectDetails(newMatch)
+    }
   }
 
   isEditable () {
