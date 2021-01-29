@@ -113,6 +113,8 @@ export const SET_FILTER_CHALLENGE_VALUE = 'SET_FILTER_CHALLENGE_VALUE'
 
 export const RESET_SIDEBAR_ACTIVE_PARAMS = 'RESET_SIDEBAR_ACTIVE_PARAMS'
 
+export const BETA_MODE_COOKIE_TAG = 'beta-mode'
+
 // Name of challenge tracks
 export const CHALLENGE_TRACKS = {
   DESIGN: DES_TRACK_ID,

@@ -8,13 +8,18 @@ import cn from 'classnames'
 import TopcoderLogo from '../../assets/images/topcoder-logo.png'
 import styles from './Sidebar.module.scss'
 
+import { isBetaMode } from '../../util/cookie'
+
 const Sidebar = ({
   projectId, resetSidebarActiveParams
 }) => {
   return (
     <div className={styles.sidebar}>
       <img src={TopcoderLogo} className={styles.logo} />
-      <div className={styles.title}>Work Manager</div>
+      <div className={styles.title}>
+        Work Manager
+        {isBetaMode() && <span className={styles.beta}>beta</span>}
+      </div>
       <Link to='/'>
         <div className={cn(styles.homeLink, { [styles.active]: !projectId })} onClick={resetSidebarActiveParams}>
           All Work
