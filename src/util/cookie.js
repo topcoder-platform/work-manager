@@ -16,14 +16,14 @@ export function getCookie (name) {
  * A function that set's a cookie
  */
 export function setCookie (name, value) {
-  document.cookie = `${name}=${value}`
+  document.cookie = `${name}=${value}; path=/`
 }
 
 /**
  * A function that removes Cookie by setting expiry date to past
  */
 export function removeCookie (name) {
-  document.cookie = `${name}=; expires=Thu, 18 Dec 2013 12:00:00 UTC;`
+  document.cookie = `${name}=; path=/; expires=Thu, 18 Dec 2013 12:00:00 UTC;`
 }
 
 /**
