@@ -21,6 +21,7 @@ import PhaseInput from '../../PhaseInput'
 import LegacyLinks from '../../LegacyLinks'
 import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
+import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
 import Tooltip from '../../Tooltip'
 import { MESSAGE, REVIEW_TYPES } from '../../../config/constants'
@@ -37,9 +38,8 @@ const ChallengeView = ({
   assignedMemberDetails,
   enableEdit,
   onLaunchChallenge,
-  onCloseTask,
-  location }) => {
-  const params = new URLSearchParams(location.search)
+  onCloseTask
+}) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
 
@@ -188,7 +188,7 @@ const ChallengeView = ({
                     <span><span className={styles.fieldTitle}>Groups:</span> {groups}</span>
                   </div>
                 </div>
-                {params.get('beta') && (
+                {isBetaMode() && (
                   <div className={styles.row}>
                     <div className={styles.col}>
                       <span>
@@ -283,8 +283,7 @@ ChallengeView.propTypes = {
   assignedMemberDetails: PropTypes.shape(),
   enableEdit: PropTypes.bool,
   onLaunchChallenge: PropTypes.func,
-  onCloseTask: PropTypes.func,
-  location: PropTypes.object
+  onCloseTask: PropTypes.func
 }
 
 export default withRouter(ChallengeView)

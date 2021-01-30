@@ -50,6 +50,7 @@ import LegacyLinks from '../LegacyLinks'
 import AssignedMemberField from './AssignedMember-Field'
 import Tooltip from '../Tooltip'
 import { getResourceRoleByName } from '../../util/tc'
+import { isBetaMode } from '../../util/cookie'
 
 const theme = {
   container: styles.modalContainer
@@ -810,8 +811,7 @@ class ChallengeEditor extends Component {
 
   async createNewChallenge () {
     if (!this.props.isNew) return
-    const { metadata, createChallenge, projectDetail, location } = this.props
-    const params = new URLSearchParams(location.search)
+    const { metadata, createChallenge, projectDetail } = this.props
     const { name, trackId, typeId } = this.state.challenge
     const { timelineTemplates } = metadata
     const isDesignChallenge = trackId === DES_TRACK_ID
@@ -840,7 +840,7 @@ class ChallengeEditor extends Component {
       terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }]
       // prizeSets: this.getDefaultPrizeSets()
     }
-    if (params.get('beta') === 'true' && projectDetail.terms) {
+    if (isBetaMode() && projectDetail.terms) {
       const currTerms = new Set(newChallenge.terms.map(term => term.id))
       newChallenge.terms.push(
         ...projectDetail.terms
@@ -1126,8 +1126,6 @@ class ChallengeEditor extends Component {
   }
 
   render () {
-    const params = new URLSearchParams(this.props.location.search)
-
     const {
       isLaunch,
       isConfirm,
@@ -1407,7 +1405,7 @@ class ChallengeEditor extends Component {
                 {/* remove terms field and use default term */}
                 {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}
                 <GroupsField onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
-                {params.get('beta') && (
+                {isBetaMode() && (
                   <div className={styles.row}>
                     <div className={styles.col}>
                       <span>
@@ -1548,8 +1546,7 @@ ChallengeEditor.propTypes = {
   replaceResourceInRole: PropTypes.func,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
-  loggedInUser: PropTypes.shape().isRequired,
-  location: PropTypes.object
+  loggedInUser: PropTypes.shape().isRequired
 }
 
 export default withRouter(ChallengeEditor)
