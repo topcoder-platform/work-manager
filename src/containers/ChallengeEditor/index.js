@@ -30,6 +30,8 @@ import {
   replaceResourceInRole
 } from '../../actions/challenges'
 
+import { loadProject } from '../../actions/projects'
+
 import { connect } from 'react-redux'
 import { SUBMITTER_ROLE_UUID, MESSAGE } from '../../config/constants'
 import { patchChallenge } from '../../services/challenges'
@@ -59,6 +61,7 @@ class ChallengeEditor extends Component {
     this.closeSuccessModal = this.closeSuccessModal.bind(this)
     this.onCloseTask = this.onCloseTask.bind(this)
     this.closeTask = this.closeTask.bind(this)
+    this.fetchProjectDetails = this.fetchProjectDetails.bind(this)
   }
 
   componentDidMount () {
@@ -86,7 +89,6 @@ class ChallengeEditor extends Component {
     loadGroups()
     loadResourceRoles()
     this.fetchChallengeDetails(match, loadChallengeDetails, loadResources)
-
     // this.unlisten = this.props.history.listen(() => {
     //   const { isLoading } = this.props
     //   if (!isLoading) {
@@ -112,12 +114,23 @@ class ChallengeEditor extends Component {
     }
   }
 
+  async fetchProjectDetails (newMatch) {
+    let projectId = _.get(newMatch.params, 'projectId', null)
+    projectId = projectId ? parseInt(projectId) : null
+    if (projectId) {
+      await this.props.loadProject(projectId)
+    }
+  }
+
   async fetchChallengeDetails (newMatch, loadChallengeDetails, loadResources) {
     let projectId = _.get(newMatch.params, 'projectId', null)
     projectId = projectId ? parseInt(projectId) : null
     const challengeId = _.get(newMatch.params, 'challengeId', null)
     await loadResources(challengeId)
     loadChallengeDetails(projectId, challengeId)
+    if (!challengeId) {
+      this.fetchProjectDetails(newMatch)
+    }
   }
 
   isEditable () {
@@ -413,7 +426,8 @@ ChallengeEditor.propTypes = {
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   createChallenge: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
-  replaceResourceInRole: PropTypes.func
+  replaceResourceInRole: PropTypes.func,
+  loadProject: PropTypes.func
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
 
@@ -450,7 +464,8 @@ const mapDispatchToProps = {
   partiallyUpdateChallengeDetails,
   deleteChallenge,
   createChallenge,
-  replaceResourceInRole
+  replaceResourceInRole,
+  loadProject
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChallengeEditor))
