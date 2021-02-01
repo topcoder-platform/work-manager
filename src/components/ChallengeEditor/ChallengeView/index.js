@@ -21,6 +21,7 @@ import PhaseInput from '../../PhaseInput'
 import LegacyLinks from '../../LegacyLinks'
 import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
+import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
 import Tooltip from '../../Tooltip'
 import { MESSAGE, REVIEW_TYPES } from '../../../config/constants'
@@ -37,7 +38,8 @@ const ChallengeView = ({
   assignedMemberDetails,
   enableEdit,
   onLaunchChallenge,
-  onCloseTask }) => {
+  onCloseTask
+}) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
 
@@ -148,7 +150,6 @@ const ChallengeView = ({
                 <span><span className={styles.fieldTitle}>Challenge Name:</span> {challenge.name}</span>
               </div>
             </div>
-            <NDAField challenge={challenge} readOnly />
             {isTask && <AssignedMemberField challenge={challenge} assignedMemberDetails={assignedMemberDetails} readOnly /> }
             <CopilotField challenge={{
               copilot
@@ -179,11 +180,26 @@ const ChallengeView = ({
                 </label>
               </div>
             </div>
-            {openAdvanceSettings && (<div className={cn(styles.row, styles.topRow)}>
-              <div className={styles.col}>
-                <span><span className={styles.fieldTitle}>Groups:</span> {groups}</span>
-              </div>
-            </div>)}
+            {openAdvanceSettings && (
+              <>
+                <NDAField beta challenge={challenge} readOnly />
+                <div className={cn(styles.row, styles.topRow)}>
+                  <div className={styles.col}>
+                    <span><span className={styles.fieldTitle}>Groups:</span> {groups}</span>
+                  </div>
+                </div>
+                {isBetaMode() && (
+                  <div className={styles.row}>
+                    <div className={styles.col}>
+                      <span>
+                        <span className={styles.fieldTitle}>Billing Account Id:</span>
+                        {projectDetail.billingAccountId}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
             {
               <div className={styles.PhaseRow}>
                 <PhaseInput

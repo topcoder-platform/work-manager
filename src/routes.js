@@ -5,6 +5,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Redirect, Route, Switch, withRouter } from 'react-router-dom'
 import _ from 'lodash'
+import { BETA_MODE_COOKIE_TAG } from './config/constants'
 import renderApp from './components/App'
 import TopBarContainer from './containers/TopbarContainer'
 import Sidebar from './containers/Sidebar'
@@ -15,6 +16,7 @@ import { saveToken } from './actions/auth'
 import { loadChallengeDetails } from './actions/challenges'
 import { connect } from 'react-redux'
 import { checkAllowedRoles } from './util/tc'
+import { setCookie, removeCookie, isBetaMode } from './util/cookie'
 
 const { ACCOUNTS_APP_LOGIN_URL } = process.env
 
@@ -70,6 +72,19 @@ class Routes extends React.Component {
       const redirectBackToUrl = window.location.origin + this.props.location.pathname
       window.location = ACCOUNTS_APP_LOGIN_URL + '?retUrl=' + redirectBackToUrl
     })
+  }
+
+  componentDidUpdate () {
+    const { search } = this.props.location
+    const params = new URLSearchParams(search)
+    if (!_.isEmpty(params.get('beta'))) {
+      if (params.get('beta') === 'true' && !isBetaMode()) {
+        setCookie(BETA_MODE_COOKIE_TAG, 'true')
+      } else if (params.get('beta') === 'false' && isBetaMode()) {
+        removeCookie(BETA_MODE_COOKIE_TAG)
+      }
+      this.props.history.push(this.props.location.pathname)
+    }
   }
 
   render () {
@@ -143,7 +158,8 @@ Routes.propTypes = {
   saveToken: PropTypes.func,
   location: PropTypes.object,
   isLoggedIn: PropTypes.bool,
-  token: PropTypes.string
+  token: PropTypes.string,
+  history: PropTypes.object
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Routes))
