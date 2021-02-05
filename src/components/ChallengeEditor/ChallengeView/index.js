@@ -9,6 +9,7 @@ import xss from 'xss'
 import { PrimaryButton } from '../../Buttons'
 import Track from '../../Track'
 import NDAField from '../NDAField'
+import UseSchedulingAPIField from '../UseSchedulingAPIField'
 import CopilotField from '../Copilot-Field'
 import ChallengeScheduleField from '../ChallengeSchedule-Field'
 import TextEditorField from '../TextEditor-Field'
@@ -197,6 +198,9 @@ const ChallengeView = ({
                       </span>
                     </div>
                   </div>
+                )}
+                {isBetaMode() && (
+                  <UseSchedulingAPIField challenge={challenge} readOnly />
                 )}
               </>
             )}
