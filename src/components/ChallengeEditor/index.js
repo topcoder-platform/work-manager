@@ -837,7 +837,8 @@ class ChallengeEditor extends Component {
       },
       descriptionFormat: 'markdown',
       timelineTemplateId: defaultTemplate.id,
-      terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }]
+      terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }],
+      groups: []
       // prizeSets: this.getDefaultPrizeSets()
     }
     if (isBetaMode() && projectDetail.terms) {
@@ -847,6 +848,9 @@ class ChallengeEditor extends Component {
           .filter(term => !currTerms.has(term))
           .map(term => ({ id: term, roleId: SUBMITTER_ROLE_UUID }))
       )
+    }
+    if (isBetaMode() && projectDetail.groups) {
+      newChallenge.groups.push(...projectDetail.groups)
     }
     const discussions = this.getDiscussionsConfig(newChallenge)
     if (discussions) {
