@@ -964,8 +964,8 @@ class ChallengeEditor extends Component {
         const reviewer = this.state.draftChallenge.data.reviewer
         const action = await partiallyUpdateChallengeDetails(challengeId, patchObject)
         const draftChallenge = { data: action.challengeDetails }
-        draftChallenge.copilot = copilot
-        draftChallenge.reviewer = reviewer
+        draftChallenge.data.copilot = copilot
+        draftChallenge.data.reviewer = reviewer
         const { challenge: oldChallenge } = this.state
         const newChallenge = { ...oldChallenge }
 
