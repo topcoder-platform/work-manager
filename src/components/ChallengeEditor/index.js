@@ -52,6 +52,7 @@ import Tooltip from '../Tooltip'
 import UseSchedulingAPIField from './UseSchedulingAPIField'
 import { getResourceRoleByName } from '../../util/tc'
 import { isBetaMode } from '../../util/cookie'
+import TimelineTemplateField from './TimelineTemplate-Field'
 
 const theme = {
   container: styles.modalContainer
@@ -1353,6 +1354,7 @@ class ChallengeEditor extends Component {
           <div className={styles.newFormContainer}>
             <TrackField tracks={metadata.challengeTracks} challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
+            <TimelineTemplateField challengeTimelines={metadata.challengeTimelines} timelineTemplates={metadata.timelineTemplates} challenge={challenge} onUpdateSelect={this.onUpdateSelect} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
           </div>
           { errorContainer }
