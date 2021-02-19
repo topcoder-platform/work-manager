@@ -11,7 +11,6 @@ const ChallengeTotalField = ({ challenge }) => {
     challengeTotal = _.flatten(challenge.prizeSets.map(p => p.prizes))
       .map(p => p.value)
       .map(v => convertDollarToInteger(v, '$'))
-      .map(v => +v)
       .reduce((prev, next) => prev + next, 0)
   }
   return (
