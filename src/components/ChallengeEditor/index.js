@@ -851,6 +851,9 @@ class ChallengeEditor extends Component {
       groups: []
       // prizeSets: this.getDefaultPrizeSets()
     }
+    if (isTask) {
+      newChallenge.legacy.pureV5Task = true
+    }
     if (projectDetail.terms) {
       const currTerms = new Set(newChallenge.terms.map(term => term.id))
       newChallenge.terms.push(
