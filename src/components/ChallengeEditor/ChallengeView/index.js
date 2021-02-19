@@ -189,16 +189,14 @@ const ChallengeView = ({
                     <span><span className={styles.fieldTitle}>Groups:</span> {groups}</span>
                   </div>
                 </div>
-                {isBetaMode() && (
-                  <div className={styles.row}>
-                    <div className={styles.col}>
-                      <span>
-                        <span className={styles.fieldTitle}>Billing Account Id:</span>
-                        {projectDetail.billingAccountId}
-                      </span>
-                    </div>
+                <div className={styles.row}>
+                  <div className={styles.col}>
+                    <span>
+                      <span className={styles.fieldTitle}>Billing Account Id:</span>
+                      {projectDetail.billingAccountId}
+                    </span>
                   </div>
-                )}
+                </div>
                 {isBetaMode() && (
                   <UseSchedulingAPIField challenge={challenge} readOnly />
                 )}

@@ -851,7 +851,7 @@ class ChallengeEditor extends Component {
       groups: []
       // prizeSets: this.getDefaultPrizeSets()
     }
-    if (isBetaMode() && projectDetail.terms) {
+    if (projectDetail.terms) {
       const currTerms = new Set(newChallenge.terms.map(term => term.id))
       newChallenge.terms.push(
         ...projectDetail.terms
@@ -859,7 +859,7 @@ class ChallengeEditor extends Component {
           .map(term => ({ id: term, roleId: SUBMITTER_ROLE_UUID }))
       )
     }
-    if (isBetaMode() && projectDetail.groups) {
+    if (projectDetail.groups) {
       newChallenge.groups.push(...projectDetail.groups)
     }
     const discussions = this.getDiscussionsConfig(newChallenge)
@@ -1419,16 +1419,14 @@ class ChallengeEditor extends Component {
                 {/* remove terms field and use default term */}
                 {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}
                 <GroupsField onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
-                {isBetaMode() && (
-                  <div className={styles.row}>
-                    <div className={styles.col}>
-                      <span>
-                        <span className={styles.fieldTitle}>Billing Account Id:</span>
-                        {projectDetail.billingAccountId}
-                      </span>
-                    </div>
+                <div className={styles.row}>
+                  <div className={styles.col}>
+                    <span>
+                      <span className={styles.fieldTitle}>Billing Account Id:</span>
+                      {projectDetail.billingAccountId}
+                    </span>
                   </div>
-                )}
+                </div>
                 {isBetaMode() && (
                   <UseSchedulingAPIField challenge={challenge} toggleUseSchedulingAPI={this.toggleUseSchedulingAPI} />
                 )}
