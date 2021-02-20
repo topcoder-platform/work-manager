@@ -111,7 +111,7 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
     )
   }
 
-  return challenge.legacyId || challenge.isTask ? (
+  return challenge.legacyId || isTask ? (
     <div className={styles.linkGroup}>
       <div className={styles.linkGroupLeft}>
         <a className={styles.link} href={communityAppUrl} target='_blank'>View Challenge</a>

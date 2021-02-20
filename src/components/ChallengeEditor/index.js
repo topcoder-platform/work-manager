@@ -1321,7 +1321,7 @@ class ChallengeEditor extends Component {
               </div>
               {isDraft && (
                 <div className={styles.button}>
-                  {challenge.legacyId || challenge.isTask ? (
+                  {challenge.legacyId || isTask ? (
                     <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
                   ) : (
                     <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
