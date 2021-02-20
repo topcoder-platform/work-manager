@@ -96,7 +96,7 @@ const ChallengeView = ({
         {
           challenge.status === 'Draft' && (
             <div className={styles.button}>
-              {challenge.legacyId ? (
+              {(challenge.legacyId || challenge.isTask) ? (
                 <PrimaryButton text={'Launch'} type={'info'} onClick={onLaunchChallenge} />
               ) : (
                 <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
