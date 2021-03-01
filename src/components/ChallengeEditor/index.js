@@ -1160,6 +1160,7 @@ class ChallengeEditor extends Component {
       token,
       removeAttachment,
       failedToLoad,
+      errorMessage,
       projectDetail,
       attachments
     } = this.props
@@ -1180,7 +1181,7 @@ class ChallengeEditor extends Component {
     if (failedToLoad) {
       return (
         <div className={styles.wrapper}>
-          <div className={styles.title}>There was an error loading the challenge</div>
+          <div className={styles.title}>{errorMessage || 'There was an error loading the challenge'}</div>
           <br />
           <div className={styles.container}>
             <div className={styles.formContainer}>
@@ -1557,6 +1558,7 @@ ChallengeEditor.propTypes = {
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string.isRequired,
   failedToLoad: PropTypes.bool,
+  errorMessage: PropTypes.string,
   history: PropTypes.any.isRequired,
   assignedMemberDetails: PropTypes.shape(),
   updateChallengeDetails: PropTypes.func.isRequired,
