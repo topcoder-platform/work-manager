@@ -677,13 +677,18 @@ class ChallengeEditor extends Component {
       return false
     }
 
-    return _.every(challengePrizes.prizes, (prize) => {
+    return _.every(challengePrizes.prizes, (prize, index) => {
       if (prize.value === '') {
         return false
       }
       const prizeNumber = parseInt(prize.value)
       if (prizeNumber <= 0 || prizeNumber > 1000000) {
         return false
+      }
+      if (index > 0) {
+        if (+prize.value > +challengePrizes.prizes[index - 1].value) {
+          return false
+        }
       }
       return true
     })
