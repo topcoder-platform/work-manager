@@ -237,7 +237,11 @@ const ChallengeView = ({
             </div>
           </div>
           <div className={styles.group}>
-            <div className={styles.title}>Public specification <span>*</span></div>
+            <div className={styles.title}>Public specification <span>*</span>
+              <div>
+                <i>Access specification templates <a href='https://github.com/topcoder-platform-templates/specification-templates'>here</a></i>
+              </div>
+            </div>
             <TextEditorField
               challengeTags={metadata.challengeTags}
               challenge={challenge}
