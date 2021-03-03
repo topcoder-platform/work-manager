@@ -28,6 +28,13 @@
   span {
     color: $tc-red;
   }
+
+  .errorMessage {
+    text-align: left;
+    margin-left: 60px;
+    font-size: 25px;
+    color: $tc-red;
+  }
 }
 
 .textRequired {
@@ -232,7 +239,6 @@
 }
 
 .error {
-  text-align: right;
   padding-right: 40px;
   padding-bottom: 20px;
   color: $tc-red
@@ -332,6 +338,7 @@
       line-height: 36px;
       margin-bottom: 30px;
       margin-top: 0;
+
     }
 
     span {

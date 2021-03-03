@@ -1181,7 +1181,7 @@ class ChallengeEditor extends Component {
     if (failedToLoad) {
       return (
         <div className={styles.wrapper}>
-          <div className={styles.title}>{errorMessage || 'There was an error loading the challenge'}</div>
+          <div className={styles.title}>{errorMessage ? <div className={styles.errorMessage}>{`Error : ${errorMessage}`}</div> : 'There was an error loading the challenge'}</div>
           <br />
           <div className={styles.container}>
             <div className={styles.formContainer}>
