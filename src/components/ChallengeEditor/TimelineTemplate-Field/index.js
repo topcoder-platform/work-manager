@@ -80,7 +80,7 @@ class TimelineTemplateField extends Component {
       <>
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)}>
-            <label htmlFor='type'>Timeline Template <span>*</span> :</label>
+            <label htmlFor='type'>Timeline Template {!this.props.readOnly && <span>*</span>} :</label>
           </div>
           <div className={cn(styles.field, styles.col2, { [styles.disabled]: this.state.validOptions.length === 0 })}>
             <Select
@@ -90,7 +90,7 @@ class TimelineTemplateField extends Component {
               placeholder='Timeline Template'
               isClearable={false}
               onChange={(e) => this.props.onUpdateSelect(e.value, false, 'timelineTemplateId')}
-              isDisabled={this.state.validOptions.length === 0}
+              isDisabled={this.state.validOptions.length === 0 || this.props.readOnly}
             />
           </div>
         </div>
@@ -107,14 +107,16 @@ class TimelineTemplateField extends Component {
 
 TimelineTemplateField.defaultProps = {
   challengeTimelines: [],
-  timelineTemplates: []
+  timelineTemplates: [],
+  readOnly: false
 }
 
 TimelineTemplateField.propTypes = {
   challengeTimelines: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   timelineTemplates: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,
-  onUpdateSelect: PropTypes.func.isRequired
+  onUpdateSelect: PropTypes.func.isRequired,
+  readOnly: PropTypes.bool
 }
 
 export default TimelineTemplateField
