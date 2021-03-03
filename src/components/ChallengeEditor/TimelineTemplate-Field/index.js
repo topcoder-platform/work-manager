@@ -19,24 +19,20 @@ class TimelineTemplateField extends Component {
   }
 
   componentDidMount () {
-    this.checkData()
+    const { challengeTimelines, timelineTemplates, challenge } = this.props
+    this.checkData(challengeTimelines, timelineTemplates, challenge)
   }
 
-  shouldComponentUpdate (nextProps) {
-    const { onUpdateSelect, challengeTimelines, timelineTemplates, challenge } = nextProps
-    const hasSelectedTypeAndTrack = !_.isEmpty(challenge.typeId) && !_.isEmpty(challenge.trackId)
-    if ((hasSelectedTypeAndTrack && this.state.validOptions.length === 0) || this.state.matchString !== `${challenge.typeId}-${challenge.trackId}-${this.state.selectedOption.value}`) {
-      this.checkData(onUpdateSelect, challengeTimelines, timelineTemplates, challenge)
-    }
-    return true
+  componentWillUnmount () {
+    this.props.onUpdateSelect(this.state.selectedOption.value, false, 'timelineTemplateId')
   }
 
   loadSelectedOption (validOptions, value) {
-    if (!value) return
+    // if (!value) return
     const { timelineTemplates, challenge } = this.props
     const selectedOption = {}
     const selectedTemplate = _.find(timelineTemplates, t => t.id === (value))
-    if (!selectedTemplate) return
+    // if (!selectedTemplate) return
     selectedOption.label = selectedTemplate.name
     selectedOption.value = selectedTemplate.id
     this.setState({
@@ -46,19 +42,18 @@ class TimelineTemplateField extends Component {
     })
   }
 
-  checkData () {
-    const { onUpdateSelect, challengeTimelines, timelineTemplates, challenge } = this.props
+  checkData (challengeTimelines, timelineTemplates, challenge) {
     const availableTemplates = _.filter(challengeTimelines, ct => ct.typeId === challenge.typeId && ct.trackId === challenge.trackId)
     const availableTemplateIds = availableTemplates.map(tt => tt.timelineTemplateId)
     const validOptions = _.filter(timelineTemplates, t => _.includes(availableTemplateIds, t.id))
     const defaultValue = _.get(_.find(availableTemplates, t => t.isDefault), 'timelineTemplateId')
     if (challenge.timelineTemplateId) {
-      if (!_.includes(validOptions.map(o => o.id), challenge.timelineTemplateId)) {
-        onUpdateSelect(defaultValue || '', false, 'timelineTemplateId')
-        return this.loadSelectedOption(validOptions, defaultValue)
+      if (!_.includes(_.map(validOptions, o => o.id), challenge.timelineTemplateId)) {
+        this.loadSelectedOption(validOptions, defaultValue)
+      } else {
+        this.loadSelectedOption(validOptions, challenge.timelineTemplateId)
       }
     } else if (defaultValue) {
-      onUpdateSelect(defaultValue, false, 'timelineTemplateId')
       return this.loadSelectedOption(validOptions, defaultValue)
     }
   }
@@ -75,6 +70,11 @@ class TimelineTemplateField extends Component {
   }
 
   render () {
+    const { challengeTimelines, timelineTemplates, challenge } = this.props
+    const hasSelectedTypeAndTrack = !_.isEmpty(challenge.typeId) && !_.isEmpty(challenge.trackId)
+    if ((hasSelectedTypeAndTrack && this.state.validOptions.length === 0) || this.state.matchString !== `${challenge.typeId}-${challenge.trackId}-${this.state.selectedOption.value}`) {
+      this.checkData(challengeTimelines, timelineTemplates, challenge)
+    }
     const error = this.getErrorMessage()
     return (
       <>
@@ -89,7 +89,10 @@ class TimelineTemplateField extends Component {
               options={this.state.validOptions.map(type => ({ label: type.name, value: type.id }))}
               placeholder='Timeline Template'
               isClearable={false}
-              onChange={(e) => this.props.onUpdateSelect(e.value, false, 'timelineTemplateId')}
+              onChange={(e) => {
+                this.props.onUpdateSelect(e.value, false, 'timelineTemplateId')
+                this.loadSelectedOption(this.state.validOptions, e.value)
+              }}
               isDisabled={this.state.validOptions.length === 0 || this.props.readOnly}
             />
           </div>

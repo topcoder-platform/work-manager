@@ -1434,6 +1434,7 @@ class ChallengeEditor extends Component {
                 {isBetaMode() && (
                   <UseSchedulingAPIField challenge={challenge} toggleUseSchedulingAPI={this.toggleUseSchedulingAPI} />
                 )}
+                <TimelineTemplateField challengeTimelines={metadata.challengeTimelines} timelineTemplates={metadata.timelineTemplates} challenge={challenge} onUpdateSelect={this.onUpdateSelect} />
               </React.Fragment>
             )}
             {!isTask && (
