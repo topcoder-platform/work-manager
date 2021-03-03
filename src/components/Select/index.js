@@ -11,7 +11,6 @@ export default function Select (props) {
       ref={selectRef}
       {...props}
       autosize={false}
-      isClearable
       styles={styles}
     />
   )
