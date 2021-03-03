@@ -10,6 +10,8 @@ process.on('unhandledRejection', err => {
 // Ensure environment variables are read.
 require('../config/env')
 
+console.log(`Build script is run with FILE_PICKER_API_KEY=${process.env.FILE_PICKER_API_KEY}`)
+
 const path = require('path')
 const chalk = require('chalk')
 const fs = require('fs-extra')

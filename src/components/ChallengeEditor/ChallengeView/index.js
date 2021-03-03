@@ -9,6 +9,7 @@ import xss from 'xss'
 import { PrimaryButton } from '../../Buttons'
 import Track from '../../Track'
 import NDAField from '../NDAField'
+import UseSchedulingAPIField from '../UseSchedulingAPIField'
 import CopilotField from '../Copilot-Field'
 import ChallengeScheduleField from '../ChallengeSchedule-Field'
 import TextEditorField from '../TextEditor-Field'
@@ -21,6 +22,7 @@ import PhaseInput from '../../PhaseInput'
 import LegacyLinks from '../../LegacyLinks'
 import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
+import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
 import Tooltip from '../../Tooltip'
 import { MESSAGE, REVIEW_TYPES } from '../../../config/constants'
@@ -28,6 +30,7 @@ import { MESSAGE, REVIEW_TYPES } from '../../../config/constants'
 const ChallengeView = ({
   projectDetail,
   challenge,
+  attachments,
   metadata,
   challengeResources,
   token,
@@ -36,7 +39,8 @@ const ChallengeView = ({
   assignedMemberDetails,
   enableEdit,
   onLaunchChallenge,
-  onCloseTask }) => {
+  onCloseTask
+}) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
 
@@ -82,15 +86,17 @@ const ChallengeView = ({
   return (
     <div className={styles.wrapper}>
       <Helmet title='View Details' />
-      <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsLeft)}>
-        <LegacyLinks challenge={challenge} />
-      </div>
+      {!isTask && (
+        <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsLeft)}>
+          <LegacyLinks challenge={challenge} />
+        </div>
+      )}
       <div className={styles.title}>View Details</div>
       <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsRight)}>
         {
           challenge.status === 'Draft' && (
             <div className={styles.button}>
-              {challenge.legacyId ? (
+              {(challenge.legacyId || isTask) ? (
                 <PrimaryButton text={'Launch'} type={'info'} onClick={onLaunchChallenge} />
               ) : (
                 <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
@@ -147,7 +153,6 @@ const ChallengeView = ({
                 <span><span className={styles.fieldTitle}>Challenge Name:</span> {challenge.name}</span>
               </div>
             </div>
-            <NDAField challenge={challenge} readOnly />
             {isTask && <AssignedMemberField challenge={challenge} assignedMemberDetails={assignedMemberDetails} readOnly /> }
             <CopilotField challenge={{
               copilot
@@ -178,11 +183,27 @@ const ChallengeView = ({
                 </label>
               </div>
             </div>
-            {openAdvanceSettings && (<div className={cn(styles.row, styles.topRow)}>
-              <div className={styles.col}>
-                <span><span className={styles.fieldTitle}>Groups:</span> {groups}</span>
-              </div>
-            </div>)}
+            {openAdvanceSettings && (
+              <>
+                <NDAField beta challenge={challenge} readOnly />
+                <div className={cn(styles.row, styles.topRow)}>
+                  <div className={styles.col}>
+                    <span><span className={styles.fieldTitle}>Groups:</span> {groups}</span>
+                  </div>
+                </div>
+                <div className={styles.row}>
+                  <div className={styles.col}>
+                    <span>
+                      <span className={styles.fieldTitle}>Billing Account Id:</span>
+                      {projectDetail.billingAccountId}
+                    </span>
+                  </div>
+                </div>
+                {isBetaMode() && (
+                  <UseSchedulingAPIField challenge={challenge} readOnly />
+                )}
+              </>
+            )}
             {
               <div className={styles.PhaseRow}>
                 <PhaseInput
@@ -222,13 +243,13 @@ const ChallengeView = ({
               challenge={challenge}
               readOnly
             />
-            { false && (
-              <AttachmentField
-                challenge={challenge}
-                token={token}
-                readOnly
-              />
-            )}
+            {/* hide until challenge API change is pushed to PROD https://github.com/topcoder-platform/challenge-api/issues/348 */}
+            {false && <AttachmentField
+              challengeId={challenge.id}
+              attachments={attachments}
+              token={token}
+              readOnly
+            />}
             <ChallengePrizesField challenge={challenge} readOnly />
             <CopilotFeeField challenge={challenge} readOnly />
             <ChallengeTotalField challenge={challenge} />
@@ -257,6 +278,7 @@ ChallengeView.propTypes = {
   }).isRequired,
   projectDetail: PropTypes.object,
   challenge: PropTypes.object,
+  attachments: PropTypes.array,
   metadata: PropTypes.object,
   token: PropTypes.string,
   isLoading: PropTypes.bool.isRequired,

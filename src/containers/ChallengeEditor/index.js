@@ -19,7 +19,7 @@ import {
   // loadChallengeTerms,
   loadGroups,
   loadChallengeDetails,
-  createAttachment,
+  createAttachments,
   removeAttachment,
   loadResources,
   loadResourceRoles,
@@ -29,6 +29,8 @@ import {
   createChallenge,
   replaceResourceInRole
 } from '../../actions/challenges'
+
+import { loadProject } from '../../actions/projects'
 
 import { connect } from 'react-redux'
 import { SUBMITTER_ROLE_UUID, MESSAGE } from '../../config/constants'
@@ -59,6 +61,7 @@ class ChallengeEditor extends Component {
     this.closeSuccessModal = this.closeSuccessModal.bind(this)
     this.onCloseTask = this.onCloseTask.bind(this)
     this.closeTask = this.closeTask.bind(this)
+    this.fetchProjectDetails = this.fetchProjectDetails.bind(this)
   }
 
   componentDidMount () {
@@ -86,7 +89,6 @@ class ChallengeEditor extends Component {
     loadGroups()
     loadResourceRoles()
     this.fetchChallengeDetails(match, loadChallengeDetails, loadResources)
-
     // this.unlisten = this.props.history.listen(() => {
     //   const { isLoading } = this.props
     //   if (!isLoading) {
@@ -112,12 +114,23 @@ class ChallengeEditor extends Component {
     }
   }
 
+  async fetchProjectDetails (newMatch) {
+    let projectId = _.get(newMatch.params, 'projectId', null)
+    projectId = projectId ? parseInt(projectId) : null
+    if (projectId) {
+      await this.props.loadProject(projectId)
+    }
+  }
+
   async fetchChallengeDetails (newMatch, loadChallengeDetails, loadResources) {
     let projectId = _.get(newMatch.params, 'projectId', null)
     projectId = projectId ? parseInt(projectId) : null
     const challengeId = _.get(newMatch.params, 'challengeId', null)
     await loadResources(challengeId)
     loadChallengeDetails(projectId, challengeId)
+    if (!challengeId) {
+      this.fetchProjectDetails(newMatch)
+    }
   }
 
   isEditable () {
@@ -227,7 +240,7 @@ class ChallengeEditor extends Component {
       // challengeDetails,
       challengeResources,
       metadata,
-      createAttachment,
+      createAttachments,
       attachments,
       token,
       removeAttachment,
@@ -307,7 +320,7 @@ class ChallengeEditor extends Component {
             projectId={_.get(match.params, 'projectId', null)}
             challengeId={challengeId}
             isNew={!_.has(match.params, 'challengeId')}
-            uploadAttachment={createAttachment}
+            uploadAttachments={createAttachments}
             attachments={attachments}
             token={token}
             removeAttachment={removeAttachment}
@@ -334,7 +347,7 @@ class ChallengeEditor extends Component {
             projectId={_.get(match.params, 'projectId', null)}
             challengeId={challengeId}
             isNew={!_.has(match.params, 'challengeId')}
-            uploadAttachment={createAttachment}
+            uploadAttachments={createAttachments}
             attachments={attachments}
             token={token}
             removeAttachment={removeAttachment}
@@ -359,6 +372,7 @@ class ChallengeEditor extends Component {
             metadata={metadata}
             projectDetail={projectDetail}
             challenge={challengeDetails}
+            attachments={attachments}
             challengeResources={challengeResources}
             token={token}
             challengeId={challengeId}
@@ -402,7 +416,7 @@ ChallengeEditor.propTypes = {
     challengeTypes: PropTypes.array
   }),
   isLoading: PropTypes.bool,
-  createAttachment: PropTypes.func,
+  createAttachments: PropTypes.func,
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string,
   loggedInUser: PropTypes.object,
@@ -412,7 +426,8 @@ ChallengeEditor.propTypes = {
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   createChallenge: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
-  replaceResourceInRole: PropTypes.func
+  replaceResourceInRole: PropTypes.func,
+  loadProject: PropTypes.func
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
 
@@ -440,7 +455,7 @@ const mapDispatchToProps = {
   loadChallengeTimelines,
   loadChallengeTags,
   loadGroups,
-  createAttachment,
+  createAttachments,
   removeAttachment,
   // loadChallengeTerms,
   loadResources,
@@ -449,7 +464,8 @@ const mapDispatchToProps = {
   partiallyUpdateChallengeDetails,
   deleteChallenge,
   createChallenge,
-  replaceResourceInRole
+  replaceResourceInRole,
+  loadProject
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(ChallengeEditor))

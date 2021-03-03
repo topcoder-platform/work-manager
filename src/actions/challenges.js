@@ -5,7 +5,8 @@ import {
   fetchGroups,
   fetchTimelineTemplates,
   fetchChallengePhases,
-  uploadAttachment,
+  createAttachments as createAttachmentsAPI,
+  removeAttachment as removeAttachmentAPI,
   fetchChallenge,
   fetchChallenges,
   fetchChallengeTerms,
@@ -27,12 +28,14 @@ import {
   LOAD_CHALLENGES_FAILURE,
   LOAD_CHALLENGES_PENDING,
   LOAD_CHALLENGES_SUCCESS,
-  UPLOAD_ATTACHMENT_FAILURE,
-  UPLOAD_ATTACHMENT_PENDING,
-  UPLOAD_ATTACHMENT_SUCCESS,
+  CREATE_ATTACHMENT_FAILURE,
+  CREATE_ATTACHMENT_PENDING,
+  CREATE_ATTACHMENT_SUCCESS,
+  REMOVE_ATTACHMENT_FAILURE,
+  REMOVE_ATTACHMENT_PENDING,
+  REMOVE_ATTACHMENT_SUCCESS,
   CREATE_CHALLENGE_RESOURCE,
   DELETE_CHALLENGE_RESOURCE,
-  REMOVE_ATTACHMENT,
   PAGE_SIZE,
   UPDATE_CHALLENGE_DETAILS_PENDING,
   UPDATE_CHALLENGE_DETAILS_SUCCESS,
@@ -380,39 +383,51 @@ export function loadGroups () {
   }
 }
 
-export function createAttachment (challengeId, file) {
-  return async (dispatch, getState) => {
-    const getUploadingId = () => _.get(getState(), 'challenge.uploadingId')
+export function createAttachments (challengeId, files) {
+  return async (dispatch) => {
+    dispatch({
+      type: CREATE_ATTACHMENT_PENDING,
+      challengeId,
+      files
+    })
 
-    if (challengeId !== getUploadingId()) {
+    try {
+      const attachment = await createAttachmentsAPI(challengeId, files)
       dispatch({
-        type: UPLOAD_ATTACHMENT_PENDING,
-        challengeId
+        type: CREATE_ATTACHMENT_SUCCESS,
+        attachments: attachment.data
       })
-
-      try {
-        const attachment = await uploadAttachment(challengeId, file)
-        dispatch({
-          type: UPLOAD_ATTACHMENT_SUCCESS,
-          attachment: attachment.data,
-          filename: file.name
-        })
-      } catch (error) {
-        dispatch({
-          type: UPLOAD_ATTACHMENT_FAILURE,
-          filename: file.name
-        })
-      }
+    } catch (error) {
+      dispatch({
+        type: CREATE_ATTACHMENT_FAILURE,
+        files
+      })
     }
   }
 }
 
-export function removeAttachment (attachmentId) {
-  return (dispatch) => {
+export function removeAttachment (challengeId, attachmentId) {
+  return async (dispatch) => {
     dispatch({
-      type: REMOVE_ATTACHMENT,
+      type: REMOVE_ATTACHMENT_PENDING,
+      challengeId,
       attachmentId
     })
+
+    try {
+      await removeAttachmentAPI(challengeId, attachmentId)
+      dispatch({
+        type: REMOVE_ATTACHMENT_SUCCESS,
+        challengeId,
+        attachmentId
+      })
+    } catch (error) {
+      dispatch({
+        type: REMOVE_ATTACHMENT_FAILURE,
+        challengeId,
+        attachmentId
+      })
+    }
   }
 }
 

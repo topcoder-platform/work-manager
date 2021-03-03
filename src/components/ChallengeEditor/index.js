@@ -49,7 +49,9 @@ import PhaseInput from '../PhaseInput'
 import LegacyLinks from '../LegacyLinks'
 import AssignedMemberField from './AssignedMember-Field'
 import Tooltip from '../Tooltip'
+import UseSchedulingAPIField from './UseSchedulingAPIField'
 import { getResourceRoleByName } from '../../util/tc'
+import { isBetaMode } from '../../util/cookie'
 
 const theme = {
   container: styles.modalContainer
@@ -97,7 +99,7 @@ class ChallengeEditor extends Component {
     this.updateFileTypesMetadata = this.updateFileTypesMetadata.bind(this)
     this.toggleAdvanceSettings = this.toggleAdvanceSettings.bind(this)
     this.toggleNdaRequire = this.toggleNdaRequire.bind(this)
-    this.removeAttachment = this.removeAttachment.bind(this)
+    this.toggleUseSchedulingAPI = this.toggleUseSchedulingAPI.bind(this)
     this.removePhase = this.removePhase.bind(this)
     this.resetPhase = this.resetPhase.bind(this)
     this.savePhases = this.savePhases.bind(this)
@@ -196,7 +198,8 @@ class ChallengeEditor extends Component {
         challengeData.copilot = copilot || copilotFromResources
         challengeData.reviewer = reviewer || reviewerFromResources
         const challengeDetail = { ...challengeData }
-        const isOpenAdvanceSettings = challengeDetail.groups.length > 0
+        const isRequiredNda = challengeDetail.terms && _.some(challengeDetail.terms, { id: DEFAULT_NDA_UUID })
+        const isOpenAdvanceSettings = challengeDetail.groups.length > 0 || isRequiredNda
         setState({
           challenge: challengeDetail,
           assignedMemberDetails,
@@ -594,12 +597,11 @@ class ChallengeEditor extends Component {
     this.setState({ challenge: newChallenge })
   }
 
-  removeAttachment (file) {
+  toggleUseSchedulingAPI () {
     const { challenge } = this.state
     const newChallenge = { ...challenge }
-    const { attachments: oldAttachments } = challenge
-    const newAttachments = _.remove(oldAttachments, att => att.fileName !== file)
-    newChallenge.attachments = _.clone(newAttachments)
+    const useSchedulingApi = !_.get(newChallenge, 'legacy.useSchedulingAPI', false)
+    _.set(newChallenge, 'legacy.useSchedulingAPI', useSchedulingApi)
     this.setState({ challenge: newChallenge })
   }
 
@@ -675,13 +677,18 @@ class ChallengeEditor extends Component {
       return false
     }
 
-    return _.every(challengePrizes.prizes, (prize) => {
+    return _.every(challengePrizes.prizes, (prize, index) => {
       if (prize.value === '') {
         return false
       }
       const prizeNumber = parseInt(prize.value)
       if (prizeNumber <= 0 || prizeNumber > 1000000) {
         return false
+      }
+      if (index > 0) {
+        if (+prize.value > +challengePrizes.prizes[index - 1].value) {
+          return false
+        }
       }
       return true
     })
@@ -765,18 +772,6 @@ class ChallengeEditor extends Component {
     this.setState({ challenge: newChallenge })
   }
 
-  onUploadFile (files) {
-    const { challenge: oldChallenge } = this.state
-    const newChallenge = { ...oldChallenge }
-    _.forEach(files, (file) => {
-      newChallenge.attachments.push({
-        fileName: file.name,
-        size: file.size
-      })
-    })
-    this.setState({ challenge: newChallenge })
-  }
-
   collectChallengeData (status) {
     const { attachments, metadata } = this.props
     const challenge = pick([
@@ -831,7 +826,7 @@ class ChallengeEditor extends Component {
 
   async createNewChallenge () {
     if (!this.props.isNew) return
-    const { metadata, createChallenge } = this.props
+    const { metadata, createChallenge, projectDetail } = this.props
     const { name, trackId, typeId } = this.state.challenge
     const { timelineTemplates } = metadata
     const isDesignChallenge = trackId === DES_TRACK_ID
@@ -857,8 +852,23 @@ class ChallengeEditor extends Component {
       },
       descriptionFormat: 'markdown',
       timelineTemplateId: defaultTemplate.id,
-      terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }]
+      terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }],
+      groups: []
       // prizeSets: this.getDefaultPrizeSets()
+    }
+    if (isTask) {
+      newChallenge.legacy.pureV5Task = true
+    }
+    if (projectDetail.terms) {
+      const currTerms = new Set(newChallenge.terms.map(term => term.id))
+      newChallenge.terms.push(
+        ...projectDetail.terms
+          .filter(term => !currTerms.has(term))
+          .map(term => ({ id: term, roleId: SUBMITTER_ROLE_UUID }))
+      )
+    }
+    if (projectDetail.groups) {
+      newChallenge.groups.push(...projectDetail.groups)
     }
     const discussions = this.getDiscussionsConfig(newChallenge)
     if (discussions) {
@@ -962,8 +972,8 @@ class ChallengeEditor extends Component {
         const reviewer = this.state.draftChallenge.data.reviewer
         const action = await partiallyUpdateChallengeDetails(challengeId, patchObject)
         const draftChallenge = { data: action.challengeDetails }
-        draftChallenge.copilot = copilot
-        draftChallenge.reviewer = reviewer
+        draftChallenge.data.copilot = copilot
+        draftChallenge.data.reviewer = reviewer
         const { challenge: oldChallenge } = this.state
         const newChallenge = { ...oldChallenge }
 
@@ -1151,11 +1161,12 @@ class ChallengeEditor extends Component {
       isNew,
       isLoading,
       metadata,
-      uploadAttachment,
+      uploadAttachments,
       token,
       removeAttachment,
       failedToLoad,
-      projectDetail
+      projectDetail,
+      attachments
     } = this.props
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
@@ -1315,7 +1326,7 @@ class ChallengeEditor extends Component {
               </div>
               {isDraft && (
                 <div className={styles.button}>
-                  {challenge.legacyId ? (
+                  {challenge.legacyId || isTask ? (
                     <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
                   ) : (
                     <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
@@ -1380,7 +1391,6 @@ class ChallengeEditor extends Component {
               </div>
             </div>
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
-            <NDAField challenge={challenge} toggleNdaRequire={this.toggleNdaRequire} />
             {isTask && (
               <AssignedMemberField
                 challenge={challenge}
@@ -1413,9 +1423,21 @@ class ChallengeEditor extends Component {
             </div>
             { isOpenAdvanceSettings && (
               <React.Fragment>
+                <NDAField challenge={challenge} toggleNdaRequire={this.toggleNdaRequire} />
                 {/* remove terms field and use default term */}
                 {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}
                 <GroupsField onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
+                <div className={styles.row}>
+                  <div className={styles.col}>
+                    <span>
+                      <span className={styles.fieldTitle}>Billing Account Id:</span>
+                      {projectDetail.billingAccountId}
+                    </span>
+                  </div>
+                </div>
+                {isBetaMode() && (
+                  <UseSchedulingAPIField challenge={challenge} toggleUseSchedulingAPI={this.toggleUseSchedulingAPI} />
+                )}
               </React.Fragment>
             )}
             {!isTask && (
@@ -1475,14 +1497,15 @@ class ChallengeEditor extends Component {
               onUpdateMultiSelect={this.onUpdateMultiSelect}
               onUpdateMetadata={this.onUpdateMetadata}
             />
-            { false && (
-              <AttachmentField
-                challenge={{ ...challenge, id: currentChallengeId }}
-                onUploadFile={uploadAttachment}
-                token={token}
-                removeAttachment={removeAttachment}
-              />
-            )}
+            {/* hide until challenge API change is pushed to PROD https://github.com/topcoder-platform/challenge-api/issues/348 */}
+            { false && <AttachmentField
+              challenge={{ ...challenge, id: currentChallengeId }}
+              challengeId={currentChallengeId}
+              attachments={attachments}
+              onUploadFiles={uploadAttachments}
+              token={token}
+              removeAttachment={removeAttachment}
+            />}
             <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <ChallengeTotalField challenge={challenge} />
@@ -1534,7 +1557,7 @@ ChallengeEditor.propTypes = {
   challengeId: PropTypes.string,
   metadata: PropTypes.object.isRequired,
   isLoading: PropTypes.bool.isRequired,
-  uploadAttachment: PropTypes.func.isRequired,
+  uploadAttachments: PropTypes.func.isRequired,
   removeAttachment: PropTypes.func.isRequired,
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string.isRequired,
