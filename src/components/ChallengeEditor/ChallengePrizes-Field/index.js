@@ -8,7 +8,12 @@ import PrizeInput from '../../PrizeInput'
 import styles from './ChallengePrizes-Field.module.scss'
 import cn from 'classnames'
 import { PrimaryButton } from '../../Buttons'
-import { CHALLENGE_PRIZE_TYPE, VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE, CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES } from '../../../config/constants'
+import {
+  CHALLENGE_PRIZE_TYPE,
+  VALIDATION_VALUE_TYPE,
+  PRIZE_SETS_TYPE,
+  CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES
+} from '../../../config/constants'
 import { validateValue } from '../../../util/input-check'
 
 class ChallengePrizesField extends Component {
@@ -26,7 +31,10 @@ class ChallengePrizesField extends Component {
 
   addNewPrize () {
     const challengePrize = this.getChallengePrize()
-    challengePrize.prizes = [...challengePrize.prizes, { type: CHALLENGE_PRIZE_TYPE.USD, value: 1 }]
+    challengePrize.prizes = [
+      ...challengePrize.prizes,
+      { type: CHALLENGE_PRIZE_TYPE.USD, value: 1 }
+    ]
     this.onUpdateValue(challengePrize)
   }
 
@@ -38,7 +46,10 @@ class ChallengePrizesField extends Component {
 
   onUpdateInput (value, index) {
     const challengePrize = this.getChallengePrize()
-    challengePrize.prizes[index].value = validateValue(value, VALIDATION_VALUE_TYPE.INTEGER)
+    challengePrize.prizes[index].value = validateValue(
+      value,
+      VALIDATION_VALUE_TYPE.INTEGER
+    )
     if (parseInt(challengePrize.prizes[index].value) > 1000000) {
       challengePrize.prizes[index].value = '1000000'
     }
@@ -48,60 +59,102 @@ class ChallengePrizesField extends Component {
   onUpdateValue (challengePrize) {
     const type = PRIZE_SETS_TYPE.CHALLENGE_PRIZES
     const { onUpdateOthers, challenge } = this.props
-    const existingPrizes = challenge.prizeSets ? challenge.prizeSets.filter(p => p.type !== type) : []
+    const existingPrizes = challenge.prizeSets
+      ? challenge.prizeSets.filter(p => p.type !== type)
+      : []
 
-    onUpdateOthers({ field: 'prizeSets', value: [...existingPrizes, challengePrize] })
+    onUpdateOthers({
+      field: 'prizeSets',
+      value: [...existingPrizes, challengePrize]
+    })
   }
 
   getChallengePrize () {
     const type = PRIZE_SETS_TYPE.CHALLENGE_PRIZES
-    return (this.props.challenge.prizeSets && this.props.challenge.prizeSets.length && this.props.challenge.prizeSets.find(p => p.type === type)) || { type, prizes: [{ type: CHALLENGE_PRIZE_TYPE.USD, value: 0 }] }
+    return (
+      (this.props.challenge.prizeSets &&
+        this.props.challenge.prizeSets.length &&
+        this.props.challenge.prizeSets.find(p => p.type === type)) || {
+        type,
+        prizes: [{ type: CHALLENGE_PRIZE_TYPE.USD, value: 0 }]
+      }
+    )
   }
 
   renderPrizes () {
     const { currentPrizeIndex } = this.state
     const { readOnly, challenge } = this.props
-    const allowMultiplePrizes = _.includes(CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES, challenge.type)
-    return _.map(this.getChallengePrize().prizes, (prize, index, { length }) => (
-      <div key={`${index}-${prize.amount}-edit`}>
-        <div className={styles.row}>
-          <div className={cn(styles.field, styles.col1)}>
-            <label htmlFor={`${index}-prize`}>Prize {allowMultiplePrizes ? index + 1 : ''} {!readOnly && (<span>*</span>)}:</label>
-          </div>
-          {readOnly ? (
-            <span>${prize.value}</span>
-          ) : (<div className={cn(styles.field, styles.col2)}>
-            <PrizeInput
-              prize={prize}
-              isFocus={index === currentPrizeIndex}
-              onUpdateInput={this.onUpdateInput}
-              index={index} activeIndex={currentPrizeIndex} />
-            {
-              index > 0 && (
-                <div className={styles.icon} onClick={() => this.removePrize(index)}>
-                  <FontAwesomeIcon icon={faTrash} />
+    const allowMultiplePrizes = _.includes(
+      CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES,
+      challenge.type
+    )
+    return _.map(
+      this.getChallengePrize().prizes,
+      (prize, index, { length }) => {
+        let errMessage = ''
+        if (prize.value === '') {
+          errMessage = 'Prize amount is required field'
+        } else if (+prize.value <= 0 || +prize.value > 1000000) {
+          errMessage =
+            'Prize amount must be more than 0 and no more than 1000000'
+        } else if (index > 0) {
+          const prePrize = this.getChallengePrize().prizes[index - 1]
+          if (+prePrize.value < +prize.value) {
+            errMessage =
+              'Prize for the higher place cannot be bigger than for lower place'
+          }
+        }
+        return (
+          <div key={`${index}-${prize.amount}-edit`}>
+            <div className={styles.row}>
+              <div className={cn(styles.field, styles.col1)}>
+                <label htmlFor={`${index}-prize`}>
+                  Prize {allowMultiplePrizes ? index + 1 : ''}{' '}
+                  {!readOnly && <span>*</span>}:
+                </label>
+              </div>
+              {readOnly ? (
+                <span>${prize.value}</span>
+              ) : (
+                <div className={cn(styles.field, styles.col2)}>
+                  <PrizeInput
+                    prize={prize}
+                    isFocus={index === currentPrizeIndex}
+                    onUpdateInput={this.onUpdateInput}
+                    index={index}
+                    activeIndex={currentPrizeIndex}
+                  />
+                  {index > 0 && (
+                    <div
+                      className={styles.icon}
+                      onClick={() => this.removePrize(index)}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </div>
+                  )}
                 </div>
-              )
-            }
-          </div>)}
-        </div>
-        {!readOnly && challenge.submitTriggered && (prize.value === '' || (+prize.value <= 0 || +prize.value > 1000000)) && (
-          <div className={styles.row}>
-            <div className={cn(styles.field, styles.col1)} />
-            <div className={cn(styles.field, styles.col2, styles.error)}>
-              {prize.value === ''
-                ? 'Prize amount is required field'
-                : 'Prize amount must be more than 0 and no more than 1000000'}
+              )}
             </div>
+            {!readOnly && challenge.submitTriggered && errMessage && (
+              <div className={styles.row}>
+                <div className={cn(styles.field, styles.col1)} />
+                <div className={cn(styles.field, styles.col2, styles.error)}>
+                  {errMessage}
+                </div>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    ))
+        )
+      }
+    )
   }
 
   render () {
     const { readOnly, challenge } = this.props
-    const allowMultiplePrizes = _.includes(CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES, challenge.type)
+    const allowMultiplePrizes = _.includes(
+      CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES,
+      challenge.type
+    )
     return (
       <div className={styles.container}>
         <div className={styles.row}>
@@ -109,10 +162,12 @@ class ChallengePrizesField extends Component {
             <label htmlFor={`challengePrizes`}>Challenge Prizes :</label>
           </div>
         </div>
-        { this.renderPrizes() }
-        {!readOnly && allowMultiplePrizes && (<div className={styles.button} onClick={this.addNewPrize}>
-          <PrimaryButton text={'Add New Prize'} type={'info'} />
-        </div>)}
+        {this.renderPrizes()}
+        {!readOnly && allowMultiplePrizes && (
+          <div className={styles.button} onClick={this.addNewPrize}>
+            <PrimaryButton text={'Add New Prize'} type={'info'} />
+          </div>
+        )}
       </div>
     )
   }
