@@ -16,6 +16,7 @@ import styles from './ChallengeCard.module.scss'
 import { getFormattedDuration, formatDate } from '../../../util/date'
 import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, MESSAGE, ONLINE_REVIEW_URL } from '../../../config/constants'
 import ConfirmationModal from '../../Modal/ConfirmationModal'
+import { checkChallengeEditPermission } from '../../../util/tc'
 import AlertModal from '../../Modal/AlertModal'
 import Tooltip from '../../Tooltip'
 
@@ -27,6 +28,9 @@ const STALLED_MSG = 'Stalled'
 const DRAFT_MSG = 'In Draft'
 const STALLED_TIME_LEFT_MSG = 'Challenge is currently on hold'
 const FF_TIME_LEFT_MSG = 'Winner is working on fixes'
+
+const PERMISSION_DELETE_MESSAGE_ERROR =
+  "You don't have permission to delete this challenge"
 
 /**
  * Format the remaining time of a challenge phase
@@ -187,7 +191,9 @@ class ChallengeCard extends React.Component {
       isConfirm: false,
       isLaunch: false,
       isDeleteLaunch: false,
-      isSaving: false
+      isSaving: false,
+      isCheckChalengePermission: false,
+      hasEditChallengePermission: false
     }
     this.onUpdateConfirm = this.onUpdateConfirm.bind(this)
     this.onUpdateLaunch = this.onUpdateLaunch.bind(this)
@@ -208,8 +214,19 @@ class ChallengeCard extends React.Component {
   }
 
   deleteModalLaunch () {
+    const { challenge } = this.props
     if (!this.state.isDeleteLaunch) {
-      this.setState({ isDeleteLaunch: true })
+      checkChallengeEditPermission(challenge.id).then(hasPermission => {
+        this.setState({
+          isCheckChalengePermission: false,
+          hasEditChallengePermission: hasPermission
+        })
+      })
+      this.setState({
+        isDeleteLaunch: true,
+        isCheckChalengePermission: true,
+        hasEditChallengePermission: false
+      })
     }
   }
 
@@ -254,25 +271,32 @@ class ChallengeCard extends React.Component {
   }
 
   render () {
-    const { isLaunch, isConfirm, isSaving, isDeleteLaunch } = this.state
+    const { isLaunch, isConfirm, isSaving, isDeleteLaunch, isCheckChalengePermission, hasEditChallengePermission } = this.state
     const { challenge, shouldShowCurrentPhase, reloadChallengeList } = this.props
     const { phaseMessage, endTime } = getPhaseInfo(challenge)
+    const deleteMessage = isCheckChalengePermission
+      ? 'Checking permissions...'
+      : `Do you want to delete "${challenge.name}"?`
+
     return (
       <div className={styles.item}>
-        {
-          isDeleteLaunch && !isConfirm && (
-            <ConfirmationModal
-              title='Confirm Delete'
-              message={`Do you want to delete "${challenge.name}"?`}
-              theme={theme}
-              isProcessing={isSaving}
-              errorMessage={this.state.error}
-              onCancel={this.resetModal}
-              onConfirm={this.onDeleteChallenge}
-            />
-          )
-        }
-        { isLaunch && !isConfirm && (
+        {isDeleteLaunch && !isConfirm && (
+          <ConfirmationModal
+            title='Confirm Delete'
+            message={deleteMessage}
+            theme={theme}
+            isProcessing={isSaving}
+            disableConfirmButton={!hasEditChallengePermission}
+            errorMessage={
+              !isCheckChalengePermission && !hasEditChallengePermission
+                ? PERMISSION_DELETE_MESSAGE_ERROR
+                : this.state.error
+            }
+            onCancel={this.resetModal}
+            onConfirm={this.onDeleteChallenge}
+          />
+        )}
+        {isLaunch && !isConfirm && (
           <ConfirmationModal
             title='Confirm Launch'
             message={`Do you want to launch "${challenge.name}"?`}
