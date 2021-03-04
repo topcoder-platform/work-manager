@@ -29,12 +29,6 @@
     color: $tc-red;
   }
 
-  .errorMessage {
-    text-align: left;
-    margin-left: 60px;
-    font-size: 25px;
-    color: $tc-red;
-  }
 }
 
 .textRequired {
@@ -241,7 +235,11 @@
 .error {
   padding-right: 40px;
   padding-bottom: 20px;
-  color: $tc-red
+  color: $tc-red;
+
+  .errorMessage {
+    font-size: 25px;
+  }
 }
 
 .actionButtons {

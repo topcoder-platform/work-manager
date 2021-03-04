@@ -1181,13 +1181,14 @@ class ChallengeEditor extends Component {
     if (failedToLoad) {
       return (
         <div className={styles.wrapper}>
-          <div className={styles.title}>{errorMessage ? <div className={styles.errorMessage}>{`Error : ${errorMessage}`}</div> : 'There was an error loading the challenge'}</div>
+          <div className={styles.title}>There was an error loading the challenge</div>
           <br />
           <div className={styles.container}>
             <div className={styles.formContainer}>
               <div className={styles.group}>
                 <div className={styles.row}>
                   <div className={styles.error}>
+                    {errorMessage && <div className={styles.errorMessage}>{`Error : ${errorMessage}`}</div>}
                     Please try again later and if the issue persists contact us at&nbsp;
                     <a href='mailto:support@topcoder.com'>support@topcoder.com</a>
                     &nbsp;to resolve the issue as soon as possible.
