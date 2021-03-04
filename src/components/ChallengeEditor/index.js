@@ -1165,6 +1165,7 @@ class ChallengeEditor extends Component {
       token,
       removeAttachment,
       failedToLoad,
+      errorMessage,
       projectDetail,
       attachments
     } = this.props
@@ -1192,6 +1193,7 @@ class ChallengeEditor extends Component {
               <div className={styles.group}>
                 <div className={styles.row}>
                   <div className={styles.error}>
+                    {errorMessage && <div className={styles.errorMessage}>{`Error : ${errorMessage}`}</div>}
                     Please try again later and if the issue persists contact us at&nbsp;
                     <a href='mailto:support@topcoder.com'>support@topcoder.com</a>
                     &nbsp;to resolve the issue as soon as possible.
@@ -1562,6 +1564,7 @@ ChallengeEditor.propTypes = {
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string.isRequired,
   failedToLoad: PropTypes.bool,
+  errorMessage: PropTypes.string,
   history: PropTypes.any.isRequired,
   assignedMemberDetails: PropTypes.shape(),
   updateChallengeDetails: PropTypes.func.isRequired,

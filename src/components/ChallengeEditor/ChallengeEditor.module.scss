@@ -28,6 +28,7 @@
   span {
     color: $tc-red;
   }
+
 }
 
 .textRequired {
@@ -232,10 +233,13 @@
 }
 
 .error {
-  text-align: right;
   padding-right: 40px;
   padding-bottom: 20px;
-  color: $tc-red
+  color: $tc-red;
+
+  .errorMessage {
+    font-size: 25px;
+  }
 }
 
 .actionButtons {
@@ -332,6 +336,7 @@
       line-height: 36px;
       margin-bottom: 30px;
       margin-top: 0;
+
     }
 
     span {

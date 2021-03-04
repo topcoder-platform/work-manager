@@ -245,9 +245,10 @@ export function createChallenge (challengeDetails) {
         type: CREATE_CHALLENGE_SUCCESS,
         challengeDetails: challenge
       })
-    }).catch(() => {
+    }).catch((e) => {
       dispatch({
-        type: CREATE_CHALLENGE_FAILURE
+        type: CREATE_CHALLENGE_FAILURE,
+        error: e
       })
     })
   }

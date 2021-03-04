@@ -245,6 +245,7 @@ class ChallengeEditor extends Component {
       token,
       removeAttachment,
       failedToLoad,
+      errorMessage,
       projectDetail,
       updateChallengeDetails,
       partiallyUpdateChallengeDetails,
@@ -325,6 +326,7 @@ class ChallengeEditor extends Component {
             token={token}
             removeAttachment={removeAttachment}
             failedToLoad={failedToLoad}
+            errorMessage={errorMessage}
             projectDetail={projectDetail}
             assignedMemberDetails={assignedMemberDetails}
             updateChallengeDetails={updateChallengeDetails}
@@ -422,6 +424,7 @@ ChallengeEditor.propTypes = {
   loggedInUser: PropTypes.object,
   removeAttachment: PropTypes.func,
   failedToLoad: PropTypes.bool,
+  errorMessage: PropTypes.string,
   updateChallengeDetails: PropTypes.func.isRequired,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   createChallenge: PropTypes.func.isRequired,
@@ -431,7 +434,7 @@ ChallengeEditor.propTypes = {
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
 
-const mapStateToProps = ({ projects, challenges: { challengeDetails, challengeResources, metadata, isLoading, attachments, failedToLoad }, auth: { token, user }, members: { members } }) => ({
+const mapStateToProps = ({ projects, challenges: { challengeDetails, challengeResources, metadata, isLoading, attachments, failedToLoad, errorMessage }, auth: { token, user }, members: { members } }) => ({
   challengeDetails,
   hasProjectAccess: projects.hasProjectAccess,
   projectDetail: projects.projectDetail,
@@ -442,7 +445,8 @@ const mapStateToProps = ({ projects, challenges: { challengeDetails, challengeRe
   attachments,
   token,
   loggedInUser: user,
-  failedToLoad
+  failedToLoad,
+  errorMessage
   // members
 })
 

@@ -93,7 +93,7 @@ export default function (state = initialState, action) {
       return { ...state, isLoading: false }
     case LOAD_CHALLENGE_DETAILS_FAILURE:
     case CREATE_CHALLENGE_FAILURE:
-      return { ...state, isLoading: false, attachments: [], challenge: null, failedToLoad: true }
+      return { ...state, isLoading: false, attachments: [], challenge: null, failedToLoad: true, errorMessage: _.get(action, 'error.response.data.message', '') }
     case LOAD_CHALLENGE_DETAILS_SUCCESS: {
       return {
         ...state,
