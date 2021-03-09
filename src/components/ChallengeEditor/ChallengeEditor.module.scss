@@ -211,6 +211,18 @@
           }
         }
       }
+
+      .templateLink {
+        text-align: center;
+        font-size: 14px;
+        line-height: 29px;
+        font-weight: 400;
+
+        a {
+          font-weight: 400;
+          font-size: 12px;
+        }
+      }
     }
     .group:last-of-type {
       margin-bottom: 0;
