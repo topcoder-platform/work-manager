@@ -33,6 +33,8 @@ builddeploy_steps: &builddeploy_steps
           command: |
             ./awsconfiguration.sh $DEPLOY_ENV
             ./buildenv.sh -e $DEPLOY_ENV -b ${LOGICAL_ENV}-${APPNAME}-buildvar
+            echo awsenvconf >.dockerignore
+            echo buildenvvar >>.dockerignore
       - run: 
           name: "building image"
           command: |
