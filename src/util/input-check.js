@@ -44,7 +44,7 @@ export const validateValue = (value, checkType = '', prefix = '') => {
  */
 export const convertDollarToInteger = (value, prefix = '') => {
   if (value) {
-    return parseInt(('' + value).replace(prefix, '').replace(' ', '').replace(/[^0-9]/g, ''))
+    return parseInt(('' + value).replace(prefix, '').replace(' ', '').replace(/[^0-9.,]/g, ''))
   }
   return 0
 }

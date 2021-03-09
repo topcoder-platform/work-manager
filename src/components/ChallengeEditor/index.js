@@ -678,13 +678,18 @@ class ChallengeEditor extends Component {
       return false
     }
 
-    return _.every(challengePrizes.prizes, (prize) => {
+    return _.every(challengePrizes.prizes, (prize, index) => {
       if (prize.value === '') {
         return false
       }
       const prizeNumber = parseInt(prize.value)
       if (prizeNumber <= 0 || prizeNumber > 1000000) {
         return false
+      }
+      if (index > 0) {
+        if (+prize.value > +challengePrizes.prizes[index - 1].value) {
+          return false
+        }
       }
       return true
     })
@@ -852,7 +857,10 @@ class ChallengeEditor extends Component {
       groups: []
       // prizeSets: this.getDefaultPrizeSets()
     }
-    if (isBetaMode() && projectDetail.terms) {
+    if (isTask) {
+      newChallenge.legacy.pureV5Task = true
+    }
+    if (projectDetail.terms) {
       const currTerms = new Set(newChallenge.terms.map(term => term.id))
       newChallenge.terms.push(
         ...projectDetail.terms
@@ -860,7 +868,7 @@ class ChallengeEditor extends Component {
           .map(term => ({ id: term, roleId: SUBMITTER_ROLE_UUID }))
       )
     }
-    if (isBetaMode() && projectDetail.groups) {
+    if (projectDetail.groups) {
       newChallenge.groups.push(...projectDetail.groups)
     }
     const discussions = this.getDiscussionsConfig(newChallenge)
@@ -1159,6 +1167,7 @@ class ChallengeEditor extends Component {
       token,
       removeAttachment,
       failedToLoad,
+      errorMessage,
       projectDetail,
       attachments
     } = this.props
@@ -1186,6 +1195,7 @@ class ChallengeEditor extends Component {
               <div className={styles.group}>
                 <div className={styles.row}>
                   <div className={styles.error}>
+                    {errorMessage && <div className={styles.errorMessage}>{`Error : ${errorMessage}`}</div>}
                     Please try again later and if the issue persists contact us at&nbsp;
                     <a href='mailto:support@topcoder.com'>support@topcoder.com</a>
                     &nbsp;to resolve the issue as soon as possible.
@@ -1320,7 +1330,7 @@ class ChallengeEditor extends Component {
               </div>
               {isDraft && (
                 <div className={styles.button}>
-                  {challenge.legacyId ? (
+                  {challenge.legacyId || isTask ? (
                     <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
                   ) : (
                     <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
@@ -1428,16 +1438,14 @@ class ChallengeEditor extends Component {
                 {/* remove terms field and use default term */}
                 {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}
                 <GroupsField onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
-                {isBetaMode() && (
-                  <div className={styles.row}>
-                    <div className={styles.col}>
-                      <span>
-                        <span className={styles.fieldTitle}>Billing Account Id:</span>
-                        {projectDetail.billingAccountId}
-                      </span>
-                    </div>
+                <div className={styles.row}>
+                  <div className={styles.col}>
+                    <span>
+                      <span className={styles.fieldTitle}>Billing Account Id:</span>
+                      {projectDetail.billingAccountId}
+                    </span>
                   </div>
-                )}
+                </div>
                 {isBetaMode() && (
                   <UseSchedulingAPIField challenge={challenge} toggleUseSchedulingAPI={this.toggleUseSchedulingAPI} />
                 )}
@@ -1572,6 +1580,7 @@ ChallengeEditor.propTypes = {
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string.isRequired,
   failedToLoad: PropTypes.bool,
+  errorMessage: PropTypes.string,
   history: PropTypes.any.isRequired,
   assignedMemberDetails: PropTypes.shape(),
   updateChallengeDetails: PropTypes.func.isRequired,
