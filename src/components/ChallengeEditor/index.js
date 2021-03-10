@@ -856,9 +856,6 @@ class ChallengeEditor extends Component {
       groups: []
       // prizeSets: this.getDefaultPrizeSets()
     }
-    if (isTask) {
-      newChallenge.legacy.pureV5Task = true
-    }
     if (projectDetail.terms) {
       const currTerms = new Set(newChallenge.terms.map(term => term.id))
       newChallenge.terms.push(
@@ -1328,7 +1325,7 @@ class ChallengeEditor extends Component {
               </div>
               {isDraft && (
                 <div className={styles.button}>
-                  {challenge.legacyId || isTask ? (
+                  {challenge.legacyId ? (
                     <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
                   ) : (
                     <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
