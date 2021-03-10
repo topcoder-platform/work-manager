@@ -1144,9 +1144,10 @@ class ChallengeEditor extends Component {
 
     // all timeline template ids available for the challenge type
     const availableTemplateIds = _.filter(challengeTimelines, ct => ct.typeId === challenge.typeId && ct.trackId === challenge.trackId).map(tt => tt.timelineTemplateId)
-    const defaultChallengeTimeline = _.find(challengeTimelines, ct => ct.isDefault)
+    const defaultChallengeTimeline = _.find(challengeTimelines, ct => ct.typeId === challenge.typeId && ct.trackId === challenge.trackId && ct.isDefault)
     // filter and return timeline templates that are available for this challenge type
-    return _.map(_.filter(timelineTemplates, tt => availableTemplateIds.indexOf(tt.id) !== -1), tt => tt.id === defaultChallengeTimeline.timelineTemplateId ? { ...tt, isDefault: true } : tt)
+    const avlTemplates = _.filter(timelineTemplates, tt => availableTemplateIds.indexOf(tt.id) !== -1)
+    return _.map(avlTemplates, tt => tt.id === defaultChallengeTimeline.timelineTemplateId ? { ...tt, isDefault: true } : tt)
   }
 
   render () {
