@@ -1504,6 +1504,9 @@ class ChallengeEditor extends Component {
           </div>
           <div className={styles.group}>
             <div className={styles.title}>Public specification <span>*</span></div>
+            <div className={styles.templateLink}>
+              <i>Access specification templates <a href='https://github.com/topcoder-platform-templates/specification-templates' target='_blank'>here</a></i>
+            </div>
             <TextEditorField
               challengeTags={metadata.challengeTags}
               challenge={challenge}

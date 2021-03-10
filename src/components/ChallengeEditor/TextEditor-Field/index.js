@@ -60,6 +60,9 @@ class TextEditorField extends Component {
         </div>)}
         {shouldShowPrivateDescription && showShowPrivateDescriptionField && (<div className={styles.title}>
           <span>Private specification</span>
+          {!readOnly && (<div>
+            <i>Access specification templates <a href='https://github.com/topcoder-platform-templates/specification-templates' target='_blank'>here</a></i>
+          </div>)}
           <i>
             This text will only be visible to Topcoder members that have
             registered for this challenge
