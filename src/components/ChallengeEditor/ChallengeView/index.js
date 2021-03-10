@@ -86,17 +86,15 @@ const ChallengeView = ({
   return (
     <div className={styles.wrapper}>
       <Helmet title='View Details' />
-      {!isTask && (
-        <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsLeft)}>
-          <LegacyLinks challenge={challenge} />
-        </div>
-      )}
+      <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsLeft)}>
+        <LegacyLinks challenge={challenge} />
+      </div>
       <div className={styles.title}>View Details</div>
       <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsRight)}>
         {
           challenge.status === 'Draft' && (
             <div className={styles.button}>
-              {(challenge.legacyId || isTask) ? (
+              {challenge.legacyId ? (
                 <PrimaryButton text={'Launch'} type={'info'} onClick={onLaunchChallenge} />
               ) : (
                 <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
