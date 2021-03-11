@@ -40,6 +40,7 @@ export default function SelectUserAutocomplete (props) {
     <Select
       options={options}
       isMulti={false}
+      isClearable
       onInputChange={onInputChange}
       {...props}
     />

@@ -28,6 +28,7 @@
   span {
     color: $tc-red;
   }
+
 }
 
 .textRequired {
@@ -211,6 +212,18 @@
           }
         }
       }
+
+      .templateLink {
+        text-align: center;
+        font-size: 14px;
+        line-height: 29px;
+        font-weight: 400;
+
+        a {
+          font-weight: 400;
+          font-size: 12px;
+        }
+      }
     }
     .group:last-of-type {
       margin-bottom: 0;
@@ -232,10 +245,13 @@
 }
 
 .error {
-  text-align: right;
   padding-right: 40px;
   padding-bottom: 20px;
-  color: $tc-red
+  color: $tc-red;
+
+  .errorMessage {
+    font-size: 25px;
+  }
 }
 
 .actionButtons {
@@ -332,6 +348,7 @@
       line-height: 36px;
       margin-bottom: 30px;
       margin-top: 0;
+
     }
 
     span {

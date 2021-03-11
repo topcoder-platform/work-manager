@@ -677,13 +677,18 @@ class ChallengeEditor extends Component {
       return false
     }
 
-    return _.every(challengePrizes.prizes, (prize) => {
+    return _.every(challengePrizes.prizes, (prize, index) => {
       if (prize.value === '') {
         return false
       }
       const prizeNumber = parseInt(prize.value)
       if (prizeNumber <= 0 || prizeNumber > 1000000) {
         return false
+      }
+      if (index > 0) {
+        if (+prize.value > +challengePrizes.prizes[index - 1].value) {
+          return false
+        }
       }
       return true
     })
@@ -1157,6 +1162,7 @@ class ChallengeEditor extends Component {
       token,
       removeAttachment,
       failedToLoad,
+      errorMessage,
       projectDetail,
       attachments
     } = this.props
@@ -1184,6 +1190,7 @@ class ChallengeEditor extends Component {
               <div className={styles.group}>
                 <div className={styles.row}>
                   <div className={styles.error}>
+                    {errorMessage && <div className={styles.errorMessage}>{`Error : ${errorMessage}`}</div>}
                     Please try again later and if the issue persists contact us at&nbsp;
                     <a href='mailto:support@topcoder.com'>support@topcoder.com</a>
                     &nbsp;to resolve the issue as soon as possible.
@@ -1478,6 +1485,9 @@ class ChallengeEditor extends Component {
           </div>
           <div className={styles.group}>
             <div className={styles.title}>Public specification <span>*</span></div>
+            <div className={styles.templateLink}>
+              <i>Access specification templates <a href='https://github.com/topcoder-platform-templates/specification-templates' target='_blank'>here</a></i>
+            </div>
             <TextEditorField
               challengeTags={metadata.challengeTags}
               challenge={challenge}
@@ -1554,6 +1564,7 @@ ChallengeEditor.propTypes = {
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string.isRequired,
   failedToLoad: PropTypes.bool,
+  errorMessage: PropTypes.string,
   history: PropTypes.any.isRequired,
   assignedMemberDetails: PropTypes.shape(),
   updateChallengeDetails: PropTypes.func.isRequired,

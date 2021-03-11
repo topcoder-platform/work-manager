@@ -4,6 +4,8 @@
 import { MARATHON_MATCH_SUBTRACKS, CHALLENGE_TRACKS, ALLOWED_USER_ROLES, ADMIN_ROLES, SUBMITTER_ROLE_UUID } from '../config/constants'
 import _ from 'lodash'
 import { decodeToken } from 'tc-auth-lib'
+import { fetchResources, fetchResourceRoles } from '../services/challenges'
+import store from '../config/store'
 
 export const RATING_COLORS = [{
   color: '#9D9FA0' /* Grey */,
@@ -76,4 +78,41 @@ export const getResourceRoleByName = (resourceRoles, name) => {
   } else {
     return _.find(resourceRoles, { name }) || null
   }
+}
+
+/**
+ * check edit permission
+ * @param {number}   challengeId  challenge Id
+ *
+ * @returns {boolean} hasPermission
+ */
+export const checkChallengeEditPermission = async (challengeId) => {
+  const state = store.getState()
+  const token = state.auth.token
+  const loggedInUser = state.auth.user
+  const hasProjectAccess = state.projects.hasProjectAccess
+
+  const isAdmin = checkAdmin(token)
+  if (isAdmin) {
+    return true
+  }
+  if (!hasProjectAccess) {
+    return false
+  }
+
+  return Promise.all([fetchResources(challengeId), fetchResourceRoles()]).then(
+    ([challengeResources, resourceRoles]) => {
+      const userRoles = _.filter(
+        challengeResources,
+        cr => cr.memberId === `${loggedInUser.userId}`
+      )
+      const userResourceRoles = _.filter(resourceRoles, rr =>
+        _.some(userRoles, ur => ur.roleId === rr.id)
+      )
+      return _.some(
+        userResourceRoles,
+        urr => urr.fullWriteAccess && urr.isActive
+      )
+    }
+  )
 }
