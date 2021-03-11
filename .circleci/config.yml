@@ -83,6 +83,7 @@ workflows:
             branches:
               only:
                 - develop
+                - feature/timeline-template
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.

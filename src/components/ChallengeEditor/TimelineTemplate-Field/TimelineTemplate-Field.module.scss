@@ -30,6 +30,7 @@
       white-space: nowrap;
       display: flex;
       align-items: center;
+      flex-grow: 1;
 
       span {
         color: $tc-red;
@@ -42,6 +43,7 @@
     }
     &.col2 {
       align-self: flex-end;
+      width: 80%;
       margin-bottom: auto;
       margin-top: auto;
       display: flex;
@@ -51,19 +53,3 @@
     }
   }
 }
-
-.challengeName {
-  &::-moz-placeholder { /* Mozilla Firefox 19+ */
-    line-height: 38px;
-    color: $tc-gray-80;
-  }
-  &::-webkit-input-placeholder { /* Webkit */
-    line-height: 38px;
-    color: $tc-gray-80;
-  }
-  &:-ms-input-placeholder { /* IE */
-    line-height: 38px;
-    color: $tc-gray-80;
-  }
-}
-
