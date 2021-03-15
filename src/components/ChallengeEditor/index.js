@@ -52,7 +52,6 @@ import Tooltip from '../Tooltip'
 import UseSchedulingAPIField from './UseSchedulingAPIField'
 import { getResourceRoleByName } from '../../util/tc'
 import { isBetaMode } from '../../util/cookie'
-import TimelineTemplateField from './TimelineTemplate-Field'
 
 const theme = {
   container: styles.modalContainer
@@ -839,7 +838,7 @@ class ChallengeEditor extends Component {
     const STD_DEV_TIMELINE_TEMPLATE = _.find(timelineTemplates, { name: 'Standard Development' })
     const avlTemplates = this.getAvailableTimelineTemplates()
     // chooses first available timeline template or fallback template for the new challenge
-    const defaultTemplate = _.find(avlTemplates || [], t => t.isDefault) || STD_DEV_TIMELINE_TEMPLATE
+    const defaultTemplate = avlTemplates && avlTemplates.length > 0 ? avlTemplates[0] : STD_DEV_TIMELINE_TEMPLATE
     const isTask = _.find(metadata.challengeTypes, { id: typeId, isTask: true })
     const newChallenge = {
       status: 'New',
@@ -852,7 +851,7 @@ class ChallengeEditor extends Component {
         reviewType: isTask || isDesignChallenge ? REVIEW_TYPES.INTERNAL : REVIEW_TYPES.COMMUNITY
       },
       descriptionFormat: 'markdown',
-      timelineTemplateId: _.get(this.getCurrentTemplate(), 'id', defaultTemplate.id),
+      timelineTemplateId: defaultTemplate.id,
       terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }],
       groups: []
       // prizeSets: this.getDefaultPrizeSets()
@@ -1141,10 +1140,8 @@ class ChallengeEditor extends Component {
 
     // all timeline template ids available for the challenge type
     const availableTemplateIds = _.filter(challengeTimelines, ct => ct.typeId === challenge.typeId && ct.trackId === challenge.trackId).map(tt => tt.timelineTemplateId)
-    const defaultChallengeTimeline = _.find(challengeTimelines, ct => ct.typeId === challenge.typeId && ct.trackId === challenge.trackId && ct.isDefault)
     // filter and return timeline templates that are available for this challenge type
-    const avlTemplates = _.filter(timelineTemplates, tt => availableTemplateIds.indexOf(tt.id) !== -1)
-    return _.map(avlTemplates, tt => tt.id === defaultChallengeTimeline.timelineTemplateId ? { ...tt, isDefault: true } : tt)
+    return _.filter(timelineTemplates, tt => availableTemplateIds.indexOf(tt.id) !== -1)
   }
 
   render () {
@@ -1363,13 +1360,6 @@ class ChallengeEditor extends Component {
           <div className={styles.newFormContainer}>
             <TrackField tracks={metadata.challengeTracks} challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
-            <TimelineTemplateField
-              currentTemplate={this.state.currentTemplate}
-              challengeTimelines={metadata.challengeTimelines}
-              timelineTemplates={metadata.timelineTemplates}
-              challenge={challenge}
-              onUpdateSelect={this.resetPhase}
-            />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
           </div>
           { errorContainer }
@@ -1447,13 +1437,6 @@ class ChallengeEditor extends Component {
                 {isBetaMode() && (
                   <UseSchedulingAPIField challenge={challenge} toggleUseSchedulingAPI={this.toggleUseSchedulingAPI} />
                 )}
-                <TimelineTemplateField
-                  challengeTimelines={metadata.challengeTimelines}
-                  timelineTemplates={metadata.timelineTemplates}
-                  challenge={challenge}
-                  currentTemplate={this.state.currentTemplate}
-                  onUpdateSelect={this.resetPhase}
-                />
               </React.Fragment>
             )}
             {!isTask && (

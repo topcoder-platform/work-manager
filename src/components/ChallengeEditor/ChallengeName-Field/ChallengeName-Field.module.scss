@@ -52,18 +52,16 @@
   }
 }
 
-.challengeName {
-  &::-moz-placeholder { /* Mozilla Firefox 19+ */
-    line-height: 38px;
-    color: $tc-gray-80;
-  }
-  &::-webkit-input-placeholder { /* Webkit */
-    line-height: 38px;
-    color: $tc-gray-80;
-  }
-  &:-ms-input-placeholder { /* IE */
-    line-height: 38px;
-    color: $tc-gray-80;
+@-moz-document url-prefix() {
+  .challengeName {
+    &::-moz-placeholder { /* Mozilla Firefox 19+ */
+      line-height: 38px;
+    }
+    &::-webkit-input-placeholder { /* Webkit */
+      line-height: 38px;
+    }
+    &:-ms-input-placeholder { /* IE */
+      line-height: 38px;
+    }
   }
 }
-
