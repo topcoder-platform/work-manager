@@ -84,9 +84,12 @@
     margin-top: 30px;
 
     .button {
-      width: 135px;
       height: 40px;
       margin-right: 66px;
+
+      > button {
+        padding: 0 35px;
+      }
 
       span {
         font-size: 18px;

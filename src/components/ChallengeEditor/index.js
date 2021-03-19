@@ -20,6 +20,7 @@ import {
   MESSAGE,
   COMMUNITY_APP_URL,
   DES_TRACK_ID,
+  CHALLENGE_TYPE_ID,
   REVIEW_TYPES
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
@@ -76,6 +77,7 @@ class ChallengeEditor extends Component {
       isOpenAdvanceSettings: false,
       isLoading: false,
       isSaving: false,
+      showDesignChallengeWarningModel: false,
       hasValidationErrors: false,
       challenge: {
         ...dropdowns['newChallenge']
@@ -110,9 +112,11 @@ class ChallengeEditor extends Component {
     this.onUpdateDescription = this.onUpdateDescription.bind(this)
     this.onActiveChallenge = this.onActiveChallenge.bind(this)
     this.resetModal = this.resetModal.bind(this)
+    this.resetDesignChallengeWarningModal = this.resetDesignChallengeWarningModal.bind(this)
     this.openCloseTaskConfirmation = this.openCloseTaskConfirmation.bind(this)
     this.onCloseTask = this.onCloseTask.bind(this)
     this.createNewChallenge = this.createNewChallenge.bind(this)
+    this.createNewDesignChallenge = this.createNewDesignChallenge.bind(this)
     this.getCurrentChallengeId = this.getCurrentChallengeId.bind(this)
     this.isValidChallengePrizes = this.isValidChallengePrizes.bind(this)
     this.isValidChallenge = this.isValidChallenge.bind(this)
@@ -233,6 +237,10 @@ class ChallengeEditor extends Component {
         setState({ isLoading: true })
       }
     }
+  }
+
+  resetDesignChallengeWarningModal () {
+    this.setState({ showDesignChallengeWarningModel: false })
   }
 
   resetModal () {
@@ -824,12 +832,25 @@ class ChallengeEditor extends Component {
     history.push(newPath)
   };
 
+  createNewDesignChallenge () {
+    this.resetDesignChallengeWarningModal()
+    this.createNewChallenge()
+  }
+
   async createNewChallenge () {
     if (!this.props.isNew) return
     const { metadata, createChallenge, projectDetail } = this.props
-    const { name, trackId, typeId } = this.state.challenge
+    const { showDesignChallengeWarningModel, challenge: { name, trackId, typeId } } = this.state
     const { timelineTemplates } = metadata
     const isDesignChallenge = trackId === DES_TRACK_ID
+    const isChallengeType = typeId === CHALLENGE_TYPE_ID
+
+    if (!showDesignChallengeWarningModel && isDesignChallenge && isChallengeType) {
+      this.setState({
+        showDesignChallengeWarningModel: true
+      })
+      return
+    }
 
     // indicate that creating process has started
     this.setState({ isSaving: true })
@@ -1148,6 +1169,7 @@ class ChallengeEditor extends Component {
     const {
       isLaunch,
       isConfirm,
+      showDesignChallengeWarningModel,
       challenge,
       draftChallenge,
       isOpenAdvanceSettings,
@@ -1219,6 +1241,30 @@ class ChallengeEditor extends Component {
       }
     }
 
+    let designChallengeModal
+    if (showDesignChallengeWarningModel) {
+      const messageBody = (
+        <div>
+          <div>
+            At this time, Work Manager only supports single-round (no checkpoint) challenges for design. If you want to run a multi-round (has checkpoints) design challenge, please use Direct.
+          </div>
+          <div>
+            Do you want to proceed with set-up?
+          </div>
+        </div>
+      )
+      designChallengeModal = (
+        <ConfirmationModal
+          title='Reminder'
+          message={messageBody}
+          theme={theme}
+          cancelText='Cancel Set-Up'
+          confirmText='Continue Set-Up'
+          onCancel={this.resetDesignChallengeWarningModal}
+          onConfirm={this.createNewDesignChallenge}
+        />
+      )
+    }
     if (!isNew && isLaunch && !isConfirm) {
       activateModal = (
         <ConfirmationModal
@@ -1362,6 +1408,7 @@ class ChallengeEditor extends Component {
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
           </div>
+          {showDesignChallengeWarningModel && designChallengeModal}
           { errorContainer }
           { actionButtons }
         </form>
@@ -1389,6 +1436,7 @@ class ChallengeEditor extends Component {
                 <span><span className={styles.fieldTitle}>Status:</span> {challenge.status}</span>
               </div>
             </div>
+
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             {isTask && (
               <AssignedMemberField
