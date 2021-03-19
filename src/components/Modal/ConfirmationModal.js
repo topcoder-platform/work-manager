@@ -6,7 +6,7 @@ import styles from './ConfirmationModal.module.scss'
 import OutlineButton from '../Buttons/OutlineButton'
 import PrimaryButton from '../Buttons/PrimaryButton'
 
-const ConfirmationModal = ({ title, message, errorMessage, theme, isProcessing, onCancel, onConfirm, disableConfirmButton }) => (
+const ConfirmationModal = ({ title, message, errorMessage, theme, isProcessing, cancelText, confirmText, onCancel, onConfirm, disableConfirmButton }) => (
   <Modal theme={theme} onCancel={onCancel}>
     <div className={styles.contentContainer}>
       <div className={styles.title}>{title}</div>
@@ -15,14 +15,14 @@ const ConfirmationModal = ({ title, message, errorMessage, theme, isProcessing, 
         <div className={styles.button}>
           <OutlineButton
             className={cn({ disabled: isProcessing })}
-            text={'Cancel'}
+            text={cancelText || 'Cancel'}
             type={'danger'}
             onClick={onCancel}
           />
         </div>
         <div className={styles.button}>
           <PrimaryButton
-            text={isProcessing ? 'Processing...' : 'Confirm'}
+            text={isProcessing ? 'Processing...' : confirmText || 'Confirm'}
             disabled={disableConfirmButton}
             type={'info'}
             onClick={onConfirm}
@@ -41,6 +41,8 @@ ConfirmationModal.propTypes = {
   theme: PropTypes.shape(),
   isProcessing: PropTypes.bool,
   disableConfirmButton: PropTypes.bool,
+  cancelText: PropTypes.string,
+  confirmText: PropTypes.string,
   onCancel: PropTypes.func,
   onConfirm: PropTypes.func
 }

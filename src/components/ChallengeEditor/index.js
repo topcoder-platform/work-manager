@@ -20,6 +20,7 @@ import {
   MESSAGE,
   COMMUNITY_APP_URL,
   DES_TRACK_ID,
+  CHALLENGE_TYPE_ID,
   REVIEW_TYPES
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
@@ -52,7 +53,6 @@ import Tooltip from '../Tooltip'
 import UseSchedulingAPIField from './UseSchedulingAPIField'
 import { getResourceRoleByName } from '../../util/tc'
 import { isBetaMode } from '../../util/cookie'
-import TimelineTemplateField from './TimelineTemplate-Field'
 
 const theme = {
   container: styles.modalContainer
@@ -77,6 +77,7 @@ class ChallengeEditor extends Component {
       isOpenAdvanceSettings: false,
       isLoading: false,
       isSaving: false,
+      showDesignChallengeWarningModel: false,
       hasValidationErrors: false,
       challenge: {
         ...dropdowns['newChallenge']
@@ -111,9 +112,11 @@ class ChallengeEditor extends Component {
     this.onUpdateDescription = this.onUpdateDescription.bind(this)
     this.onActiveChallenge = this.onActiveChallenge.bind(this)
     this.resetModal = this.resetModal.bind(this)
+    this.resetDesignChallengeWarningModal = this.resetDesignChallengeWarningModal.bind(this)
     this.openCloseTaskConfirmation = this.openCloseTaskConfirmation.bind(this)
     this.onCloseTask = this.onCloseTask.bind(this)
     this.createNewChallenge = this.createNewChallenge.bind(this)
+    this.createNewDesignChallenge = this.createNewDesignChallenge.bind(this)
     this.getCurrentChallengeId = this.getCurrentChallengeId.bind(this)
     this.isValidChallengePrizes = this.isValidChallengePrizes.bind(this)
     this.isValidChallenge = this.isValidChallenge.bind(this)
@@ -234,6 +237,10 @@ class ChallengeEditor extends Component {
         setState({ isLoading: true })
       }
     }
+  }
+
+  resetDesignChallengeWarningModal () {
+    this.setState({ showDesignChallengeWarningModel: false })
   }
 
   resetModal () {
@@ -825,12 +832,25 @@ class ChallengeEditor extends Component {
     history.push(newPath)
   };
 
+  createNewDesignChallenge () {
+    this.resetDesignChallengeWarningModal()
+    this.createNewChallenge()
+  }
+
   async createNewChallenge () {
     if (!this.props.isNew) return
     const { metadata, createChallenge, projectDetail } = this.props
-    const { name, trackId, typeId } = this.state.challenge
+    const { showDesignChallengeWarningModel, challenge: { name, trackId, typeId } } = this.state
     const { timelineTemplates } = metadata
     const isDesignChallenge = trackId === DES_TRACK_ID
+    const isChallengeType = typeId === CHALLENGE_TYPE_ID
+
+    if (!showDesignChallengeWarningModel && isDesignChallenge && isChallengeType) {
+      this.setState({
+        showDesignChallengeWarningModel: true
+      })
+      return
+    }
 
     // indicate that creating process has started
     this.setState({ isSaving: true })
@@ -839,7 +859,7 @@ class ChallengeEditor extends Component {
     const STD_DEV_TIMELINE_TEMPLATE = _.find(timelineTemplates, { name: 'Standard Development' })
     const avlTemplates = this.getAvailableTimelineTemplates()
     // chooses first available timeline template or fallback template for the new challenge
-    const defaultTemplate = _.find(avlTemplates || [], t => t.isDefault) || STD_DEV_TIMELINE_TEMPLATE
+    const defaultTemplate = avlTemplates && avlTemplates.length > 0 ? avlTemplates[0] : STD_DEV_TIMELINE_TEMPLATE
     const isTask = _.find(metadata.challengeTypes, { id: typeId, isTask: true })
     const newChallenge = {
       status: 'New',
@@ -852,7 +872,7 @@ class ChallengeEditor extends Component {
         reviewType: isTask || isDesignChallenge ? REVIEW_TYPES.INTERNAL : REVIEW_TYPES.COMMUNITY
       },
       descriptionFormat: 'markdown',
-      timelineTemplateId: _.get(this.getCurrentTemplate(), 'id', defaultTemplate.id),
+      timelineTemplateId: defaultTemplate.id,
       terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }],
       groups: []
       // prizeSets: this.getDefaultPrizeSets()
@@ -1141,16 +1161,15 @@ class ChallengeEditor extends Component {
 
     // all timeline template ids available for the challenge type
     const availableTemplateIds = _.filter(challengeTimelines, ct => ct.typeId === challenge.typeId && ct.trackId === challenge.trackId).map(tt => tt.timelineTemplateId)
-    const defaultChallengeTimeline = _.find(challengeTimelines, ct => ct.typeId === challenge.typeId && ct.trackId === challenge.trackId && ct.isDefault)
     // filter and return timeline templates that are available for this challenge type
-    const avlTemplates = _.filter(timelineTemplates, tt => availableTemplateIds.indexOf(tt.id) !== -1)
-    return _.map(avlTemplates, tt => tt.id === defaultChallengeTimeline.timelineTemplateId ? { ...tt, isDefault: true } : tt)
+    return _.filter(timelineTemplates, tt => availableTemplateIds.indexOf(tt.id) !== -1)
   }
 
   render () {
     const {
       isLaunch,
       isConfirm,
+      showDesignChallengeWarningModel,
       challenge,
       draftChallenge,
       isOpenAdvanceSettings,
@@ -1222,6 +1241,30 @@ class ChallengeEditor extends Component {
       }
     }
 
+    let designChallengeModal
+    if (showDesignChallengeWarningModel) {
+      const messageBody = (
+        <div>
+          <div>
+            At this time, Work Manager only supports single-round (no checkpoint) challenges for design. If you want to run a multi-round (has checkpoints) design challenge, please use Direct.
+          </div>
+          <div>
+            Do you want to proceed with set-up?
+          </div>
+        </div>
+      )
+      designChallengeModal = (
+        <ConfirmationModal
+          title='Reminder'
+          message={messageBody}
+          theme={theme}
+          cancelText='Cancel Set-Up'
+          confirmText='Continue Set-Up'
+          onCancel={this.resetDesignChallengeWarningModal}
+          onConfirm={this.createNewDesignChallenge}
+        />
+      )
+    }
     if (!isNew && isLaunch && !isConfirm) {
       activateModal = (
         <ConfirmationModal
@@ -1363,15 +1406,9 @@ class ChallengeEditor extends Component {
           <div className={styles.newFormContainer}>
             <TrackField tracks={metadata.challengeTracks} challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
-            <TimelineTemplateField
-              currentTemplate={this.state.currentTemplate}
-              challengeTimelines={metadata.challengeTimelines}
-              timelineTemplates={metadata.timelineTemplates}
-              challenge={challenge}
-              onUpdateSelect={this.resetPhase}
-            />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
           </div>
+          {showDesignChallengeWarningModel && designChallengeModal}
           { errorContainer }
           { actionButtons }
         </form>
@@ -1399,6 +1436,7 @@ class ChallengeEditor extends Component {
                 <span><span className={styles.fieldTitle}>Status:</span> {challenge.status}</span>
               </div>
             </div>
+
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             {isTask && (
               <AssignedMemberField
@@ -1447,13 +1485,6 @@ class ChallengeEditor extends Component {
                 {isBetaMode() && (
                   <UseSchedulingAPIField challenge={challenge} toggleUseSchedulingAPI={this.toggleUseSchedulingAPI} />
                 )}
-                <TimelineTemplateField
-                  challengeTimelines={metadata.challengeTimelines}
-                  timelineTemplates={metadata.timelineTemplates}
-                  challenge={challenge}
-                  currentTemplate={this.state.currentTemplate}
-                  onUpdateSelect={this.resetPhase}
-                />
               </React.Fragment>
             )}
             {!isTask && (
