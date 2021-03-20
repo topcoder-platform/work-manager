@@ -1,13 +1,22 @@
 @import "../../../styles/includes";
 
+.container {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+}
+
 .row {
   box-sizing: border-box;
-  //width: 100%;
   display: flex;
   flex-direction: row;
   align-content: space-between;
   justify-content: flex-start;
   margin-top: 30px;
+  
+  > span {
+    margin-top: 10px;
+  }
 
   .field {
     @include upto-sm {
@@ -37,6 +46,12 @@
       align-items: center;
     }
 
+    &.col2.error {
+      color: $tc-red;
+      margin-top: -25px;
+      padding-left: 230px;
+    }
+
     &.col2 {
       align-self: flex-end;
       margin-bottom: auto;
@@ -47,7 +62,7 @@
 
       input {
         margin-right: 30px;
-        width: 271px;
+        width: 150px;
       }
       input:last-of-type {
         width: 187px;
@@ -57,7 +72,16 @@
   }
 }
 
-.icon {
-  color: $tc-red;
-  cursor: pointer;
+.selectContainer {
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: $tc-prize-bg;
+  border: 1px solid $tc-gray-40;
+  max-width: 50px;
+  min-width: 50px;
+  width: 50px;
+  height: 40px;
+  border-right-width: 0;
 }
