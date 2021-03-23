@@ -14,17 +14,23 @@ const CheckpointPrizesField = ({ readOnly, challenge, onUpdateOthers }) => {
   const type = PRIZE_SETS_TYPE.CHECKPOINT_PRIZES
   const checkpointPrize = (challenge.prizeSets && challenge.prizeSets.find(p => p.type === type)) || { type, prizes: [] }
 
-  const inputNumber = checkpointPrize.prizes.length || number
   const inputAmount = (checkpointPrize.prizes.length && checkpointPrize.prizes[0].value) || amount
+  let inputNumber = checkpointPrize.prizes.length || number
+  if (inputAmount > 0 && +inputNumber === 0) {
+    inputNumber = ''
+  }
 
   function onChange (number, amount) {
-    setNumber(number)
-    setAmount(amount)
     const value = validateValue(amount, VALIDATION_VALUE_TYPE.INTEGER)
-    checkpointPrize.prizes = range(validateValue(number, VALIDATION_VALUE_TYPE.INTEGER))
+    setAmount(value)
+
+    const numberValue = validateValue(number, VALIDATION_VALUE_TYPE.INTEGER)
+    setNumber(numberValue)
+
+    checkpointPrize.prizes = range(numberValue)
       .map(i => ({ type: CHALLENGE_PRIZE_TYPE.USD, value }))
 
-    if (amount > 0 && !number) {
+    if (amount > 0 && +number === 0) {
       // add invalid tag  for validation before submition
       checkpointPrize.invalid = true
     } else {
@@ -62,7 +68,7 @@ const CheckpointPrizesField = ({ readOnly, challenge, onUpdateOthers }) => {
           </div>
         )}
       </div>
-      {!readOnly && challenge.submitTriggered && amount > 0 && !number && (
+      {!readOnly && challenge.submitTriggered && inputAmount > 0 && !inputNumber && (
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)} />
           <div className={cn(styles.field, styles.col2, styles.error)}>
