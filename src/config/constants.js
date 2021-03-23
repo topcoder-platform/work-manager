@@ -14,6 +14,7 @@ export const {
   DES_TRACK_ID,
   DS_TRACK_ID,
   QA_TRACK_ID,
+  DESIGN_WITH_CHECKPOINTS_TIMELINE_ID,
   SEGMENT_API_KEY
 } = process.env
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS

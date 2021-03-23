@@ -11,6 +11,7 @@ import { toastr } from 'react-redux-toastr'
 import xss from 'xss'
 
 import {
+  DESIGN_WITH_CHECKPOINTS_TIMELINE_ID,
   VALIDATION_VALUE_TYPE,
   PRIZE_SETS_TYPE,
   DEFAULT_TERM_UUID,
@@ -27,6 +28,7 @@ import TrackField from './Track-Field'
 import TypeField from './Type-Field'
 import ChallengeNameField from './ChallengeName-Field'
 import CopilotField from './Copilot-Field'
+import CheckpointPrizesField from './CheckpointPrizes-Field'
 import ReviewTypeField from './ReviewType-Field'
 import TermsField from './Terms-Field'
 import NDAField from './NDAField'
@@ -673,7 +675,13 @@ class ChallengeEditor extends Component {
   }
 
   isValidChallengePrizes () {
+    const checkpointPrizes = _.find(this.state.challenge.prizeSets, p => p.type === PRIZE_SETS_TYPE.CHECKPOINT_PRIZES, [])
+    if (checkpointPrizes && checkpointPrizes.invalid) {
+      return false
+    }
+
     const challengePrizes = _.find(this.state.challenge.prizeSets, p => p.type === PRIZE_SETS_TYPE.CHALLENGE_PRIZES, [])
+
     if (!challengePrizes || !challengePrizes.prizes || challengePrizes.prizes.length === 0) {
       return false
     }
@@ -1529,6 +1537,7 @@ class ChallengeEditor extends Component {
               removeAttachment={removeAttachment}
             />}
             <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
+            { challenge.timelineTemplateId === DESIGN_WITH_CHECKPOINTS_TIMELINE_ID && <CheckpointPrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />}
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <ChallengeTotalField challenge={challenge} />
           </div>

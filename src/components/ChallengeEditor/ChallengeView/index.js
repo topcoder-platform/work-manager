@@ -12,6 +12,7 @@ import NDAField from '../NDAField'
 import UseSchedulingAPIField from '../UseSchedulingAPIField'
 import CopilotField from '../Copilot-Field'
 import ChallengeScheduleField from '../ChallengeSchedule-Field'
+import CheckpointPrizesField from '../CheckpointPrizes-Field'
 import TextEditorField from '../TextEditor-Field'
 import AttachmentField from '../Attachment-Field'
 import ChallengePrizesField from '../ChallengePrizes-Field'
@@ -25,7 +26,7 @@ import { getResourceRoleByName } from '../../../util/tc'
 import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
 import Tooltip from '../../Tooltip'
-import { MESSAGE, REVIEW_TYPES } from '../../../config/constants'
+import { MESSAGE, REVIEW_TYPES, DESIGN_WITH_CHECKPOINTS_TIMELINE_ID } from '../../../config/constants'
 import TimelineTemplateField from '../TimelineTemplate-Field'
 
 const ChallengeView = ({
@@ -259,6 +260,7 @@ const ChallengeView = ({
               readOnly
             />}
             <ChallengePrizesField challenge={challenge} readOnly />
+            { challenge.timelineTemplateId === DESIGN_WITH_CHECKPOINTS_TIMELINE_ID && <CheckpointPrizesField challenge={challenge} readOnly />}
             <CopilotFeeField challenge={challenge} readOnly />
             <ChallengeTotalField challenge={challenge} />
           </div>
