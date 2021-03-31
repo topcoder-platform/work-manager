@@ -26,7 +26,6 @@ import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
 import Tooltip from '../../Tooltip'
 import { MESSAGE, REVIEW_TYPES } from '../../../config/constants'
-import TimelineTemplateField from '../TimelineTemplate-Field'
 
 const ChallengeView = ({
   projectDetail,
@@ -201,13 +200,6 @@ const ChallengeView = ({
                 {isBetaMode() && (
                   <UseSchedulingAPIField challenge={challenge} readOnly />
                 )}
-                <TimelineTemplateField
-                  challengeTimelines={metadata.challengeTimelines}
-                  timelineTemplates={metadata.timelineTemplates}
-                  challenge={challenge}
-                  onUpdateSelect={() => {}}
-                  readOnly
-                />
               </>
             )}
             {
