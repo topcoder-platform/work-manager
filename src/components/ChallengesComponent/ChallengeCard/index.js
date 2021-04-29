@@ -104,6 +104,7 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
   const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.id}`
   const directUrl = `${DIRECT_PROJECT_URL}/contest/detail?projectId=${challenge.legacyId}`
   const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
+  const isTask = _.get(challenge, 'task.isTask', false)
 
   // NEW projects never have Legacy challenge created, so don't show links and "Activate" button for them at all
   if (challenge.status.toUpperCase() === CHALLENGE_STATUS.NEW) {
@@ -114,15 +115,17 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
     )
   }
 
-  return challenge.legacyId ? (
+  return challenge.legacyId || isTask ? (
     <div className={styles.linkGroup}>
       <div className={styles.linkGroupLeft}>
         <a className={styles.link} href={communityAppUrl} target='_blank'>View Challenge</a>
-        <div className={styles.linkGroupLeftBottom}>
-          <a className={styles.link} href={directUrl} target='_blank'>Direct</a>
-          <span className={styles.linkDivider}>|</span>
-          <a className={styles.link} href={orUrl} target='_blank'>OR</a>
-        </div>
+        {!isTask && (
+          <div className={styles.linkGroupLeftBottom}>
+            <a className={styles.link} href={directUrl} target='_blank'>Direct</a>
+            <span className={styles.linkDivider}>|</span>
+            <a className={styles.link} href={orUrl} target='_blank'>OR</a>
+          </div>
+        )}
       </div>
       {challenge.status.toUpperCase() === CHALLENGE_STATUS.DRAFT && (
         <button className={styles.activateButton} onClick={() => onUpdateLaunch()}>
@@ -134,15 +137,17 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
     <div className={styles.linkGroup}>
       <div className={styles.linkGroupLeft}>
         <a className={styles.link} href={communityAppUrl}>View Challenge</a>
-        <div className={styles.linkGroupLeftBottom}>
-          <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-            <span className={styles.link}>Direct</span>
-          </Tooltip>
-          <span className={styles.linkDivider}>|</span>
-          <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-            <span className={styles.link}>OR</span>
-          </Tooltip>
-        </div>
+        {!isTask && (
+          <div className={styles.linkGroupLeftBottom}>
+            <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
+              <span className={styles.link}>Direct</span>
+            </Tooltip>
+            <span className={styles.linkDivider}>|</span>
+            <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
+              <span className={styles.link}>OR</span>
+            </Tooltip>
+          </div>
+        )}
       </div>
       {
         challenge.status === 'Draft' && (
