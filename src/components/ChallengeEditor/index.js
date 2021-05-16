@@ -1040,6 +1040,7 @@ class ChallengeEditor extends Component {
       newChallenge.status = status
       try {
         const challengeId = this.getCurrentChallengeId()
+        const action = await updateChallengeDetails(challengeId, challenge)
         // state can have updated assigned member (in cases where user changes assignments without refreshing the page)
         const { challenge: { copilot, reviewer, type }, assignedMemberDetails: assignedMember } = this.state
         const oldMemberHandle = _.get(oldAssignedMember, 'handle')
@@ -1048,7 +1049,6 @@ class ChallengeEditor extends Component {
         if (assignedMemberHandle !== oldMemberHandle) {
           await this.updateResource(challengeId, 'Submitter', assignedMemberHandle, oldMemberHandle)
         }
-        const action = await updateChallengeDetails(challengeId, challenge)
         const { copilot: previousCopilot, reviewer: previousReviewer } = this.state.draftChallenge.data
         if (copilot !== previousCopilot) await this.updateResource(challengeId, 'Copilot', copilot, previousCopilot)
         if (type === 'First2Finish' || type === 'Task') {
