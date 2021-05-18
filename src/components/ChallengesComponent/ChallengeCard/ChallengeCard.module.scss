@@ -264,7 +264,6 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: $tc-red;
   border-color: $tc-red;
   cursor: pointer;
 
@@ -274,7 +273,7 @@
     font-size: 14px;
     font-weight: 400;
     line-height: 17px;
-    color: $white;
+    color: $tc-red;
     text-transform: capitalize;
     display: flex;
     justify-content: center;
