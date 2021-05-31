@@ -255,6 +255,11 @@
   }
 }
 
+.expiredMessage {
+  margin-left: 20px;
+  color: $red;
+}
+
 .button {
   height: 40px;
   span {

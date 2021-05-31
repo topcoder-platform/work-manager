@@ -414,6 +414,11 @@
   }
 }
 
+.expiredMessage {
+  margin-left: 20px;
+  color: $red;
+}
+
 .bottomContainer {
   display: inline-flex;
   justify-content: space-between;
