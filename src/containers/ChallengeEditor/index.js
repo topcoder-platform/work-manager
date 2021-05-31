@@ -236,6 +236,7 @@ class ChallengeEditor extends Component {
     const {
       match,
       isLoading,
+      isBillingAccountExpired,
       isProjectLoading,
       // challengeDetails,
       challengeResources,
@@ -316,6 +317,7 @@ class ChallengeEditor extends Component {
           <ChallengeEditorComponent
             isLoading={isLoading}
             challengeDetails={challengeDetails}
+            isBillingAccountExpired={isBillingAccountExpired}
             challengeResources={challengeResources}
             metadata={metadata}
             projectId={_.get(match.params, 'projectId', null)}
@@ -343,6 +345,7 @@ class ChallengeEditor extends Component {
         render={({ match }) => ((
           <ChallengeEditorComponent
             isLoading={isLoading}
+            isBillingAccountExpired={isBillingAccountExpired}
             challengeDetails={challengeDetails}
             challengeResources={challengeResources}
             metadata={metadata}
@@ -371,6 +374,7 @@ class ChallengeEditor extends Component {
         render={({ match }) => ((
           <ChallengeViewComponent
             isLoading={isLoading}
+            isBillingAccountExpired={isBillingAccountExpired}
             metadata={metadata}
             projectDetail={projectDetail}
             challenge={challengeDetails}
@@ -418,6 +422,7 @@ ChallengeEditor.propTypes = {
     challengeTypes: PropTypes.array
   }),
   isLoading: PropTypes.bool,
+  isBillingAccountExpired: PropTypes.bool,
   createAttachments: PropTypes.func,
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string,
@@ -441,6 +446,7 @@ const mapStateToProps = ({ projects, challenges: { challengeDetails, challengeRe
   challengeResources,
   metadata,
   isLoading,
+  isBillingAccountExpired: projects.isBillingAccountExpired,
   isProjectLoading: projects.isLoading,
   attachments,
   token,

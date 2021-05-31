@@ -185,7 +185,6 @@ const mapStateToProps = ({ challenges, sidebar, projects }) => ({
   activeProjectId: sidebar.activeProjectId,
   projects: sidebar.projects,
   projectDetail: projects.projectDetail
-
 })
 
 const mapDispatchToProps = {

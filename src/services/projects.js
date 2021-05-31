@@ -4,6 +4,18 @@ import * as queryString from 'query-string'
 const { PROJECT_API_URL } = process.env
 
 /**
+ * Get billing account based on project id
+ *
+ * @param {String} projectId Id of the project
+ *
+ * @returns {Promise<Object>} Billing account data
+ */
+export async function fetchBillingAccount (projectId) {
+  const response = await axiosInstance.get(`${PROJECT_API_URL}/${projectId}/billingAccount`)
+  return _.get(response, 'data')
+}
+
+/**
  * Api request for fetching member's projects
  * @returns {Promise<*>}
  */

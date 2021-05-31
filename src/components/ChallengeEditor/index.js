@@ -1181,6 +1181,7 @@ class ChallengeEditor extends Component {
     } = this.state
     const {
       isNew,
+      isBillingAccountExpired,
       isLoading,
       metadata,
       uploadAttachments,
@@ -1483,6 +1484,7 @@ class ChallengeEditor extends Component {
                       <span className={styles.fieldTitle}>Billing Account Id:</span>
                       {projectDetail.billingAccountId}
                     </span>
+                    {isBillingAccountExpired && <span className={styles.expiredMessage}>Expired</span>}
                   </div>
                 </div>
                 {isBetaMode() && (
@@ -1606,6 +1608,7 @@ ChallengeEditor.propTypes = {
   projectDetail: PropTypes.object,
   challengeResources: PropTypes.arrayOf(PropTypes.object),
   isNew: PropTypes.bool.isRequired,
+  isBillingAccountExpired: PropTypes.bool,
   projectId: PropTypes.string.isRequired,
   challengeId: PropTypes.string,
   metadata: PropTypes.object.isRequired,

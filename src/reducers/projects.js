@@ -3,6 +3,9 @@
  */
 import _ from 'lodash'
 import {
+  LOAD_PROJECT_BILLING_ACCOUNT_PENDING,
+  LOAD_PROJECT_BILLING_ACCOUNT_SUCCESS,
+  LOAD_PROJECT_BILLING_ACCOUNT_FAILURE,
   LOAD_PROJECT_DETAILS_FAILURE,
   LOAD_PROJECT_DETAILS_PENDING,
   LOAD_PROJECT_DETAILS_SUCCESS
@@ -10,7 +13,9 @@ import {
 
 const initialState = {
   isLoading: false,
-  projectDetail: {}
+  projectDetail: {},
+  isBillingAccountExpired: false,
+  isBillingAccountLoading: false
 }
 
 export default function (state = initialState, action) {
@@ -27,6 +32,24 @@ export default function (state = initialState, action) {
         projectDetail: action.payload,
         hasProjectAccess: true,
         isLoading: false
+      }
+    case LOAD_PROJECT_BILLING_ACCOUNT_PENDING:
+      return {
+        ...state,
+        isBillingAccountLoading: true,
+        isBillingAccountExpired: false
+      }
+    case LOAD_PROJECT_BILLING_ACCOUNT_SUCCESS:
+      return {
+        ...state,
+        isBillingAccountLoading: false,
+        isBillingAccountExpired: !action.payload.active
+      }
+    case LOAD_PROJECT_BILLING_ACCOUNT_FAILURE:
+      return {
+        ...state,
+        isBillingAccountLoading: false,
+        isBillingAccountExpired: false
       }
     default:
       return state
