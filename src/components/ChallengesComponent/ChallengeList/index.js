@@ -103,7 +103,8 @@ class ChallengeList extends Component {
       perPage,
       totalChallenges,
       partiallyUpdateChallengeDetails,
-      deleteChallenge
+      deleteChallenge,
+      isBillingAccountExpired
     } = this.props
     if (warnMessage) {
       return <Message warnMessage={warnMessage} />
@@ -215,6 +216,7 @@ class ChallengeList extends Component {
                         reloadChallengeList={this.reloadChallengeList}
                         partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
                         deleteChallenge={deleteChallenge}
+                        isBillingAccountExpired={isBillingAccountExpired}
                       />
                     </li>
                   )
@@ -258,7 +260,8 @@ ChallengeList.propTypes = {
   perPage: PropTypes.number.isRequired,
   totalChallenges: PropTypes.number.isRequired,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
-  deleteChallenge: PropTypes.func.isRequired
+  deleteChallenge: PropTypes.func.isRequired,
+  isBillingAccountExpired: PropTypes.bool
 }
 
 export default ChallengeList

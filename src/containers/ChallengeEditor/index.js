@@ -148,7 +148,11 @@ class ChallengeEditor extends Component {
   }
 
   onLaunchChallenge () {
-    this.setState({ showLaunchModal: true })
+    if (!this.props.isBillingAccountExpired) {
+      this.setState({ showLaunchModal: true })
+    } else {
+      this.setState({ showLaunchModal: true, launchError: 'Unable to activate challenge as Billing Account is not active.' })
+    }
   }
 
   onCloseTask () {
@@ -289,6 +293,7 @@ class ChallengeEditor extends Component {
       errorMessage={this.state.launchError}
       onCancel={this.closeLaunchModal}
       onConfirm={this.activateChallenge}
+      disableConfirmButton={isBillingAccountExpired}
     />
     const closeTaskModal = <ConfirmationModal
       title='Confirm Close Task'

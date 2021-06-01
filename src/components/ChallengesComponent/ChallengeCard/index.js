@@ -209,7 +209,11 @@ class ChallengeCard extends React.Component {
 
   onUpdateLaunch () {
     if (!this.state.isLaunch) {
-      this.setState({ isLaunch: true })
+      if (!this.props.isBillingAccountExpired) {
+        this.setState({ isLaunch: true })
+      } else {
+        this.setState({ isLaunch: true, error: 'Unable to activate challenge as Billing Account is not active.' })
+      }
     }
   }
 
@@ -272,7 +276,7 @@ class ChallengeCard extends React.Component {
 
   render () {
     const { isLaunch, isConfirm, isSaving, isDeleteLaunch, isCheckChalengePermission, hasEditChallengePermission } = this.state
-    const { challenge, shouldShowCurrentPhase, reloadChallengeList } = this.props
+    const { challenge, shouldShowCurrentPhase, reloadChallengeList, isBillingAccountExpired } = this.props
     const { phaseMessage, endTime } = getPhaseInfo(challenge)
     const deleteMessage = isCheckChalengePermission
       ? 'Checking permissions...'
@@ -305,6 +309,7 @@ class ChallengeCard extends React.Component {
             errorMessage={this.state.error}
             onCancel={this.resetModal}
             onConfirm={this.onLaunchChallenge}
+            disableConfirmButton={isBillingAccountExpired}
           />
         )
         }
@@ -364,7 +369,8 @@ ChallengeCard.propTypes = {
   shouldShowCurrentPhase: PropTypes.bool,
   reloadChallengeList: PropTypes.func,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
-  deleteChallenge: PropTypes.func.isRequired
+  deleteChallenge: PropTypes.func.isRequired,
+  isBillingAccountExpired: PropTypes.bool
 }
 
 export default withRouter(ChallengeCard)

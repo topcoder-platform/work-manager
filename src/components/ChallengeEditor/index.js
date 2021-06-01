@@ -655,7 +655,11 @@ class ChallengeEditor extends Component {
   toggleLaunch (e) {
     e.preventDefault()
     if (this.validateChallenge()) {
-      this.setState({ isLaunch: true })
+      if (!this.props.isBillingAccountExpired) {
+        this.setState({ isLaunch: true })
+      } else {
+        this.setState({ isLaunch: true, error: 'Unable to activate challenge as Billing Account is not active.' })
+      }
     }
   }
 
@@ -1279,6 +1283,7 @@ class ChallengeEditor extends Component {
           errorMessage={this.state.error}
           onCancel={this.resetModal}
           onConfirm={this.onActiveChallenge}
+          disableConfirmButton={isBillingAccountExpired}
         />
       )
     }
