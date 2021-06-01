@@ -14,7 +14,7 @@ import ChallengeStatus from '../ChallengeStatus'
 import ChallengeTag from '../ChallengeTag'
 import styles from './ChallengeCard.module.scss'
 import { getFormattedDuration, formatDate } from '../../../util/date'
-import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, MESSAGE, ONLINE_REVIEW_URL } from '../../../config/constants'
+import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, MESSAGE, SUBMISSION_REVIEW_URL, ONLINE_REVIEW_URL } from '../../../config/constants'
 import ConfirmationModal from '../../Modal/ConfirmationModal'
 import { checkChallengeEditPermission } from '../../../util/tc'
 import AlertModal from '../../Modal/AlertModal'
@@ -104,6 +104,7 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
   const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.id}`
   const directUrl = `${DIRECT_PROJECT_URL}/contest/detail?projectId=${challenge.legacyId}`
   const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
+  const submissionReviewUrl = `${SUBMISSION_REVIEW_URL}/${challenge.legacyId}`
   const isTask = _.get(challenge, 'task.isTask', false)
 
   // NEW projects never have Legacy challenge created, so don't show links and "Activate" button for them at all
@@ -124,6 +125,8 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
             <a className={styles.link} href={directUrl} target='_blank'>Direct</a>
             <span className={styles.linkDivider}>|</span>
             <a className={styles.link} href={orUrl} target='_blank'>OR</a>
+            <span className={styles.linkDivider}>|</span>
+            <a className={styles.link} href={submissionReviewUrl} target='_blank'>SR</a>
           </div>
         )}
       </div>

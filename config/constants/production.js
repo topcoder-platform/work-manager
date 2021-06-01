@@ -23,6 +23,7 @@ module.exports = {
   CONNECT_APP_URL: `https://connect.${DOMAIN}`,
   DIRECT_PROJECT_URL: `https://www.${DOMAIN}/direct`,
   ONLINE_REVIEW_URL: `https://software.${DOMAIN}`,
+  SUBMISSION_REVIEW_URL: `https://submission-review.${DOMAIN}/challenges`,
   DEFAULT_TERM_UUID: '564a981e-6840-4a5c-894e-d5ad22e9cd6f', // Terms & Conditions of Use at TopCoder
   DEFAULT_NDA_UUID: 'c41e90e5-4d0e-4811-bd09-38ff72674490', // Appirio NDA v2.0
   SUBMITTER_ROLE_UUID: '732339e7-8e30-49d7-9198-cccf9451e221',

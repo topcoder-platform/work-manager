@@ -15,6 +15,7 @@ import ChallengeScheduleField from '../ChallengeSchedule-Field'
 import TextEditorField from '../TextEditor-Field'
 import AttachmentField from '../Attachment-Field'
 import ChallengePrizesField from '../ChallengePrizes-Field'
+import CheckpointPrizesField from '../CheckpointPrizes-Field'
 import CopilotFeeField from '../CopilotFee-Field'
 import ChallengeTotalField from '../ChallengeTotal-Field'
 import Loader from '../../Loader'
@@ -25,7 +26,7 @@ import { getResourceRoleByName } from '../../../util/tc'
 import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
 import Tooltip from '../../Tooltip'
-import { MESSAGE, REVIEW_TYPES } from '../../../config/constants'
+import { MESSAGE, REVIEW_TYPES, DES_TRACK_ID } from '../../../config/constants'
 
 const ChallengeView = ({
   projectDetail,
@@ -82,7 +83,6 @@ const ChallengeView = ({
   const isInternal = reviewType === REVIEW_TYPES.INTERNAL
   const timeLineTemplate = _.find(metadata.timelineTemplates, { id: challenge.timelineTemplateId })
   if (isLoading || _.isEmpty(metadata.challengePhases) || challenge.id !== challengeId) return <Loader />
-  const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
   const isTask = _.get(challenge, 'task.isTask', false)
   return (
     <div className={styles.wrapper}>
@@ -218,16 +218,14 @@ const ChallengeView = ({
                 />
               </div>
             }
-            { showTimeline && (
-              <ChallengeScheduleField
-                templates={metadata.timelineTemplates}
-                challengePhases={metadata.challengePhases}
-                challenge={challenge}
-                challengePhasesWithCorrectTimeline={challenge.phases}
-                currentTemplate={timeLineTemplate}
-                readOnly
-              />
-            )}
+            <ChallengeScheduleField
+              templates={metadata.timelineTemplates}
+              challengePhases={metadata.challengePhases}
+              challenge={challenge}
+              challengePhasesWithCorrectTimeline={challenge.phases}
+              currentTemplate={timeLineTemplate}
+              readOnly
+            />
             <div>
               { challenge.discussions && challenge.discussions.map(d => (
                 <div key={d.id} className={cn(styles.row, styles.topRow)}>
@@ -254,6 +252,7 @@ const ChallengeView = ({
             />}
             <ChallengePrizesField challenge={challenge} readOnly />
             <CopilotFeeField challenge={challenge} readOnly />
+            {DES_TRACK_ID === challenge.trackId && <CheckpointPrizesField challenge={challenge} readOnly />}
             <ChallengeTotalField challenge={challenge} />
           </div>
         </div>

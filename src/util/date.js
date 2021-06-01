@@ -111,6 +111,7 @@ export const updateChallengePhaseBeforeSendRequest = (challengeDetail) => {
     const challengeDetailTmp = _.cloneDeep(challengeDetail)
     challengeDetailTmp.phases = challengeDetailTmp.phases.map((p) => ({
       duration: p.duration * hourToSecond,
+      isOpen: p.isOpen,
       phaseId: p.phaseId
     }))
     return challengeDetailTmp

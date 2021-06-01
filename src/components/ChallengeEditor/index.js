@@ -20,7 +20,7 @@ import {
   MESSAGE,
   COMMUNITY_APP_URL,
   DES_TRACK_ID,
-  CHALLENGE_TYPE_ID,
+  // CHALLENGE_TYPE_ID,
   REVIEW_TYPES
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
@@ -35,6 +35,7 @@ import GroupsField from './Groups-Field'
 import CopilotFeeField from './CopilotFee-Field'
 import ChallengeTotalField from './ChallengeTotal-Field'
 import ChallengePrizesField from './ChallengePrizes-Field'
+import CheckpointPrizesField from './CheckpointPrizes-Field'
 import AttachmentField from './Attachment-Field'
 import TextEditorField from './TextEditor-Field'
 import Loader from '../Loader'
@@ -103,6 +104,7 @@ class ChallengeEditor extends Component {
     this.toggleNdaRequire = this.toggleNdaRequire.bind(this)
     this.toggleUseSchedulingAPI = this.toggleUseSchedulingAPI.bind(this)
     this.removePhase = this.removePhase.bind(this)
+    this.togglePhase = this.togglePhase.bind(this)
     this.resetPhase = this.resetPhase.bind(this)
     this.savePhases = this.savePhases.bind(this)
     this.toggleLaunch = this.toggleLaunch.bind(this)
@@ -627,6 +629,19 @@ class ChallengeEditor extends Component {
   }
 
   /**
+   * Toggle Phase from challenge Phases list
+   * @param index
+   * @param checked
+   */
+  togglePhase (index, checked) {
+    const { challenge: oldChallenge } = this.state
+    const newChallenge = { ...oldChallenge }
+    const newPhaseList = _.cloneDeep(oldChallenge.phases)
+    newPhaseList[index].isOpen = checked
+    newChallenge.phases = _.clone(newPhaseList)
+    this.setState({ challenge: newChallenge })
+  }
+  /**
    * Save updated  challenge Phases
    */
   async savePhases () {
@@ -844,17 +859,21 @@ class ChallengeEditor extends Component {
   async createNewChallenge () {
     if (!this.props.isNew) return
     const { metadata, createChallenge, projectDetail } = this.props
-    const { showDesignChallengeWarningModel, challenge: { name, trackId, typeId } } = this.state
+    const {
+      /** showDesignChallengeWarningModel, **/
+      challenge: { name, trackId, typeId }
+    } = this.state
     const { timelineTemplates } = metadata
     const isDesignChallenge = trackId === DES_TRACK_ID
-    const isChallengeType = typeId === CHALLENGE_TYPE_ID
+    // const isChallengeType = typeId === CHALLENGE_TYPE_ID
 
-    if (!showDesignChallengeWarningModel && isDesignChallenge && isChallengeType) {
-      this.setState({
-        showDesignChallengeWarningModel: true
-      })
-      return
-    }
+    // This is no longer needed but leaving it just in case
+    // if (!showDesignChallengeWarningModel && isDesignChallenge && isChallengeType) {
+    //   this.setState({
+    //     showDesignChallengeWarningModel: true
+    //   })
+    //   return
+    // }
 
     // indicate that creating process has started
     this.setState({ isSaving: true })
@@ -1408,7 +1427,6 @@ class ChallengeEditor extends Component {
     const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
     const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
     const currentChallengeId = this.getCurrentChallengeId()
-    const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
     const challengeForm = isNew
       ? (
         <form name='challenge-new-form' noValidate autoComplete='off' onSubmit={this.createChallengeHandler}>
@@ -1526,20 +1544,19 @@ class ChallengeEditor extends Component {
                 />
               )
             }
-            { showTimeline && (
-              <ChallengeScheduleField
-                templates={this.getAvailableTimelineTemplates()}
-                challengePhases={metadata.challengePhases}
-                removePhase={this.removePhase}
-                resetPhase={this.resetPhase}
-                savePhases={this.savePhases}
-                challenge={challenge}
-                onUpdateSelect={this.onUpdateSelect}
-                onUpdatePhase={this.onUpdatePhase}
-                onUpdateOthers={this.onUpdateOthers}
-                currentTemplate={this.getCurrentTemplate()}
-              />
-            )}
+            <ChallengeScheduleField
+              templates={this.getAvailableTimelineTemplates()}
+              challengePhases={metadata.challengePhases}
+              removePhase={this.removePhase}
+              togglePhase={this.togglePhase}
+              resetPhase={this.resetPhase}
+              savePhases={this.savePhases}
+              challenge={challenge}
+              onUpdateSelect={this.onUpdateSelect}
+              onUpdatePhase={this.onUpdatePhase}
+              onUpdateOthers={this.onUpdateOthers}
+              currentTemplate={this.getCurrentTemplate()}
+            />
           </div>
           <div className={styles.group}>
             <div className={styles.title}>Public specification <span>*</span></div>
@@ -1568,6 +1585,7 @@ class ChallengeEditor extends Component {
             />}
             <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
+            {DES_TRACK_ID === challenge.trackId && <CheckpointPrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />}
             <ChallengeTotalField challenge={challenge} />
           </div>
           { errorContainer }
