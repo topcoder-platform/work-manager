@@ -148,7 +148,11 @@ class ChallengeEditor extends Component {
   }
 
   onLaunchChallenge () {
-    this.setState({ showLaunchModal: true })
+    if (!this.props.isBillingAccountExpired) {
+      this.setState({ showLaunchModal: true })
+    } else {
+      this.setState({ showLaunchModal: true, launchError: 'Unable to activate challenge as Billing Account is not active.' })
+    }
   }
 
   onCloseTask () {
@@ -236,6 +240,7 @@ class ChallengeEditor extends Component {
     const {
       match,
       isLoading,
+      isBillingAccountExpired,
       isProjectLoading,
       // challengeDetails,
       challengeResources,
@@ -288,6 +293,7 @@ class ChallengeEditor extends Component {
       errorMessage={this.state.launchError}
       onCancel={this.closeLaunchModal}
       onConfirm={this.activateChallenge}
+      disableConfirmButton={isBillingAccountExpired}
     />
     const closeTaskModal = <ConfirmationModal
       title='Confirm Close Task'
@@ -316,6 +322,7 @@ class ChallengeEditor extends Component {
           <ChallengeEditorComponent
             isLoading={isLoading}
             challengeDetails={challengeDetails}
+            isBillingAccountExpired={isBillingAccountExpired}
             challengeResources={challengeResources}
             metadata={metadata}
             projectId={_.get(match.params, 'projectId', null)}
@@ -343,6 +350,7 @@ class ChallengeEditor extends Component {
         render={({ match }) => ((
           <ChallengeEditorComponent
             isLoading={isLoading}
+            isBillingAccountExpired={isBillingAccountExpired}
             challengeDetails={challengeDetails}
             challengeResources={challengeResources}
             metadata={metadata}
@@ -371,6 +379,7 @@ class ChallengeEditor extends Component {
         render={({ match }) => ((
           <ChallengeViewComponent
             isLoading={isLoading}
+            isBillingAccountExpired={isBillingAccountExpired}
             metadata={metadata}
             projectDetail={projectDetail}
             challenge={challengeDetails}
@@ -418,6 +427,7 @@ ChallengeEditor.propTypes = {
     challengeTypes: PropTypes.array
   }),
   isLoading: PropTypes.bool,
+  isBillingAccountExpired: PropTypes.bool,
   createAttachments: PropTypes.func,
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string,
@@ -441,6 +451,7 @@ const mapStateToProps = ({ projects, challenges: { challengeDetails, challengeRe
   challengeResources,
   metadata,
   isLoading,
+  isBillingAccountExpired: projects.isBillingAccountExpired,
   isProjectLoading: projects.isLoading,
   attachments,
   token,

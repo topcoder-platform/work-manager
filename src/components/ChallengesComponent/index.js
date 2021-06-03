@@ -27,7 +27,8 @@ const ChallengesComponent = ({
   perPage,
   totalChallenges,
   partiallyUpdateChallengeDetails,
-  deleteChallenge
+  deleteChallenge,
+  isBillingAccountExpired
 }) => {
   return (
     <Sticky top={10}>
@@ -88,6 +89,7 @@ const ChallengesComponent = ({
               totalChallenges={totalChallenges}
               partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
               deleteChallenge={deleteChallenge}
+              isBillingAccountExpired={isBillingAccountExpired}
             />
           )}
         </div>
@@ -112,7 +114,8 @@ ChallengesComponent.propTypes = {
   perPage: PropTypes.number.isRequired,
   totalChallenges: PropTypes.number.isRequired,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
-  deleteChallenge: PropTypes.func.isRequired
+  deleteChallenge: PropTypes.func.isRequired,
+  isBillingAccountExpired: PropTypes.bool
 }
 
 ChallengesComponent.defaultProps = {

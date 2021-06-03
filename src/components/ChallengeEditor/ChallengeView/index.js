@@ -31,6 +31,7 @@ const ChallengeView = ({
   projectDetail,
   challenge,
   attachments,
+  isBillingAccountExpired,
   metadata,
   challengeResources,
   token,
@@ -197,6 +198,7 @@ const ChallengeView = ({
                       <span className={styles.fieldTitle}>Billing Account Id:</span>
                       {projectDetail.billingAccountId}
                     </span>
+                    {isBillingAccountExpired && <span className={styles.expiredMessage}>Expired</span>}
                   </div>
                 </div>
                 {isBetaMode() && (
@@ -278,6 +280,7 @@ ChallengeView.propTypes = {
   }).isRequired,
   projectDetail: PropTypes.object,
   challenge: PropTypes.object,
+  isBillingAccountExpired: PropTypes.bool,
   attachments: PropTypes.array,
   metadata: PropTypes.object,
   token: PropTypes.string,

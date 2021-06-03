@@ -87,7 +87,8 @@ class Challenges extends Component {
       totalChallenges,
       setActiveProject,
       partiallyUpdateChallengeDetails,
-      deleteChallenge
+      deleteChallenge,
+      isBillingAccountExpired
     } = this.props
     const { searchProjectName, onlyMyProjects } = this.state
     const projectInfo = _.find(projects, { id: activeProjectId }) || {}
@@ -149,6 +150,7 @@ class Challenges extends Component {
           totalChallenges={totalChallenges}
           partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
           deleteChallenge={deleteChallenge}
+          isBillingAccountExpired={isBillingAccountExpired}
         />
         }
       </Fragment>
@@ -176,7 +178,8 @@ Challenges.propTypes = {
   loadProjects: PropTypes.func.isRequired,
   setActiveProject: PropTypes.func.isRequired,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
-  deleteChallenge: PropTypes.func.isRequired
+  deleteChallenge: PropTypes.func.isRequired,
+  isBillingAccountExpired: PropTypes.bool
 }
 
 const mapStateToProps = ({ challenges, sidebar, projects }) => ({
@@ -184,8 +187,8 @@ const mapStateToProps = ({ challenges, sidebar, projects }) => ({
   challengeProjectId: challenges.projectId,
   activeProjectId: sidebar.activeProjectId,
   projects: sidebar.projects,
-  projectDetail: projects.projectDetail
-
+  projectDetail: projects.projectDetail,
+  isBillingAccountExpired: projects.isBillingAccountExpired
 })
 
 const mapDispatchToProps = {
