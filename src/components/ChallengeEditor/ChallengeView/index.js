@@ -112,11 +112,13 @@ const ChallengeView = ({
           isTask && challenge.status === 'Active' && (
             <div className={styles.button}>
               { assignedMemberDetails ? (
-                <PrimaryButton text={'Close Task'} type={'danger'} onClick={onCloseTask} />
+                <Tooltip content={MESSAGE.MARK_COMPLETE}>
+                  <PrimaryButton text={'Mark Complete'} type={'success'} onClick={onCloseTask} />
+                </Tooltip>
               ) : (
                 <Tooltip content={MESSAGE.NO_TASK_ASSIGNEE}>
                   {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
-                  <PrimaryButton text={'Close Task'} type={'disabled'} />
+                  <PrimaryButton text={'Mark Complete'} type={'disabled'} />
                 </Tooltip>
               )}
             </div>

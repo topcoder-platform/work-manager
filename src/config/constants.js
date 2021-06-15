@@ -228,5 +228,6 @@ export const MESSAGE = {
   TASK_CLOSE_SUCCESS: 'Task closed successfully',
   CHALLENGE_LAUNCH_SUCCESS: 'Challenge activated successfully',
   COMMUNITY_REVIEW_DISABLED: 'Community review is NOT available for Design challenges',
-  INTERNAL_REVIEW_DISABLED: 'Internal review is NOT available for QA challenges'
+  INTERNAL_REVIEW_DISABLED: 'Internal review is NOT available for QA challenges',
+  MARK_COMPLETE: 'This will close the task and generate a payment for the assignee and copilot.'
 }
