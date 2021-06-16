@@ -11,6 +11,7 @@ import Track from '../../Track'
 import NDAField from '../NDAField'
 import UseSchedulingAPIField from '../UseSchedulingAPIField'
 import CopilotField from '../Copilot-Field'
+import RegistrantsField from '../Registrants-Field'
 import ChallengeScheduleField from '../ChallengeSchedule-Field'
 import TextEditorField from '../TextEditor-Field'
 import AttachmentField from '../Attachment-Field'
@@ -31,6 +32,7 @@ const ChallengeView = ({
   projectDetail,
   challenge,
   attachments,
+  registrants,
   isBillingAccountExpired,
   metadata,
   challengeResources,
@@ -158,6 +160,7 @@ const ChallengeView = ({
             <CopilotField challenge={{
               copilot
             }} copilots={metadata.members} readOnly />
+            <RegistrantsField registrants={registrants} />
             <div className={cn(styles.row, styles.topRow)}>
               <div className={styles.col}>
                 <span><span className={styles.fieldTitle}>Review Type:</span> {isCommunity ? 'Community' : 'Internal'}</span>
@@ -282,6 +285,7 @@ ChallengeView.propTypes = {
   challenge: PropTypes.object,
   isBillingAccountExpired: PropTypes.bool,
   attachments: PropTypes.array,
+  registrants: PropTypes.array,
   metadata: PropTypes.object,
   token: PropTypes.string,
   isLoading: PropTypes.bool.isRequired,

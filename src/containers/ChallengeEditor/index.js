@@ -384,6 +384,7 @@ class ChallengeEditor extends Component {
             projectDetail={projectDetail}
             challenge={challengeDetails}
             attachments={attachments}
+            registrants={submitters}
             challengeResources={challengeResources}
             token={token}
             challengeId={challengeId}

@@ -1,0 +1,76 @@
+@import "../../../styles/includes";
+
+.row {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  margin: 30px 30px 0 30px;
+  align-content: space-between;
+  justify-content: flex-start;
+
+  .field {
+    @include upto-sm {
+      display: block;
+      padding-bottom: 10px;
+    }
+
+    label {
+      @include roboto-bold();
+
+      font-size: 16px;
+      line-height: 19px;
+      font-weight: 500;
+      color: $tc-gray-80;
+    }
+
+    &.col1 {
+      max-width: 185px;
+      min-width: 185px;
+      margin-right: 14px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+    }
+
+    &.col2 {
+      align-self: flex-end;
+      margin-bottom: auto;
+      margin-top: auto;
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+
+      .registrantList {
+        .registrantRow {
+          background-color: $light-bg;
+          height: 30px;
+          min-width: 500px;
+          display: flex;
+          justify-content: flex-start;
+          padding: 0 20px;
+          
+          .registrantCol1 {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            flex: 2;
+          }
+        
+          .registrantCol2 {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex: 6;
+          }
+        
+          .registrantCol3 {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            flex: 6;
+          }
+        }
+      }
+    }
+  }
+}
