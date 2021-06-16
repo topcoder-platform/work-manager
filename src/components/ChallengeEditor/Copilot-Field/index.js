@@ -8,6 +8,8 @@ import CopilotCard from '../../CopilotCard'
 const CopilotField = ({ copilots, challenge, onUpdateOthers, readOnly }) => {
   let errMessage = 'Please set a copilot'
   const selectedCopilot = _.find(copilots, { handle: challenge.copilot })
+  const copilotFee = _.find(challenge.prizeSets, p => p.type === 'copilot', [])
+  console.log(copilotFee)
   if (readOnly) {
     return (
       <div className={styles.row}>
@@ -24,7 +26,7 @@ const CopilotField = ({ copilots, challenge, onUpdateOthers, readOnly }) => {
     <>
       <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)}>
-          <label htmlFor='copilot'>Copilot {!readOnly && (<span>*</span>)} :</label>
+          <label htmlFor='copilot'>Copilot :</label>
         </div>
         <div className={cn(styles.field, styles.col2)}>
           {
@@ -33,7 +35,7 @@ const CopilotField = ({ copilots, challenge, onUpdateOthers, readOnly }) => {
           }
         </div>
       </div>
-      {!readOnly && challenge.submitTriggered && !selectedCopilot && (
+      {!readOnly && challenge.submitTriggered && parseInt(copilotFee.prizes[0].value) > 0 && !selectedCopilot && (
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)} />
           <div className={cn(styles.field, styles.col2, styles.error)}>
