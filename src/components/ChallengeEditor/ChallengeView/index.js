@@ -10,6 +10,7 @@ import { PrimaryButton } from '../../Buttons'
 import Track from '../../Track'
 import NDAField from '../NDAField'
 import UseSchedulingAPIField from '../UseSchedulingAPIField'
+import PureV5Field from '../PureV5Field'
 import CopilotField from '../Copilot-Field'
 import ChallengeScheduleField from '../ChallengeSchedule-Field'
 import TextEditorField from '../TextEditor-Field'
@@ -204,6 +205,9 @@ const ChallengeView = ({
                 {isBetaMode() && (
                   <UseSchedulingAPIField challenge={challenge} readOnly />
                 )}
+                {isBetaMode() && (
+                  <PureV5Field challenge={challenge} readOnly />
+                )}
               </>
             )}
             {
@@ -218,14 +222,18 @@ const ChallengeView = ({
                 />
               </div>
             }
-            <ChallengeScheduleField
-              templates={metadata.timelineTemplates}
-              challengePhases={metadata.challengePhases}
-              challenge={challenge}
-              challengePhasesWithCorrectTimeline={challenge.phases}
-              currentTemplate={timeLineTemplate}
-              readOnly
-            />
+            {
+              isBetaMode() && (
+                <ChallengeScheduleField
+                  templates={metadata.timelineTemplates}
+                  challengePhases={metadata.challengePhases}
+                  challenge={challenge}
+                  challengePhasesWithCorrectTimeline={challenge.phases}
+                  currentTemplate={timeLineTemplate}
+                  readOnly
+                />
+              )
+            }
             <div>
               { challenge.discussions && challenge.discussions.map(d => (
                 <div key={d.id} className={cn(styles.row, styles.topRow)}>
@@ -252,7 +260,7 @@ const ChallengeView = ({
             />}
             <ChallengePrizesField challenge={challenge} readOnly />
             <CopilotFeeField challenge={challenge} readOnly />
-            {DES_TRACK_ID === challenge.trackId && <CheckpointPrizesField challenge={challenge} readOnly />}
+            {DES_TRACK_ID === challenge.trackId && isBetaMode() && <CheckpointPrizesField challenge={challenge} readOnly />}
             <ChallengeTotalField challenge={challenge} />
           </div>
         </div>

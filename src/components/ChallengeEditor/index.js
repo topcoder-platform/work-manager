@@ -52,6 +52,7 @@ import LegacyLinks from '../LegacyLinks'
 import AssignedMemberField from './AssignedMember-Field'
 import Tooltip from '../Tooltip'
 import UseSchedulingAPIField from './UseSchedulingAPIField'
+import PureV5Field from './PureV5Field'
 import { getResourceRoleByName } from '../../util/tc'
 import { isBetaMode } from '../../util/cookie'
 
@@ -103,6 +104,7 @@ class ChallengeEditor extends Component {
     this.toggleAdvanceSettings = this.toggleAdvanceSettings.bind(this)
     this.toggleNdaRequire = this.toggleNdaRequire.bind(this)
     this.toggleUseSchedulingAPI = this.toggleUseSchedulingAPI.bind(this)
+    this.togglePureV5 = this.togglePureV5.bind(this)
     this.removePhase = this.removePhase.bind(this)
     this.togglePhase = this.togglePhase.bind(this)
     this.resetPhase = this.resetPhase.bind(this)
@@ -612,6 +614,14 @@ class ChallengeEditor extends Component {
     const newChallenge = { ...challenge }
     const useSchedulingApi = !_.get(newChallenge, 'legacy.useSchedulingAPI', false)
     _.set(newChallenge, 'legacy.useSchedulingAPI', useSchedulingApi)
+    this.setState({ challenge: newChallenge })
+  }
+
+  togglePureV5 () {
+    const { challenge } = this.state
+    const newChallenge = { ...challenge }
+    const pureV5 = !_.get(newChallenge, 'legacy.pureV5', false)
+    _.set(newChallenge, 'legacy.pureV5', pureV5)
     this.setState({ challenge: newChallenge })
   }
 
@@ -1513,6 +1523,9 @@ class ChallengeEditor extends Component {
                 {isBetaMode() && (
                   <UseSchedulingAPIField challenge={challenge} toggleUseSchedulingAPI={this.toggleUseSchedulingAPI} />
                 )}
+                {isBetaMode() && (
+                  <PureV5Field challenge={challenge} togglePureV5={this.togglePureV5} />
+                )}
               </React.Fragment>
             )}
             {!isTask && (
@@ -1544,19 +1557,23 @@ class ChallengeEditor extends Component {
                 />
               )
             }
-            <ChallengeScheduleField
-              templates={this.getAvailableTimelineTemplates()}
-              challengePhases={metadata.challengePhases}
-              removePhase={this.removePhase}
-              togglePhase={this.togglePhase}
-              resetPhase={this.resetPhase}
-              savePhases={this.savePhases}
-              challenge={challenge}
-              onUpdateSelect={this.onUpdateSelect}
-              onUpdatePhase={this.onUpdatePhase}
-              onUpdateOthers={this.onUpdateOthers}
-              currentTemplate={this.getCurrentTemplate()}
-            />
+            {
+              isBetaMode() && (
+                <ChallengeScheduleField
+                  templates={this.getAvailableTimelineTemplates()}
+                  challengePhases={metadata.challengePhases}
+                  removePhase={this.removePhase}
+                  togglePhase={this.togglePhase}
+                  resetPhase={this.resetPhase}
+                  savePhases={this.savePhases}
+                  challenge={challenge}
+                  onUpdateSelect={this.onUpdateSelect}
+                  onUpdatePhase={this.onUpdatePhase}
+                  onUpdateOthers={this.onUpdateOthers}
+                  currentTemplate={this.getCurrentTemplate()}
+                />
+              )
+            }
           </div>
           <div className={styles.group}>
             <div className={styles.title}>Public specification <span>*</span></div>
@@ -1585,7 +1602,7 @@ class ChallengeEditor extends Component {
             />}
             <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
-            {DES_TRACK_ID === challenge.trackId && <CheckpointPrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />}
+            {DES_TRACK_ID === challenge.trackId && isBetaMode() && <CheckpointPrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />}
             <ChallengeTotalField challenge={challenge} />
           </div>
           { errorContainer }
