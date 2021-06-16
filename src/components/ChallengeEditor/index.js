@@ -1229,6 +1229,7 @@ class ChallengeEditor extends Component {
       return <div>Error loading challenge</div>
     }
     const isTask = _.get(challenge, 'task.isTask', false)
+    const isPureV5 = _.get(challenge, 'task.pureV5', false)
     const { assignedMemberDetails, error } = this.state
     let isActive = false
     let isDraft = false
@@ -1409,7 +1410,7 @@ class ChallengeEditor extends Component {
               </div>
               {isDraft && (
                 <div className={styles.button}>
-                  {challenge.legacyId || isTask ? (
+                  {challenge.legacyId || isTask || isPureV5 ? (
                     <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
                   ) : (
                     <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>

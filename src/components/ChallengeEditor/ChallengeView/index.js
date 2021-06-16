@@ -85,6 +85,7 @@ const ChallengeView = ({
   const timeLineTemplate = _.find(metadata.timelineTemplates, { id: challenge.timelineTemplateId })
   if (isLoading || _.isEmpty(metadata.challengePhases) || challenge.id !== challengeId) return <Loader />
   const isTask = _.get(challenge, 'task.isTask', false)
+  const isPureV5 = _.get(challenge, 'task.pureV5', false)
   return (
     <div className={styles.wrapper}>
       <Helmet title='View Details' />
@@ -98,7 +99,7 @@ const ChallengeView = ({
         {
           challenge.status === 'Draft' && (
             <div className={styles.button}>
-              {(challenge.legacyId || isTask) ? (
+              {(challenge.legacyId || isTask || isPureV5) ? (
                 <PrimaryButton text={'Launch'} type={'info'} onClick={onLaunchChallenge} />
               ) : (
                 <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
