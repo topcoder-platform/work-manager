@@ -727,6 +727,7 @@ class ChallengeEditor extends Component {
       'trackId',
       'typeId',
       'name',
+      'copilot',
       'description',
       'tags',
       'prizeSets'

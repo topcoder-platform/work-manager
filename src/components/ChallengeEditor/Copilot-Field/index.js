@@ -6,8 +6,9 @@ import _ from 'lodash'
 import CopilotCard from '../../CopilotCard'
 
 const CopilotField = ({ copilots, challenge, onUpdateOthers, readOnly }) => {
+  let errMessage = 'Please set a copilot'
+  const selectedCopilot = _.find(copilots, { handle: challenge.copilot })
   if (readOnly) {
-    const selectedCopilot = _.find(copilots, { handle: challenge.copilot })
     return (
       <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)}>
@@ -20,17 +21,27 @@ const CopilotField = ({ copilots, challenge, onUpdateOthers, readOnly }) => {
     )
   }
   return (
-    <div className={styles.row}>
-      <div className={cn(styles.field, styles.col1)}>
-        <label htmlFor='copilot'>Copilot :</label>
+    <>
+      <div className={styles.row}>
+        <div className={cn(styles.field, styles.col1)}>
+          <label htmlFor='copilot'>Copilot {!readOnly && (<span>*</span>)} :</label>
+        </div>
+        <div className={cn(styles.field, styles.col2)}>
+          {
+            _.map(copilots, copilot => (
+              <CopilotCard copilot={copilot} selectedCopilot={challenge.copilot} key={copilot.handle} onUpdateOthers={onUpdateOthers} />))
+          }
+        </div>
       </div>
-      <div className={cn(styles.field, styles.col2)}>
-        {
-          _.map(copilots, copilot => (
-            <CopilotCard copilot={copilot} selectedCopilot={challenge.copilot} key={copilot.handle} onUpdateOthers={onUpdateOthers} />))
-        }
-      </div>
-    </div>
+      {!readOnly && challenge.submitTriggered && !selectedCopilot && (
+        <div className={styles.row}>
+          <div className={cn(styles.field, styles.col1)} />
+          <div className={cn(styles.field, styles.col2, styles.error)}>
+            {errMessage}
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 
