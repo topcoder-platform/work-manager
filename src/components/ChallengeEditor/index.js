@@ -1229,7 +1229,7 @@ class ChallengeEditor extends Component {
       return <div>Error loading challenge</div>
     }
     const isTask = _.get(challenge, 'task.isTask', false)
-    const isPureV5 = _.get(challenge, 'task.pureV5', false)
+    const isPureV5 = _.get(challenge, 'legacy.pureV5', false)
     const { assignedMemberDetails, error } = this.state
     let isActive = false
     let isDraft = false
