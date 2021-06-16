@@ -192,7 +192,7 @@ class ChallengeScheduleField extends Component {
             endDate={moment(p.scheduledEndDate)}
             readOnly={readOnly}
           />
-          {index !== 0 && !readOnly && <div className={styles.switchButton}><SwitchButton checked={p.isOpen} onChange={(v) => togglePhase(index, v.target.checked)} /></div>}
+          {!readOnly && <div className={styles.switchButton}><SwitchButton checked={p.isOpen} onChange={(v) => togglePhase(index, v.target.checked)} /></div>}
           {/* {index !== 0 && !readOnly &&
           <div className={styles.icon} onClick={() => removePhase(index)}>
             <FontAwesomeIcon icon={faTrash} />
