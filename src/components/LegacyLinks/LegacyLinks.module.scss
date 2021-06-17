@@ -2,6 +2,7 @@
 .container {
   display: flex;
   margin-top: auto;
+  align-items: center;
 
   button:not(:first-child),
   a:not(:first-child) {
@@ -12,5 +13,29 @@
     height: 40px;
     outline: none;
     white-space: nowrap;
+  }
+
+  .row {
+    margin-bottom: 0;
+
+    &.topRow {
+      flex-wrap: wrap;
+    }
+  }
+
+  .col {
+    margin-right: 20px;
+    display: flex;
+    align-items: center;
+
+    .fieldTitle {
+      @include roboto-bold();
+
+      font-size: 16px;
+      line-height: 19px;
+      font-weight: 500;
+      color: $tc-gray-80;
+      margin-right: 10px;
+    }
   }
 }
