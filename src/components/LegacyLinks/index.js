@@ -3,12 +3,13 @@
  */
 import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
+import cn from 'classnames'
 import styles from './LegacyLinks.module.scss'
 import { DIRECT_PROJECT_URL, MESSAGE, ONLINE_REVIEW_URL } from '../../config/constants'
 import PrimaryButton from '../Buttons/PrimaryButton'
 import Tooltip from '../Tooltip'
 
-const LegacyLinks = ({ challenge }) => {
+const LegacyLinks = ({ challenge, challengeView }) => {
   const onClick = useCallback((e) => {
     e.stopPropagation()
   }, [])
@@ -38,12 +39,22 @@ const LegacyLinks = ({ challenge }) => {
           </Tooltip>
         </>
       )}
+      <div>
+        { challengeView && challenge.discussions && challenge.discussions.map(d => (
+          <div key={d.id} className={cn(styles.row, styles.topRow)}>
+            <div className={styles.col} >
+              <span><span className={styles.fieldTitle}>Forum:</span> <a href={d.url} target='_blank' rel='noopener noreferrer'>{d.name}</a></span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
 
 LegacyLinks.propTypes = {
-  challenge: PropTypes.object
+  challenge: PropTypes.object,
+  challengeView: PropTypes.bool
 }
 
 export default LegacyLinks

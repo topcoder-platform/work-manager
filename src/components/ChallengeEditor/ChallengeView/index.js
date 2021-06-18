@@ -89,7 +89,7 @@ const ChallengeView = ({
       <Helmet title='View Details' />
       {!isTask && (
         <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsLeft)}>
-          <LegacyLinks challenge={challenge} />
+          <LegacyLinks challenge={challenge} challengeView />
         </div>
       )}
       <div className={styles.title}>View Details</div>
@@ -230,15 +230,6 @@ const ChallengeView = ({
                 readOnly
               />
             )}
-            <div>
-              { challenge.discussions && challenge.discussions.map(d => (
-                <div key={d.id} className={cn(styles.row, styles.topRow)}>
-                  <div className={styles.col}>
-                    <span><span className={styles.fieldTitle}>Forum:</span> <a href={d.url} target='_blank' rel='noopener noreferrer'>{d.name}</a></span>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
           <div className={styles.group}>
             <div className={styles.title}>Public specification <span>*</span></div>
