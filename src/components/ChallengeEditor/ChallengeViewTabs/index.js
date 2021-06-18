@@ -3,13 +3,22 @@
  */
 import React, { useState, useMemo } from 'react'
 import PropTypes from 'prop-types'
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
+import cn from 'classnames'
+import _ from 'lodash'
 
 import ChallengeViewComponent from '../ChallengeView'
 import Registrants from '../Registrants'
+import Submissions from '../Submissions'
 import { getResourceRoleByName } from '../../../util/tc'
 import 'react-tabs/style/react-tabs.css'
 import styles from './ChallengeViewTabs.module.scss'
+
+function getSelectorStyle (selectedView, currentView) {
+  return cn(styles['challenge-selector-common'], {
+    [styles['challenge-selected-view']]: selectedView === currentView,
+    [styles['challenge-unselected-view']]: selectedView !== currentView
+  })
+}
 
 const ChallengeViewTabs = ({
   projectDetail,
@@ -18,6 +27,7 @@ const ChallengeViewTabs = ({
   isBillingAccountExpired,
   metadata,
   challengeResources,
+  challengeSubmissions,
   token,
   isLoading,
   challengeId,
@@ -38,23 +48,64 @@ const ChallengeViewTabs = ({
     }
   }, [metadata, challengeResources])
 
+  const submissions = useMemo(() => {
+    return _.map(challengeSubmissions, s => {
+      s.registrant = _.find(registrants, r => {
+        return +r.memberId === s.memberId
+      })
+      return s
+    })
+  }, [challengeSubmissions, registrants])
   return (
     <div className={styles.list}>
-      <Tabs
-        selectedIndex={selectedTab}
-        className={styles.tabsContainer}
-        onSelect={index => {
-          setSelectedTab(index)
-        }}
-      >
-        <TabList>
-          <Tab>DETAILS</Tab>
-          <Tab>REGISTRANTS({registrants.length})</Tab>
-        </TabList>
-        <TabPanel />
-        <TabPanel />
-        <TabPanel />
-      </Tabs>
+      <div className={styles['challenge-view-selector']}>
+        <a
+          tabIndex='0'
+          role='tab'
+          aria-selected={selectedTab === 0}
+          onClick={e => {
+            setSelectedTab(0)
+          }}
+          onKeyPress={e => {
+            setSelectedTab(0)
+          }}
+          className={getSelectorStyle(selectedTab, 0)}
+        >
+          DETAILS
+        </a>
+        {registrants.length ? (
+          <a
+            tabIndex='1'
+            role='tab'
+            aria-selected={selectedTab === 1}
+            onClick={e => {
+              setSelectedTab(1)
+            }}
+            onKeyPress={e => {
+              setSelectedTab(1)
+            }}
+            className={getSelectorStyle(selectedTab, 1)}
+          >
+            REGISTRANTS ({registrants.length})
+          </a>
+        ) : null}
+        {challengeSubmissions.length ? (
+          <a
+            tabIndex='2'
+            role='tab'
+            aria-selected={selectedTab === 2}
+            onClick={e => {
+              setSelectedTab(2)
+            }}
+            onKeyPress={e => {
+              setSelectedTab(2)
+            }}
+            className={getSelectorStyle(selectedTab, 2)}
+          >
+            SUBMISSIONS ({submissions.length})
+          </a>
+        ) : null}
+      </div>
       {selectedTab === 0 && (
         <ChallengeViewComponent
           isLoading={isLoading}
@@ -73,10 +124,10 @@ const ChallengeViewTabs = ({
         />
       )}
       {selectedTab === 1 && (
-        <Registrants
-          challenge={challenge}
-          registrants={registrants}
-        />
+        <Registrants challenge={challenge} registrants={registrants} />
+      )}
+      {selectedTab === 2 && (
+        <Submissions challenge={challenge} submissions={submissions} />
       )}
     </div>
   )
@@ -100,6 +151,7 @@ ChallengeViewTabs.propTypes = {
   isLoading: PropTypes.bool.isRequired,
   challengeId: PropTypes.string.isRequired,
   challengeResources: PropTypes.arrayOf(PropTypes.object),
+  challengeSubmissions: PropTypes.arrayOf(PropTypes.object),
   assignedMemberDetails: PropTypes.shape(),
   enableEdit: PropTypes.bool,
   onLaunchChallenge: PropTypes.func,
