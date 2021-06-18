@@ -1,0 +1,25 @@
+@import '../../../styles/includes';
+
+.list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+
+.tabsContainer {
+  ul {
+    margin: 0;
+  }
+
+  :global {
+    .react-tabs__tab--selected {
+      background: $light-bg;
+
+      &:focus::after {
+        background: $light-bg;
+      }
+    }
+  }
+}
