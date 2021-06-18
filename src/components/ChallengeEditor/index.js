@@ -706,6 +706,14 @@ class ChallengeEditor extends Component {
     })
   }
 
+  checkValidCopilot () {
+    const copilotFee = _.find(this.state.challenge.prizeSets, p => p.type === PRIZE_SETS_TYPE.COPILOT_PAYMENT, [])
+    if (copilotFee && parseInt(copilotFee.prizes[0].value) > 0 && !this.state.challenge.copilot) {
+      return false
+    }
+    return true
+  }
+
   isValidChallenge () {
     const { challenge } = this.state
     if (this.props.isNew) {
@@ -720,6 +728,10 @@ class ChallengeEditor extends Component {
     }
 
     if (!this.isValidChallengePrizes()) {
+      return false
+    }
+
+    if (!this.checkValidCopilot()) {
       return false
     }
 
@@ -1376,11 +1388,15 @@ class ChallengeEditor extends Component {
                 <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
               </div> */}
               <div className={styles.button}>
-                <PrimaryButton text={isSaving ? 'Saving...' : 'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
+                { !this.state.hasValidationErrors ? (
+                  <PrimaryButton text={isSaving ? 'Saving...' : 'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
+                ) : (
+                  <PrimaryButton text={'Save Draft'} type={'disabled'} />
+                )}
               </div>
               {isDraft && (
                 <div className={styles.button}>
-                  {challenge.legacyId || isTask ? (
+                  {(challenge.legacyId || isTask) && !this.state.hasValidationErrors ? (
                     <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
                   ) : (
                     <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
