@@ -6,8 +6,7 @@ import PropTypes from 'prop-types'
 import Sticky from 'react-stickynode'
 import { Helmet } from 'react-helmet'
 import { Link } from 'react-router-dom'
-import { CONNECT_APP_URL, DIRECT_PROJECT_URL } from '../../config/constants'
-
+import { CONNECT_APP_URL } from '../../config/constants'
 import { PrimaryButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
@@ -36,31 +35,18 @@ const ChallengesComponent = ({
         <Helmet title={activeProject ? activeProject.name : ''} />
         <div className={styles.titleContainer}>
           <div className={styles.titleLinks}>
-            {activeProject && activeProject.id && (
-              <a
-                className={styles.buttonLaunchNew}
-                href={`${CONNECT_APP_URL}/projects/${activeProject.id}`}
-                target={'_blank'}
-              >
-                <PrimaryButton text={'View Project in Connect'} type={'info'} />
-              </a>
-            )}
-            {activeProject && activeProject.directProjectId && (
-              <a
-                className={styles.buttonLaunchNew}
-                href={`${DIRECT_PROJECT_URL}/projectOverview?formData.projectId=${activeProject.directProjectId}`}
-                target={'_blank'}
-              >
-                <PrimaryButton text={'View Project in Direct'} type={'info'} />
-              </a>
+            <div
+              className={styles.title}
+              dangerouslySetInnerHTML={{
+                __html: xss(activeProject ? activeProject.name : '')
+              }}
+            />
+            { activeProject && activeProject.id && (
+              <span>
+                (<a href={`${CONNECT_APP_URL}/projects/${activeProject.id}`} target='_blank' rel='noopener noreferrer'>View Project</a>)
+              </span>
             )}
           </div>
-          <div
-            className={styles.title}
-            dangerouslySetInnerHTML={{
-              __html: xss(activeProject ? activeProject.name : '')
-            }}
-          />
           {(activeProject && activeProject.id) ? (
             <Link
               className={styles.buttonLaunchNew}
