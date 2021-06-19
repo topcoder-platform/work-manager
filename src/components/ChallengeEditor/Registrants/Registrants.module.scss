@@ -16,7 +16,6 @@ $member-red:  #ea1900;
 .container {
   @include roboto;
 
-  padding-top: 66px;
   padding-bottom: 197px;
   max-width: 966px;
   margin: 0 auto;
@@ -30,7 +29,8 @@ $member-red:  #ea1900;
   font-weight: 500;
   font-size: 13px;
   line-height: 15px;
-  padding-bottom: 14px;
+  padding-top: 13px;
+  padding-bottom: 13px;
   color: $tc-gray-50;
   display: flex;
   border-bottom: 1px solid $tc-gray-10;

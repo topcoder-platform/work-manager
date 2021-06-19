@@ -313,7 +313,6 @@ export default class Registrants extends React.Component {
                 type='button'
               >
                 <ReactSVG
-                  className={styles.passed}
                   path={assets(`${ArrowDown}`)}
                 />
               </div>
