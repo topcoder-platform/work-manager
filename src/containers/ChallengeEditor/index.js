@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import { withRouter, Route } from 'react-router-dom'
 import moment from 'moment'
 import ChallengeEditorComponent from '../../components/ChallengeEditor'
-import ChallengeViewTabs from '../../components/ChallengeEditor/ChallengeViewTabs'
+import ChallengeViewComponent from '../../components/ChallengeEditor/ChallengeView'
 import Loader from '../../components/Loader'
 import { checkAdmin } from '../../util/tc'
 import styles from './ChallengeEditor.module.scss'
@@ -377,7 +377,7 @@ class ChallengeEditor extends Component {
         exact
         path={`${this.props.match.path}/view`}
         render={({ match }) => ((
-          <ChallengeViewTabs
+          <ChallengeViewComponent
             isLoading={isLoading}
             isBillingAccountExpired={isBillingAccountExpired}
             metadata={metadata}
