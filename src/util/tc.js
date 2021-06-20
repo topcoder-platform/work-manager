@@ -25,65 +25,6 @@ export const RATING_COLORS = [{
 }]
 
 /**
- * Given user rating returns corresponding rating level (from 1 to 5, both
- * inclusive). The rating levels are used to group members into categories
- * by their performance, and to assign colors to their handles.
- * @param {Number} rating
- * @return {Number} Rating level.
- */
-export function getRatingLevel (rating) {
-  if (rating < 900) return 1
-  if (rating < 1200) return 2
-  if (rating < 1500) return 3
-  if (rating < 2200) return 4
-  return 5
-}
-
-/**
- * Sort list
- * @param {Array} list list need to be sorted
- */
-export function sortList (list, field, sort, getValue) {
-  const compare = (a, b) => {
-    if (a > b) {
-      return 1
-    }
-
-    if (a === b) {
-      return 0
-    }
-
-    return -1
-  }
-
-  list.sort((a, b) => {
-    let valueForAB = {}
-    valueForAB = getValue(a, b)
-    let { valueA, valueB } = valueForAB
-    const { valueIsString } = valueForAB
-    if (valueIsString) {
-      if (_.isNil(valueA)) {
-        valueA = ''
-      }
-      if (_.isNil(valueB)) {
-        valueB = ''
-      }
-    } else {
-      if (_.isNil(valueA)) {
-        valueA = 0
-      }
-      if (_.isNil(valueB)) {
-        valueB = 0
-      }
-    }
-    if (sort === 'desc') {
-      return compare(valueB, valueA)
-    }
-
-    return compare(valueA, valueB)
-  })
-}
-/**
  * Given a rating value, returns corresponding color.
  * @param {Number} rating Rating.
  * @return {String} Color.
