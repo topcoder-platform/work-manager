@@ -7,6 +7,7 @@ $tc-silver-130: #554e48;
 $tc-bronze: #d98f64;
 $tc-bronze-130: #733d17;
 $tc-gray-10: #d5d5d5;
+$tc-gray-50: #808080;
 $member-gray: #555;
 $member-green: #258205;
 $member-blue: #4c50d9;
@@ -16,10 +17,10 @@ $member-red:  #ea1900;
 .container {
   @include roboto;
 
-  padding-top: 66px;
   padding-bottom: 197px;
   max-width: 966px;
   margin: 0 auto;
+  margin-top: 30px;
 
   @include xs-to-sm {
     padding: 0 30px 30px;
@@ -30,7 +31,8 @@ $member-red:  #ea1900;
   font-weight: 500;
   font-size: 13px;
   line-height: 15px;
-  padding-bottom: 14px;
+  padding-top: 13px;
+  padding-bottom: 13px;
   color: $tc-gray-50;
   display: flex;
   border-bottom: 1px solid $tc-gray-10;
@@ -90,7 +92,7 @@ $member-red:  #ea1900;
   outline: none;
   font: inherit;
   color: inherit;
-  padding: 10;
+  padding: 0;
 
   @include xs-to-sm {
     padding-left: 0;

@@ -1,5 +1,90 @@
 @import '../../../styles/includes';
 
+$tc-dark-blue: #0681ff;
+$tc-white: #FFFFFF;
+
+.actionButtons {
+  display: flex;
+  position: absolute;
+  top: 30px;
+  margin-top: 53px;
+}
+
+.actionButtonsLeft {
+  left: 20px;
+}
+
+.actionButtonsRight {
+  right: 20px;
+
+  .button:not(:last-child),
+  a:not(:last-child) {
+    margin-right: 20px;
+  }
+
+  button {
+    white-space: nowrap;
+  }
+}
+
+.button {
+  height: 40px;
+  span {
+    padding: 0 20px;
+  }
+}
+
+.title {
+  @include roboto-bold();
+
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 29px;
+  color: $challenges-title;
+  margin-top: 25px;
+  text-align: center;
+
+  span {
+    color: $tc-red;
+  }
+}
+
+.challenge-view-selector {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+  position: relative;
+  border-bottom: 1px solid silver;
+
+  @include xs-to-sm {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow: auto;
+  }
+
+  .challenge-selector-common {
+    font-family: roboto, sans-serif;
+    font-size: 13px;
+    line-height: 30px;
+    margin: 10px 20px 0;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .challenge-selected-view {
+    font-weight: 700;
+    color: $tc-dark-blue;
+    border-bottom: 3px solid $tc-dark-blue;
+  }
+
+  .challenge-unselected-view {
+    font-weight: 400;
+    color: $tc-gray-70;
+    border-bottom: 3px hidden $tc-white;
+  }
+}
+
 .list {
   width: 100%;
   display: flex;

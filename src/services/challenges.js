@@ -10,6 +10,7 @@ const {
   CHALLENGE_TIMELINE_TEMPLATES_URL,
   CHALLENGE_PHASES_URL,
   CHALLENGE_TIMELINES_URL,
+  SUBMISSIONS_API_URL,
   GROUPS_API_URL,
   PLATFORMS_V4_API_URL,
   TECHNOLOGIES_V4_API_URL,
@@ -227,6 +228,16 @@ export async function createResource (resource) {
  */
 export async function fetchResources (challengeId) {
   const response = await axiosInstance.get(`${RESOURCES_API_URL}?challengeId=${challengeId}`)
+  return _.get(response, 'data', [])
+}
+
+/**
+* Api request for fetching submissions
+* @param challengeId Challenge id
+* @returns {Promise<*>}
+*/
+export async function fetchSubmissions (challengeId) {
+  const response = await axiosInstance.get(`${SUBMISSIONS_API_URL}?challengeId=${challengeId}&perPage=100`)
   return _.get(response, 'data', [])
 }
 

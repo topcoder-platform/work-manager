@@ -8,6 +8,7 @@ import PT from 'prop-types'
 import moment from 'moment'
 import _ from 'lodash'
 import cn from 'classnames'
+import { getTCMemberURL } from '../../../config/constants'
 import ReactSVG from 'react-svg'
 import { getRatingLevel, sortList } from '../../../util/tc'
 import styles from './Registrants.module.scss'
@@ -312,7 +313,6 @@ export default class Registrants extends React.Component {
                 type='button'
               >
                 <ReactSVG
-                  className={styles.passed}
                   path={assets(`${ArrowDown}`)}
                 />
               </div>
@@ -440,7 +440,7 @@ export default class Registrants extends React.Component {
                 <div className={styles['col-3']}>
                   <span role='cell'>
                     <a
-                      href={`${window.origin}/members/${r.memberHandle}`}
+                      href={getTCMemberURL(r.memberHandle)}
 
                       className={cn({
                         [styles[`level-${getRatingLevel(_.get(r, 'rating', 0))}`]]: !isDesign
