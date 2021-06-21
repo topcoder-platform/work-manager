@@ -136,7 +136,7 @@ const ChallengeViewTabs = ({
             REGISTRANTS ({registrants.length})
           </a>
         ) : null}
-        {submissions.length ? (
+        {challengeSubmissions.length ? (
           <a
             tabIndex='2'
             role='tab'
