@@ -189,6 +189,8 @@ $base-unit: 5px;
 
 .container.dev {
   margin: 0;
+  width: 100%;
+  margin: 0 auto;
   padding-bottom: 30px;
   line-height: 50px;
   text-align: center;
@@ -283,6 +285,7 @@ $base-unit: 5px;
 
     .col-2 {
       width: 10%;
+      margin-left: 20px;
       justify-content: flex-start;
       display: flex;
     }
