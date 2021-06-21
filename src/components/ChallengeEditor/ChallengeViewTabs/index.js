@@ -69,7 +69,7 @@ const ChallengeViewTabs = ({
       <Helmet title='View Details' />
       {!isTask && (
         <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsLeft)}>
-          <LegacyLinks challenge={challenge} />
+          <LegacyLinks challenge={challenge} challengeView />
         </div>
       )}
       <div className={styles.title}>View Details</div>
