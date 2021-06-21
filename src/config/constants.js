@@ -233,3 +233,16 @@ export const MESSAGE = {
   INTERNAL_REVIEW_DISABLED: 'Internal review is NOT available for QA challenges',
   MARK_COMPLETE: 'This will close the task and generate a payment for the assignee and copilot.'
 }
+
+/**
+ * Challenge cancel reasons
+ */
+export const CANCEL_REASONS = [
+  'Cancelled - Failed Review',
+  'Cancelled - Failed Screening',
+  'Cancelled - Zero Submissions',
+  'Cancelled - Winner Unresponsive',
+  'Cancelled - Client Request',
+  'Cancelled - Requirements Infeasible',
+  'Cancelled - Zero Registrations'
+]

@@ -15,6 +15,7 @@ import Submissions from '../Submissions'
 import { getResourceRoleByName } from '../../../util/tc'
 import { MESSAGE } from '../../../config/constants'
 import Tooltip from '../../Tooltip'
+import CancelDropDown from '../Cancel-Dropdown'
 import 'react-tabs/style/react-tabs.css'
 import styles from './ChallengeViewTabs.module.scss'
 
@@ -98,6 +99,7 @@ const ChallengeViewTabs = ({
           styles.actionButtonsRight
         )}
       >
+        {(challenge.status === 'Draft' || challenge.status === 'New') && <CancelDropDown challenge={challenge} />}
         {challenge.status === 'Draft' && (
           <div className={styles.button}>
             {challenge.legacyId || isTask ? (
