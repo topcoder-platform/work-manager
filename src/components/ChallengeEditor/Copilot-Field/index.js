@@ -35,7 +35,7 @@ const CopilotField = ({ copilots, challenge, onUpdateOthers, readOnly }) => {
           }
         </div>
       </div>
-      {!readOnly && challenge.submitTriggered && parseInt(copilotFee.prizes[0].value) > 0 && !selectedCopilot && (
+      {!readOnly && challenge.submitTriggered && copilotFee && parseInt(copilotFee.prizes[0].value) > 0 && !selectedCopilot && (
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)} />
           <div className={cn(styles.field, styles.col2, styles.error)}>
