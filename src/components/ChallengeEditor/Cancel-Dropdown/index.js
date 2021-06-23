@@ -50,7 +50,7 @@ const CancelDropDown = ({ challenge, history }) => {
   return (
     <>
       <Dropdown trigger={['click']} overlay={menu} animation='slide-up'>
-        <PrimaryButton text={'Cancel'} type={'info'} />
+        <PrimaryButton text={'Cancel'} type={'danger'} />
       </Dropdown>
       {showModal && (
         <ConfirmationModal

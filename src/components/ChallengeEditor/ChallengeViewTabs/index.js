@@ -99,7 +99,7 @@ const ChallengeViewTabs = ({
           styles.actionButtonsRight
         )}
       >
-        {(challenge.status === 'Draft' || challenge.status === 'New') && <CancelDropDown challenge={challenge} />}
+        {(challenge.status === 'Draft' || challenge.status === 'New') && <div className={styles['cancel-button']}><CancelDropDown challenge={challenge} /></div>}
         {challenge.status === 'Draft' && (
           <div className={styles.button}>
             {challenge.legacyId || isTask ? (
