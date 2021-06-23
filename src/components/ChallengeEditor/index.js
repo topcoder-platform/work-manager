@@ -50,6 +50,7 @@ import PhaseInput from '../PhaseInput'
 import LegacyLinks from '../LegacyLinks'
 import AssignedMemberField from './AssignedMember-Field'
 import Tooltip from '../Tooltip'
+import CancelDropDown from './Cancel-Dropdown'
 import UseSchedulingAPIField from './UseSchedulingAPIField'
 import { getResourceRoleByName } from '../../util/tc'
 import { isBetaMode } from '../../util/cookie'
@@ -1406,6 +1407,9 @@ class ChallengeEditor extends Component {
                   )}
                 </div>
               )}
+              <div className={styles.button}>
+                <CancelDropDown challenge={challenge} />
+              </div>
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
               <div className={styles.button}>

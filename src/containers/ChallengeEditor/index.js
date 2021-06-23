@@ -112,14 +112,14 @@ class ChallengeEditor extends Component {
 
   componentWillReceiveProps (nextProps) {
     const { match } = this.props
-    const { match: newMatch, loadChallengeDetails, loadResources } = nextProps
+    const { match: newMatch, loadChallengeDetails, loadResources, loadSubmissions } = nextProps
     const projectId = _.get(newMatch.params, 'projectId', null)
     const challengeId = _.get(newMatch.params, 'challengeId', null)
     if (
       _.get(match.params, 'projectId', null) !== projectId ||
       _.get(match.params, 'challengeId', null) !== challengeId
     ) {
-      this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources)
+      this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources, loadSubmissions)
     } else {
       this.setState({ challengeDetails: nextProps.challengeDetails })
     }

@@ -15,6 +15,7 @@ import Submissions from '../Submissions'
 import { getResourceRoleByName } from '../../../util/tc'
 import { MESSAGE } from '../../../config/constants'
 import Tooltip from '../../Tooltip'
+import CancelDropDown from '../Cancel-Dropdown'
 import 'react-tabs/style/react-tabs.css'
 import styles from './ChallengeViewTabs.module.scss'
 
@@ -47,11 +48,23 @@ const ChallengeViewTabs = ({
     const { resourceRoles } = metadata
     const role = getResourceRoleByName(resourceRoles, 'Submitter')
     if (role && challengeResources) {
-      return challengeResources.filter(resource => resource.roleId === role.id)
+      const registrantList = challengeResources.filter(
+        resource => resource.roleId === role.id
+      )
+      // Add submission date to registrants
+      registrantList.forEach((r, i) => {
+        const submission = (challengeSubmissions || []).find(s => {
+          return '' + s.memberId === '' + r.memberId
+        })
+        if (submission) {
+          registrantList[i].submissionDate = submission.created
+        }
+      })
+      return registrantList
     } else {
       return []
     }
-  }, [metadata, challengeResources])
+  }, [metadata, challengeResources, challengeSubmissions])
 
   const submissions = useMemo(() => {
     return _.map(challengeSubmissions, s => {
@@ -68,41 +81,60 @@ const ChallengeViewTabs = ({
     <div className={styles.list}>
       <Helmet title='View Details' />
       {!isTask && (
-        <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsLeft)}>
-          <LegacyLinks challenge={challenge} />
+        <div
+          className={cn(
+            styles.actionButtons,
+            styles.button,
+            styles.actionButtonsLeft
+          )}
+        >
+          <LegacyLinks challenge={challenge} challengeView />
         </div>
       )}
-      <div className={styles.title}>View Details</div>
-      <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsRight)}>
-        {
-          challenge.status === 'Draft' && (
-            <div className={styles.button}>
-              {(challenge.legacyId || isTask) ? (
-                <PrimaryButton text={'Launch'} type={'info'} onClick={onLaunchChallenge} />
-              ) : (
-                <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-                  {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
-                  <PrimaryButton text={'Launch'} type={'disabled'} />
-                </Tooltip>
-              )}
-            </div>
-          )
-        }
-        {
-          isTask && challenge.status === 'Active' && (
-            <div className={styles.button}>
-              { assignedMemberDetails ? (
-                <PrimaryButton text={'Close Task'} type={'danger'} onClick={onCloseTask} />
-              ) : (
-                <Tooltip content={MESSAGE.NO_TASK_ASSIGNEE}>
-                  {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
-                  <PrimaryButton text={'Close Task'} type={'disabled'} />
-                </Tooltip>
-              )}
-            </div>
-          )
-        }
-        { enableEdit && <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} /> }
+      <div className={styles.title}>{challenge.name}</div>
+      <div
+        className={cn(
+          styles.actionButtons,
+          styles.button,
+          styles.actionButtonsRight
+        )}
+      >
+        {(challenge.status === 'Draft' || challenge.status === 'New') && <div className={styles['cancel-button']}><CancelDropDown challenge={challenge} /></div>}
+        {challenge.status === 'Draft' && (
+          <div className={styles.button}>
+            {challenge.legacyId || isTask ? (
+              <PrimaryButton
+                text={'Launch'}
+                type={'info'}
+                onClick={onLaunchChallenge}
+              />
+            ) : (
+              <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
+                {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
+                <PrimaryButton text={'Launch'} type={'disabled'} />
+              </Tooltip>
+            )}
+          </div>
+        )}
+        {isTask && challenge.status === 'Active' && (
+          <div className={styles.button}>
+            {assignedMemberDetails ? (
+              <PrimaryButton
+                text={'Close Task'}
+                type={'danger'}
+                onClick={onCloseTask}
+              />
+            ) : (
+              <Tooltip content={MESSAGE.NO_TASK_ASSIGNEE}>
+                {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
+                <PrimaryButton text={'Close Task'} type={'disabled'} />
+              </Tooltip>
+            )}
+          </div>
+        )}
+        {enableEdit && (
+          <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} />
+        )}
         <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
       </div>
       <div className={styles['challenge-view-selector']}>
