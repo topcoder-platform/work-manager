@@ -22,6 +22,11 @@ $base-unit: 5px;
   margin-left: auto;
   margin-right: auto;
 
+  .top-title {
+    margin-top: -50px;
+    text-align: center;
+  }
+
   div {
     white-space: nowrap;
   }
@@ -192,7 +197,7 @@ $base-unit: 5px;
   width: 100%;
   margin: 0 auto;
   padding-bottom: 30px;
-  margin-top: 30px;
+  margin-top: 50px;
   line-height: 50px;
   // text-align: center;
 

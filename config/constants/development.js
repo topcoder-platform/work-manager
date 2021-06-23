@@ -21,6 +21,7 @@ module.exports = {
   SUBMISSIONS_API_URL: `${DEV_API_HOSTNAME}/v5/submissions`,
   PLATFORMS_V4_API_URL: `${DEV_API_HOSTNAME}/v4/platforms`,
   TECHNOLOGIES_V4_API_URL: `${DEV_API_HOSTNAME}/v4/technologies`,
+  SUBMISSION_REVIEW_APP_URL: `https://submission-review.${DOMAIN}/challenges`,
   STUDIO_URL: `https://studio.${DOMAIN}`,
   CONNECT_APP_URL: `https://connect.${DOMAIN}`,
   DIRECT_PROJECT_URL: `https://www.${DOMAIN}/direct`,
