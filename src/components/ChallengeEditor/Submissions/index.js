@@ -7,7 +7,7 @@ import React from 'react'
 import PT from 'prop-types'
 import moment from 'moment'
 import _ from 'lodash'
-import { STUDIO_URL, getTCMemberURL } from '../../../config/constants'
+import { STUDIO_URL, SUBMISSION_REVIEW_APP_URL, getTCMemberURL } from '../../../config/constants'
 import cn from 'classnames'
 import ReactSVG from 'react-svg'
 import {
@@ -298,6 +298,11 @@ class SubmissionsComponent extends React.Component {
 
     return (
       <div className={cn(styles.container, styles.dev, styles['non-mm'])}>
+        <div className={styles['top-title']} >
+          <a href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}`} target='_blank'>
+            Manage Submissions
+          </a>
+        </div>
         <div className={styles.head}>
           {!isF2F && !isBugHunt && (
             <button
@@ -421,13 +426,15 @@ class SubmissionsComponent extends React.Component {
               {moment(s.created).format('MMM DD, YYYY HH:mm')}
             </div>
             <div className={styles['col-5']}>
-              {!_.isEmpty(s.review) && s.review[0].score
-                ? s.review[0].score.toFixed(2)
-                : 'N/A'}
-              &zwnj; &zwnj;/ &zwnj;
-              {s.reviewSummation && s.reviewSummation[0].aggregateScore
-                ? s.reviewSummation[0].aggregateScore.toFixed(2)
-                : 'N/A'}
+              <a href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}/submissions/${s.id} `} target='_blank'>
+                {!_.isEmpty(s.review) && s.review[0].score
+                  ? s.review[0].score.toFixed(2)
+                  : 'N/A'}
+                &zwnj; &zwnj;/ &zwnj;
+                {s.reviewSummation && s.reviewSummation[0].aggregateScore
+                  ? s.reviewSummation[0].aggregateScore.toFixed(2)
+                  : 'N/A'}
+              </a>
             </div>
           </div>
         ))}
