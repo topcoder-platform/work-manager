@@ -180,11 +180,12 @@ class ChallengeScheduleField extends Component {
   }
 
   renderPhaseEditor () {
-    const { onUpdateSelect, onUpdatePhase, togglePhase, challenge, readOnly } = this.props
+    const { onUpdateSelect, challengePhases, onUpdatePhase, togglePhase, challenge, readOnly } = this.props
     return (
       _.map(challenge.phases, (p, index) => (
         <div className={styles.PhaseRow} key={index}>
           <PhaseInput
+            challengePhases={challengePhases}
             phase={this.getPhaseTemplate(p)}
             withDuration
             onUpdateSelect={onUpdateSelect}
@@ -330,8 +331,9 @@ class ChallengeScheduleField extends Component {
                 <span>{currentTemplate ? currentTemplate.name : ''}</span>
               ) : (
                 <Select
+                  onChange={option => this.props.onUpdateOthers({ value: option.value, field: 'timelineTemplateId' })}
                   name='template'
-                  options={templates.map(template => ({ label: template.name, value: template.name, name: template.name }))}
+                  options={templates.map(template => ({ label: template.name, value: template.id, name: template.name }))}
                   placeholder='Select'
                   isClearable={false}
                   value={currentTemplate && { label: currentTemplate.name, value: currentTemplate.name }}
