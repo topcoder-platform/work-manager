@@ -1318,10 +1318,10 @@ class ChallengeEditor extends Component {
       if (validationErrors.length === 0) {
         closeTaskModal = (
           <ConfirmationModal
-            title='Close Task Confirmation'
+            title='Complete Task Confirmation'
             message={
               <p>
-                Are you sure want to close task <strong>"{challenge.name}"</strong> with the prize <strong>${taskPrize}</strong> for <strong>{assignedMember}</strong>?
+                Are you sure want to complete task <strong>"{challenge.name}"</strong> with the prize <strong>${taskPrize}</strong> for <strong>{assignedMember}</strong>?
               </p>
             }
             theme={theme}
@@ -1417,7 +1417,7 @@ class ChallengeEditor extends Component {
               </div>
               {isTask && (
                 <div className={styles.button}>
-                  <PrimaryButton text={'Close Task'} type={'danger'} onClick={this.openCloseTaskConfirmation} />
+                  <PrimaryButton text={'Mark Complete'} type={'success'} onClick={this.openCloseTaskConfirmation} />
                 </div>
               )}
             </div>}
