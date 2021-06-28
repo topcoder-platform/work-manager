@@ -1418,7 +1418,9 @@ class ChallengeEditor extends Component {
               </div>
               {isTask && (
                 <div className={styles.button}>
-                  <PrimaryButton text={'Mark Complete'} type={'success'} onClick={this.openCloseTaskConfirmation} />
+                  <Tooltip content={MESSAGE.MARK_COMPLETE}>
+                    <PrimaryButton text={'Mark Complete'} type={'success'} onClick={this.openCloseTaskConfirmation} />
+                  </Tooltip>
                 </div>
               )}
             </div>}
