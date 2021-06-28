@@ -1,6 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import PropTypes from 'prop-types'
-import { withRouter } from 'react-router-dom'
 import Dropdown from 'rc-dropdown'
 import styles from './Cancel-DropDown.module.scss'
 import { CANCEL_REASONS } from '../../../config/constants'
@@ -8,26 +7,19 @@ import cn from 'classnames'
 import 'rc-dropdown/assets/index.css'
 import { PrimaryButton } from '../../Buttons'
 import ConfirmationModal from '../../Modal/ConfirmationModal'
-import { patchChallenge } from '../../../services/challenges'
 import _ from 'lodash'
 
 const theme = {
   container: styles.modalContainer
 }
-const CancelDropDown = ({ challenge, history }) => {
+const CancelDropDown = ({ challenge, onSelectMenu }) => {
   const [cancelReason, setCancelReason] = useState('')
   const [showModal, setShowModal] = useState(false)
+  const popupContainerEl = useRef(null)
 
   const onSelect = v => {
     setCancelReason(v)
     setShowModal(true)
-  }
-  const onConfirm = async () => {
-    await patchChallenge(challenge.id, {
-      status: cancelReason
-    })
-
-    history.push(`/projects/${challenge.projectId}/challenges`)
   }
 
   const menu = (
@@ -49,12 +41,15 @@ const CancelDropDown = ({ challenge, history }) => {
 
   return (
     <>
-      <Dropdown trigger={['click']} overlay={menu} animation='slide-up'>
-        <PrimaryButton text={'Cancel'} type={'danger'} />
+      <Dropdown trigger={['click']} overlay={menu} animation='slide-up' getPopupContainer={() => {
+        return popupContainerEl.current
+      }}>
+        <div ref={popupContainerEl} className={styles['pop-container']}>
+          <PrimaryButton text={'Cancel'} type={'danger'} />
+        </div>
       </Dropdown>
       {showModal && (
         <ConfirmationModal
-          // title='Reminder'
           message={'Do you want to cancel the challenge ?'}
           theme={theme}
           cancelText='Cancel'
@@ -62,7 +57,7 @@ const CancelDropDown = ({ challenge, history }) => {
           onCancel={() => {
             setShowModal(false)
           }}
-          onConfirm={onConfirm}
+          onConfirm={() => { onSelectMenu(challenge, cancelReason) }}
         />
       )}
     </>
@@ -73,7 +68,7 @@ CancelDropDown.defaultProps = {}
 
 CancelDropDown.propTypes = {
   challenge: PropTypes.shape().isRequired,
-  history: PropTypes.shape()
+  onSelectMenu: PropTypes.func.isRequired
 }
 
-export default withRouter(CancelDropDown)
+export default CancelDropDown

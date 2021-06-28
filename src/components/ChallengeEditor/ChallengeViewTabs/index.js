@@ -40,6 +40,7 @@ const ChallengeViewTabs = ({
   assignedMemberDetails,
   enableEdit,
   onLaunchChallenge,
+  cancelChallenge,
   onCloseTask
 }) => {
   const [selectedTab, setSelectedTab] = useState(0)
@@ -99,7 +100,7 @@ const ChallengeViewTabs = ({
           styles.actionButtonsRight
         )}
       >
-        {(challenge.status === 'Draft' || challenge.status === 'New') && <div className={styles['cancel-button']}><CancelDropDown challenge={challenge} /></div>}
+        {(challenge.status === 'Draft' || challenge.status === 'New') && <div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>}
         {challenge.status === 'Draft' && (
           <div className={styles.button}>
             {challenge.legacyId || isTask ? (
@@ -234,6 +235,7 @@ ChallengeViewTabs.propTypes = {
   assignedMemberDetails: PropTypes.shape(),
   enableEdit: PropTypes.bool,
   onLaunchChallenge: PropTypes.func,
+  cancelChallenge: PropTypes.func.isRequired,
   onCloseTask: PropTypes.func
 }
 
