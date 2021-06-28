@@ -5,6 +5,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { loadUser } from '../../actions/auth'
 import { setActiveProject } from '../../actions/sidebar'
+import { withRouter } from 'react-router-dom'
 import { connect } from 'react-redux'
 import TopBar from '../../components/TopBar'
 
@@ -20,14 +21,17 @@ class TopbarContainer extends Component {
   }
 
   render () {
+    const { match } = this.props
+    const isChalengeViewPage = match.path === '/projects/:projectId/challenges/:challengeId'
     const { user } = this.props.auth
-    return <TopBar user={user} />
+    return <TopBar user={user} hideBottomLine={isChalengeViewPage} />
   }
 }
 
 TopbarContainer.propTypes = {
   loadUser: PropTypes.func.isRequired,
   setActiveProject: PropTypes.func.isRequired,
+  match: PropTypes.any.isRequired,
   auth: PropTypes.object.isRequired,
   activeProjectId: PropTypes.number,
   projectId: PropTypes.string
@@ -42,4 +46,4 @@ const mapDispatchToProps = {
   setActiveProject
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(TopbarContainer)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(TopbarContainer))

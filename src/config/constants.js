@@ -4,6 +4,8 @@
 export const {
   COMMUNITY_APP_URL,
   CHALLENGE_API_URL,
+  SUBMISSION_REVIEW_APP_URL,
+  STUDIO_URL,
   CONNECT_APP_URL,
   DIRECT_PROJECT_URL,
   ONLINE_REVIEW_URL,
@@ -84,6 +86,7 @@ export const LOAD_PROJECT_DETAILS_SUCCESS = 'LOAD_PROJECT_DETAILS_SUCCESS'
 export const LOAD_PROJECT_DETAILS_PENDING = 'LOAD_PROJECT_DETAILS_PENDING'
 export const LOAD_PROJECT_DETAILS_FAILURE = 'LOAD_PROJECT_DETAILS_FAILURE'
 
+export const LOAD_CHALLENGE_SUBMISSIONS = 'LOAD_CHALLENGE_SUBMISSIONS'
 export const LOAD_CHALLENGE_SUBMISSIONS_SUCCESS = 'LOAD_CHALLENGE_SUBMISSIONS_SUCCESS'
 export const LOAD_CHALLENGE_SUBMISSIONS_PENDING = 'LOAD_CHALLENGE_SUBMISSIONS_PENDING'
 export const LOAD_CHALLENGE_SUBMISSIONS_FAILURE = 'LOAD_CHALLENGE_SUBMISSIONS_FAILURE'
@@ -228,5 +231,19 @@ export const MESSAGE = {
   TASK_CLOSE_SUCCESS: 'Task closed successfully',
   CHALLENGE_LAUNCH_SUCCESS: 'Challenge activated successfully',
   COMMUNITY_REVIEW_DISABLED: 'Community review is NOT available for Design challenges',
-  INTERNAL_REVIEW_DISABLED: 'Internal review is NOT available for QA challenges'
+  INTERNAL_REVIEW_DISABLED: 'Internal review is NOT available for QA challenges',
+  MARK_COMPLETE: 'This will close the task and generate a payment for the assignee and copilot.'
 }
+
+/**
+ * Challenge cancel reasons
+ */
+export const CANCEL_REASONS = [
+  'Cancelled - Failed Review',
+  'Cancelled - Failed Screening',
+  'Cancelled - Zero Submissions',
+  'Cancelled - Winner Unresponsive',
+  'Cancelled - Client Request',
+  'Cancelled - Requirements Infeasible',
+  'Cancelled - Zero Registrations'
+]

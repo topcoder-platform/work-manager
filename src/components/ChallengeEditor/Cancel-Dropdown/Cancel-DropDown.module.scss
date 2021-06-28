@@ -1,0 +1,142 @@
+@import "../../../styles/includes";
+
+.menus {
+  outline: none;
+  position: relative;
+  list-style-type: none;
+  padding: 0;
+  margin: 2px 0 0 0;
+  text-align: left;
+  background-color: #fff;
+  border-radius: 3px;
+  box-shadow: 0 1px 5px #ccc;
+  background-clip: padding-box;
+  border: 1px solid #ccc;
+  cursor: pointer;
+
+  .menu {
+    height: 30px;
+    line-height: 30px;
+    padding: 0 10px;
+    &:hover {
+      background-color: #d5d5d5;
+    }
+  }
+}
+
+.pop-container {
+  height: 100%;
+}
+
+.modalContainer {
+  padding: 0;
+  position: fixed;
+  overflow: auto;
+  z-index: 10000;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: auto;
+  max-width: none;
+  transform: none;
+  background: transparent;
+  color: $text-color;
+  opacity: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .contentContainer {
+    box-sizing: border-box;
+    background: red;
+    opacity: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 6px;
+    margin: 0 auto;
+    width: 600px;
+    padding: 30px;
+
+    .content {
+      padding: 30px;
+      width: 100%;
+      height: 100%;
+    }
+
+    .title {
+      @include roboto-bold();
+
+      font-size: 30px;
+      line-height: 36px;
+      margin-bottom: 30px;
+      margin-top: 0;
+
+    }
+
+    span {
+      @include roboto;
+
+      font-size: 22px;
+      font-weight: 400;
+      line-height: 26px;
+    }
+
+    &.confirm {
+      width: 999px;
+
+      .buttonGroup {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+
+        .buttonSizeA {
+          width: 193px;
+          height: 40px;
+          margin-right: 33px;
+
+          span {
+            font-size: 18px;
+            font-weight: 500;
+          }
+        }
+
+        .buttonSizeB{
+          width: 160px;
+          height: 40px;
+
+          span {
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 22px;
+          }
+        }
+      }
+    }
+
+    .buttonGroup {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+
+      .button {
+        width: 135px;
+        height: 40px;
+        margin-right: 66px;
+
+        span {
+          font-size: 18px;
+          font-weight: 500;
+        }
+      }
+
+      .button:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+}

@@ -63,6 +63,7 @@
     "prop-types": "^15.6.2",
     "qs": "^6.7.0",
     "query-string": "^6.12.1",
+    "rc-dropdown": "^3.2.0",
     "rc-time-picker": "^3.6.4",
     "react": "^16.7.0",
     "react-app-polyfill": "^0.2.0",
