@@ -50,6 +50,7 @@ import PhaseInput from '../PhaseInput'
 import LegacyLinks from '../LegacyLinks'
 import AssignedMemberField from './AssignedMember-Field'
 import Tooltip from '../Tooltip'
+import CancelDropDown from './Cancel-Dropdown'
 import UseSchedulingAPIField from './UseSchedulingAPIField'
 import { getResourceRoleByName } from '../../util/tc'
 import { isBetaMode } from '../../util/cookie'
@@ -706,6 +707,14 @@ class ChallengeEditor extends Component {
     })
   }
 
+  checkValidCopilot () {
+    const copilotFee = _.find(this.state.challenge.prizeSets, p => p.type === PRIZE_SETS_TYPE.COPILOT_PAYMENT, [])
+    if (copilotFee && parseInt(copilotFee.prizes[0].value) > 0 && !this.state.challenge.copilot) {
+      return false
+    }
+    return true
+  }
+
   isValidChallenge () {
     const { challenge } = this.state
     if (this.props.isNew) {
@@ -720,6 +729,10 @@ class ChallengeEditor extends Component {
     }
 
     if (!this.isValidChallengePrizes()) {
+      return false
+    }
+
+    if (!this.checkValidCopilot()) {
       return false
     }
 
@@ -1191,6 +1204,7 @@ class ChallengeEditor extends Component {
       uploadAttachments,
       token,
       removeAttachment,
+      cancelChallenge,
       failedToLoad,
       errorMessage,
       projectDetail,
@@ -1305,10 +1319,10 @@ class ChallengeEditor extends Component {
       if (validationErrors.length === 0) {
         closeTaskModal = (
           <ConfirmationModal
-            title='Close Task Confirmation'
+            title='Complete Task Confirmation'
             message={
               <p>
-                Are you sure want to close task <strong>"{challenge.name}"</strong> with the prize <strong>${taskPrize}</strong> for <strong>{assignedMember}</strong>?
+                Are you sure want to complete task <strong>"{challenge.name}"</strong> with the prize <strong>${taskPrize}</strong> for <strong>{assignedMember}</strong>?
               </p>
             }
             theme={theme}
@@ -1376,11 +1390,15 @@ class ChallengeEditor extends Component {
                 <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
               </div> */}
               <div className={styles.button}>
-                <PrimaryButton text={isSaving ? 'Saving...' : 'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
+                { !this.state.hasValidationErrors ? (
+                  <PrimaryButton text={isSaving ? 'Saving...' : 'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
+                ) : (
+                  <PrimaryButton text={'Save Draft'} type={'disabled'} />
+                )}
               </div>
               {isDraft && (
                 <div className={styles.button}>
-                  {challenge.legacyId || isTask ? (
+                  {(challenge.legacyId || isTask) && !this.state.hasValidationErrors ? (
                     <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
                   ) : (
                     <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
@@ -1390,6 +1408,9 @@ class ChallengeEditor extends Component {
                   )}
                 </div>
               )}
+              <div className={styles.button}>
+                <CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} />
+              </div>
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
               <div className={styles.button}>
@@ -1397,7 +1418,9 @@ class ChallengeEditor extends Component {
               </div>
               {isTask && (
                 <div className={styles.button}>
-                  <PrimaryButton text={'Close Task'} type={'danger'} onClick={this.openCloseTaskConfirmation} />
+                  <Tooltip content={MESSAGE.MARK_COMPLETE}>
+                    <PrimaryButton text={'Mark Complete'} type={'success'} onClick={this.openCloseTaskConfirmation} />
+                  </Tooltip>
                 </div>
               )}
             </div>}
@@ -1619,6 +1642,7 @@ ChallengeEditor.propTypes = {
   metadata: PropTypes.object.isRequired,
   isLoading: PropTypes.bool.isRequired,
   uploadAttachments: PropTypes.func.isRequired,
+  cancelChallenge: PropTypes.func.isRequired,
   removeAttachment: PropTypes.func.isRequired,
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string.isRequired,
