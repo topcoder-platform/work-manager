@@ -1204,6 +1204,7 @@ class ChallengeEditor extends Component {
       uploadAttachments,
       token,
       removeAttachment,
+      cancelChallenge,
       failedToLoad,
       errorMessage,
       projectDetail,
@@ -1408,7 +1409,7 @@ class ChallengeEditor extends Component {
                 </div>
               )}
               <div className={styles.button}>
-                <CancelDropDown challenge={challenge} />
+                <CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} />
               </div>
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
@@ -1639,6 +1640,7 @@ ChallengeEditor.propTypes = {
   metadata: PropTypes.object.isRequired,
   isLoading: PropTypes.bool.isRequired,
   uploadAttachments: PropTypes.func.isRequired,
+  cancelChallenge: PropTypes.func.isRequired,
   removeAttachment: PropTypes.func.isRequired,
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string.isRequired,

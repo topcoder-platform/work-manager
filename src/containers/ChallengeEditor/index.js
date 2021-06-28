@@ -57,6 +57,7 @@ class ChallengeEditor extends Component {
     }
 
     this.onLaunchChallenge = this.onLaunchChallenge.bind(this)
+    this.cancelChallenge = this.cancelChallenge.bind(this)
     this.activateChallenge = this.activateChallenge.bind(this)
     this.closeLaunchModal = this.closeLaunchModal.bind(this)
     this.closeCloseTaskModal = this.closeCloseTaskModal.bind(this)
@@ -188,6 +189,15 @@ class ChallengeEditor extends Component {
           'Unable to activate challenge as Billing Account is not active.'
       })
     }
+  }
+
+  async cancelChallenge (challenge, cancelReason) {
+    const { partiallyUpdateChallengeDetails, history } = this.props
+
+    await partiallyUpdateChallengeDetails(challenge.id, {
+      status: cancelReason
+    })
+    history.push(`/projects/${challenge.projectId}/challenges`)
   }
 
   onCloseTask () {
@@ -395,6 +405,7 @@ class ChallengeEditor extends Component {
               isBillingAccountExpired={isBillingAccountExpired}
               challengeResources={challengeResources}
               metadata={metadata}
+              cancelChallenge={this.cancelChallenge}
               projectId={_.get(match.params, 'projectId', null)}
               challengeId={challengeId}
               isNew={!_.has(match.params, 'challengeId')}
@@ -429,6 +440,7 @@ class ChallengeEditor extends Component {
                 challengeDetails={challengeDetails}
                 challengeResources={challengeResources}
                 metadata={metadata}
+                cancelChallenge={this.cancelChallenge}
                 projectId={_.get(match.params, 'projectId', null)}
                 challengeId={challengeId}
                 isNew={!_.has(match.params, 'challengeId')}
@@ -461,6 +473,7 @@ class ChallengeEditor extends Component {
               projectDetail={projectDetail}
               challengeSubmissions={challengeSubmissions}
               challenge={challengeDetails}
+              cancelChallenge={this.cancelChallenge}
               attachments={attachments}
               challengeResources={challengeResources}
               token={token}
@@ -503,7 +516,7 @@ ChallengeEditor.propTypes = {
   isProjectLoading: PropTypes.bool,
   hasProjectAccess: PropTypes.bool,
   projectDetail: PropTypes.object,
-  // history: PropTypes.object,
+  history: PropTypes.object,
   metadata: PropTypes.shape({
     challengeTypes: PropTypes.array
   }),

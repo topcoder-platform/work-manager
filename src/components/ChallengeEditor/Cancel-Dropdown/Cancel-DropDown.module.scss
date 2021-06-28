@@ -12,6 +12,7 @@
   box-shadow: 0 1px 5px #ccc;
   background-clip: padding-box;
   border: 1px solid #ccc;
+  cursor: pointer;
 
   .menu {
     height: 30px;
@@ -21,6 +22,10 @@
       background-color: #d5d5d5;
     }
   }
+}
+
+.pop-container {
+  height: 100%;
 }
 
 .modalContainer {
