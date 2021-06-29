@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import styles from './CheckpointPrizes-Field.module.scss'
 import cn from 'classnames'
@@ -9,62 +9,70 @@ import { validateValue } from '../../../util/input-check'
 import {
   VALIDATION_VALUE_TYPE,
   PRIZE_SETS_TYPE,
-  CHALLENGE_PRIZE_TYPE
+  CHALLENGE_PRIZE_TYPE,
+  PRIZE_SETS_TYPE_DESCRIPTION
 } from '../../../config/constants'
 
 const CheckpointPrizesField = ({ challenge, onUpdateOthers, readOnly }) => {
   const type = PRIZE_SETS_TYPE.CHECKPOINT_PRIZES
-  const checkpointPrize = (challenge.prizeSets &&
-    challenge.prizeSets.find(p => p.type === type)) || {
-    type,
-    prizes: [{ type: CHALLENGE_PRIZE_TYPE.USD, value: 0 }]
-  }
-  const checkpointPrizeNumber = (challenge.metadata &&
-    challenge.metadata.find(p => p.name === 'checkpointPrizeNumber')) || {
-    name: 'checkpointPrizeNumber',
-    value: 0
-  }
+  const description = PRIZE_SETS_TYPE_DESCRIPTION[type]
+  const checkPointPrizeSet = (challenge.prizeSets && challenge.prizeSets.find(p => p.type === type)) || {}
+  let checkPointPrizeCount = (checkPointPrizeSet.prizes && checkPointPrizeSet.prizes.length) || 0
+  let checkPointPrizeAmount = (checkPointPrizeSet.prizes && checkPointPrizeSet.prizes.length > 0 &&
+    checkPointPrizeSet.prizes[0].value) || 0
+  const [count, setCount] = useState(checkPointPrizeCount)
+  const [amount, setAmount] = useState(checkPointPrizeAmount)
 
-  const number = checkpointPrizeNumber.value
-  const amount = checkpointPrize.prizes.length
-    ? checkpointPrize.prizes[0].value
-    : 0
+  function updateState () {
+    const newCheckPointPrize = {
+      prizes: [],
+      type,
+      description
+    }
+    for (let i = 0; i < checkPointPrizeCount; i++) {
+      newCheckPointPrize.prizes.push(
+        {
+          'type': CHALLENGE_PRIZE_TYPE.USD,
+          'value': checkPointPrizeAmount
+        }
+      )
+    }
+
+    const newPrizeSets = [
+      ...(challenge.prizeSets && challenge.prizeSets.filter(p => p.type !== type)) || [],
+      newCheckPointPrize
+    ]
+
+    onUpdateOthers({
+      field: 'prizeSets',
+      value: newPrizeSets
+    })
+  }
 
   function onChangeNumber (number) {
-    checkpointPrizeNumber.value = validateValue(
+    const validValue = validateValue(
       number,
       VALIDATION_VALUE_TYPE.INTEGER
     )
-    onUpdateOthers({
-      field: 'metadata',
-      value: [
-        ...(challenge.metadata && challenge.metadata.filter(p => p.name !== 'checkpointPrizeNumber')) || [],
-        checkpointPrizeNumber
-      ]
-    })
+    setCount(validValue)
+    checkPointPrizeCount = validValue
+    updateState()
   }
+
   function onChangeAmount (amount) {
-    checkpointPrize.prizes = [
-      {
-        type: CHALLENGE_PRIZE_TYPE.USD,
-        value: validateValue(amount, VALIDATION_VALUE_TYPE.INTEGER)
-      }
-    ]
-    onUpdateOthers({
-      field: 'prizeSets',
-      value: [
-        ...(challenge.prizeSets && challenge.prizeSets.filter(p => p.type !== type)) || [],
-        checkpointPrize
-      ]
-    })
+    const validValue = validateValue(amount, VALIDATION_VALUE_TYPE.INTEGER)
+    setAmount(validValue)
+    checkPointPrizeAmount = validValue
+    updateState()
   }
+
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
         <label htmlFor='checkpointPrizes'>Checkpoint Prizes :</label>
       </div>
       {readOnly ? (
-        <span className={styles.readonlyRow}>{+number} X ${amount}</span>
+        <span className={styles.readonlyRow}>{+count} X ${amount}</span>
       ) : (
         <div className={cn(styles.field, styles.col2)}>
           <input
@@ -72,7 +80,7 @@ const CheckpointPrizesField = ({ challenge, onUpdateOthers, readOnly }) => {
             name='checkNumber'
             type='text'
             placeholder='Number of prizes'
-            value={number}
+            value={count}
             maxLength='7'
             onChange={e => onChangeNumber(e.target.value)}
           />

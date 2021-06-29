@@ -16,13 +16,29 @@ import Select from '../Select'
 
 const timeFormat = 'HH:mm'
 const dateFormat = 'MM/DD/YYYY'
+const MIN_PHASE_DURATION_MINS = 1
+const SECONDS_IN_HOUR = 3600
+const SECONDS_IN_MIN = 60
 
 class PhaseInput extends Component {
+  getSeconds (hours, mins) {
+    if (hours === 0 && mins === 0) {
+      return MIN_PHASE_DURATION_MINS * SECONDS_IN_MIN
+    }
+
+    return (hours * SECONDS_IN_HOUR) + (mins * SECONDS_IN_MIN)
+  }
+
   render () {
     const { phase, onUpdateSelect, onUpdatePhase, withDates, withDuration, endDate, readOnly } = this.props
     if (_.isEmpty(phase)) return null
     const date = moment(phase.date).format(dateFormat)
     const time = moment(phase.date)
+    const hours = Math.floor(phase.duration / SECONDS_IN_HOUR)
+    let mins = Math.floor((phase.duration - (hours * SECONDS_IN_HOUR)) / SECONDS_IN_MIN)
+    if (hours === 0 && mins === 0) {
+      mins = MIN_PHASE_DURATION_MINS
+    }
 
     return (
       <div className={styles.container}>
@@ -64,11 +80,40 @@ class PhaseInput extends Component {
               )
             }
             {
+              withDates && !readOnly && (
+                <div className={styles.startDateLinks}>
+                  <a href='#' onClick={() => onUpdatePhase(moment())}>Now</a>
+                  <a href='#' onClick={() => onUpdatePhase(moment().add(15, 'minutes'))}>15 min</a>
+                  <a href='#' onClick={() => onUpdatePhase(moment().add(1, 'hour'))}>1 hr</a>
+                  <a href='#' onClick={() => onUpdatePhase(moment().add(1, 'day'))}>1 day</a>
+                </div>
+              )
+            }
+            {
               withDuration && (
                 <div className={styles.durationPicker}>
                   {readOnly ? (
-                    <span className={styles.readOnlyValue}>{phase.duration}</span>
-                  ) : (<input type='number' value={phase.duration} onChange={e => onUpdatePhase(e.target.value)} min={1} placeholder='Duration (hours)' />)}
+                    <span className={styles.readOnlyValue}>{`${hours} hrs ${mins} mins`}</span>
+                  ) : (
+                    <div className={styles.phaseDuration}>
+                      <input
+                        type='number'
+                        className={styles.phaseInput}
+                        value={hours}
+                        onChange={e => onUpdatePhase(this.getSeconds(parseInt(e.target.value), mins))}
+                        min={0}
+                      />
+                      <span className={cn(styles.timeText, styles.hoursText)}>hrs</span>
+                      <input
+                        type='number'
+                        className={styles.phaseInput}
+                        value={mins}
+                        onChange={e => onUpdatePhase(this.getSeconds(hours, parseInt(e.target.value)))}
+                        min={0}
+                        max={59}
+                      />
+                      <span className={styles.timeText}>mins</span>
+                    </div>)}
                 </div>
               )
             }
