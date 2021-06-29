@@ -146,6 +146,11 @@ export const PRIZE_SETS_TYPE = {
   CHECKPOINT_PRIZES: 'checkpoint'
 }
 
+// prize set type descriptions
+export const PRIZE_SETS_TYPE_DESCRIPTION = {
+  [PRIZE_SETS_TYPE.CHECKPOINT_PRIZES]: 'Checkpoint Prizes'
+}
+
 export const REVIEW_TYPES = {
   INTERNAL: 'INTERNAL',
   COMMUNITY: 'COMMUNITY'
@@ -229,5 +234,6 @@ export const MESSAGE = {
   TASK_CLOSE_SUCCESS: 'Task closed successfully',
   CHALLENGE_LAUNCH_SUCCESS: 'Challenge activated successfully',
   COMMUNITY_REVIEW_DISABLED: 'Community review is NOT available for Design challenges',
-  INTERNAL_REVIEW_DISABLED: 'Internal review is NOT available for QA challenges'
+  INTERNAL_REVIEW_DISABLED: 'Internal review is NOT available for QA challenges',
+  PHASE_CLOSED: 'This phase has already closed'
 }

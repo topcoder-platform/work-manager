@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import qs from 'qs'
 import { axiosInstance } from './axiosWithAuth'
-import { updateChallengePhaseBeforeSendRequest, convertChallengePhaseFromSecondsToHours, normalizeChallengeDataFromAPI } from '../util/date'
+import { updateChallengePhaseBeforeSendRequest, normalizeChallengeDataFromAPI } from '../util/date'
 import { GROUPS_DROPDOWN_PER_PAGE } from '../config/constants'
 const {
   CHALLENGE_API_URL,
@@ -101,7 +101,6 @@ export async function fetchChallengeTimelines () {
  */
 export async function fetchChallengePhases () {
   const response = await axiosInstance.get(`${CHALLENGE_PHASES_URL}?page=1&perPage=100`)
-  convertChallengePhaseFromSecondsToHours(response.data)
   return _.get(response, 'data', [])
 }
 

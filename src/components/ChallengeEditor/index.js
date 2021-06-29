@@ -51,7 +51,6 @@ import PhaseInput from '../PhaseInput'
 import LegacyLinks from '../LegacyLinks'
 import AssignedMemberField from './AssignedMember-Field'
 import Tooltip from '../Tooltip'
-import UseSchedulingAPIField from './UseSchedulingAPIField'
 import PureV5Field from './PureV5Field'
 import { getResourceRoleByName } from '../../util/tc'
 import { isBetaMode } from '../../util/cookie'
@@ -108,7 +107,6 @@ class ChallengeEditor extends Component {
     this.removePhase = this.removePhase.bind(this)
     this.togglePhase = this.togglePhase.bind(this)
     this.resetPhase = this.resetPhase.bind(this)
-    this.savePhases = this.savePhases.bind(this)
     this.toggleLaunch = this.toggleLaunch.bind(this)
     this.onUpdateMultiSelect = this.onUpdateMultiSelect.bind(this)
     this.onUpdatePhase = this.onUpdatePhase.bind(this)
@@ -651,16 +649,6 @@ class ChallengeEditor extends Component {
     newChallenge.phases = _.clone(newPhaseList)
     this.setState({ challenge: newChallenge })
   }
-  /**
-   * Save updated  challenge Phases
-   */
-  async savePhases () {
-    await this.autoUpdateChallengeThrottled('phases')
-    this.setState({
-      isConfirm: true,
-      isLaunch: true
-    })
-  }
 
   /**
    * Reset  challenge Phases
@@ -740,6 +728,7 @@ class ChallengeEditor extends Component {
 
     const reviewType = challenge.reviewType ? challenge.reviewType.toUpperCase() : REVIEW_TYPES.COMMUNITY
     const isInternal = reviewType === REVIEW_TYPES.INTERNAL
+
     if (isInternal && !challenge.reviewer) {
       return false
     }
@@ -760,14 +749,12 @@ class ChallengeEditor extends Component {
 
     requiredFields.forEach((key) => {
       const value = challenge[key]
-
       // this check works for string and array values
       isRequiredMissing = isRequiredMissing ||
         !value ||
         (_.isString(value) && value.trim().length === 0) ||
         (_.isArray(value) && value.length === 0)
     })
-
     return !(isRequiredMissing || _.isEmpty(this.state.currentTemplate))
   }
 
@@ -847,7 +834,8 @@ class ChallengeEditor extends Component {
     }
     challenge.phases = challenge.phases.map((p) => pick([
       'duration',
-      'phaseId'
+      'phaseId',
+      'isOpen'
     ], p))
     if (challenge.terms && challenge.terms.length === 0) delete challenge.terms
     delete challenge.attachments
@@ -900,8 +888,9 @@ class ChallengeEditor extends Component {
       name,
       typeId,
       trackId,
-      startDate: moment().add(1, 'days').format(),
+      startDate: moment().format(),
       legacy: {
+        pureV5: true,
         reviewType: isTask || isDesignChallenge ? REVIEW_TYPES.INTERNAL : REVIEW_TYPES.COMMUNITY
       },
       descriptionFormat: 'markdown',
@@ -971,7 +960,8 @@ class ChallengeEditor extends Component {
       const phaseTemplate = _.find(this.props.metadata.challengePhases, p => p.id === (phase.phaseId || phase))
       validPhases.push({
         duration: phaseTemplate.duration,
-        phaseId: phaseTemplate.id
+        phaseId: phaseTemplate.id,
+        isOpen: phaseTemplate.isOpen
       })
     }
     return validPhases
@@ -1523,14 +1513,11 @@ class ChallengeEditor extends Component {
                   </div>
                 </div>
                 {isBetaMode() && (
-                  <UseSchedulingAPIField challenge={challenge} toggleUseSchedulingAPI={this.toggleUseSchedulingAPI} />
-                )}
-                {isBetaMode() && (
                   <PureV5Field challenge={challenge} togglePureV5={this.togglePureV5} />
                 )}
               </React.Fragment>
             )}
-            {!isTask && (
+            {!isTask && !isBetaMode() && (
               <div className={styles.PhaseRow}>
                 <PhaseInput
                   withDates
@@ -1567,7 +1554,6 @@ class ChallengeEditor extends Component {
                   removePhase={this.removePhase}
                   togglePhase={this.togglePhase}
                   resetPhase={this.resetPhase}
-                  savePhases={this.savePhases}
                   challenge={challenge}
                   onUpdateSelect={this.onUpdateSelect}
                   onUpdatePhase={this.onUpdatePhase}
@@ -1616,7 +1602,7 @@ class ChallengeEditor extends Component {
       <div className={styles.wrapper}>
         <Helmet title={getTitle(isNew)} />
         <div className={cn(styles.actionButtons, styles.actionButtonsLeft)}>
-          {!isNew && <LegacyLinks challenge={challenge} />}
+          {!isNew && !isPureV5 && <LegacyLinks challenge={challenge} />}
         </div>
         <div className={styles.title}>{getTitle(isNew)}</div>
         <div className={cn(styles.actionButtons, styles.actionButtonsRight)}>

@@ -27,7 +27,7 @@ import { getResourceRoleByName } from '../../../util/tc'
 import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
 import Tooltip from '../../Tooltip'
-import { MESSAGE, REVIEW_TYPES, DES_TRACK_ID } from '../../../config/constants'
+import { MESSAGE, REVIEW_TYPES, DES_TRACK_ID, COMMUNITY_APP_URL } from '../../../config/constants'
 
 const ChallengeView = ({
   projectDetail,
@@ -89,9 +89,18 @@ const ChallengeView = ({
   return (
     <div className={styles.wrapper}>
       <Helmet title='View Details' />
-      {!isTask && (
+      {!isTask && !isPureV5 && (
         <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsLeft)}>
           <LegacyLinks challenge={challenge} />
+        </div>
+      )}
+      {isPureV5 && (
+        <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsLeft)}>
+          <div className={styles.button}>
+            <a href={`${COMMUNITY_APP_URL}/challenges/${challenge.id}`} target={'_blank'}>
+              <PrimaryButton text={'View challenge'} type={'info'} />
+            </a>
+          </div>
         </div>
       )}
       <div className={styles.title}>View Details</div>
@@ -211,7 +220,7 @@ const ChallengeView = ({
                 )}
               </>
             )}
-            {
+            {!isBetaMode() && (
               <div className={styles.PhaseRow}>
                 <PhaseInput
                   withDates
@@ -222,7 +231,7 @@ const ChallengeView = ({
                   readOnly
                 />
               </div>
-            }
+            )}
             {
               isBetaMode() && (
                 <ChallengeScheduleField
