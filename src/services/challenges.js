@@ -91,7 +91,7 @@ export async function fetchTimelineTemplates () {
  * @returns {Promise<*>}
  */
 export async function fetchChallengeTimelines () {
-  const response = await axiosInstance.get(`${CHALLENGE_TIMELINES_URL}?isDefault=true&page=1&perPage=100`)
+  const response = await axiosInstance.get(`${CHALLENGE_TIMELINES_URL}?page=1&perPage=100`)
   return _.get(response, 'data', [])
 }
 

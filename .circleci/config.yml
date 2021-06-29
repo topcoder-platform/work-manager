@@ -83,7 +83,7 @@ workflows:
             branches:
               only:
                 - develop
-                - features/pureV5Design
+                # - features/pureV5Design
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.

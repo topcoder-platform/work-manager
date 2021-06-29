@@ -30,7 +30,7 @@ class PhaseInput extends Component {
   }
 
   render () {
-    const { phase, onUpdateSelect, onUpdatePhase, withDates, withDuration, endDate, readOnly } = this.props
+    const { phase, challengePhases, onUpdateSelect, onUpdatePhase, withDates, withDuration, endDate, readOnly } = this.props
     if (_.isEmpty(phase)) return null
     const date = moment(phase.date).format(dateFormat)
     const time = moment(phase.date)
@@ -40,11 +40,12 @@ class PhaseInput extends Component {
       mins = MIN_PHASE_DURATION_MINS
     }
 
+    const phaseName = phase.name || _.get(_.find(challengePhases, p => p.id === phase.phaseId), 'name', '')
     return (
       <div className={styles.container}>
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1, styles.phaseName)}>
-            <label htmlFor={`${phase.name}`}>{phase.name} :</label>
+            <label htmlFor={`${phaseName}`}>{phaseName} :</label>
             {
               withDuration && endDate && (
                 <div className={styles.previewDates}>
@@ -139,6 +140,7 @@ class PhaseInput extends Component {
 }
 
 PhaseInput.defaultProps = {
+  challengePhases: [],
   withDates: false,
   withDuration: false,
   endDate: null,
@@ -147,6 +149,7 @@ PhaseInput.defaultProps = {
 
 PhaseInput.propTypes = {
   phase: PropTypes.shape().isRequired,
+  challengePhases: PropTypes.arrayOf(PropTypes.shape()),
   onUpdateSelect: PropTypes.func,
   onUpdatePhase: PropTypes.func.isRequired,
   withDates: PropTypes.bool,

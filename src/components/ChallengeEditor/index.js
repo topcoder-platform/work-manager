@@ -656,7 +656,7 @@ class ChallengeEditor extends Component {
   async resetPhase (timeline) {
     const { challenge: oldChallenge } = this.state
     const newChallenge = { ...oldChallenge }
-    newChallenge.phases = []
+    newChallenge.phases = timeline ? this.getTemplatePhases(timeline) : []
     this.setState({
       currentTemplate: timeline,
       challenge: newChallenge
@@ -878,7 +878,7 @@ class ChallengeEditor extends Component {
 
     // fallback template
     const STD_DEV_TIMELINE_TEMPLATE = _.find(timelineTemplates, { name: 'Standard Development' })
-    const avlTemplates = this.getAvailableTimelineTemplates()
+    const avlTemplates = this.getAvailableTimelineTemplates(true)
     // chooses first available timeline template or fallback template for the new challenge
     const defaultTemplate = avlTemplates && avlTemplates.length > 0 ? avlTemplates[0] : STD_DEV_TIMELINE_TEMPLATE
     const isTask = _.find(metadata.challengeTypes, { id: typeId, isTask: true })
@@ -954,18 +954,17 @@ class ChallengeEditor extends Component {
     See issue which caused by using of this method https://github.com/topcoder-platform/work-manager/issues/1012
   */
   getTemplatePhases (template) {
-    const timelinePhaseIds = template.phases.map(timelinePhase => timelinePhase.phaseId || timelinePhase)
-    const validPhases = _.cloneDeep(this.props.metadata.challengePhases).filter(challengePhase => {
-      return timelinePhaseIds.includes(challengePhase.id)
-    })
-    validPhases.forEach(phase => {
-      delete Object.assign(phase, { phaseId: phase.id }).id
-    })
-    return validPhases.map(p => ({
-      duration: p.duration,
-      phaseId: p.phaseId,
-      isOpen: p.isOpen
-    }))
+    // const timelinePhaseIds = template.phases.map(timelinePhase => timelinePhase.phaseId || timelinePhase)
+    const validPhases = []
+    for (const phase of template.phases) {
+      const phaseTemplate = _.find(this.props.metadata.challengePhases, p => p.id === (phase.phaseId || phase))
+      validPhases.push({
+        duration: phaseTemplate.duration,
+        phaseId: phaseTemplate.id,
+        isOpen: phaseTemplate.isOpen
+      })
+    }
+    return validPhases
   }
 
   // getDefaultPrizeSets () {
@@ -1167,26 +1166,28 @@ class ChallengeEditor extends Component {
 
   getCurrentTemplate () {
     const { currentTemplate, challenge } = this.state
-    if (currentTemplate) {
-      return currentTemplate
-    }
     const { metadata } = this.props
     if (!challenge) {
       return null
     }
-    return _.find(metadata.timelineTemplates, { id: challenge.timelineTemplateId })
+    const templateFromChallenge = _.find(metadata.timelineTemplates, { id: challenge.timelineTemplateId })
+    if (!_.isEqual(templateFromChallenge, currentTemplate)) {
+      this.setState({ currentTemplate: templateFromChallenge })
+      this.resetPhase(templateFromChallenge)
+    }
+    return templateFromChallenge
   }
 
   /**
    * Filters the available timeline templates based on the challenge type
    */
-  getAvailableTimelineTemplates () {
+  getAvailableTimelineTemplates (onlyDefault) {
     const { challenge } = this.state
     const { metadata } = this.props
     const { challengeTimelines, timelineTemplates } = metadata
 
     // all timeline template ids available for the challenge type
-    const availableTemplateIds = _.filter(challengeTimelines, ct => ct.typeId === challenge.typeId && ct.trackId === challenge.trackId).map(tt => tt.timelineTemplateId)
+    const availableTemplateIds = _.filter(challengeTimelines, ct => ct.typeId === challenge.typeId && ct.trackId === challenge.trackId && (onlyDefault ? ct.isDefault : true)).map(tt => tt.timelineTemplateId)
     // filter and return timeline templates that are available for this challenge type
     return _.filter(timelineTemplates, tt => availableTemplateIds.indexOf(tt.id) !== -1)
   }
