@@ -15,20 +15,26 @@
   }
 }
 
-.title {
-  @include roboto-bold();
+.topContainer {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
 
+.leftContainer {
+  display: flex;
+  align-items: center;
+}
+
+.title {
   font-size: 24px;
   font-weight: 700;
   line-height: 29px;
+  margin-right: 5px;
   color: $challenges-title;
-  margin-top: 30px;
   text-align: center;
-
-  span {
-    color: $tc-red;
-  }
-
 }
 
 .textRequired {
@@ -255,7 +261,6 @@
 }
 
 .actionButtons {
-  position: absolute;
   top: 30px;
   a,button {
     height: 40px;
