@@ -4,6 +4,7 @@
 import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
+import _ from 'lodash'
 import styles from './LegacyLinks.module.scss'
 import { DIRECT_PROJECT_URL, MESSAGE, ONLINE_REVIEW_URL } from '../../config/constants'
 import PrimaryButton from '../Buttons/PrimaryButton'
@@ -16,6 +17,8 @@ const LegacyLinks = ({ challenge, challengeView }) => {
 
   const directUrl = `${DIRECT_PROJECT_URL}/contest/detail?projectId=${challenge.legacyId}`
   const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
+  const forumUrl = _.get(challenge, 'discussions[0].url')
+
   return (
     <div className={styles.container}>
       {challenge.legacyId ? (
@@ -40,13 +43,13 @@ const LegacyLinks = ({ challenge, challengeView }) => {
         </>
       )}
       <div>
-        { challengeView && challenge.discussions && challenge.discussions.map(d => (
-          <div key={d.id} className={cn(styles.row, styles.topRow)}>
+        { challengeView && forumUrl && (
+          <div className={cn(styles.row, styles.topRow)}>
             <div className={styles.col} >
-              <span><span className={styles.fieldTitle}><a href={d.url} target='_blank' rel='noopener noreferrer'>Forum</a></span></span>
+              <span><span className={styles.fieldTitle}><a href={forumUrl} target='_blank' rel='noopener noreferrer'>Forum</a></span></span>
             </div>
           </div>
-        ))}
+        )}
       </div>
     </div>
   )
