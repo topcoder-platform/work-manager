@@ -59,12 +59,12 @@ const theme = {
   container: styles.modalContainer
 }
 
-const getTitle = (isNew) => {
+const getTitle = (isNew, challenge) => {
   if (isNew) {
     return 'Create New Work'
   }
 
-  return 'Set-Up Work'
+  return challenge.name || 'Set-Up Work'
 }
 
 class ChallengeEditor extends Component {
@@ -1600,10 +1600,10 @@ class ChallengeEditor extends Component {
 
     return (
       <div className={styles.wrapper}>
-        <Helmet title={getTitle(isNew)} />
+        <Helmet title={getTitle(isNew, challenge)} />
         <div className={styles.topContainer}>
           <div className={styles.leftContainer}>
-            <div className={styles.title}>{getTitle(isNew)}</div>
+            <div className={styles.title}>{getTitle(isNew, challenge)}</div>
             {!isNew && <LegacyLinks challenge={challenge} />}
           </div>
           <div className={cn(styles.actionButtons, styles.actionButtonsRight)}>
