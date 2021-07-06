@@ -1321,7 +1321,7 @@ class ChallengeEditor extends Component {
           <ConfirmationModal
             title='Complete Task Confirmation'
             message={
-              <p>
+              <p className={styles.textCenter}>
                 Are you sure want to complete task <strong>"{challenge.name}"</strong> with the prize <strong>${taskPrize}</strong> for <strong>{assignedMember}</strong>?
               </p>
             }
