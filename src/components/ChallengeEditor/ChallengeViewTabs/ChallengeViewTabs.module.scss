@@ -3,11 +3,32 @@
 $tc-dark-blue: #0681ff;
 $tc-white: #FFFFFF;
 
+.topContainer {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.leftContainer {
+  display: flex;
+  align-items: center;
+}
+.title {
+  @include roboto-bold();
+
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 29px;
+  margin-right: 5px;
+  color: $challenges-title;
+  text-align: center;
+}
+
 .actionButtons {
   display: flex;
-  position: absolute;
   top: 30px;
-  margin-top: 53px;
 }
 
 .actionButtonsLeft {
@@ -35,21 +56,6 @@ $tc-white: #FFFFFF;
   height: 40px;
   span {
     padding: 0 15px;
-  }
-}
-
-.title {
-  @include roboto-bold();
-
-  font-size: 24px;
-  font-weight: 700;
-  line-height: 29px;
-  color: $challenges-title;
-  margin-top: 25px;
-  text-align: center;
-
-  span {
-    color: $tc-red;
   }
 }
 

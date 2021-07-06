@@ -59,12 +59,12 @@ const theme = {
   container: styles.modalContainer
 }
 
-const getTitle = (isNew) => {
+const getTitle = (isNew, challenge) => {
   if (isNew) {
     return 'Create New Work'
   }
 
-  return 'Set-Up Work'
+  return challenge.name || 'Set-Up Work'
 }
 
 class ChallengeEditor extends Component {
@@ -1600,14 +1600,16 @@ class ChallengeEditor extends Component {
 
     return (
       <div className={styles.wrapper}>
-        <Helmet title={getTitle(isNew)} />
-        <div className={cn(styles.actionButtons, styles.actionButtonsLeft)}>
-          {!isNew && <LegacyLinks challenge={challenge} />}
-        </div>
-        <div className={styles.title}>{getTitle(isNew)}</div>
-        <div className={cn(styles.actionButtons, styles.actionButtonsRight)}>
-          {!isNew && this.props.challengeDetails.status === 'New' && <PrimaryButton text={'Delete'} type={'danger'} onClick={this.deleteModalLaunch} />}
-          <PrimaryButton text={'Back'} type={'info'} submit link={`/projects/${projectDetail.id}/challenges`} />
+        <Helmet title={getTitle(isNew, challenge)} />
+        <div className={styles.topContainer}>
+          <div className={styles.leftContainer}>
+            <div className={styles.title}>{getTitle(isNew, challenge)}</div>
+            {!isNew && <LegacyLinks challenge={challenge} />}
+          </div>
+          <div className={cn(styles.actionButtons, styles.actionButtonsRight)}>
+            {!isNew && this.props.challengeDetails.status === 'New' && <PrimaryButton text={'Delete'} type={'danger'} onClick={this.deleteModalLaunch} />}
+            <PrimaryButton text={'Back'} type={'info'} submit link={`/projects/${projectDetail.id}/challenges`} />
+          </div>
         </div>
         <div className={styles.textRequired}>* Required</div>
         <div className={styles.container}>
