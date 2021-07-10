@@ -2,6 +2,7 @@
 .container {
   display: flex;
   align-items: center;
+  white-space: nowrap;
 
   > a {
     margin: 0 5px;
