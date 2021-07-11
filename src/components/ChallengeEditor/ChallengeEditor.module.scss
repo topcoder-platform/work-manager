@@ -30,6 +30,9 @@
 .leftContainer {
   display: flex;
   align-items: center;
+  .title {
+    text-align: left;
+  }
 }
 
 .title {
