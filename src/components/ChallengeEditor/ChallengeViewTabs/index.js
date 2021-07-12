@@ -81,60 +81,64 @@ const ChallengeViewTabs = ({
   return (
     <div className={styles.list}>
       <Helmet title='View Details' />
-      {!isTask && (
+      <div className={styles.topContainer}>
+        <div className={styles.leftContainer}>
+          <div className={styles.title}>{challenge.name}</div>
+          {!isTask && (
+            <div
+              className={cn(
+                styles.actionButtons,
+                styles.button,
+                styles.actionButtonsLeft
+              )}
+            >
+              <LegacyLinks challenge={challenge} challengeView />
+            </div>
+          )}
+        </div>
         <div
           className={cn(
             styles.actionButtons,
             styles.button,
-            styles.actionButtonsLeft
+            styles.actionButtonsRight
           )}
         >
-          <LegacyLinks challenge={challenge} challengeView />
+          {(challenge.status === 'Draft' || challenge.status === 'New') && <div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>}
+          {challenge.status === 'Draft' && (
+            <div className={styles.button}>
+              {challenge.legacyId || isTask ? (
+                <PrimaryButton
+                  text={'Launch'}
+                  type={'info'}
+                  onClick={onLaunchChallenge}
+                />
+              ) : (
+                <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
+                  {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
+                  <PrimaryButton text={'Launch'} type={'disabled'} />
+                </Tooltip>
+              )}
+            </div>
+          )}
+          {isTask && challenge.status === 'Active' && (
+            <div className={styles.button}>
+              {assignedMemberDetails ? (
+                <Tooltip content={MESSAGE.MARK_COMPLETE}>
+                  <PrimaryButton text={'Mark Complete'} type={'success'} onClick={onCloseTask} />
+                </Tooltip>
+              ) : (
+                <Tooltip content={MESSAGE.NO_TASK_ASSIGNEE}>
+                  {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
+                  <PrimaryButton text={'Mark Complete'} type={'disabled'} />
+                </Tooltip>
+              )}
+            </div>
+          )}
+          {enableEdit && (
+            <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} />
+          )}
+          <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
         </div>
-      )}
-      <div className={styles.title}>{challenge.name}</div>
-      <div
-        className={cn(
-          styles.actionButtons,
-          styles.button,
-          styles.actionButtonsRight
-        )}
-      >
-        {(challenge.status === 'Draft' || challenge.status === 'New') && <div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>}
-        {challenge.status === 'Draft' && (
-          <div className={styles.button}>
-            {challenge.legacyId || isTask ? (
-              <PrimaryButton
-                text={'Launch'}
-                type={'info'}
-                onClick={onLaunchChallenge}
-              />
-            ) : (
-              <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-                {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
-                <PrimaryButton text={'Launch'} type={'disabled'} />
-              </Tooltip>
-            )}
-          </div>
-        )}
-        {isTask && challenge.status === 'Active' && (
-          <div className={styles.button}>
-            {assignedMemberDetails ? (
-              <Tooltip content={MESSAGE.MARK_COMPLETE}>
-                <PrimaryButton text={'Mark Complete'} type={'success'} onClick={onCloseTask} />
-              </Tooltip>
-            ) : (
-              <Tooltip content={MESSAGE.NO_TASK_ASSIGNEE}>
-                {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
-                <PrimaryButton text={'Mark Complete'} type={'disabled'} />
-              </Tooltip>
-            )}
-          </div>
-        )}
-        {enableEdit && (
-          <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} />
-        )}
-        <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
       </div>
       <div className={styles['challenge-view-selector']}>
         <a

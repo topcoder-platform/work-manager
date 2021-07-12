@@ -81,7 +81,7 @@ workflows:
           context : org-global
           filters:
             branches:
-              only: ['develop', 'feature/bug-bash-jun']
+              only: ['develop', 'feature/bug-bash-july']
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.

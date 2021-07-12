@@ -121,6 +121,9 @@ class ChallengeList extends Component {
       case CHALLENGE_STATUS.COMPLETED:
         selectedTab = 3
         break
+      case CHALLENGE_STATUS.CANCELLED:
+        selectedTab = 4
+        break
     }
 
     let warningModal = null
@@ -175,6 +178,10 @@ class ChallengeList extends Component {
                 this.directUpdateSearchParam(searchText, CHALLENGE_STATUS.COMPLETED)
                 break
               }
+              case 4: {
+                this.directUpdateSearchParam(searchText, CHALLENGE_STATUS.CANCELLED)
+                break
+              }
             }
           }}>
           <TabList>
@@ -182,6 +189,7 @@ class ChallengeList extends Component {
             <Tab>New</Tab>
             <Tab>Draft</Tab>
             <Tab>Completed</Tab>
+            <Tab>Cancelled</Tab>
           </TabList>
           <TabPanel />
           <TabPanel />
