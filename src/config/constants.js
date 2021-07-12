@@ -162,7 +162,8 @@ export const CHALLENGE_STATUS = {
   ACTIVE: 'ACTIVE',
   NEW: 'NEW',
   DRAFT: 'DRAFT',
-  COMPLETED: 'COMPLETED'
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED'
 }
 
 export const getTCMemberURL = (handle) => `${COMMUNITY_APP_URL}/members/${handle}`
