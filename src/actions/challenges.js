@@ -49,6 +49,7 @@ import {
   LOAD_CHALLENGE_RESOURCES
 } from '../config/constants'
 import { loadProject } from './projects'
+import { removeChallengeFromPhaseProduct, saveChallengeAsPhaseProduct } from '../services/projects'
 
 /**
  * Member challenges related redux actions
@@ -203,16 +204,34 @@ export function loadGroupDetails (groupIds) {
  *
  * @param {String} challengeId      challenge id
  * @param {Object} challengeDetails challenge data
- *
+ * @param {String} projectId        project id
  * @returns {Promise<{ type: string, challengeDetails: object }>} action object
  */
-export function updateChallengeDetails (challengeId, challengeDetails) {
+export function updateChallengeDetails (challengeId, challengeDetails, projectId) {
   return async (dispatch) => {
     dispatch({
       type: UPDATE_CHALLENGE_DETAILS_PENDING
     })
 
-    return updateChallenge(challengeId, challengeDetails).then((challenge) => {
+    const milestoneId = challengeDetails.milestoneId
+    // Check if milestone is deleted or updated
+    const hasMilestone = _.has(challengeDetails, 'milestoneId')
+
+    if (hasMilestone) {
+      delete challengeDetails.milestoneId
+    }
+    return updateChallenge(challengeId, challengeDetails).then(async challenge => {
+      if (hasMilestone) {
+        if (milestoneId && milestoneId !== -1) {
+          await saveChallengeAsPhaseProduct(projectId, milestoneId, challengeId)
+          challenge.milestoneId = milestoneId
+        } else {
+          await removeChallengeFromPhaseProduct(projectId, challengeId)
+          challenge.milestoneId = milestoneId
+        }
+      }
+      return challenge
+    }).then((challenge) => {
       return dispatch({
         type: UPDATE_CHALLENGE_DETAILS_SUCCESS,
         challengeDetails: challenge
@@ -231,26 +250,39 @@ export function updateChallengeDetails (challengeId, challengeDetails) {
  * Create a new challenge
  *
  * @param {Object} challengeDetails challenge data
+ * @param {String} projectId        project id
  *
  * @returns {Promise<{ type: string, challengeDetails: object }>} action object
  */
-export function createChallenge (challengeDetails) {
+export function createChallenge (challengeDetails, projectId) {
+  console.log(challengeDetails)
   return async (dispatch) => {
     dispatch({
       type: CREATE_CHALLENGE_PENDING
     })
-
-    return createChallengeAPI(challengeDetails).then((challenge) => {
-      return dispatch({
-        type: CREATE_CHALLENGE_SUCCESS,
-        challengeDetails: challenge
+    const milestoneId = challengeDetails.milestoneId
+    if (milestoneId) {
+      delete challengeDetails.milestoneId
+    }
+    return createChallengeAPI(challengeDetails)
+      .then(async challenge => {
+        if (milestoneId && milestoneId !== -1) {
+          await saveChallengeAsPhaseProduct(projectId, milestoneId, challenge.id, true)
+          challenge.milestoneId = milestoneId
+        }
+        return challenge
       })
-    }).catch((e) => {
-      dispatch({
-        type: CREATE_CHALLENGE_FAILURE,
-        error: e
+      .then((challenge) => {
+        return dispatch({
+          type: CREATE_CHALLENGE_SUCCESS,
+          challengeDetails: challenge
+        })
+      }).catch((e) => {
+        dispatch({
+          type: CREATE_CHALLENGE_FAILURE,
+          error: e
+        })
       })
-    })
   }
 }
 
@@ -261,16 +293,32 @@ export function createChallenge (challengeDetails) {
  *
  * @param {String} challengeId             challenge id
  * @param {Object} partialChallengeDetails partial challenge data
- *
+ * @param {String} projectId               project id
  * @returns {Promise<{ type: string, challengeDetails: object }>} action object
  */
-export function partiallyUpdateChallengeDetails (challengeId, partialChallengeDetails) {
+export function partiallyUpdateChallengeDetails (challengeId, partialChallengeDetails, projectId) {
   return async (dispatch) => {
     dispatch({
       type: UPDATE_CHALLENGE_DETAILS_PENDING
     })
-
-    return patchChallenge(challengeId, partialChallengeDetails).then((challenge) => {
+    const milestoneId = partialChallengeDetails.milestoneId
+    // Check if milestone is deleted or updated
+    const hasMilestone = _.has(partialChallengeDetails, 'milestoneId')
+    if (hasMilestone) {
+      delete partialChallengeDetails.milestoneId
+    }
+    return patchChallenge(challengeId, partialChallengeDetails).then(async challenge => {
+      if (hasMilestone) {
+        if (milestoneId && milestoneId !== -1) {
+          await saveChallengeAsPhaseProduct(projectId, milestoneId, challenge.id)
+          challenge.milestoneId = milestoneId
+        } else {
+          await removeChallengeFromPhaseProduct(projectId, challengeId)
+          challenge.milestoneId = milestoneId
+        }
+      }
+      return challenge
+    }).then((challenge) => {
       return dispatch({
         type: UPDATE_CHALLENGE_DETAILS_SUCCESS,
         challengeDetails: challenge
@@ -284,13 +332,15 @@ export function partiallyUpdateChallengeDetails (challengeId, partialChallengeDe
   }
 }
 
-export function deleteChallenge (challengeId) {
+export function deleteChallenge (challengeId, projectId) {
   return async (dispatch) => {
     dispatch({
       type: DELETE_CHALLENGE_PENDING
     })
-
-    return deleteChallengeAPI(challengeId).then((challenge) => {
+    return deleteChallengeAPI(challengeId).then(async challenge => {
+      await removeChallengeFromPhaseProduct(projectId, challengeId)
+      return challenge
+    }).then((challenge) => {
       return dispatch({
         type: DELETE_CHALLENGE_SUCCESS,
         challengeDetails: challenge

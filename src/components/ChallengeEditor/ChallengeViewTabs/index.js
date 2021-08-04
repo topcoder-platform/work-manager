@@ -41,7 +41,8 @@ const ChallengeViewTabs = ({
   enableEdit,
   onLaunchChallenge,
   cancelChallenge,
-  onCloseTask
+  onCloseTask,
+  projectPhases
 }) => {
   const [selectedTab, setSelectedTab] = useState(0)
 
@@ -203,6 +204,7 @@ const ChallengeViewTabs = ({
           enableEdit={enableEdit}
           onLaunchChallenge={onLaunchChallenge}
           onCloseTask={onCloseTask}
+          projectPhases={projectPhases}
         />
       )}
       {selectedTab === 1 && (
@@ -238,7 +240,8 @@ ChallengeViewTabs.propTypes = {
   enableEdit: PropTypes.bool,
   onLaunchChallenge: PropTypes.func,
   cancelChallenge: PropTypes.func.isRequired,
-  onCloseTask: PropTypes.func
+  onCloseTask: PropTypes.func,
+  projectPhases: PropTypes.arrayOf(PropTypes.object)
 }
 
 export default ChallengeViewTabs
