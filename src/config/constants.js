@@ -260,7 +260,7 @@ export const CANCEL_REASONS = [
 export const GENERIC_PROJECT_MILESTONE_PRODUCT_TYPE = 'generic-product'
 export const GENERIC_PROJECT_MILESTONE_PRODUCT_NAME = 'Generic Product'
 export const PHASE_PRODUCT_TEMPLATE_ID = 67
-export const PHASE_PRODUCT_CHALLENGE_ID_FIELD = 'details.challenge'
+export const PHASE_PRODUCT_CHALLENGE_ID_FIELD = 'details.challengeGuid'
 
 /*
  *  Possible statuses of project milestones
