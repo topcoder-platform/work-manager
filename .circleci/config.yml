@@ -146,7 +146,7 @@ workflows:
       # Development builds are executed on "develop" branch only.
       - "build-dev":
           context : org-global
-          filters:
+          filters: &filters-dev
             branches:
               only: ['develop', 'feature/bug-bash-july', 'feature/test-automation']
 
