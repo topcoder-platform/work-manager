@@ -91,7 +91,7 @@ smoke_testing: &smoke_testing
       name: "configuring environment"
       command: |
         ./awsconfiguration.sh $DEPLOY_ENV
-        ./buildenv.sh -e $DEPLOY_ENV -b ${LOGICAL_ENV}-deployvar
+        ./buildenv.sh -e $DEPLOY_ENV -b ${LOGICAL_ENV}-${APPNAME}-buildvar
   - run:
       name: "Run automation"
       no_output_timeout: 20m
