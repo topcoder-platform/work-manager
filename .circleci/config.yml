@@ -154,7 +154,7 @@ workflows:
       # master branch.
       - "build-prod":
           context : org-global
-          filters:
+          filters: &filters-prod
             branches:
               only: master
 
