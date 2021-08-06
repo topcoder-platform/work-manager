@@ -21,7 +21,7 @@
     "moment": "^2.29.1",
     "protractor": "^7.0.0",
     "protractor-beautiful-reporter": "^1.3.6",
-    "topcoder-testing-lib": "^1.0.0",
+    "topcoder-testing-lib": "git+https://github.com/topcoder-platform/topcoder-testing-lib.git#develop",
     "tslint-config-prettier": "^1.18.0",
     "typescript": "^3.9.10",
     "webdriver-manager": "^12.1.8",
