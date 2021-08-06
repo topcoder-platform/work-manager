@@ -129,6 +129,7 @@ jobs:
     environment:
       DEPLOY_ENV: "DEV"
       LOGICAL_ENV: "dev"
+      APPNAME: "challenge-engine-ui"
     steps: *smoke_testing
 
   "smoke-testing-prod":
@@ -136,6 +137,7 @@ jobs:
     environment:
       DEPLOY_ENV: "PROD"
       LOGICAL_ENV: "prod"
+      APPNAME: "challenge-engine-ui"
     steps: *smoke_testing
 
 workflows:
