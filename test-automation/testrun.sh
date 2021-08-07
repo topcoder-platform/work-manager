@@ -2,8 +2,12 @@
 ./node_modules/.bin/webdriver-manager start --detach
 npm run test
 
-if [ $? -eq 0 ]; then
-  echo "Test case successfully completed"
+test_exit_code=$?
+
+if [ $test_exit_code -eq 0 ]; then
+  echo "Tests successfully completed"
 else
-  echo "Test case Failed"
+  echo "Tests failed"
 fi
+
+exit $test_exit_code
