@@ -1,0 +1,41 @@
+{
+  "dashboard": {
+    "workManager": "Work Manager",
+    "login": "LOG IN",
+    "searchTextProjectKeyword": "Smoke",
+    "searchTextProjectId": "17236",
+    "projectName": "[Do not Update] Project for Smoke Test Automation.",
+    "challengePageTitle": "Project for testing new milestone concept",
+    "giveApplicationFeedbackTabTitle": "Sign in to GitHub · GitHub",
+    "welcome": "Welcome, ",
+    "signup": "SIGN UP"
+  },
+  "createChallenge": {
+    "workType": ["Development", "Data Science", "Design", "Quality Assurance"],
+    "workFormat": ["Task", "Challenge", "First2Finish"],
+    "publicSpecification": "Public Specification 1",
+    "tag": "Google",
+    "prize": "10",
+    "completed": "Completed",
+    "success": "Success",
+    "draftMessage": "Your challenge is saved as draft",
+    "confirmLaunch": "Confirm Launch",
+    "activationMessage": "Challenge activated successfully",
+    "taskClosedMessage": "Task closed successfully",
+    "launchMessage": "Do you want to launch",
+    "confirmCloseTask": "Confirm Close Task",
+    "taskCloseMessage": "Do you want to close task",
+    "active": "Active",
+    "automation": "Automation",
+    "type": "Type",
+    "status": "Status",
+    "challengeName": "Challenge Name",
+    "assignedMember": "Assigned Member",
+    "tagsLabel": "Tags",
+    "prizeLabel": "Prize",
+    "copilot": "Copilot",
+    "draft": "Draft",
+    "processing": "Processing",
+    "createNewWork": "Create New Work"
+  }
+}
