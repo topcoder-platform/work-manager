@@ -21,7 +21,9 @@ import {
   COMMUNITY_APP_URL,
   DES_TRACK_ID,
   CHALLENGE_TYPE_ID,
-  REVIEW_TYPES
+  REVIEW_TYPES,
+  MILESTONE_STATUS,
+  PHASE_PRODUCT_CHALLENGE_ID_FIELD
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
@@ -54,6 +56,7 @@ import CancelDropDown from './Cancel-Dropdown'
 import UseSchedulingAPIField from './UseSchedulingAPIField'
 import { getResourceRoleByName } from '../../util/tc'
 import { isBetaMode } from '../../util/cookie'
+import MilestoneField from './Milestone-Field'
 
 const theme = {
   container: styles.modalContainer
@@ -149,11 +152,11 @@ class ChallengeEditor extends Component {
   }
 
   async onDeleteChallenge () {
-    const { deleteChallenge, challengeDetails, history } = this.props
+    const { deleteChallenge, challengeDetails, history, projectDetail } = this.props
     try {
       this.setState({ isSaving: true })
       // Call action to delete the challenge
-      await deleteChallenge(challengeDetails.id)
+      await deleteChallenge(challengeDetails.id, projectDetail.id)
       this.setState({ isSaving: false })
       this.resetModal()
       history.push(`/projects/${challengeDetails.projectId}/challenges`)
@@ -813,7 +816,8 @@ class ChallengeEditor extends Component {
       'startDate',
       'terms',
       'prizeSets',
-      'winners'
+      'winners',
+      'milestoneId'
     ], this.state.challenge)
     const isTask = _.find(metadata.challengeTypes, { id: challenge.typeId, isTask: true })
     challenge.legacy = _.assign(this.state.challenge.legacy, {
@@ -857,7 +861,7 @@ class ChallengeEditor extends Component {
   async createNewChallenge () {
     if (!this.props.isNew) return
     const { metadata, createChallenge, projectDetail } = this.props
-    const { showDesignChallengeWarningModel, challenge: { name, trackId, typeId } } = this.state
+    const { showDesignChallengeWarningModel, challenge: { name, trackId, typeId, milestoneId } } = this.state
     const { timelineTemplates } = metadata
     const isDesignChallenge = trackId === DES_TRACK_ID
     const isChallengeType = typeId === CHALLENGE_TYPE_ID
@@ -891,7 +895,8 @@ class ChallengeEditor extends Component {
       descriptionFormat: 'markdown',
       timelineTemplateId: defaultTemplate.id,
       terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }],
-      groups: []
+      groups: [],
+      milestoneId
       // prizeSets: this.getDefaultPrizeSets()
     }
     if (isTask) {
@@ -913,7 +918,7 @@ class ChallengeEditor extends Component {
       newChallenge.discussions = discussions
     }
     try {
-      const action = await createChallenge(newChallenge)
+      const action = await createChallenge(newChallenge, projectDetail.id)
       if (isTask) {
         await this.updateResource(action.challengeDetails.id, 'Iterative Reviewer', action.challengeDetails.createdBy, action.challengeDetails.reviewer)
         action.challengeDetails.reviewer = action.challengeDetails.createdBy
@@ -972,7 +977,7 @@ class ChallengeEditor extends Component {
   // }
 
   async autoUpdateChallenge (changedField, prevValue) {
-    const { partiallyUpdateChallengeDetails } = this.props
+    const { partiallyUpdateChallengeDetails, projectDetail } = this.props
     if (this.state.isSaving || this.state.isLoading || !this.getCurrentChallengeId()) return
     const challengeId = this.state.draftChallenge.data.id || this.props.challengeId
     if (_.includes(['copilot', 'reviewer'], changedField)) {
@@ -1008,7 +1013,7 @@ class ChallengeEditor extends Component {
       try {
         const copilot = this.state.draftChallenge.data.copilot
         const reviewer = this.state.draftChallenge.data.reviewer
-        const action = await partiallyUpdateChallengeDetails(challengeId, patchObject)
+        const action = await partiallyUpdateChallengeDetails(challengeId, patchObject, projectDetail.id)
         const draftChallenge = { data: action.challengeDetails }
         draftChallenge.data.copilot = copilot
         draftChallenge.data.reviewer = reviewer
@@ -1049,7 +1054,7 @@ class ChallengeEditor extends Component {
   }
 
   async updateAllChallengeInfo (status, cb = () => {}) {
-    const { updateChallengeDetails, assignedMemberDetails: oldAssignedMember } = this.props
+    const { updateChallengeDetails, assignedMemberDetails: oldAssignedMember, projectDetail } = this.props
     if (this.state.isSaving) return
     this.setState({ isSaving: true }, async () => {
       const challenge = this.collectChallengeData(status)
@@ -1057,7 +1062,7 @@ class ChallengeEditor extends Component {
       newChallenge.status = status
       try {
         const challengeId = this.getCurrentChallengeId()
-        const action = await updateChallengeDetails(challengeId, challenge)
+        const action = await updateChallengeDetails(challengeId, challenge, projectDetail.id)
         // state can have updated assigned member (in cases where user changes assignments without refreshing the page)
         const { challenge: { copilot, reviewer, type }, assignedMemberDetails: assignedMember } = this.state
         const oldMemberHandle = _.get(oldAssignedMember, 'handle')
@@ -1208,7 +1213,9 @@ class ChallengeEditor extends Component {
       failedToLoad,
       errorMessage,
       projectDetail,
-      attachments
+      attachments,
+      projectPhases,
+      challengeId
     } = this.props
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
@@ -1430,6 +1437,13 @@ class ChallengeEditor extends Component {
     </React.Fragment>
     const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
     const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
+    const selectedMilestone = _.find(projectPhases,
+      phase => _.find(_.get(phase, 'products', []),
+        product => _.get(product, PHASE_PRODUCT_CHALLENGE_ID_FIELD) === challengeId
+      )
+    )
+    const selectedMilestoneId = challenge.milestoneId || _.get(selectedMilestone, 'id')
+    const activeProjectMilestones = projectPhases.filter(phase => phase.status === MILESTONE_STATUS.ACTIVE)
     const currentChallengeId = this.getCurrentChallengeId()
     const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
     const challengeForm = isNew
@@ -1439,6 +1453,7 @@ class ChallengeEditor extends Component {
             <TrackField tracks={metadata.challengeTracks} challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
+            {projectDetail.version === 'v4' && <MilestoneField milestones={activeProjectMilestones} onUpdateSelect={this.onUpdateSelect} projectId={projectDetail.id} selectedMilestoneId={selectedMilestoneId} />}
           </div>
           {showDesignChallengeWarningModel && designChallengeModal}
           { errorContainer }
@@ -1478,6 +1493,7 @@ class ChallengeEditor extends Component {
                 onAssignSelf={this.onAssignSelf}
               />
             )}
+            {projectDetail.version === 'v4' && <MilestoneField milestones={activeProjectMilestones} onUpdateSelect={this.onUpdateSelect} projectId={projectDetail.id} selectedMilestoneId={selectedMilestoneId} />}
             <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
             <ReviewTypeField
               reviewers={metadata.members}
@@ -1657,7 +1673,8 @@ ChallengeEditor.propTypes = {
   replaceResourceInRole: PropTypes.func,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
-  loggedInUser: PropTypes.shape().isRequired
+  loggedInUser: PropTypes.shape().isRequired,
+  projectPhases: PropTypes.arrayOf(PropTypes.object).isRequired
 }
 
 export default withRouter(ChallengeEditor)

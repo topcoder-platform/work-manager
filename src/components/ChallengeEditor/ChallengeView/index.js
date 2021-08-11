@@ -21,7 +21,7 @@ import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
 import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
-import { REVIEW_TYPES } from '../../../config/constants'
+import { REVIEW_TYPES, CONNECT_APP_URL, PHASE_PRODUCT_CHALLENGE_ID_FIELD } from '../../../config/constants'
 
 const ChallengeView = ({
   projectDetail,
@@ -36,10 +36,17 @@ const ChallengeView = ({
   assignedMemberDetails,
   enableEdit,
   onLaunchChallenge,
-  onCloseTask
+  onCloseTask,
+  projectPhases
 }) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
+  const selectedMilestone = challenge.milestoneId
+    ? _.find(projectPhases, phase => phase.id === challenge.milestoneId)
+    : _.find(projectPhases,
+      phase => _.find(_.get(phase, 'products', []),
+        product => _.get(product, PHASE_PRODUCT_CHALLENGE_ID_FIELD) === challengeId
+      ))
 
   const [openAdvanceSettings, setOpenAdvanceSettings] = useState(false)
   const [groups, setGroups] = useState('')
@@ -80,6 +87,7 @@ const ChallengeView = ({
   if (isLoading || _.isEmpty(metadata.challengePhases) || challenge.id !== challengeId) return <Loader />
   const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
   const isTask = _.get(challenge, 'task.isTask', false)
+
   return (
     <div className={styles.wrapper}>
       <div className={styles.container}>
@@ -94,6 +102,16 @@ const ChallengeView = ({
                   }} />
                 </span>
               </div>
+              {selectedMilestone &&
+              <div className={styles.col}>
+                <span><span className={styles.fieldTitle}>Milestone:</span> {selectedMilestone ? (
+                  <a href={`${CONNECT_APP_URL}/projects/${projectDetail.id}`} target='_blank'
+                    rel='noopener noreferrer'>
+                    {selectedMilestone.name}
+                  </a>
+                ) : ''}</span>
+              </div>
+              }
               <div className={styles.col}>
                 <span className={styles.fieldTitle}>Track:</span>
                 <Track disabled type={challengeTrack} isActive key={challenge.trackId} onUpdateOthers={() => {}} />
@@ -111,13 +129,15 @@ const ChallengeView = ({
                 <span><span className={styles.fieldTitle}>Challenge Name:</span> {challenge.name}</span>
               </div>
             </div>
-            {isTask && <AssignedMemberField challenge={challenge} assignedMemberDetails={assignedMemberDetails} readOnly /> }
+            {isTask &&
+            <AssignedMemberField challenge={challenge} assignedMemberDetails={assignedMemberDetails} readOnly />}
             <CopilotField challenge={{
               copilot
             }} copilots={metadata.members} readOnly />
             <div className={cn(styles.row, styles.topRow)}>
               <div className={styles.col}>
-                <span><span className={styles.fieldTitle}>Review Type:</span> {isCommunity ? 'Community' : 'Internal'}</span>
+                <span><span
+                  className={styles.fieldTitle}>Review Type:</span> {isCommunity ? 'Community' : 'Internal'}</span>
               </div>
             </div>
             {isInternal && reviewer && (<div className={cn(styles.row, styles.topRow)}>
@@ -175,7 +195,7 @@ const ChallengeView = ({
                 />
               </div>
             }
-            { showTimeline && (
+            {showTimeline && (
               <ChallengeScheduleField
                 templates={metadata.timelineTemplates}
                 challengePhases={metadata.challengePhases}
@@ -238,7 +258,8 @@ ChallengeView.propTypes = {
   assignedMemberDetails: PropTypes.shape(),
   enableEdit: PropTypes.bool,
   onLaunchChallenge: PropTypes.func,
-  onCloseTask: PropTypes.func
+  onCloseTask: PropTypes.func,
+  projectPhases: PropTypes.arrayOf(PropTypes.object)
 }
 
 export default withRouter(ChallengeView)

@@ -52,6 +52,11 @@ export const LOAD_PROJECT_BILLING_ACCOUNT_PENDING = 'LOAD_PROJECT_BILLING_ACCOUN
 export const LOAD_PROJECT_BILLING_ACCOUNT_FAILURE = 'LOAD_PROJECT_BILLING_ACCOUNT_FAILURE'
 export const LOAD_PROJECT_BILLING_ACCOUNT_SUCCESS = 'LOAD_PROJECT_BILLING_ACCOUNT_SUCCESS'
 
+export const LOAD_PROJECT_PHASES = 'LOAD_PROJECT_PHASES'
+export const LOAD_PROJECT_PHASES_PENDING = 'LOAD_PROJECT_PHASES_PENDING'
+export const LOAD_PROJECT_PHASES_FAILURE = 'LOAD_PROJECT_PHASES_FAILURE'
+export const LOAD_PROJECT_PHASES_SUCCESS = 'LOAD_PROJECT_PHASES_SUCCESS'
+
 export const SET_ACTIVE_PROJECT = 'SET_ACTIVE_PROJECT'
 
 export const LOAD_USER_SUCCESS = 'LOAD_USER_SUCCESS'
@@ -248,3 +253,23 @@ export const CANCEL_REASONS = [
   'Cancelled - Requirements Infeasible',
   'Cancelled - Zero Registrations'
 ]
+
+/**
+ * Milestone product details
+ */
+export const GENERIC_PROJECT_MILESTONE_PRODUCT_TYPE = 'generic-product'
+export const GENERIC_PROJECT_MILESTONE_PRODUCT_NAME = 'Generic Product'
+export const PHASE_PRODUCT_TEMPLATE_ID = 67
+export const PHASE_PRODUCT_CHALLENGE_ID_FIELD = 'details.challengeGuid'
+
+/*
+ *  Possible statuses of project milestones
+ */
+export const MILESTONE_STATUS = {
+  UNPLANNED: 'in_review',
+  PLANNED: 'reviewed',
+  ACTIVE: 'active',
+  BLOCKED: 'paused',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled'
+}
