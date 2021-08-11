@@ -2,7 +2,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+node_modules
 /.pnp
 .pnp.js
 .idea
@@ -27,3 +27,7 @@ yarn-error.log*
 *.env
 
 *.vscode
+
+# e2e test case
+test-automation/temp
+test-automation/test-results
