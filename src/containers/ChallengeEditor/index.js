@@ -328,7 +328,9 @@ class ChallengeEditor extends Component {
       createChallenge,
       replaceResourceInRole,
       deleteChallenge,
-      loggedInUser
+      loggedInUser,
+      projectPhases,
+      isProjectPhasesLoading
       // members
     } = this.props
     const {
@@ -340,7 +342,7 @@ class ChallengeEditor extends Component {
       suceessMessage,
       challengeDetails
     } = this.state
-    if (isProjectLoading || isLoading) return <Loader />
+    if (isProjectLoading || isLoading || isProjectPhasesLoading) return <Loader />
     const challengeId = _.get(match.params, 'challengeId', null)
     if (challengeId && (!challengeDetails || !challengeDetails.id)) {
       return <Loader />
@@ -421,6 +423,7 @@ class ChallengeEditor extends Component {
               createChallenge={createChallenge}
               replaceResourceInRole={replaceResourceInRole}
               partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
+              projectPhases={projectPhases}
             />
           )}
         />
@@ -458,6 +461,7 @@ class ChallengeEditor extends Component {
                 }
                 deleteChallenge={deleteChallenge}
                 loggedInUser={loggedInUser}
+                projectPhases={projectPhases}
               />
             )}
           />
@@ -471,6 +475,7 @@ class ChallengeEditor extends Component {
               isBillingAccountExpired={isBillingAccountExpired}
               metadata={metadata}
               projectDetail={projectDetail}
+              projectPhases={projectPhases}
               challengeSubmissions={challengeSubmissions}
               challenge={challengeDetails}
               cancelChallenge={this.cancelChallenge}
@@ -534,7 +539,9 @@ ChallengeEditor.propTypes = {
   createChallenge: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
   replaceResourceInRole: PropTypes.func,
-  loadProject: PropTypes.func
+  loadProject: PropTypes.func,
+  projectPhases: PropTypes.arrayOf(PropTypes.object),
+  isProjectPhasesLoading: PropTypes.bool
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
 
@@ -556,6 +563,8 @@ const mapStateToProps = ({
   challengeDetails,
   hasProjectAccess: projects.hasProjectAccess,
   projectDetail: projects.projectDetail,
+  projectPhases: projects.phases,
+  isProjectPhasesLoading: projects.isPhasesLoading,
   challengeResources,
   challengeSubmissions,
   metadata,
