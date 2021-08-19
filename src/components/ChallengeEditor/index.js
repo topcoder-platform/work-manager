@@ -21,7 +21,9 @@ import {
   COMMUNITY_APP_URL,
   DES_TRACK_ID,
   // CHALLENGE_TYPE_ID,
-  REVIEW_TYPES
+  REVIEW_TYPES,
+  MILESTONE_STATUS,
+  PHASE_PRODUCT_CHALLENGE_ID_FIELD
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
@@ -47,24 +49,24 @@ import styles from './ChallengeEditor.module.scss'
 import Track from '../Track'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import AlertModal from '../Modal/AlertModal'
-import PhaseInput from '../PhaseInput'
 import LegacyLinks from '../LegacyLinks'
 import AssignedMemberField from './AssignedMember-Field'
 import Tooltip from '../Tooltip'
 import PureV5Field from './PureV5Field'
+import CancelDropDown from './Cancel-Dropdown'
 import { getResourceRoleByName } from '../../util/tc'
-import { isBetaMode } from '../../util/cookie'
+import MilestoneField from './Milestone-Field'
 
 const theme = {
   container: styles.modalContainer
 }
 
-const getTitle = (isNew) => {
+const getTitle = (isNew, challenge) => {
   if (isNew) {
     return 'Create New Work'
   }
 
-  return 'Set-Up Work'
+  return challenge.name || 'Set-Up Work'
 }
 
 class ChallengeEditor extends Component {
@@ -150,11 +152,11 @@ class ChallengeEditor extends Component {
   }
 
   async onDeleteChallenge () {
-    const { deleteChallenge, challengeDetails, history } = this.props
+    const { deleteChallenge, challengeDetails, history, projectDetail } = this.props
     try {
       this.setState({ isSaving: true })
       // Call action to delete the challenge
-      await deleteChallenge(challengeDetails.id)
+      await deleteChallenge(challengeDetails.id, projectDetail.id)
       this.setState({ isSaving: false })
       this.resetModal()
       history.push(`/projects/${challengeDetails.projectId}/challenges`)
@@ -719,6 +721,14 @@ class ChallengeEditor extends Component {
     })
   }
 
+  checkValidCopilot () {
+    const copilotFee = _.find(this.state.challenge.prizeSets, p => p.type === PRIZE_SETS_TYPE.COPILOT_PAYMENT, [])
+    if (copilotFee && parseInt(copilotFee.prizes[0].value) > 0 && !this.state.challenge.copilot) {
+      return false
+    }
+    return true
+  }
+
   isValidChallenge () {
     const { challenge } = this.state
     if (this.props.isNew) {
@@ -734,6 +744,10 @@ class ChallengeEditor extends Component {
     }
 
     if (!this.isValidChallengePrizes()) {
+      return false
+    }
+
+    if (!this.checkValidCopilot()) {
       return false
     }
 
@@ -812,7 +826,8 @@ class ChallengeEditor extends Component {
       'startDate',
       'terms',
       'prizeSets',
-      'winners'
+      'winners',
+      'milestoneId'
     ], this.state.challenge)
     const isTask = _.find(metadata.challengeTypes, { id: challenge.typeId, isTask: true })
     challenge.legacy = _.assign(this.state.challenge.legacy, {
@@ -857,10 +872,7 @@ class ChallengeEditor extends Component {
   async createNewChallenge () {
     if (!this.props.isNew) return
     const { metadata, createChallenge, projectDetail } = this.props
-    const {
-      /** showDesignChallengeWarningModel, **/
-      challenge: { name, trackId, typeId }
-    } = this.state
+    const { challenge: { name, trackId, typeId, milestoneId } } = this.state
     const { timelineTemplates } = metadata
     const isDesignChallenge = trackId === DES_TRACK_ID
     // const isChallengeType = typeId === CHALLENGE_TYPE_ID
@@ -896,7 +908,8 @@ class ChallengeEditor extends Component {
       descriptionFormat: 'markdown',
       timelineTemplateId: defaultTemplate.id,
       terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }],
-      groups: []
+      groups: [],
+      milestoneId
       // prizeSets: this.getDefaultPrizeSets()
     }
     if (isTask) {
@@ -918,7 +931,7 @@ class ChallengeEditor extends Component {
       newChallenge.discussions = discussions
     }
     try {
-      const action = await createChallenge(newChallenge)
+      const action = await createChallenge(newChallenge, projectDetail.id)
       if (isTask) {
         await this.updateResource(action.challengeDetails.id, 'Iterative Reviewer', action.challengeDetails.createdBy, action.challengeDetails.reviewer)
         action.challengeDetails.reviewer = action.challengeDetails.createdBy
@@ -977,7 +990,7 @@ class ChallengeEditor extends Component {
   // }
 
   async autoUpdateChallenge (changedField, prevValue) {
-    const { partiallyUpdateChallengeDetails } = this.props
+    const { partiallyUpdateChallengeDetails, projectDetail } = this.props
     if (this.state.isSaving || this.state.isLoading || !this.getCurrentChallengeId()) return
     const challengeId = this.state.draftChallenge.data.id || this.props.challengeId
     if (_.includes(['copilot', 'reviewer'], changedField)) {
@@ -1013,7 +1026,7 @@ class ChallengeEditor extends Component {
       try {
         const copilot = this.state.draftChallenge.data.copilot
         const reviewer = this.state.draftChallenge.data.reviewer
-        const action = await partiallyUpdateChallengeDetails(challengeId, patchObject)
+        const action = await partiallyUpdateChallengeDetails(challengeId, patchObject, projectDetail.id)
         const draftChallenge = { data: action.challengeDetails }
         draftChallenge.data.copilot = copilot
         draftChallenge.data.reviewer = reviewer
@@ -1054,7 +1067,7 @@ class ChallengeEditor extends Component {
   }
 
   async updateAllChallengeInfo (status, cb = () => {}) {
-    const { updateChallengeDetails, assignedMemberDetails: oldAssignedMember } = this.props
+    const { updateChallengeDetails, assignedMemberDetails: oldAssignedMember, projectDetail } = this.props
     if (this.state.isSaving) return
     this.setState({ isSaving: true }, async () => {
       const challenge = this.collectChallengeData(status)
@@ -1062,7 +1075,7 @@ class ChallengeEditor extends Component {
       newChallenge.status = status
       try {
         const challengeId = this.getCurrentChallengeId()
-        const action = await updateChallengeDetails(challengeId, challenge)
+        const action = await updateChallengeDetails(challengeId, challenge, projectDetail.id)
         // state can have updated assigned member (in cases where user changes assignments without refreshing the page)
         const { challenge: { copilot, reviewer, type }, assignedMemberDetails: assignedMember } = this.state
         const oldMemberHandle = _.get(oldAssignedMember, 'handle')
@@ -1211,10 +1224,13 @@ class ChallengeEditor extends Component {
       uploadAttachments,
       token,
       removeAttachment,
+      cancelChallenge,
       failedToLoad,
       errorMessage,
       projectDetail,
-      attachments
+      attachments,
+      projectPhases,
+      challengeId
     } = this.props
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
@@ -1326,10 +1342,10 @@ class ChallengeEditor extends Component {
       if (validationErrors.length === 0) {
         closeTaskModal = (
           <ConfirmationModal
-            title='Close Task Confirmation'
+            title='Complete Task Confirmation'
             message={
-              <p>
-                Are you sure want to close task <strong>"{challenge.name}"</strong> with the prize <strong>${taskPrize}</strong> for <strong>{assignedMember}</strong>?
+              <p className={styles.textCenter}>
+                Are you sure want to complete task <strong>"{challenge.name}"</strong> with the prize <strong>${taskPrize}</strong> for <strong>{assignedMember}</strong>?
               </p>
             }
             theme={theme}
@@ -1397,11 +1413,15 @@ class ChallengeEditor extends Component {
                 <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
               </div> */}
               <div className={styles.button}>
-                <PrimaryButton text={isSaving ? 'Saving...' : 'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
+                { !this.state.hasValidationErrors ? (
+                  <PrimaryButton text={isSaving ? 'Saving...' : 'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
+                ) : (
+                  <PrimaryButton text={'Save Draft'} type={'disabled'} />
+                )}
               </div>
               {isDraft && (
                 <div className={styles.button}>
-                  {challenge.legacyId || isTask || isPureV5 ? (
+                  {(challenge.legacyId || isTask || isPureV5) && !this.state.hasValidationErrors ? (
                     <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
                   ) : (
                     <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
@@ -1411,6 +1431,9 @@ class ChallengeEditor extends Component {
                   )}
                 </div>
               )}
+              <div className={styles.button}>
+                <CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} />
+              </div>
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
               <div className={styles.button}>
@@ -1418,7 +1441,9 @@ class ChallengeEditor extends Component {
               </div>
               {isTask && (
                 <div className={styles.button}>
-                  <PrimaryButton text={'Close Task'} type={'danger'} onClick={this.openCloseTaskConfirmation} />
+                  <Tooltip content={MESSAGE.MARK_COMPLETE}>
+                    <PrimaryButton text={'Mark Complete'} type={'success'} onClick={this.openCloseTaskConfirmation} />
+                  </Tooltip>
                 </div>
               )}
             </div>}
@@ -1428,6 +1453,13 @@ class ChallengeEditor extends Component {
     </React.Fragment>
     const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
     const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
+    const selectedMilestone = _.find(projectPhases,
+      phase => _.find(_.get(phase, 'products', []),
+        product => _.get(product, PHASE_PRODUCT_CHALLENGE_ID_FIELD) === challengeId
+      )
+    )
+    const selectedMilestoneId = challenge.milestoneId || _.get(selectedMilestone, 'id')
+    const activeProjectMilestones = projectPhases.filter(phase => phase.status === MILESTONE_STATUS.ACTIVE)
     const currentChallengeId = this.getCurrentChallengeId()
     const challengeForm = isNew
       ? (
@@ -1436,6 +1468,7 @@ class ChallengeEditor extends Component {
             <TrackField tracks={metadata.challengeTracks} challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
+            {projectDetail.version === 'v4' && <MilestoneField milestones={activeProjectMilestones} onUpdateSelect={this.onUpdateSelect} projectId={projectDetail.id} selectedMilestoneId={selectedMilestoneId} />}
           </div>
           {showDesignChallengeWarningModel && designChallengeModal}
           { errorContainer }
@@ -1475,6 +1508,7 @@ class ChallengeEditor extends Component {
                 onAssignSelf={this.onAssignSelf}
               />
             )}
+            {projectDetail.version === 'v4' && <MilestoneField milestones={activeProjectMilestones} onUpdateSelect={this.onUpdateSelect} projectId={projectDetail.id} selectedMilestoneId={selectedMilestoneId} />}
             <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
             <ReviewTypeField
               reviewers={metadata.members}
@@ -1512,26 +1546,8 @@ class ChallengeEditor extends Component {
                     {isBillingAccountExpired && <span className={styles.expiredMessage}>Expired</span>}
                   </div>
                 </div>
-                {isBetaMode() && (
-                  <PureV5Field challenge={challenge} togglePureV5={this.togglePureV5} />
-                )}
+                <PureV5Field challenge={challenge} togglePureV5={this.togglePureV5} />
               </React.Fragment>
-            )}
-            {!isTask && !isBetaMode() && (
-              <div className={styles.PhaseRow}>
-                <PhaseInput
-                  withDates
-                  phase={{
-                    name: 'Start Date',
-                    date: challenge.startDate
-                  }}
-                  onUpdatePhase={newValue => this.onUpdateOthers({
-                    field: 'startDate',
-                    value: newValue.format()
-                  })}
-                  readOnly={false}
-                />
-              </div>
             )}
             {
               this.state.isDeleteLaunch && !this.state.isConfirm && (
@@ -1546,22 +1562,18 @@ class ChallengeEditor extends Component {
                 />
               )
             }
-            {
-              isBetaMode() && (
-                <ChallengeScheduleField
-                  templates={this.getAvailableTimelineTemplates()}
-                  challengePhases={metadata.challengePhases}
-                  removePhase={this.removePhase}
-                  togglePhase={this.togglePhase}
-                  resetPhase={this.resetPhase}
-                  challenge={challenge}
-                  onUpdateSelect={this.onUpdateSelect}
-                  onUpdatePhase={this.onUpdatePhase}
-                  onUpdateOthers={this.onUpdateOthers}
-                  currentTemplate={this.getCurrentTemplate()}
-                />
-              )
-            }
+            <ChallengeScheduleField
+              templates={this.getAvailableTimelineTemplates()}
+              challengePhases={metadata.challengePhases}
+              removePhase={this.removePhase}
+              togglePhase={this.togglePhase}
+              resetPhase={this.resetPhase}
+              challenge={challenge}
+              onUpdateSelect={this.onUpdateSelect}
+              onUpdatePhase={this.onUpdatePhase}
+              onUpdateOthers={this.onUpdateOthers}
+              currentTemplate={this.getCurrentTemplate()}
+            />
           </div>
           <div className={styles.group}>
             <div className={styles.title}>Public specification <span>*</span></div>
@@ -1590,7 +1602,7 @@ class ChallengeEditor extends Component {
             />}
             <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
-            {DES_TRACK_ID === challenge.trackId && isBetaMode() && <CheckpointPrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />}
+            {DES_TRACK_ID === challenge.trackId && <CheckpointPrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />}
             <ChallengeTotalField challenge={challenge} />
           </div>
           { errorContainer }
@@ -1600,14 +1612,16 @@ class ChallengeEditor extends Component {
 
     return (
       <div className={styles.wrapper}>
-        <Helmet title={getTitle(isNew)} />
-        <div className={cn(styles.actionButtons, styles.actionButtonsLeft)}>
-          {!isNew && !isPureV5 && <LegacyLinks challenge={challenge} />}
-        </div>
-        <div className={styles.title}>{getTitle(isNew)}</div>
-        <div className={cn(styles.actionButtons, styles.actionButtonsRight)}>
-          {!isNew && this.props.challengeDetails.status === 'New' && <PrimaryButton text={'Delete'} type={'danger'} onClick={this.deleteModalLaunch} />}
-          <PrimaryButton text={'Back'} type={'info'} submit link={`/projects/${projectDetail.id}/challenges`} />
+        <Helmet title={getTitle(isNew, challenge)} />
+        <div className={styles.topContainer}>
+          <div className={styles.leftContainer}>
+            <div className={styles.title}>{getTitle(isNew, challenge)}</div>
+            {!isNew && !_.get(challenge, 'legacy.pureV5', false) && <LegacyLinks challenge={challenge} />}
+          </div>
+          <div className={cn(styles.actionButtons, styles.actionButtonsRight)}>
+            {!isNew && this.props.challengeDetails.status === 'New' && <PrimaryButton text={'Delete'} type={'danger'} onClick={this.deleteModalLaunch} />}
+            <PrimaryButton text={'Back'} type={'info'} submit link={`/projects/${projectDetail.id}/challenges`} />
+          </div>
         </div>
         <div className={styles.textRequired}>* Required</div>
         <div className={styles.container}>
@@ -1642,6 +1656,7 @@ ChallengeEditor.propTypes = {
   metadata: PropTypes.object.isRequired,
   isLoading: PropTypes.bool.isRequired,
   uploadAttachments: PropTypes.func.isRequired,
+  cancelChallenge: PropTypes.func.isRequired,
   removeAttachment: PropTypes.func.isRequired,
   attachments: PropTypes.arrayOf(PropTypes.shape()),
   token: PropTypes.string.isRequired,
@@ -1654,7 +1669,8 @@ ChallengeEditor.propTypes = {
   replaceResourceInRole: PropTypes.func,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
-  loggedInUser: PropTypes.shape().isRequired
+  loggedInUser: PropTypes.shape().isRequired,
+  projectPhases: PropTypes.arrayOf(PropTypes.object).isRequired
 }
 
 export default withRouter(ChallengeEditor)

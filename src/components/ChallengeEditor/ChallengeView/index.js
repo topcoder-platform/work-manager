@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import _ from 'lodash'
-import { Helmet } from 'react-helmet'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
 import { withRouter } from 'react-router-dom'
+import { Helmet } from 'react-helmet'
 import styles from './ChallengeView.module.scss'
 import xss from 'xss'
-import { PrimaryButton } from '../../Buttons'
 import Track from '../../Track'
 import NDAField from '../NDAField'
 import UseSchedulingAPIField from '../UseSchedulingAPIField'
@@ -21,13 +20,21 @@ import CopilotFeeField from '../CopilotFee-Field'
 import ChallengeTotalField from '../ChallengeTotal-Field'
 import Loader from '../../Loader'
 import PhaseInput from '../../PhaseInput'
-import LegacyLinks from '../../LegacyLinks'
 import AssignedMemberField from '../AssignedMember-Field'
+import { PrimaryButton } from '../../Buttons'
+import LegacyLinks from '../../LegacyLinks'
 import { getResourceRoleByName } from '../../../util/tc'
 import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
 import Tooltip from '../../Tooltip'
-import { MESSAGE, REVIEW_TYPES, DES_TRACK_ID, COMMUNITY_APP_URL } from '../../../config/constants'
+import {
+  MESSAGE,
+  REVIEW_TYPES,
+  DES_TRACK_ID,
+  COMMUNITY_APP_URL,
+  CONNECT_APP_URL,
+  PHASE_PRODUCT_CHALLENGE_ID_FIELD
+} from '../../../config/constants'
 
 const ChallengeView = ({
   projectDetail,
@@ -42,10 +49,17 @@ const ChallengeView = ({
   assignedMemberDetails,
   enableEdit,
   onLaunchChallenge,
-  onCloseTask
+  onCloseTask,
+  projectPhases
 }) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
+  const selectedMilestone = challenge.milestoneId
+    ? _.find(projectPhases, phase => phase.id === challenge.milestoneId)
+    : _.find(projectPhases,
+      phase => _.find(_.get(phase, 'products', []),
+        product => _.get(product, PHASE_PRODUCT_CHALLENGE_ID_FIELD) === challengeId
+      ))
 
   const [openAdvanceSettings, setOpenAdvanceSettings] = useState(false)
   const [groups, setGroups] = useState('')
@@ -148,6 +162,16 @@ const ChallengeView = ({
                   }} />
                 </span>
               </div>
+              {selectedMilestone &&
+              <div className={styles.col}>
+                <span><span className={styles.fieldTitle}>Milestone:</span> {selectedMilestone ? (
+                  <a href={`${CONNECT_APP_URL}/projects/${projectDetail.id}`} target='_blank'
+                    rel='noopener noreferrer'>
+                    {selectedMilestone.name}
+                  </a>
+                ) : ''}</span>
+              </div>
+              }
               <div className={styles.col}>
                 <span className={styles.fieldTitle}>Track:</span>
                 <Track disabled type={challengeTrack} isActive key={challenge.trackId} onUpdateOthers={() => {}} />
@@ -165,13 +189,15 @@ const ChallengeView = ({
                 <span><span className={styles.fieldTitle}>Challenge Name:</span> {challenge.name}</span>
               </div>
             </div>
-            {isTask && <AssignedMemberField challenge={challenge} assignedMemberDetails={assignedMemberDetails} readOnly /> }
+            {isTask &&
+            <AssignedMemberField challenge={challenge} assignedMemberDetails={assignedMemberDetails} readOnly />}
             <CopilotField challenge={{
               copilot
             }} copilots={metadata.members} readOnly />
             <div className={cn(styles.row, styles.topRow)}>
               <div className={styles.col}>
-                <span><span className={styles.fieldTitle}>Review Type:</span> {isCommunity ? 'Community' : 'Internal'}</span>
+                <span><span
+                  className={styles.fieldTitle}>Review Type:</span> {isCommunity ? 'Community' : 'Internal'}</span>
               </div>
             </div>
             {isInternal && reviewer && (<div className={cn(styles.row, styles.topRow)}>
@@ -215,9 +241,7 @@ const ChallengeView = ({
                 {isBetaMode() && (
                   <UseSchedulingAPIField challenge={challenge} readOnly />
                 )}
-                {isBetaMode() && (
-                  <PureV5Field challenge={challenge} readOnly />
-                )}
+                <PureV5Field challenge={challenge} readOnly />
               </>
             )}
             {!isBetaMode() && (
@@ -307,7 +331,8 @@ ChallengeView.propTypes = {
   assignedMemberDetails: PropTypes.shape(),
   enableEdit: PropTypes.bool,
   onLaunchChallenge: PropTypes.func,
-  onCloseTask: PropTypes.func
+  onCloseTask: PropTypes.func,
+  projectPhases: PropTypes.arrayOf(PropTypes.object)
 }
 
 export default withRouter(ChallengeView)

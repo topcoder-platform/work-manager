@@ -19,15 +19,27 @@ export default function (state = initialState, action) {
     case LOAD_CHALLENGE_SUBMISSIONS_SUCCESS:
       return {
         ...state,
-        challengeSubmissions: action.challengeSubmissions,
+        challengeSubmissions: action.payload,
         isLoading: false,
         loadingId: null,
         challengeId: state.loadingId
       }
     case LOAD_CHALLENGE_SUBMISSIONS_PENDING:
-      return { ...state, isLoading: true, loadingId: action.challengeId, challengeId: null }
+      return {
+        ...state,
+        isLoading: true,
+        loadingId: action.challengeId,
+        challengeId: null,
+        challengeSubmissions: []
+      }
     case LOAD_CHALLENGE_SUBMISSIONS_FAILURE:
-      return { ...state, isLoading: false, loadingId: null, challengeId: null, challengeSubmissions: [] }
+      return {
+        ...state,
+        isLoading: false,
+        loadingId: null,
+        challengeId: null,
+        challengeSubmissions: []
+      }
     default:
       return state
   }

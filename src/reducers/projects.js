@@ -8,14 +8,19 @@ import {
   LOAD_PROJECT_BILLING_ACCOUNT_FAILURE,
   LOAD_PROJECT_DETAILS_FAILURE,
   LOAD_PROJECT_DETAILS_PENDING,
-  LOAD_PROJECT_DETAILS_SUCCESS
+  LOAD_PROJECT_DETAILS_SUCCESS,
+  LOAD_PROJECT_PHASES_FAILURE,
+  LOAD_PROJECT_PHASES_PENDING,
+  LOAD_PROJECT_PHASES_SUCCESS
 } from '../config/constants'
 
 const initialState = {
   isLoading: false,
   projectDetail: {},
   isBillingAccountExpired: false,
-  isBillingAccountLoading: false
+  isBillingAccountLoading: false,
+  isPhasesLoading: false,
+  phases: []
 }
 
 export default function (state = initialState, action) {
@@ -50,6 +55,23 @@ export default function (state = initialState, action) {
         ...state,
         isBillingAccountLoading: false,
         isBillingAccountExpired: false
+      }
+    case LOAD_PROJECT_PHASES_PENDING:
+      return {
+        ...state,
+        phases: [],
+        isPhasesLoading: true
+      }
+    case LOAD_PROJECT_PHASES_SUCCESS:
+      return {
+        ...state,
+        phases: action.payload,
+        isPhasesLoading: false
+      }
+    case LOAD_PROJECT_PHASES_FAILURE:
+      return {
+        ...state,
+        isPhasesLoading: false
       }
     default:
       return state
