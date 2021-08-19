@@ -323,7 +323,7 @@ class ChallengeScheduleField extends Component {
     const { isEdit } = this.state
     const { currentTemplate, readOnly, templates } = this.props
     const { challenge, onUpdateOthers } = this.props
-    const timelines = this.prepareTimeline()
+    const timelines = !isEdit ? this.prepareTimeline() : null
     const chartHeight = `${(this.getAllPhases().length * GANTT_ROW_HEIGHT) + GANTT_FOOTER_HEIGHT}px`
     return (
       <div className={styles.container}>
