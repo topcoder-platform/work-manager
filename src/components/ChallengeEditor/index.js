@@ -56,6 +56,8 @@ import PureV5Field from './PureV5Field'
 import CancelDropDown from './Cancel-Dropdown'
 import { getResourceRoleByName } from '../../util/tc'
 import MilestoneField from './Milestone-Field'
+import PhaseInput from '../PhaseInput'
+import { isBetaMode } from '../../util/cookie'
 
 const theme = {
   container: styles.modalContainer
@@ -902,7 +904,7 @@ class ChallengeEditor extends Component {
       trackId,
       startDate: moment().format(),
       legacy: {
-        pureV5: true,
+        pureV5: isDesignChallenge, // only supported for design challenges
         reviewType: isTask || isDesignChallenge ? REVIEW_TYPES.INTERNAL : REVIEW_TYPES.COMMUNITY
       },
       descriptionFormat: 'markdown',
@@ -1235,6 +1237,7 @@ class ChallengeEditor extends Component {
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
     }
+    const isDesignChallenge = challenge.trackId === DES_TRACK_ID
     const isTask = _.get(challenge, 'task.isTask', false)
     const isPureV5 = _.get(challenge, 'legacy.pureV5', false)
     const { assignedMemberDetails, error } = this.state
@@ -1546,8 +1549,26 @@ class ChallengeEditor extends Component {
                     {isBillingAccountExpired && <span className={styles.expiredMessage}>Expired</span>}
                   </div>
                 </div>
-                <PureV5Field challenge={challenge} togglePureV5={this.togglePureV5} />
+                {
+                  isDesignChallenge && <PureV5Field challenge={challenge} togglePureV5={this.togglePureV5} />
+                }
               </React.Fragment>
+            )}
+            {!isTask && !isPureV5 && !isBetaMode() && (
+              <div className={styles.PhaseRow}>
+                <PhaseInput
+                  withDates
+                  phase={{
+                    name: 'Start Date',
+                    date: challenge.startDate
+                  }}
+                  onUpdatePhase={newValue => this.onUpdateOthers({
+                    field: 'startDate',
+                    value: newValue.format()
+                  })}
+                  readOnly={false}
+                />
+              </div>
             )}
             {
               this.state.isDeleteLaunch && !this.state.isConfirm && (
@@ -1562,18 +1583,22 @@ class ChallengeEditor extends Component {
                 />
               )
             }
-            <ChallengeScheduleField
-              templates={this.getAvailableTimelineTemplates()}
-              challengePhases={metadata.challengePhases}
-              removePhase={this.removePhase}
-              togglePhase={this.togglePhase}
-              resetPhase={this.resetPhase}
-              challenge={challenge}
-              onUpdateSelect={this.onUpdateSelect}
-              onUpdatePhase={this.onUpdatePhase}
-              onUpdateOthers={this.onUpdateOthers}
-              currentTemplate={this.getCurrentTemplate()}
-            />
+            {
+              isPureV5 && (
+                <ChallengeScheduleField
+                  templates={this.getAvailableTimelineTemplates()}
+                  challengePhases={metadata.challengePhases}
+                  removePhase={this.removePhase}
+                  togglePhase={this.togglePhase}
+                  resetPhase={this.resetPhase}
+                  challenge={challenge}
+                  onUpdateSelect={this.onUpdateSelect}
+                  onUpdatePhase={this.onUpdatePhase}
+                  onUpdateOthers={this.onUpdateOthers}
+                  currentTemplate={this.getCurrentTemplate()}
+                />
+              )
+            }
           </div>
           <div className={styles.group}>
             <div className={styles.title}>Public specification <span>*</span></div>
