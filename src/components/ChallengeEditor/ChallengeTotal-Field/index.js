@@ -7,8 +7,10 @@ import { convertDollarToInteger } from '../../../util/input-check'
 
 const ChallengeTotalField = ({ challenge }) => {
   let challengeTotal = null
+
   if (challenge.prizeSets) {
-    challengeTotal = _.flatten(challenge.prizeSets.map(p => p.prizes))
+    const prizeSets = _.cloneDeep(challenge.prizeSets)
+    challengeTotal = _.flatten(prizeSets.map(p => p.prizes))
       .map(p => p.value)
       .map(v => convertDollarToInteger(v, '$'))
       .reduce((prev, next) => prev + next, 0)

@@ -3,25 +3,36 @@ import _ from 'lodash'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
 import { withRouter } from 'react-router-dom'
+import { Helmet } from 'react-helmet'
 import styles from './ChallengeView.module.scss'
 import xss from 'xss'
 import Track from '../../Track'
 import NDAField from '../NDAField'
 import UseSchedulingAPIField from '../UseSchedulingAPIField'
+import PureV5Field from '../PureV5Field'
 import CopilotField from '../Copilot-Field'
 import ChallengeScheduleField from '../ChallengeSchedule-Field'
 import TextEditorField from '../TextEditor-Field'
 import AttachmentField from '../Attachment-Field'
 import ChallengePrizesField from '../ChallengePrizes-Field'
+import CheckpointPrizesField from '../CheckpointPrizes-Field'
 import CopilotFeeField from '../CopilotFee-Field'
 import ChallengeTotalField from '../ChallengeTotal-Field'
 import Loader from '../../Loader'
 import PhaseInput from '../../PhaseInput'
 import AssignedMemberField from '../AssignedMember-Field'
+import { PrimaryButton } from '../../Buttons'
 import { getResourceRoleByName } from '../../../util/tc'
 import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
-import { REVIEW_TYPES, CONNECT_APP_URL, PHASE_PRODUCT_CHALLENGE_ID_FIELD } from '../../../config/constants'
+
+import {
+  REVIEW_TYPES,
+  DES_TRACK_ID,
+  COMMUNITY_APP_URL,
+  CONNECT_APP_URL,
+  PHASE_PRODUCT_CHALLENGE_ID_FIELD
+} from '../../../config/constants'
 
 const ChallengeView = ({
   projectDetail,
@@ -85,11 +96,21 @@ const ChallengeView = ({
   const isInternal = reviewType === REVIEW_TYPES.INTERNAL
   const timeLineTemplate = _.find(metadata.timelineTemplates, { id: challenge.timelineTemplateId })
   if (isLoading || _.isEmpty(metadata.challengePhases) || challenge.id !== challengeId) return <Loader />
-  const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
   const isTask = _.get(challenge, 'task.isTask', false)
-
+  const isPureV5 = _.get(challenge, 'legacy.pureV5', false)
   return (
     <div className={styles.wrapper}>
+      <Helmet title='View Details' />
+      {isPureV5 && (
+        <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsLeft)}>
+          <div className={styles.button}>
+            <a href={`${COMMUNITY_APP_URL}/challenges/${challenge.id}`} target={'_blank'}>
+              <PrimaryButton text={'View challenge'} type={'info'} />
+            </a>
+          </div>
+        </div>
+      )}
+      <div className={styles.title}>View Details</div>
       <div className={styles.container}>
         <div className={styles.formContainer}>
           <div className={styles.group}>
@@ -181,9 +202,10 @@ const ChallengeView = ({
                 {isBetaMode() && (
                   <UseSchedulingAPIField challenge={challenge} readOnly />
                 )}
+                <PureV5Field challenge={challenge} readOnly />
               </>
             )}
-            {
+            {!isBetaMode() && (
               <div className={styles.PhaseRow}>
                 <PhaseInput
                   withDates
@@ -194,17 +216,28 @@ const ChallengeView = ({
                   readOnly
                 />
               </div>
-            }
-            {showTimeline && (
-              <ChallengeScheduleField
-                templates={metadata.timelineTemplates}
-                challengePhases={metadata.challengePhases}
-                challenge={challenge}
-                challengePhasesWithCorrectTimeline={challenge.phases}
-                currentTemplate={timeLineTemplate}
-                readOnly
-              />
             )}
+            {
+              isBetaMode() && (
+                <ChallengeScheduleField
+                  templates={metadata.timelineTemplates}
+                  challengePhases={metadata.challengePhases}
+                  challenge={challenge}
+                  challengePhasesWithCorrectTimeline={challenge.phases}
+                  currentTemplate={timeLineTemplate}
+                  readOnly
+                />
+              )
+            }
+            <div>
+              { challenge.discussions && challenge.discussions.map(d => (
+                <div key={d.id} className={cn(styles.row, styles.topRow)}>
+                  <div className={styles.col}>
+                    <span><span className={styles.fieldTitle}>Forum:</span> <a href={d.url} target='_blank' rel='noopener noreferrer'>{d.name}</a></span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
           <div className={styles.group}>
             <div className={styles.title}>Public specification <span>*</span></div>
@@ -222,6 +255,7 @@ const ChallengeView = ({
             />}
             <ChallengePrizesField challenge={challenge} readOnly />
             <CopilotFeeField challenge={challenge} readOnly />
+            {DES_TRACK_ID === challenge.trackId && isBetaMode() && <CheckpointPrizesField challenge={challenge} readOnly />}
             <ChallengeTotalField challenge={challenge} />
           </div>
         </div>

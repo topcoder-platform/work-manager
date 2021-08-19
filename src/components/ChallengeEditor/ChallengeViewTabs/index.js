@@ -78,6 +78,7 @@ const ChallengeViewTabs = ({
   }, [challengeSubmissions, registrants])
 
   const isTask = _.get(challenge, 'task.isTask', false)
+  const isPureV5 = _.get(challenge, 'legacy.pureV5', false)
 
   return (
     <div className={styles.list}>
@@ -85,7 +86,7 @@ const ChallengeViewTabs = ({
       <div className={styles.topContainer}>
         <div className={styles.leftContainer}>
           <div className={styles.title}>{challenge.name}</div>
-          {!isTask && (
+          {!isTask && !isPureV5 && (
             <div
               className={cn(
                 styles.actionButtons,
@@ -107,7 +108,7 @@ const ChallengeViewTabs = ({
           {(challenge.status === 'Draft' || challenge.status === 'New') && <div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>}
           {challenge.status === 'Draft' && (
             <div className={styles.button}>
-              {challenge.legacyId || isTask ? (
+              {challenge.legacyId || isTask || isPureV5 ? (
                 <PrimaryButton
                   text={'Launch'}
                   type={'info'}

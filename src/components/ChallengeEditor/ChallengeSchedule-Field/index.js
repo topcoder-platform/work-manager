@@ -9,10 +9,11 @@ import jstz from 'jstimezonedetect'
 import PhaseInput from '../../PhaseInput'
 import Chart from 'react-google-charts'
 import Select from '../../Select'
+import SwitchButton from '../../SwitchButton'
 import { parseSVG } from '../../../util/svg'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTrash } from '@fortawesome/free-solid-svg-icons'
 import PrimaryButton from '../../Buttons/PrimaryButton'
+import Tooltip from '../../Tooltip'
+import { MESSAGE } from '../../../config/constants'
 
 const GANTT_ROW_HEIGHT = 45
 const GANTT_FOOTER_HEIGHT = 40
@@ -98,16 +99,14 @@ class ChallengeScheduleField extends Component {
     }
     if (!phase.predecessor) {
       phase.scheduledStartDate = startDate
-      phase.scheduledEndDate = moment(startDate).add(phase.duration || 0, 'hours').toDate()
+      phase.scheduledEndDate = moment(startDate).add(phase.duration || 0, 'seconds').toDate()
       phase.actualStartDate = phase.scheduledStartDate
-      phase.actualEndDate = phase.scheduledEndDate
     } else {
       const preIndex = _.findIndex(phases, (p) => p.id === phase.predecessor)
       // `Invalid phase predecessor: ${phase.predecessor}`
       phase.scheduledStartDate = phases[preIndex].scheduledEndDate
-      phase.scheduledEndDate = moment(phase.scheduledStartDate).add(phase.duration || 0, 'hours').toDate()
+      phase.scheduledEndDate = moment(phase.scheduledStartDate).add(phase.duration || 0, 'seconds').toDate()
       phase.actualStartDate = phase.scheduledStartDate
-      phase.actualEndDate = phase.scheduledEndDate
     }
   }
 
@@ -131,7 +130,7 @@ class ChallengeScheduleField extends Component {
       ]
     )
 
-    var hourToMilisecond = 60 * 60 * 1000 // = 1 hour
+    var secondToMilisecond = 1000
     let cStartDate = challenge.startDate
     _.map(allPhases, (p, index) => {
       const phase = this.getPhaseTemplate(p)
@@ -157,9 +156,9 @@ class ChallengeScheduleField extends Component {
         if (startDate.getTime() > currentTime) {
           percentage = 0
         } else if (endDate.getTime() > currentTime) {
-          percentage = Math.round(((currentTime - startDate.getTime()) / (hourToMilisecond * p.duration)) * 100)
+          percentage = Math.round(((currentTime - startDate.getTime()) / (secondToMilisecond * p.duration)) * 100)
         } else {
-          percentage = Math.round(((endDate.getTime() - startDate.getTime()) / (hourToMilisecond * p.duration)) * 100)
+          percentage = Math.round(((endDate.getTime() - startDate.getTime()) / (secondToMilisecond * p.duration)) * 100)
         }
         const predecessorPhase = phase.predecessor ? this.getPhaseTemplate(allPhases.filter(ph => ph.phaseId === phase.predecessor)[0]) : null
         timelines.push(
@@ -181,11 +180,12 @@ class ChallengeScheduleField extends Component {
   }
 
   renderPhaseEditor () {
-    const { onUpdateSelect, onUpdatePhase, removePhase, challenge, readOnly } = this.props
+    const { onUpdateSelect, challengePhases, onUpdatePhase, togglePhase, challenge, readOnly } = this.props
     return (
       _.map(challenge.phases, (p, index) => (
         <div className={styles.PhaseRow} key={index}>
           <PhaseInput
+            challengePhases={challengePhases}
             phase={this.getPhaseTemplate(p)}
             withDuration
             onUpdateSelect={onUpdateSelect}
@@ -193,11 +193,18 @@ class ChallengeScheduleField extends Component {
             endDate={moment(p.scheduledEndDate)}
             readOnly={readOnly}
           />
-          {index !== 0 && !readOnly &&
+          {!readOnly && p.actualEndDate &&
+          <Tooltip content={MESSAGE.PHASE_CLOSED}>
+            <div className={cn(styles.switchButton, styles.transparent)}><SwitchButton checked={p.isOpen} disabled={!!p.actualEndDate} onChange={(v) => togglePhase(index, v.target.checked)} /></div>
+          </Tooltip>
+          }
+
+          {!readOnly && !p.actualEndDate && <div className={styles.switchButton}><SwitchButton checked={p.isOpen} disabled={!!p.actualEndDate} onChange={(v) => togglePhase(index, v.target.checked)} /></div>}
+          {/* {index !== 0 && !readOnly &&
           <div className={styles.icon} onClick={() => removePhase(index)}>
             <FontAwesomeIcon icon={faTrash} />
           </div>
-          }
+          } */}
         </div>
       )
       ))
@@ -315,7 +322,7 @@ class ChallengeScheduleField extends Component {
   render () {
     const { isEdit } = this.state
     const { currentTemplate, readOnly, templates } = this.props
-    const { savePhases, resetPhase, challenge, onUpdateOthers } = this.props
+    const { challenge, onUpdateOthers } = this.props
     const timelines = !isEdit ? this.prepareTimeline() : null
     const chartHeight = `${(this.getAllPhases().length * GANTT_ROW_HEIGHT) + GANTT_FOOTER_HEIGHT}px`
     return (
@@ -330,12 +337,12 @@ class ChallengeScheduleField extends Component {
                 <span>{currentTemplate ? currentTemplate.name : ''}</span>
               ) : (
                 <Select
+                  onChange={option => this.props.onUpdateOthers({ value: option.value, field: 'timelineTemplateId' })}
                   name='template'
-                  options={templates.map(template => ({ label: template.name, value: template.name, name: template.name }))}
+                  options={templates.map(template => ({ label: template.name, value: template.id, name: template.name }))}
                   placeholder='Select'
                   isClearable={false}
                   value={currentTemplate && { label: currentTemplate.name, value: currentTemplate.name }}
-                  onChange={(e) => resetPhase(e)}
                 />
               )}
             </div>
@@ -409,18 +416,6 @@ class ChallengeScheduleField extends Component {
             </div>
           )
         }
-        {currentTemplate && isEdit && !readOnly && (<div className={styles.row}>
-          <div className={cn(styles.actionButtons)}>
-            <PrimaryButton
-              text={'Save Phases'}
-              type={'info'}
-              onClick={() => savePhases()} />
-            <PrimaryButton
-              text={'Reset Phases'}
-              type={'info'}
-              onClick={() => resetPhase(currentTemplate)} />
-          </div>
-        </div>)}
         {
           isEdit && this.renderPhaseEditor()
         }
@@ -433,8 +428,7 @@ ChallengeScheduleField.defaultProps = {
   templates: [],
   currentTemplate: null,
   removePhase: () => {},
-  resetPhase: () => {},
-  savePhases: () => {},
+  togglePhase: () => {},
   onUpdateSelect: () => {},
   onUpdatePhase: () => {},
   onUpdateOthers: () => {},
@@ -445,9 +439,7 @@ ChallengeScheduleField.propTypes = {
   templates: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challengePhases: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,
-  removePhase: PropTypes.func,
-  resetPhase: PropTypes.func,
-  savePhases: PropTypes.func,
+  togglePhase: PropTypes.func,
   onUpdateSelect: PropTypes.func,
   onUpdatePhase: PropTypes.func,
   onUpdateOthers: PropTypes.func.isRequired,

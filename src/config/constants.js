@@ -8,6 +8,7 @@ export const {
   STUDIO_URL,
   CONNECT_APP_URL,
   DIRECT_PROJECT_URL,
+  SUBMISSION_REVIEW_URL,
   ONLINE_REVIEW_URL,
   DEFAULT_TERM_UUID,
   DEFAULT_NDA_UUID,
@@ -153,6 +154,11 @@ export const PRIZE_SETS_TYPE = {
   CHECKPOINT_PRIZES: 'checkpoint'
 }
 
+// prize set type descriptions
+export const PRIZE_SETS_TYPE_DESCRIPTION = {
+  [PRIZE_SETS_TYPE.CHECKPOINT_PRIZES]: 'Checkpoint Prizes'
+}
+
 export const REVIEW_TYPES = {
   INTERNAL: 'INTERNAL',
   COMMUNITY: 'COMMUNITY'
@@ -238,6 +244,7 @@ export const MESSAGE = {
   CHALLENGE_LAUNCH_SUCCESS: 'Challenge activated successfully',
   COMMUNITY_REVIEW_DISABLED: 'Community review is NOT available for Design challenges',
   INTERNAL_REVIEW_DISABLED: 'Internal review is NOT available for QA challenges',
+  PHASE_CLOSED: 'This phase has already closed',
   MARK_COMPLETE: 'This will close the task and generate a payment for the assignee and copilot.'
 }
 

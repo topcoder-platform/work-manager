@@ -53,19 +53,6 @@ export const getRoundFormattedDuration = (duration) => {
 }
 
 /**
- * Convert challenge phases from seconds to hours
- * @param {Array} phases challenge phares
- */
-export const convertChallengePhaseFromSecondsToHours = (phases) => {
-  if (phases) {
-    const hourToSecond = 60 * 60
-    _.forEach(phases, (p) => {
-      p.duration = Math.round(p.duration / hourToSecond)
-    })
-  }
-}
-
-/**
  * Normalize challenge data from the format returned by API
  * to the format we use in Redux Store
  *
@@ -86,7 +73,6 @@ export const normalizeChallengeDataFromAPI = (apiChallengeData) => {
       normalizedChallengeData.forumId = normalizedChallengeData.legacy.forumId
     }
   }
-  convertChallengePhaseFromSecondsToHours(normalizedChallengeData.phases)
   normalizedChallengeData.phases = sortChallengePhases(normalizedChallengeData.phases)
 
   return normalizedChallengeData
@@ -106,11 +92,11 @@ export const sortChallengePhases = (phases) => {
  * @param {Object} challengeDetail challenge detail
  */
 export const updateChallengePhaseBeforeSendRequest = (challengeDetail) => {
-  const hourToSecond = 60 * 60
   if (challengeDetail.phases) {
     const challengeDetailTmp = _.cloneDeep(challengeDetail)
     challengeDetailTmp.phases = challengeDetailTmp.phases.map((p) => ({
-      duration: p.duration * hourToSecond,
+      duration: p.duration,
+      isOpen: p.isOpen,
       phaseId: p.phaseId
     }))
     return challengeDetailTmp
