@@ -22,13 +22,11 @@ import Loader from '../../Loader'
 import PhaseInput from '../../PhaseInput'
 import AssignedMemberField from '../AssignedMember-Field'
 import { PrimaryButton } from '../../Buttons'
-import LegacyLinks from '../../LegacyLinks'
 import { getResourceRoleByName } from '../../../util/tc'
 import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
-import Tooltip from '../../Tooltip'
+
 import {
-  MESSAGE,
   REVIEW_TYPES,
   DES_TRACK_ID,
   COMMUNITY_APP_URL,
@@ -103,11 +101,6 @@ const ChallengeView = ({
   return (
     <div className={styles.wrapper}>
       <Helmet title='View Details' />
-      {!isTask && !isPureV5 && (
-        <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsLeft)}>
-          <LegacyLinks challenge={challenge} />
-        </div>
-      )}
       {isPureV5 && (
         <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsLeft)}>
           <div className={styles.button}>
@@ -118,38 +111,6 @@ const ChallengeView = ({
         </div>
       )}
       <div className={styles.title}>View Details</div>
-      <div className={cn(styles.actionButtons, styles.button, styles.actionButtonsRight)}>
-        {
-          challenge.status === 'Draft' && (
-            <div className={styles.button}>
-              {(challenge.legacyId || isTask || isPureV5) ? (
-                <PrimaryButton text={'Launch'} type={'info'} onClick={onLaunchChallenge} />
-              ) : (
-                <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-                  {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
-                  <PrimaryButton text={'Launch'} type={'disabled'} />
-                </Tooltip>
-              )}
-            </div>
-          )
-        }
-        {
-          isTask && challenge.status === 'Active' && (
-            <div className={styles.button}>
-              { assignedMemberDetails ? (
-                <PrimaryButton text={'Close Task'} type={'danger'} onClick={onCloseTask} />
-              ) : (
-                <Tooltip content={MESSAGE.NO_TASK_ASSIGNEE}>
-                  {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
-                  <PrimaryButton text={'Close Task'} type={'disabled'} />
-                </Tooltip>
-              )}
-            </div>
-          )
-        }
-        { enableEdit && <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} /> }
-        <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
-      </div>
       <div className={styles.container}>
         <div className={styles.formContainer}>
           <div className={styles.group}>

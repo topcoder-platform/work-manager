@@ -108,7 +108,7 @@ const ChallengeViewTabs = ({
           {(challenge.status === 'Draft' || challenge.status === 'New') && <div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>}
           {challenge.status === 'Draft' && (
             <div className={styles.button}>
-              {challenge.legacyId || isTask ? (
+              {challenge.legacyId || isTask || isPureV5 ? (
                 <PrimaryButton
                   text={'Launch'}
                   type={'info'}
