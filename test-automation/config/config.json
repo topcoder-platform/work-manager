@@ -10,6 +10,5 @@
     "handle": "TCConCopilotMgr"
   },
   "givenUrl": "https://challenges.topcoder-dev.com/",
-  "challengeUrl": "https://challenges.topcoder-dev.com/projects/16573/challenges",
-  "logoutUrl": "https://accounts-auth0.topcoder-dev.com/?logout=true&retUrl=https://connect.topcoder-dev.com",
+  "logoutUrl": "https://accounts-auth0.topcoder-dev.com/?logout=true&retUrl=https://connect.topcoder-dev.com"
 }

@@ -25,21 +25,14 @@ export const ConfigHelper = {
   /**
    * Get Given URL
    */
-   getGivenUrl(): string {
+  getGivenUrl(): string {
     return this.getConfig().givenUrl;
-  },
-  
-  /**
-   * Get Challenge URL
-   */
-   getChallengeUrl(): string {
-    return this.getConfig().challengeUrl;
   },
 
   /**
    * Gets Logout URL
    */
-   getLogoutUrl() {
+  getLogoutUrl() {
     return this.getConfig().logoutUrl;
   },
 };
