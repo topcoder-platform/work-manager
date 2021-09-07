@@ -16,7 +16,7 @@ declare global {
 
 exports.config = {
   setupFilesAfterEnv: ['./jest.setup.js'],
-  
+
   // Capabilities to be passed to the webdriver instance.
   capabilities: {
     browserName: 'chrome',
@@ -32,14 +32,14 @@ exports.config = {
       prefs: {
         'credentials_enable_service': false,
         'profile': {
-            'password_manager_enabled': false
+          'password_manager_enabled': false
         }
       }
     },
   },
 
   directConnect: true,
-  
+
   // Framework to use. Jasmine is recommended.
   framework: 'jasmine2',
 

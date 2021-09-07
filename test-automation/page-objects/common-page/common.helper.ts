@@ -36,7 +36,7 @@ export const CommonHelper = {
    * @param username user name
    * @param password password
    */
-   async login(username: string, password: string) {
+  async login(username: string, password: string) {
     await BrowserHelper.initialize();
     await BrowserHelper.maximize();
 
@@ -61,7 +61,7 @@ export const CommonHelper = {
    * @param {TcElementImpl} extraMessage extra message
    * @param {Boolean} isPageLoad is loading page
    */
-   async waitUntilVisibilityOf(
+  async waitUntilVisibilityOf(
     func: () => TcElement,
     extraMessage: string,
     isPageLoad: boolean
@@ -83,7 +83,7 @@ export const CommonHelper = {
   /**
    * Wait for Page Element to be displayed
    */
-   async waitForElementToGetDisplayed(element) {
+  async waitForElementToGetDisplayed(element) {
     await CommonHelper.waitUntilVisibilityOf(
       () => element,
       'Wait for Element To get Displayed',
@@ -98,7 +98,7 @@ export const CommonHelper = {
    * @param {TcElementImpl} extraMessage extra message
    * @param {Boolean} isPageLoad is loading page
    */
-   async waitUntilPresenceOf(
+  async waitUntilPresenceOf(
     func: () => TcElement,
     extraMessage: string,
     isPageLoad: boolean
@@ -126,7 +126,7 @@ export const CommonHelper = {
   /**
    * Wait for Page to be displayed
    */
-   async waitForPageDisplayed() {
+  async waitForPageDisplayed() {
     const rootId = ElementHelper.getElementById('root');
 
     await CommonHelper.waitUntilVisibilityOf(
@@ -142,11 +142,11 @@ export const CommonHelper = {
    * 
    * @param titleToVerify Title to verify
    */
-   async verifyBrowserTitle(titleToVerify: string) {
-		const browserTitle = await BrowserHelper.getTitle();
-		expect(browserTitle).toEqual(titleToVerify)
+  async verifyBrowserTitle(titleToVerify: string) {
+    const browserTitle = await BrowserHelper.getTitle();
+    expect(browserTitle).toEqual(titleToVerify)
     logger.info(`Verified Browser title: ${browserTitle}`);
-	},
+  },
 
   /**
    * Performs Operation on Checkbox check / uncheck
@@ -155,46 +155,23 @@ export const CommonHelper = {
    * @param selectionFlag   Selection flag true / false
    */
   async performOperationOnCheckbox(element: TcElementImpl, selectionFlag: boolean) {
-		const isChecked = await element.isSelected();
-		if(isChecked && selectionFlag === false) {
-			await element.click()
-		} else if(false === isChecked && selectionFlag) {
-			await element.click()
-		} 
-    const value = (selectionFlag === true)? 'Checked': 'Un-checked';
+    const isChecked = await element.isSelected();
+    if (isChecked && selectionFlag === false) {
+      await element.click()
+    } else if (false === isChecked && selectionFlag) {
+      await element.click()
+    }
+    const value = (selectionFlag === true) ? 'Checked' : 'Un-checked';
     logger.info(`Performed Operation on Checkbox: ${value}`);
-		await this.waitForSpinnerToDisappear();
-	},
+    await this.waitForSpinnerToDisappear();
+  },
 
   /**
    * Append date time to given input text
    * @param inputText input text
    */
-   appendDate(inputText: string) {
+  appendDate(inputText: string) {
     return `${inputText}-${moment().format()}`;
-  },
-
-  /**
-   * Matches element text from the list of elements and clicks on that element
-   * 
-   * @param list  List of Elements
-   * @param value   Value to match with element text
-   */
-  async searchTextFromListAndClick(list: any, value: string) {
-    let isClicked = false;
-		const size = list.length
-		for(let index=0;index<size;index++) {
-			await list[index].getText().then((text: string) => {
-				if(text === value) {
-					list[index].click();
-					isClicked = true;
-          logger.info(`Clicked on ${value}`);
-				}
-			})
-			if(isClicked) {
-				break;
-			}
-		}	
   },
 
   /**
@@ -206,13 +183,13 @@ export const CommonHelper = {
 
     await BrowserHelper.sleep(1000);
 
-    for(let cnt=0;cnt<config.Timeout.PageLoad;cnt++) {
+    for (let cnt = 0; cnt < config.Timeout.PageLoad; cnt++) {
       elements = await ElementHelper.getAllElementsByXPath(loaderXpath);
-      const size =  elements.length;
-      if(0 === size) {
+      const size = elements.length;
+      if (0 === size) {
         break;
       }
-      for(let innerCnt=0;innerCnt<size;innerCnt++) {
+      for (let innerCnt = 0; innerCnt < size; innerCnt++) {
         try {
           await BrowserHelper.waitUntilInVisibilityOf(elements[innerCnt]);
         } catch (error) {
@@ -222,5 +199,5 @@ export const CommonHelper = {
       }
     }
     await BrowserHelper.sleep(1000);
-  }
+  },
 };

@@ -4,7 +4,7 @@ import { LoginPage } from './login.po';
 export class LoginPageHelper {
   /**
    * Set the page object
-   * 
+   *
    * @param loginPage login Page
    */
   public static setLoginPage(loginPage: LoginPage) {
@@ -21,7 +21,7 @@ export class LoginPageHelper {
 
   /**
    * Login
-   * 
+   *
    * @param {String} username
    * @param {String} password
    */

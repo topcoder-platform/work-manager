@@ -15,14 +15,14 @@ export class DashboardPageHelper {
 
 	/**
 	 * Verifies Login / Logout Functionality
-	 * 
-	 * @param copilotUser 	User to login 
+	 *
+	 * @param copilotUser 	User to login
 	 * @param testData 		Test Data for the test
 	 */
 	public static async verifyLoginLogout(user: any, data: any) {
 		// Login to Topcoder
 		await CommonHelper.login(user.email, user.password);
-		
+
 		// Verify Dashboard Page Title
 		const pageTitle = await this.dashboardPageObject.pageTitle.getText()
 		expect(pageTitle).toEqual(data.workManager);
@@ -50,20 +50,20 @@ export class DashboardPageHelper {
 
 	/**
 	 * Verify that User Can Search By Text and ID
-	 * 
+	 *
 	 * @param data Test data for the test
 	 */
 	public static async verifyUserCanSearchByTextAndId(data: any) {
 		// Specify Search Text and Verify the result
 		await this.specifySearchTextAndVerifyResults(data.searchTextProjectKeyword, data.searchTextProjectKeyword);
-		
+
 		// Specify Search Text as Project ID and Verify the result
 		await this.specifySearchTextAndVerifyResults(data.searchTextProjectId, data.projectName);
 	}
 
 	/**
 	 * Specifies the Search Text and Verifies the result
-	 * 
+	 *
 	 * @param searchText Text to be searched
 	 * @param verifyText Text to be verified
 	 */
@@ -90,7 +90,7 @@ export class DashboardPageHelper {
 
 	/**
 	 * Verifies All Work and ApplicationFeedBack Links are working as expected.
-	 * 
+	 *
 	 * @param data	Test Data for the test
 	 */
 	public static async allWorkAndApplicationFeedbackLink(data: any) {
@@ -129,7 +129,7 @@ export class DashboardPageHelper {
 			expect(handles.length).toEqual(2);
 			BrowserHelper.switchToWindow(handles[1]);
 			logger.info(`Verified Browser tab count: ${handles.length}`);
-			
+
 			// Verify newly opened tab title
 			CommonHelper.verifyBrowserTitle(data.giveApplicationFeedbackTabTitle);
 
@@ -137,7 +137,7 @@ export class DashboardPageHelper {
 			BrowserHelper.close();
 			BrowserHelper.switchToWindow(handles[0]);
 			logger.info('Closed Newly opened tab and switched to default window');
-		});		
+		});
 	}
 
 	/**
@@ -147,14 +147,15 @@ export class DashboardPageHelper {
 		await CommonHelper.waitForSpinnerToDisappear()
 
 		// Get List of Projects before Un-checking the My Projects Checkbox
-		const beforeProjectNameList  = await this.getProjectNamesList();
+		const beforeProjectNameList = await this.getProjectNamesList();
 		logger.info(`Get project names list before un-checking My Projects checkbox ${beforeProjectNameList}`)
 
 		// Uncheck My Projects checkbox
 		await CommonHelper.performOperationOnCheckbox(this.dashboardPageObject.myProjectsCheckbox, false);
-		
+		await BrowserHelper.sleep(2500);
+
 		// Get List of Projects After Un-checking the My Projects Checkbox
-		const afterProjectNameList =  await this.getProjectNamesList();
+		const afterProjectNameList = await this.getProjectNamesList();
 		logger.info(`Get project names list after un-checking My Projects checkbox ${afterProjectNameList}`)
 
 		// Verify the List has changed after Un-checking the My Projects Checkbox
@@ -165,10 +166,10 @@ export class DashboardPageHelper {
 		logger.info('Verified the list count is greater than or equal to 1');
 
 		// Check My Projects checkbox
-		await CommonHelper.performOperationOnCheckbox(this.dashboardPageObject.myProjectsCheckbox, true);	
+		await CommonHelper.performOperationOnCheckbox(this.dashboardPageObject.myProjectsCheckbox, true);
 
 		// Get List of Projects After checking the My Projects Checkbox
-		const currentProjectNameList =  await this.getProjectNamesList();
+		const currentProjectNameList = await this.getProjectNamesList();
 		logger.info(`Get project names list after checking My Projects checkbox ${currentProjectNameList}`)
 
 		// Verify current count with before un-checking the My Projects checkbox.
@@ -180,14 +181,14 @@ export class DashboardPageHelper {
 
 	/**
 	 * Get Member Project Names List
-	 * 
+	 *
 	 * @returns List of Member Projects
 	 */
 	public static async getProjectNamesList() {
 		const memberProjectsList = [];
 		const elements = await this.dashboardPageObject.projectNamesList;
 		const size = (await this.dashboardPageObject.projectNamesList).length;
-		for(let cnt=0;cnt<size;cnt++) {	
+		for (let cnt = 0; cnt < size; cnt++) {
 			const projectName = await elements[cnt].getText();
 			memberProjectsList.push(projectName);
 		}
