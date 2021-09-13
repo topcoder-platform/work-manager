@@ -11,8 +11,8 @@
     "lint": "npx tslint --project . --fix",
     "test": "protractor temp/conf.js",
     "test:local": "cp config/wm-automation-config-local.json config/config.json && protractor temp/conf.js",
-    "test:dev": "cp wm-automation-config-dev.json config/config.json && protractor temp/conf.js",
-    "test:prod": "cp wm-automation-config-prod.json config/config.json && protractor temp/conf.js"
+    "test:dev": "cp config/wm-automation-config-dev.json config/config.json && protractor temp/conf.js",
+    "test:prod": "cp config/wm-automation-config-prod.json config/config.json && protractor temp/conf.js"
   },
   "keywords": [
     "protractor",
