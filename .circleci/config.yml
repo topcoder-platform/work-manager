@@ -98,7 +98,7 @@ smoke_testing: &smoke_testing
       command: |
         source awsenvconf
         source buildenvvar
-        ./test-automation/smoketest.sh
+        ./test-automation/smoketest.sh wm-automation-config-${LOGICAL_ENV}.json $LOGICAL_ENV
   - store_artifacts:
       path: ./test-automation/test-results
 
