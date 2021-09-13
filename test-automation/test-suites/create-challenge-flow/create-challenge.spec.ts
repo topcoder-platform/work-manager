@@ -24,9 +24,10 @@ describe('Work Manager - Create Challenge Tests: ', () => {
 
 
   describe("Create Challenge Tests: ", async () => {
+    const activeProjectUrl = ConfigHelper.getActiveProjectUrl();
     beforeEach(async () => {
       CreateChallengePageHelper.initialize();
-      await CreateChallengePageHelper.open(testData.urls.activeProjectUrl);
+      await CreateChallengePageHelper.open(activeProjectUrl);
     });
 
     // We are testing combination of workType(4) and workFormat(3) challenges which is 12 tests in total.
@@ -44,9 +45,10 @@ describe('Work Manager - Create Challenge Tests: ', () => {
   });
 
   describe("BA Expiration/Activation Prevent: ", async () => {
+    const expiredProjectUrl = ConfigHelper.getExpiredProjectUrl();
     beforeEach(async () => {
       CreateChallengePageHelper.initialize();
-      await CreateChallengePageHelper.open(testData.urls.expiredProjectUrl);
+      await CreateChallengePageHelper.open(expiredProjectUrl);
     });
 
     it("[TC_013] should verify user can prevent activation of challenge when BA associated to the project is not active", async () => {
@@ -55,9 +57,10 @@ describe('Work Manager - Create Challenge Tests: ', () => {
   });
 
   describe("Milestone Verificaiton: ", async () => {
+    const milestoneProjectUrl = ConfigHelper.getMilestoneProjectUrl();
     beforeEach(async () => {
       CreateChallengePageHelper.initialize();
-      await CreateChallengePageHelper.open(testData.urls.milestoneProjectUrl);
+      await CreateChallengePageHelper.open(milestoneProjectUrl);
     });
 
     it("[TC_014] should verify user can have milestone when BA associated to the project is not active or active", async () => {
@@ -69,7 +72,8 @@ describe('Work Manager - Create Challenge Tests: ', () => {
     })
 
     it("[TC_016] should verify user can validate NDA of challenge", async () => {
-      await CreateChallengePageHelper.verifyNDAValidation(testData.createChallenge, testData.urls.ndaVerificationUrl);
+      const ndaVerificationUrl = ConfigHelper.getNdaVerificationUrl();
+      await CreateChallengePageHelper.verifyNDAValidation(testData.createChallenge, ndaVerificationUrl);
     })
   });
 });

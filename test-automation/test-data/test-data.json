@@ -3,18 +3,10 @@
     "workManager": "Work Manager",
     "login": "LOG IN",
     "searchTextProjectKeyword": "Smoke",
-    "searchTextProjectId": "17236",
-    "projectName": "[Do not Update] Project for Smoke Test Automation.",
     "challengePageTitle": "Project for testing new milestone concept",
     "giveApplicationFeedbackTabTitle": "Sign in to GitHub · GitHub",
     "welcome": "Welcome, ",
     "signup": "SIGN UP"
-  },
-  "urls": {
-    "activeProjectUrl": "https://challenges.topcoder-dev.com/projects/16573/challenges",
-    "expiredProjectUrl": "https://challenges.topcoder-dev.com/projects/17236/challenges",
-    "milestoneProjectUrl": "https://challenges.topcoder-dev.com/projects/18694/challenges",
-    "ndaVerificationUrl": "https://challenges.topcoder-dev.com/projects/18173/challenges/dc3cb372-86ea-4bfa-8edc-7dc03d367d5c/view"
   },
   "createChallenge": {
     "workTypes": [
