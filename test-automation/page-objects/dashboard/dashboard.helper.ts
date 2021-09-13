@@ -1,5 +1,6 @@
 import { BrowserHelper } from 'topcoder-testing-lib';
 import { logger } from '../../logger/logger';
+import { ConfigHelper } from '../../utils/config-helper';
 import { CommonHelper } from '../common-page/common.helper';
 import { LoginPage } from '../login/login.po';
 import { DashboardPageObject } from './dashboard.po';
@@ -54,11 +55,13 @@ export class DashboardPageHelper {
 	 * @param data Test data for the test
 	 */
 	public static async verifyUserCanSearchByTextAndId(data: any) {
+		const searchTextProjectId = ConfigHelper.getSearchTextProjectId();
+		const projectName = ConfigHelper.getProjectName();
 		// Specify Search Text and Verify the result
 		await this.specifySearchTextAndVerifyResults(data.searchTextProjectKeyword, data.searchTextProjectKeyword);
 
 		// Specify Search Text as Project ID and Verify the result
-		await this.specifySearchTextAndVerifyResults(data.searchTextProjectId, data.projectName);
+		await this.specifySearchTextAndVerifyResults(searchTextProjectId, projectName);
 	}
 
 	/**

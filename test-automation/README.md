@@ -2,7 +2,7 @@
 
 #### Software Required
 
-* Nodejs v15.4.0
+* Nodejs v8.11.4+
 * Chrome Browser
 
 #### Installation
@@ -15,6 +15,15 @@
   `cd test-automation`
 
   `npm run test`
+
+- To run Tests locally
+  `npm run test:local`
+
+- To run Tests agains production environment
+  `npm run test:prod`
+
+- To run Tests agains dev environment
+  `npm run test:dev`
 
 - Test results are generated in `test-results/` folder
 

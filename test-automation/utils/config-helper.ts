@@ -35,4 +35,46 @@ export const ConfigHelper = {
   getLogoutUrl() {
     return this.getConfig().logoutUrl;
   },
+
+  /**
+   * Gets active project url
+   */
+  getActiveProjectUrl() {
+    return this.getConfig().activeProjectUrl;
+  },
+
+  /**
+   * Gets expired project url
+   */
+  getExpiredProjectUrl() {
+    return this.getConfig().expiredProjectUrl;
+  },
+
+  /**
+   * Gets milestone project url
+   */
+  getMilestoneProjectUrl() {
+    return this.getConfig().milestoneProjectUrl;
+  },
+
+  /**
+   * Gets NDA verification project url
+   */
+  getNdaVerificationUrl() {
+    return this.getConfig().ndaVerificationUrl;
+  },
+
+  /**
+   * Gets search text project id
+   */
+  getSearchTextProjectId() {
+    return this.getConfig().searchTextProjectId;
+  },
+
+  /**
+   * Gets project name
+   */
+  getProjectName() {
+    return this.getConfig().projectName;
+  },
 };
