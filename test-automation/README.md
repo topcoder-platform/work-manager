@@ -53,6 +53,8 @@ When running test automation using CricleCI it would use config files which shou
 - DEV `s3://tc-platform-dev/securitymanager/wm-automation-config-dev.json`
 - PROD `s3://tc-platform-prod/securitymanager/wm-automation-config-prod.json`
 
+Production config should be filled with production data like production user login/password, production project id with billing account as so on. For reference you may use file [wm-automation-config-dev.json](config/wm-automation-config-dev.json).
+
 These configs should be updated by someone from Topcoder.
 #### Configuration details:
 
