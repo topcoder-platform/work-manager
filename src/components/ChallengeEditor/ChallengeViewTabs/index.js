@@ -10,6 +10,7 @@ import _ from 'lodash'
 import ChallengeViewComponent from '../ChallengeView'
 import { PrimaryButton } from '../../Buttons'
 import LegacyLinks from '../../LegacyLinks'
+import ForumLink from '../../ForumLink'
 import Registrants from '../Registrants'
 import Submissions from '../Submissions'
 import { getResourceRoleByName } from '../../../util/tc'
@@ -93,7 +94,9 @@ const ChallengeViewTabs = ({
               styles.actionButtonsLeft
             )}
           >
-            <LegacyLinks challenge={challenge} challengeView />
+            { isTask ? (<ForumLink challenge={challenge} />)
+              : (<LegacyLinks challenge={challenge} challengeView />)
+            }
           </div>
 
         </div>

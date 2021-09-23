@@ -138,8 +138,6 @@ class ChallengeEditor extends Component {
     this.onDeleteChallenge = this.onDeleteChallenge.bind(this)
     this.deleteModalLaunch = this.deleteModalLaunch.bind(this)
     this.toggleForumOnCreate = this.toggleForumOnCreate.bind(this)
-    this.onSelectForum = this.onSelectForum.bind(this)
-    this.toggleForumOnCreate = this.toggleForumOnCreate.bind(this)
   }
 
   componentDidMount () {
@@ -593,10 +591,6 @@ class ChallengeEditor extends Component {
     this.setState({ hasForum: !hasForum })
   }
 
-  onSelectForum (hasForum) {
-    this.setState({ hasForum })
-  }
-
   toggleAdvanceSettings () {
     const { isOpenAdvanceSettings } = this.state
     this.setState({ isOpenAdvanceSettings: !isOpenAdvanceSettings })
@@ -929,14 +923,7 @@ class ChallengeEditor extends Component {
     if (projectDetail.groups) {
       newChallenge.groups.push(...projectDetail.groups)
     }
-    if (isTask) {
-      if (this.state.hasForum) {
-        const discussions = this.getDiscussionsConfig(newChallenge)
-        if (discussions) {
-          newChallenge.discussions = discussions
-        }
-      }
-    } else {
+    if (!isTask || this.state.hasForum) {
       const discussions = this.getDiscussionsConfig(newChallenge)
       if (discussions) {
         newChallenge.discussions = discussions
@@ -1461,7 +1448,7 @@ class ChallengeEditor extends Component {
         )
       }
     </React.Fragment>
-    const useTask = _.find(metadata.challengeTypes, { id: challenge.typeId, isTask: true })
+    // const useTask = _.find(metadata.challengeTypes, { id: challenge.typeId, isTask: true })
     const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
     const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
     const selectedMilestone = _.find(projectPhases,
@@ -1481,7 +1468,7 @@ class ChallengeEditor extends Component {
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             {projectDetail.version === 'v4' && <MilestoneField milestones={activeProjectMilestones} onUpdateSelect={this.onUpdateSelect} projectId={projectDetail.id} selectedMilestoneId={selectedMilestoneId} />}
-            { useTask && (<DiscussionField hasForum={hasForum} toggleForum={this.toggleForumOnCreate} />) }
+            { isTask && (<DiscussionField hasForum={hasForum} toggleForum={this.toggleForumOnCreate} />) }
           </div>
           {showDesignChallengeWarningModel && designChallengeModal}
           { errorContainer }
