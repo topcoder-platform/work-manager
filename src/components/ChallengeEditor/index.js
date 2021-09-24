@@ -1448,7 +1448,7 @@ class ChallengeEditor extends Component {
         )
       }
     </React.Fragment>
-    // const useTask = _.find(metadata.challengeTypes, { id: challenge.typeId, isTask: true })
+    const useTask = _.find(metadata.challengeTypes, { id: challenge.typeId, isTask: true })
     const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
     const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
     const selectedMilestone = _.find(projectPhases,
@@ -1468,7 +1468,7 @@ class ChallengeEditor extends Component {
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             {projectDetail.version === 'v4' && <MilestoneField milestones={activeProjectMilestones} onUpdateSelect={this.onUpdateSelect} projectId={projectDetail.id} selectedMilestoneId={selectedMilestoneId} />}
-            { isTask && (<DiscussionField hasForum={hasForum} toggleForum={this.toggleForumOnCreate} />) }
+            { useTask && (<DiscussionField hasForum={hasForum} toggleForum={this.toggleForumOnCreate} />) }
           </div>
           {showDesignChallengeWarningModel && designChallengeModal}
           { errorContainer }
