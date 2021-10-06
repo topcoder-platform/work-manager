@@ -10,6 +10,7 @@ import _ from 'lodash'
 import ChallengeViewComponent from '../ChallengeView'
 import { PrimaryButton } from '../../Buttons'
 import LegacyLinks from '../../LegacyLinks'
+import ForumLink from '../../ForumLink'
 import Registrants from '../Registrants'
 import Submissions from '../Submissions'
 import { getResourceRoleByName } from '../../../util/tc'
@@ -85,17 +86,19 @@ const ChallengeViewTabs = ({
       <div className={styles.topContainer}>
         <div className={styles.leftContainer}>
           <div className={styles.title}>{challenge.name}</div>
-          {!isTask && (
-            <div
-              className={cn(
-                styles.actionButtons,
-                styles.button,
-                styles.actionButtonsLeft
-              )}
-            >
-              <LegacyLinks challenge={challenge} challengeView />
-            </div>
-          )}
+
+          <div
+            className={cn(
+              styles.actionButtons,
+              styles.button,
+              styles.actionButtonsLeft
+            )}
+          >
+            { isTask ? (<ForumLink challenge={challenge} />)
+              : (<LegacyLinks challenge={challenge} challengeView />)
+            }
+          </div>
+
         </div>
         <div
           className={cn(

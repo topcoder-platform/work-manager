@@ -57,6 +57,7 @@ import UseSchedulingAPIField from './UseSchedulingAPIField'
 import { getResourceRoleByName } from '../../util/tc'
 import { isBetaMode } from '../../util/cookie'
 import MilestoneField from './Milestone-Field'
+import DiscussionField from './Discussion-Field'
 
 const theme = {
   container: styles.modalContainer
@@ -78,6 +79,7 @@ class ChallengeEditor extends Component {
       isDeleteLaunch: false,
       isConfirm: false,
       isClose: false,
+      hasForum: false,
       isOpenAdvanceSettings: false,
       isLoading: false,
       isSaving: false,
@@ -135,6 +137,7 @@ class ChallengeEditor extends Component {
     this.updateResource = this.updateResource.bind(this)
     this.onDeleteChallenge = this.onDeleteChallenge.bind(this)
     this.deleteModalLaunch = this.deleteModalLaunch.bind(this)
+    this.toggleForumOnCreate = this.toggleForumOnCreate.bind(this)
   }
 
   componentDidMount () {
@@ -583,6 +586,11 @@ class ChallengeEditor extends Component {
     this.setState({ challenge: newChallenge })
   }
 
+  toggleForumOnCreate () {
+    const { hasForum } = this.state
+    this.setState({ hasForum: !hasForum })
+  }
+
   toggleAdvanceSettings () {
     const { isOpenAdvanceSettings } = this.state
     this.setState({ isOpenAdvanceSettings: !isOpenAdvanceSettings })
@@ -817,7 +825,9 @@ class ChallengeEditor extends Component {
       'terms',
       'prizeSets',
       'winners',
-      'milestoneId'
+      'milestoneId',
+      'discussions',
+      'task'
     ], this.state.challenge)
     const isTask = _.find(metadata.challengeTypes, { id: challenge.typeId, isTask: true })
     challenge.legacy = _.assign(this.state.challenge.legacy, {
@@ -913,9 +923,11 @@ class ChallengeEditor extends Component {
     if (projectDetail.groups) {
       newChallenge.groups.push(...projectDetail.groups)
     }
-    const discussions = this.getDiscussionsConfig(newChallenge)
-    if (discussions) {
-      newChallenge.discussions = discussions
+    if (!isTask || this.state.hasForum) {
+      const discussions = this.getDiscussionsConfig(newChallenge)
+      if (discussions) {
+        newChallenge.discussions = discussions
+      }
     }
     try {
       const action = await createChallenge(newChallenge, projectDetail.id)
@@ -1197,6 +1209,7 @@ class ChallengeEditor extends Component {
       showDesignChallengeWarningModel,
       challenge,
       draftChallenge,
+      hasForum,
       isOpenAdvanceSettings,
       isSaving,
       isCloseTask
@@ -1435,6 +1448,7 @@ class ChallengeEditor extends Component {
         )
       }
     </React.Fragment>
+    const useTask = _.find(metadata.challengeTypes, { id: challenge.typeId, isTask: true })
     const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
     const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
     const selectedMilestone = _.find(projectPhases,
@@ -1454,6 +1468,7 @@ class ChallengeEditor extends Component {
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             {projectDetail.version === 'v4' && <MilestoneField milestones={activeProjectMilestones} onUpdateSelect={this.onUpdateSelect} projectId={projectDetail.id} selectedMilestoneId={selectedMilestoneId} />}
+            { useTask && (<DiscussionField hasForum={hasForum} toggleForum={this.toggleForumOnCreate} />) }
           </div>
           {showDesignChallengeWarningModel && designChallengeModal}
           { errorContainer }
