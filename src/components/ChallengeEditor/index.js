@@ -1082,18 +1082,11 @@ class ChallengeEditor extends Component {
         if (assignedMemberHandle !== oldMemberHandle) {
           await this.updateResource(challengeId, 'Submitter', assignedMemberHandle, oldMemberHandle)
         }
-        if (type === 'Task') {
-          if (assignedMember) {
-            challenge.task.isAssigned = true
-            challenge.task.memberId = `${_.get(assignedMember, 'userId')}`
-            newChallenge.task.isAssigned = true
-            newChallenge.task.memberId = `${_.get(assignedMember, 'userId')}`
-          } else {
-            challenge.task.isAssigned = false
-            challenge.task.memberId = null
-            newChallenge.task.isAssigned = false
-            newChallenge.task.memberId = null
-          }
+        if (assignedMember && type === 'Task') {
+          challenge.task.isAssigned = true
+          challenge.task.memberId = `${_.get(assignedMember, 'userId')}`
+          newChallenge.task.isAssigned = true
+          newChallenge.task.memberId = `${_.get(assignedMember, 'userId')}`
         }
         const action = await updateChallengeDetails(challengeId, challenge, projectDetail.id)
         const { copilot: previousCopilot, reviewer: previousReviewer } = this.state.draftChallenge.data
