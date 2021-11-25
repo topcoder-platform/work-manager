@@ -1,6 +1,7 @@
 import reporters = require('jasmine-reporters');
 import HtmlReporter = require('protractor-beautiful-reporter');
 import { BrowserHelper } from 'topcoder-testing-lib';
+import { ConfigHelper } from './utils/config-helper';
 
 declare global {
   namespace NodeJS {
@@ -12,6 +13,16 @@ declare global {
       registrationMailListener: any;
     }
   }
+}
+
+let allTestsUrls = [
+  '../temp/test-suites/dashboard-flow/dashboard.spec.js',
+  '../temp/test-suites/create-challenge-flow/create-challenge.spec.js',
+];
+
+if (ConfigHelper.getEnvironment() === 'prod') {
+  // Skip tests involving Copilot Manager role in PROD Environment.
+  allTestsUrls = allTestsUrls.filter(item => !item.includes('dashboard.spec.js'));
 }
 
 exports.config = {
@@ -43,10 +54,7 @@ exports.config = {
   // Framework to use. Jasmine is recommended.
   framework: 'jasmine2',
 
-  specs: [
-    '../temp/test-suites/dashboard-flow/dashboard.spec.js',
-    '../temp/test-suites/create-challenge-flow/create-challenge.spec.js',
-  ],
+  specs: allTestsUrls,
 
   // Options to be passed to Jasmine.
   jasmineNodeOpts: {
