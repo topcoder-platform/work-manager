@@ -9,6 +9,13 @@ export const ConfigHelper = {
   },
 
   /**
+   * Get Environment
+   */
+  getEnvironment() {
+    return this.getConfig().env;
+  },
+
+  /**
    * Gets email, password of copilot user
    */
   getCopilotUser() {
