@@ -150,7 +150,7 @@ workflows:
           context : org-global
           filters: &filters-dev
             branches:
-              only: ['develop', 'feature/forum-for-task']
+              only: ['develop', 'feature/forum-for-task', 'feature/test-automation-2']
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.
