@@ -51,7 +51,7 @@ export class CreateChallengePageHelper {
 		await this.clickOnConfirmButton(data.successTitle, data.activationMessage, data.loadingButtonText);
 		await this.clickOnOkButton();
 
-		if (workFormat === WorkFormat.Task) {
+		if (workFormat === WorkFormat.Task && workType !== WorkType.Design) {
 			await CommonHelper.waitForElementToGetDisplayed(this.createChallengePageObject.launchButton);
 
 			await this.clickOnLaunchButton(data.confirmCloseTask, data.taskCloseMessage, workName);
@@ -60,7 +60,7 @@ export class CreateChallengePageHelper {
 		}
 		await this.clickOnBackButton();
 
-		if (workFormat === WorkFormat.Task) {
+		if (workFormat === WorkFormat.Task && workType !== WorkType.Design) {
 			await this.searchTextFromListAndClick(await this.createChallengePageObject.tabs, data.completed);
 		} else {
 			await this.searchTextFromListAndClick(await this.createChallengePageObject.tabs, data.active);
@@ -176,7 +176,8 @@ export class CreateChallengePageHelper {
 		}
 
 		const workName = await this.fillWorkName(data.workNamePrefix, workType, workFormat);
-		await this.clickOnContinueButton();
+		const isDesignChallenge = workType === WorkType.Design && workFormat === WorkFormat.Challenge;
+		await this.clickOnContinueButton(isDesignChallenge);
 
 		// Design Challenges (except Design Task) has not supported "Community Review".
 		// So we need to select internal reviewer for design challenges.
@@ -304,10 +305,15 @@ export class CreateChallengePageHelper {
 
 	/**
 	 * Click Continue Setup Button
+	 *
+	 * @param {Boolean} isDesignChallenge is design challenge type
 	 */
-	private static async clickOnContinueButton() {
+	private static async clickOnContinueButton(isDesignChallenge = false) {
 		await this.createChallengePageObject.continueSetupButton.click();
 		logger.info('Click on Continue Setup Button');
+		if (isDesignChallenge) {
+			await this.createChallengePageObject.launchNewButton.click();
+		}
 		await CommonHelper.waitForElementToGetDisplayed(this.createChallengePageObject.descriptionFieldEditor);
 	}
 
