@@ -49,6 +49,8 @@
     "NDAFields": [
       "YES",
       "NO"
-    ]
+    ],
+    "markComplete": "Mark Complete",
+    "milestoneNameToSelect": "Milextone 2 (active)"
   }
 }

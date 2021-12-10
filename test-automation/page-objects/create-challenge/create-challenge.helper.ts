@@ -51,8 +51,9 @@ export class CreateChallengePageHelper {
 		await this.clickOnConfirmButton(data.successTitle, data.activationMessage, data.loadingButtonText);
 		await this.clickOnOkButton();
 
-		if (workFormat === WorkFormat.Task && workType !== WorkType.Design) {
+		if (workFormat === WorkFormat.Task) {
 			await CommonHelper.waitForElementToGetDisplayed(this.createChallengePageObject.launchButton);
+			await BrowserHelper.waitUntilTextToBePresentInElement(this.createChallengePageObject.launchButton, data.markComplete)
 
 			await this.clickOnLaunchButton(data.confirmCloseTask, data.taskCloseMessage, workName);
 			await this.clickOnConfirmButton(data.successTitle, data.taskClosedMessage, data.loadingButtonText);
@@ -60,7 +61,7 @@ export class CreateChallengePageHelper {
 		}
 		await this.clickOnBackButton();
 
-		if (workFormat === WorkFormat.Task && workType !== WorkType.Design) {
+		if (workFormat === WorkFormat.Task) {
 			await this.searchTextFromListAndClick(await this.createChallengePageObject.tabs, data.completed);
 		} else {
 			await this.searchTextFromListAndClick(await this.createChallengePageObject.tabs, data.active);
@@ -116,7 +117,7 @@ export class CreateChallengePageHelper {
 		await this.clickOnWorkTypeButton(WorkType.Development);
 		await this.fillWorkFormat(WorkFormat.Task);
 		await this.fillWorkName(data.workNamePrefix, WorkType.Development, WorkFormat.Task);
-		await this.selectMilestone();
+		await this.selectMilestone(data.milestoneNameToSelect);
 
 		await this.createChallengePageObject.manageMilestonesButton.click();
 		// Verify Newly Open tab title
@@ -172,7 +173,7 @@ export class CreateChallengePageHelper {
 		let milestoneName = "";
 
 		if (hasMilestone) {
-			milestoneName = await this.selectMilestone();
+			milestoneName = await this.selectMilestone(data.milestoneNameToSelect);
 		}
 
 		const workName = await this.fillWorkName(data.workNamePrefix, workType, workFormat);
@@ -213,7 +214,7 @@ export class CreateChallengePageHelper {
 		const dialogBoxTitle = await this.createChallengePageObject.dialogBox.getText();
 		expect(dialogBoxTitle).toContain(title);
 		expect(dialogBoxTitle).toContain(message);
-		logger.info(`Verified Dialog box with Title ${title} and Message ${message}`);
+		logger.info(`Verified Dialog box ${dialogBoxTitle}`);
 	}
 
 	/**
@@ -251,6 +252,8 @@ export class CreateChallengePageHelper {
 	private static async clickOnLaunchNewButton() {
 		await this.createChallengePageObject.launchNewButton.click();
 		logger.info('Clicked on Launch New Button');
+
+		await CommonHelper.waitForElementToGetDisplayed(this.createChallengePageObject.workTypeList)
 	}
 
 	/**
@@ -392,17 +395,25 @@ export class CreateChallengePageHelper {
 	 * Wait for Launch button to get Enabled for Challenges
 	 */
 	private static async waitForLaunchButton() {
-		for (let cnt = 0; cnt < config.Timeout.ActiveChallengeTimeout; cnt++) {
+		const beforeDate = new Date();
+		const minutesToAdd = config.Timeout.ActiveChallengeTimeoutInMins;
+		while(true) {
 			const element = this.createChallengePageObject.launchButton;
 			const classValue = await element.getAttribute('class');
 			if (classValue.includes('disabled')) {
+				const currentDate = new Date();
+				if((currentDate.getTime() - beforeDate.getTime()) > minutesToAdd*60000) {
+					throw new Error(`Launch button is not get enabled during ${minutesToAdd} minutes.`);
+				}
 				await BrowserHelper.refresh();
 				await CommonHelper.waitForElementToGetDisplayed(this.createChallengePageObject.backButton);
 				await CommonHelper.waitForSpinnerToDisappear();
 			} else {
-				break;
+				logger.info('Launch Button Enabled.');
+				break
 			}
 		}
+		
 	}
 
 	/**
@@ -424,6 +435,7 @@ export class CreateChallengePageHelper {
 	 */
 	private static async clickOnOkButton() {
 		await this.createChallengePageObject.okButton.click();
+		await CommonHelper.waitForSpinnerToDisappear();
 		await CommonHelper.waitForElementToGetDisplayed(this.createChallengePageObject.backButton);
 		logger.info('Clicked Ok button');
 	}
@@ -442,9 +454,13 @@ export class CreateChallengePageHelper {
 	 * @param workName work name
 	 */
 	private static async verifyNewlyCreatedChallenge(workName: string) {
+		const challengeList = [];
 		const elements = await this.createChallengePageObject.challengeList;
-		const challengeName = (await elements[0].getText()).trim();
-		expect(challengeName).toContain(workName);
+		for (const element of elements) {
+			const challengeName = (await element.getText()).trim();
+			challengeList.push(challengeName)
+		}
+		expect(challengeList).toContain(workName);
 	}
 
 
@@ -456,12 +472,7 @@ export class CreateChallengePageHelper {
 	 * @param workName work name
 	 */
 	private static async clickOnLaunchButton(confirmLaunch: string, launchMessage: string, workName: string) {
-		const launchButton = this.createChallengePageObject.launchButton;
-		const classValue = await launchButton.getAttribute('class');
-		if (classValue.includes('disabled')) {
-			return;
-		}
-		await launchButton.click();
+		await this.createChallengePageObject.launchButton.click()
 		logger.info('Clicked Launch Button');
 		await this.verifyDialogBoxMessage(confirmLaunch, `${launchMessage} "${workName}"`)
 	}
@@ -484,14 +495,24 @@ export class CreateChallengePageHelper {
 
 	/**
 	 * Select milestone from dropdown
-	 *
-	 * @returns milestoneName milestone name
+	 * 
+	 * @param milestoneNameToSelect 	Milestone to select
+	 * @returns 
 	 */
-	private static async selectMilestone() {
+	private static async selectMilestone(milestoneNameToSelect: string) {
+		let milestoneName = null
 		await this.createChallengePageObject.milestoneDropdown.click();
-		const dropdownlists = await this.createChallengePageObject.dropdownList;
-		const milestoneName = await dropdownlists[0].getText();
-		await dropdownlists[0].click();
+		const dropdownLists = await this.createChallengePageObject.dropdownList;
+		let cnt=0;
+		for(const element of dropdownLists) {
+			milestoneName = await element.getText();
+			if (milestoneName === milestoneNameToSelect) {
+				await dropdownLists[cnt].click();
+				logger.info(`Selected Milestone ${milestoneNameToSelect}`);
+				break;
+			}
+			cnt = cnt + 1;
+		}
 
 		return milestoneName;
 	}

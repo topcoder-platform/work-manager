@@ -56,7 +56,7 @@ describe('Work Manager - Create Challenge Tests: ', () => {
     })
   });
 
-  describe("Milestone Verificaiton: ", async () => {
+  describe("Milestone Verification: ", async () => {
     const milestoneProjectUrl = ConfigHelper.getMilestoneProjectUrl();
     beforeEach(async () => {
       CreateChallengePageHelper.initialize();

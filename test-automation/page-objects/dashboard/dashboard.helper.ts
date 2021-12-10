@@ -148,6 +148,7 @@ export class DashboardPageHelper {
 	 */
 	public static async verifyUserCanFilterTheProject() {
 		await CommonHelper.waitForSpinnerToDisappear()
+		await BrowserHelper.sleep(2500);
 
 		// Get List of Projects before Un-checking the My Projects Checkbox
 		const beforeProjectNameList = await this.getProjectNamesList();
@@ -165,12 +166,13 @@ export class DashboardPageHelper {
 		let result = JSON.stringify(beforeProjectNameList) === JSON.stringify(afterProjectNameList)
 		expect(result).toEqual(false);
 		expect(afterProjectNameList.length).toBeGreaterThanOrEqual(1);
-		logger.info('Verified the list has changed after Un-checking the My Projects checkbox');
-		logger.info('Verified the list count is greater than or equal to 1');
+		logger.info(`Verified the list has changed after Un-checking the My Projects checkbox ${result}`);
+		logger.info(`Verified the list count is greater than or equal to 1 ${afterProjectNameList.length}`);
 
 		// Check My Projects checkbox
 		await CommonHelper.performOperationOnCheckbox(this.dashboardPageObject.myProjectsCheckbox, true);
-
+		await BrowserHelper.sleep(3000);
+		
 		// Get List of Projects After checking the My Projects Checkbox
 		const currentProjectNameList = await this.getProjectNamesList();
 		logger.info(`Get project names list after checking My Projects checkbox ${currentProjectNameList}`)
@@ -179,7 +181,7 @@ export class DashboardPageHelper {
 		result = JSON.stringify(beforeProjectNameList) === JSON.stringify(currentProjectNameList)
 		expect(result).toEqual(true);
 		expect(beforeProjectNameList.length).toEqual(currentProjectNameList.length);
-		logger.info('Verified the list is matching and the length of the list is also same.');
+		logger.info(`Verified the list is matching and the length of the list is also same. ${result} : ${beforeProjectNameList.length} : ${currentProjectNameList.length}}`);
 	}
 
 	/**
