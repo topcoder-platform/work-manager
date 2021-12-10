@@ -26,6 +26,8 @@ export interface ICreateChallenge {
   expiredMessage: string;
   expiredPopupMessage: string;
   NDAFields: string[];
+  markComplete: string;
+  milestoneNameToSelect: string;
 }
 
 export enum WorkFormat {

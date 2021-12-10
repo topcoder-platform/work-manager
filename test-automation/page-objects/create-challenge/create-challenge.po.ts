@@ -319,4 +319,11 @@ export class CreateChallengePageObject {
 	public get ndaField() {
 		return ElementHelper.getElementByXPath('//div[contains(@class, "NDAField_col2")]');
 	}
-}
+
+	/**
+	 * Get Work Type List
+	 */
+	public get workTypeList() {
+		return ElementHelper.getElementByXPath('(//div[contains(@class, "Track-Field_field")])[2]');
+	}
+ }
