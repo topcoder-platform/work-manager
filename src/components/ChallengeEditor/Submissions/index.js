@@ -428,11 +428,11 @@ class SubmissionsComponent extends React.Component {
             <div className={styles['col-5']}>
               <a href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}/submissions/${s.id} `} target='_blank'>
                 {!_.isEmpty(s.review) && s.review[0].score
-                  ? s.review[0].score.toFixed(2)
+                  ? parseFloat(s.review[0].score).toFixed(2)
                   : 'N/A'}
                 &zwnj; &zwnj;/ &zwnj;
                 {s.reviewSummation && s.reviewSummation[0].aggregateScore
-                  ? s.reviewSummation[0].aggregateScore.toFixed(2)
+                  ? parseFloat(s.reviewSummation[0].aggregateScore).toFixed(2)
                   : 'N/A'}
               </a>
             </div>
