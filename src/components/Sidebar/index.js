@@ -11,7 +11,9 @@ import styles from './Sidebar.module.scss'
 import { isBetaMode } from '../../util/cookie'
 
 const Sidebar = ({
-  projectId, resetSidebarActiveParams
+  projectId,
+  resetSidebarActiveParams,
+  selfServe
 }) => {
   return (
     <div className={styles.sidebar}>
@@ -45,7 +47,8 @@ const Sidebar = ({
 
 Sidebar.propTypes = {
   projectId: PropTypes.string,
-  resetSidebarActiveParams: PropTypes.func
+  resetSidebarActiveParams: PropTypes.func,
+  selfServe: PropTypes.bool
 }
 
 export default Sidebar
