@@ -28,12 +28,11 @@ class Challenges extends Component {
   }
 
   componentDidMount () {
-    console.debug('here')
     const { activeProjectId, resetSidebarActiveParams, menu, projectId, selfServe } = this.props
     if (menu === 'NULL' && activeProjectId !== -1) {
       resetSidebarActiveParams()
     } else if (projectId || selfServe) {
-      if (!!projectId) {
+      if (projectId) {
         this.props.loadProject(projectId)
       }
       this.reloadChallenges(this.props)
