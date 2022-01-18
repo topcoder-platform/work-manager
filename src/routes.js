@@ -9,7 +9,7 @@ import { BETA_MODE_COOKIE_TAG } from './config/constants'
 import renderApp from './components/App'
 import TopBarContainer from './containers/TopbarContainer'
 import Sidebar from './containers/Sidebar'
-import ChallengeList from './containers/Challenges'
+import Challenges from './containers/Challenges'
 import ChallengeEditor from './containers/ChallengeEditor'
 import { getFreshToken, decodeToken } from 'tc-auth-lib'
 import { saveToken } from './actions/auth'
@@ -100,7 +100,7 @@ class Routes extends React.Component {
         <Switch>
           <Route exact path='/'
             render={() => renderApp(
-              <ChallengeList menu='NULL' warnMessage={warnMessage} />,
+              <Challenges menu='NULL' warnMessage={warnMessage} />,
               <TopBarContainer />,
               <Sidebar />
             )()}
@@ -114,9 +114,16 @@ class Routes extends React.Component {
       <Switch>
         <Route exact path='/'
           render={() => renderApp(
-            <ChallengeList menu='NULL' />,
+            <Challenges menu='NULL' />,
             <TopBarContainer />,
             <Sidebar />
+          )()}
+        />
+        <Route exact path='/self-serve'
+          render={() => renderApp(
+            <Challenges selfServe='true' />,
+            <TopBarContainer />,
+            <Sidebar selfServe='true' />
           )()}
         />
         <Route exact path='/projects/:projectId/challenges/new'
@@ -135,7 +142,7 @@ class Routes extends React.Component {
           )()} />
         <Route exact path='/projects/:projectId/challenges'
           render={({ match }) => renderApp(
-            <ChallengeList projectId={match.params.projectId} />,
+            <Challenges projectId={match.params.projectId} />,
             <TopBarContainer projectId={match.params.projectId} />,
             <Sidebar projectId={match.params.projectId} />
           )()} />

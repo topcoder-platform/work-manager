@@ -21,12 +21,17 @@ const Sidebar = ({
         {isBetaMode() && <span className={styles.beta}>beta</span>}
       </div>
       <Link to='/'>
-        <div className={cn(styles.homeLink, { [styles.active]: !projectId })} onClick={resetSidebarActiveParams}>
+        <div className={cn(styles.homeLink, { [styles.active]: !projectId && !selfServe })} onClick={resetSidebarActiveParams}>
           All Work
         </div>
       </Link>
+      <Link to='/self-serve'>
+        <div className={cn(styles.homeLink, { [styles.active]: !projectId && selfServe })} onClick={resetSidebarActiveParams}>
+          Self-Service Opportunities
+        </div>
+      </Link>
       <a href='https://github.com/topcoder-platform/work-manager/issues/new' target='_blank' rel='noopener noreferrer' className='chameleon-feedback'>
-        <div className={cn(styles.homeLink, { [styles.active]: !projectId })}>
+        <div className={cn(styles.homeLink, { [styles.active]: !projectId && !selfServe })}>
           Give Application Feedback
         </div>
       </a>

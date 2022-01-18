@@ -48,10 +48,10 @@ class ChallengeList extends Component {
    * @param {String} projectStatus project status
    */
   updateSearchParam (searchText, projectStatus) {
-    const { status, filterChallengeName, loadChallengesByPage, activeProjectId } = this.props
+    const { status, filterChallengeName, loadChallengesByPage, activeProjectId, selfServe } = this.props
     this.setState({ searchText }, () => {
       if (status !== projectStatus || searchText !== filterChallengeName) {
-        loadChallengesByPage(1, activeProjectId, projectStatus, searchText)
+        loadChallengesByPage(1, activeProjectId, projectStatus, searchText, selfServe)
       }
     })
   }
@@ -62,9 +62,9 @@ class ChallengeList extends Component {
    */
   handlePageChange (pageNumber) {
     const { searchText } = this.state
-    const { page, loadChallengesByPage, activeProjectId, status } = this.props
+    const { page, loadChallengesByPage, activeProjectId, status, selfServe } = this.props
     if (page !== pageNumber) {
-      loadChallengesByPage(pageNumber, activeProjectId, status, searchText)
+      loadChallengesByPage(pageNumber, activeProjectId, status, searchText, selfServe)
     }
   }
 
@@ -73,8 +73,8 @@ class ChallengeList extends Component {
    */
   reloadChallengeList () {
     const { searchText } = this.state
-    const { page, loadChallengesByPage, activeProjectId, status } = this.props
-    loadChallengesByPage(page, activeProjectId, status, searchText)
+    const { page, loadChallengesByPage, activeProjectId, status, selfServe } = this.props
+    loadChallengesByPage(page, activeProjectId, status, searchText, selfServe)
   }
 
   /**
@@ -104,7 +104,8 @@ class ChallengeList extends Component {
       totalChallenges,
       partiallyUpdateChallengeDetails,
       deleteChallenge,
-      isBillingAccountExpired
+      isBillingAccountExpired,
+      selfServe
     } = this.props
     if (warnMessage) {
       return <Message warnMessage={warnMessage} />
@@ -196,7 +197,7 @@ class ChallengeList extends Component {
           <TabPanel />
         </Tabs>)}
         {
-          challenges.length === 0 && (
+          challenges.length === 0 && !selfServe && (
             <NoChallenge activeProject={activeProject} />
           )
         }

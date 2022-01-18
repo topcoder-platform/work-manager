@@ -15,8 +15,8 @@ class SidebarContainer extends Component {
   }
 
   componentDidMount () {
-    const { projectId, activeProjectId, isLoading } = this.props
-    if (!projectId && activeProjectId === -1 && !isLoading) {
+    const { projectId, activeProjectId, isLoading, selfServe } = this.props
+    if (!projectId && activeProjectId === -1 && !isLoading && !selfServe) {
       this.props.loadProjects()
     }
 
@@ -62,7 +62,8 @@ SidebarContainer.propTypes = {
   activeProjectId: PropTypes.number,
   setActiveProject: PropTypes.func,
   projectId: PropTypes.string,
-  resetSidebarActiveParams: PropTypes.func
+  resetSidebarActiveParams: PropTypes.func,
+  selfServe: PropTypes.bool
 }
 
 const mapStateToProps = ({ sidebar }) => ({
