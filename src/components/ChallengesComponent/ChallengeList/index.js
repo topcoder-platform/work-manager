@@ -121,8 +121,7 @@ class ChallengeList extends Component {
       partiallyUpdateChallengeDetails,
       deleteChallenge,
       isBillingAccountExpired,
-      selfService,
-      auth
+      selfService
     } = this.props
     if (warnMessage) {
       return <Message warnMessage={warnMessage} />
