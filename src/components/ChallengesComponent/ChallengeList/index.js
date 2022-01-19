@@ -104,7 +104,8 @@ class ChallengeList extends Component {
       totalChallenges,
       partiallyUpdateChallengeDetails,
       deleteChallenge,
-      isBillingAccountExpired
+      isBillingAccountExpired,
+      selfService
     } = this.props
     if (warnMessage) {
       return <Message warnMessage={warnMessage} />
@@ -186,10 +187,10 @@ class ChallengeList extends Component {
           }}>
           <TabList>
             <Tab>Active</Tab>
-            <Tab>New</Tab>
+            {(!selfService && <Tab>New</Tab>)}
             <Tab>Draft</Tab>
-            <Tab>Completed</Tab>
-            <Tab>Cancelled</Tab>
+            {(!selfService && <Tab>Completed</Tab>)}
+            {(!selfService && <Tab>Cancelled</Tab>)}
           </TabList>
           <TabPanel />
           <TabPanel />
