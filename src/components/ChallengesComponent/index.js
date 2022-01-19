@@ -28,7 +28,8 @@ const ChallengesComponent = ({
   partiallyUpdateChallengeDetails,
   deleteChallenge,
   isBillingAccountExpired,
-  selfService
+  selfService,
+  auth
 }) => {
   return (
     <Sticky top={10}>
@@ -78,6 +79,7 @@ const ChallengesComponent = ({
               deleteChallenge={deleteChallenge}
               isBillingAccountExpired={isBillingAccountExpired}
               selfService={selfService}
+              auth={auth}
             />
           )}
         </div>
@@ -104,7 +106,8 @@ ChallengesComponent.propTypes = {
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
   isBillingAccountExpired: PropTypes.bool,
-  selfService: PropTypes.bool
+  selfService: PropTypes.bool,
+  auth: PropTypes.object.isRequired
 }
 
 ChallengesComponent.defaultProps = {

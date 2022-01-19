@@ -51,7 +51,7 @@ class ChallengeList extends Component {
     const { status, filterChallengeName, loadChallengesByPage, activeProjectId, selfService } = this.props
     this.setState({ searchText }, () => {
       if (status !== projectStatus || searchText !== filterChallengeName) {
-        loadChallengesByPage(1, activeProjectId, projectStatus, searchText, selfService)
+        loadChallengesByPage(1, activeProjectId, projectStatus, searchText, selfService, this.getHandle())
       }
     })
   }
@@ -64,7 +64,7 @@ class ChallengeList extends Component {
     const { searchText } = this.state
     const { page, loadChallengesByPage, activeProjectId, status, selfService } = this.props
     if (page !== pageNumber) {
-      loadChallengesByPage(pageNumber, activeProjectId, status, searchText, selfService)
+      loadChallengesByPage(pageNumber, activeProjectId, status, searchText, selfService, this.getHandle())
     }
   }
 
@@ -74,7 +74,7 @@ class ChallengeList extends Component {
   reloadChallengeList () {
     const { searchText } = this.state
     const { page, loadChallengesByPage, activeProjectId, status, selfService } = this.props
-    loadChallengesByPage(page, activeProjectId, status, searchText, selfService)
+    loadChallengesByPage(page, activeProjectId, status, searchText, selfService, this.getHandle())
   }
 
   /**
@@ -104,6 +104,10 @@ class ChallengeList extends Component {
     }
   }
 
+  getHandle () {
+    return this.props.auth && this.props.auth.user ? this.props.auth.user.handle : null
+  }
+
   render () {
     const { searchText, errorMessage } = this.state
     const {
@@ -117,7 +121,8 @@ class ChallengeList extends Component {
       partiallyUpdateChallengeDetails,
       deleteChallenge,
       isBillingAccountExpired,
-      selfService
+      selfService,
+      auth
     } = this.props
     if (warnMessage) {
       return <Message warnMessage={warnMessage} />
@@ -289,7 +294,8 @@ ChallengeList.propTypes = {
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
   isBillingAccountExpired: PropTypes.bool,
-  selfService: PropTypes.bool
+  selfService: PropTypes.bool,
+  auth: PropTypes.object.isRequired
 }
 
 export default ChallengeList
