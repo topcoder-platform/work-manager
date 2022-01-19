@@ -3,7 +3,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import Sidebar from '../../components/Sidebar'
-import { loadProjects, setActiveProject, resetSidebarActiveParams } from '../../actions/sidebar'
+import { loadProjects, setActiveProject, resetSidebarActiveParams, unloadProjects } from '../../actions/sidebar'
 
 class SidebarContainer extends Component {
   constructor (props) {
@@ -26,10 +26,32 @@ class SidebarContainer extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    const { projectId, isLoading } = nextProps
-    if (this.props.projectId !== projectId && !projectId && !isLoading) {
-      this.props.loadProjects()
+    const { projectId, isLoading, selfServe, projects } = nextProps
+
+    // if we're viewing a specific project,
+    // or we're viewing the self serve page,
+    // or if the project is already  loading,
+    // don't load the projects
+    if (!!projectId || selfServe || isLoading) {
+      // if we're not in the middle of loading,
+      // and we have projects to unload,
+      // unload them
+      if (!isLoading && !!projects && !!projects.length) {
+        this.props.unloadProjects()
+      }
+
+      return
     }
+
+    // if we don't have a project id
+    // and we already have projects in the list,
+    // don't load the projects again
+    if (!projectId && !!projects && !!projects.length) {
+      return
+    }
+
+    // now it's okay to load the projects
+    this.props.loadProjects()
   }
 
   updateProjectName (val) {
@@ -38,7 +60,7 @@ class SidebarContainer extends Component {
   }
 
   render () {
-    const { isLoading, setActiveProject, projectId, resetSidebarActiveParams, projects } = this.props
+    const { isLoading, setActiveProject, projectId, resetSidebarActiveParams, projects, selfServe, unloadProjects } = this.props
     const { searchProjectName } = this.state
 
     return (
@@ -50,6 +72,8 @@ class SidebarContainer extends Component {
         resetSidebarActiveParams={resetSidebarActiveParams}
         updateProjectsList={this.updateProjectName}
         searchProjectName={searchProjectName}
+        selfServe={selfServe}
+        unloadProjects={unloadProjects}
       />
     )
   }
@@ -59,6 +83,7 @@ SidebarContainer.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.shape()),
   isLoading: PropTypes.bool,
   loadProjects: PropTypes.func,
+  unloadProjects: PropTypes.func,
   activeProjectId: PropTypes.number,
   setActiveProject: PropTypes.func,
   projectId: PropTypes.string,
@@ -72,6 +97,7 @@ const mapStateToProps = ({ sidebar }) => ({
 
 const mapDispatchToProps = {
   loadProjects,
+  unloadProjects,
   setActiveProject,
   resetSidebarActiveParams
 }
