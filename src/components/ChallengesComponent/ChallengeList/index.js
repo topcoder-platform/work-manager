@@ -168,7 +168,8 @@ class ChallengeList extends Component {
                 break
               }
               case 1: {
-                this.directUpdateSearchParam(searchText, CHALLENGE_STATUS.NEW)
+                const status = selfService ? CHALLENGE_STATUS.DRAFT : CHALLENGE_STATUS.NEW
+                this.directUpdateSearchParam(searchText, status)
                 break
               }
               case 2: {
