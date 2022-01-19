@@ -198,7 +198,10 @@ class ChallengeList extends Component {
         </Tabs>)}
         {
           challenges.length === 0 && (
-            <NoChallenge activeProject={activeProject} />
+            <NoChallenge
+              activeProject={activeProject}
+              selfService={selfService}
+            />
           )
         }
         {
