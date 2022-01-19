@@ -270,7 +270,8 @@ ChallengeList.propTypes = {
   totalChallenges: PropTypes.number.isRequired,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
-  isBillingAccountExpired: PropTypes.bool
+  isBillingAccountExpired: PropTypes.bool,
+  selfServe: PropTypes.bool
 }
 
 export default ChallengeList

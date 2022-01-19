@@ -49,8 +49,7 @@ class Challenges extends Component {
     const { activeProjectId, projectDetail: reduxProjectInfo, projectId, challengeProjectId, loadProject, selfServe } = props
     if (activeProjectId !== challengeProjectId || selfServe) {
       this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, CHALLENGE_STATUS.ACTIVE, '', selfServe)
-      if (!selfServe
-        && (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId)
+      if (!selfServe && (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId)
       ) {
         loadProject(projectId)
       }
