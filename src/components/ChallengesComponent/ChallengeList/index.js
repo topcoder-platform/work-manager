@@ -197,7 +197,7 @@ class ChallengeList extends Component {
           <TabPanel />
         </Tabs>)}
         {
-          challenges.length === 0 && !selfServe && (
+          challenges.length === 0 && (
             <NoChallenge activeProject={activeProject} />
           )
         }
