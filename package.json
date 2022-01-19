@@ -49,7 +49,7 @@
     "jstimezonedetect": "^1.0.6",
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.11",
-    "marked": "^1.0.0",
+    "marked": "^2.0.0",
     "mini-css-extract-plugin": "0.4.3",
     "moment": "^2.24.0",
     "moment-duration-format": "^2.2.2",
@@ -97,7 +97,7 @@
     "topcoder-healthcheck-dropin": "^1.0.3",
     "url-loader": "1.1.1",
     "webpack": "^4.43.0",
-    "webpack-dev-server": "^3.11.0",
+    "webpack-dev-server": "^4.7.3",
     "webpack-manifest-plugin": "2.0.4",
     "xss": "^1.0.6"
   },
