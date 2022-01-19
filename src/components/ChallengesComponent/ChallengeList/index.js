@@ -92,6 +92,18 @@ class ChallengeList extends Component {
     this.setState({ errorMessage: null })
   }
 
+  getStatusTextFunc (selfService) {
+    const draftText = selfService ? 'Waiting for approval' : 'Draft'
+    return (status) => {
+      switch (status) {
+        case CHALLENGE_STATUS.DRAFT:
+          return draftText
+        default:
+          return status
+      }
+    }
+  }
+
   render () {
     const { searchText, errorMessage } = this.state
     const {
@@ -187,9 +199,9 @@ class ChallengeList extends Component {
             }
           }}>
           <TabList>
-            <Tab>Active</Tab>
+            <Tab>{(selfService ? 'Assigned challenges' : 'Active')}</Tab>
             {(!selfService && <Tab>New</Tab>)}
-            <Tab>Draft</Tab>
+            <Tab>{this.getStatusTextFunc(selfService)(CHALLENGE_STATUS.DRAFT)}</Tab>
             {(!selfService && <Tab>Completed</Tab>)}
             {(!selfService && <Tab>Cancelled</Tab>)}
           </TabList>
@@ -231,6 +243,7 @@ class ChallengeList extends Component {
                         deleteChallenge={deleteChallenge}
                         isBillingAccountExpired={isBillingAccountExpired}
                         disableHover={selfService}
+                        getStatusText={this.getStatusTextFunc(selfService)}
                       />
                     </li>
                   )

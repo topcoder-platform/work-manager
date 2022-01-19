@@ -163,15 +163,16 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
   )
 }
 
-const renderStatus = (status) => {
+const renderStatus = (status, getStatusText) => {
   switch (status) {
     case CHALLENGE_STATUS.ACTIVE:
     case CHALLENGE_STATUS.NEW:
     case CHALLENGE_STATUS.DRAFT:
     case CHALLENGE_STATUS.COMPLETED:
-      return (<ChallengeStatus status={status} />)
+      const statusText = getStatusText ? getStatusText(status) : status
+      return (<ChallengeStatus status={status} statusText={statusText} />)
     default:
-      return (<span className={styles.statusText}>{status}</span>)
+      return (<span className={styles.statusText}>{statusText}</span>)
   }
 }
 
@@ -276,7 +277,7 @@ class ChallengeCard extends React.Component {
 
   render () {
     const { isLaunch, isConfirm, isSaving, isDeleteLaunch, isCheckChalengePermission, hasEditChallengePermission } = this.state
-    const { challenge, shouldShowCurrentPhase, reloadChallengeList, isBillingAccountExpired, disableHover } = this.props
+    const { challenge, shouldShowCurrentPhase, reloadChallengeList, isBillingAccountExpired, disableHover, getStatusText } = this.props
     const { phaseMessage, endTime } = getPhaseInfo(challenge)
     const deleteMessage = isCheckChalengePermission
       ? 'Checking permissions...'
@@ -335,7 +336,7 @@ class ChallengeCard extends React.Component {
         </Link>
         {renderLastUpdated(challenge)}
         <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
-          {renderStatus(challenge.status.toUpperCase())}
+          {renderStatus(challenge.status.toUpperCase(), getStatusText)}
         </Link>
         {shouldShowCurrentPhase && (<Link className={styles.col3} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
           <span className={styles.block}>{phaseMessage}</span>
@@ -371,7 +372,8 @@ ChallengeCard.propTypes = {
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
   isBillingAccountExpired: PropTypes.bool,
-  disableHover: PropTypes.bool
+  disableHover: PropTypes.bool,
+  getStatusText: PropTypes.func
 }
 
 export default withRouter(ChallengeCard)
