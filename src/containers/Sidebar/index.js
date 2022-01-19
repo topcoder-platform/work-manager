@@ -30,7 +30,7 @@ class SidebarContainer extends Component {
 
     // if we're viewing a specific project,
     // or we're viewing the self serve page,
-    // or if the project is already  loading,
+    // or if the project is already loading,
     // don't load the projects
     if (!!projectId || selfServe || isLoading) {
       // if we're not in the middle of loading,
