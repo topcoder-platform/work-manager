@@ -40,7 +40,7 @@
     "file-loader": "2.0.0",
     "filestack-js": "^3.20.0",
     "fs-extra": "7.0.0",
-    "html-webpack-plugin": "4.0.0-alpha.2",
+    "html-webpack-plugin": "4.0.0",
     "identity-obj-proxy": "3.0.0",
     "jest": "23.6.0",
     "jest-pnp-resolver": "1.0.1",
@@ -48,8 +48,8 @@
     "jquery": "^3.4.1",
     "jstimezonedetect": "^1.0.6",
     "jwt-decode": "^2.2.0",
-    "lodash": "^4.17.11",
-    "marked": "^1.0.0",
+    "lodash": "^4.17.21",
+    "marked": "^1.1.1",
     "mini-css-extract-plugin": "0.4.3",
     "moment": "^2.24.0",
     "moment-duration-format": "^2.2.2",
@@ -99,7 +99,8 @@
     "webpack": "^4.43.0",
     "webpack-dev-server": "^3.11.0",
     "webpack-manifest-plugin": "2.0.4",
-    "xss": "^1.0.6"
+    "xss": "^1.0.10",
+    "@snyk/protect": "latest"
   },
   "scripts": {
     "start": "node server.js",
@@ -107,7 +108,9 @@
     "build": "node scripts/build.js",
     "lint": "eslint ./src",
     "lint:fix": "eslint --fix ./src",
-    "test": "node scripts/test.js"
+    "test": "node scripts/test.js",
+    "prepare": "npm run snyk-protect",
+    "snyk-protect": "snyk-protect"
   },
   "eslintConfig": {
     "extends": [
@@ -172,5 +175,6 @@
   },
   "devDependencies": {
     "standard": "^12.0.1"
-  }
+  },
+  "snyk": true
 }
