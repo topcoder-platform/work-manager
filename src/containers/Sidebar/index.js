@@ -43,10 +43,9 @@ class SidebarContainer extends Component {
       return
     }
 
-    // if we don't have a project id
-    // and we already have projects in the list,
+    // if we already have projects in the list,
     // don't load the projects again
-    if (!projectId && !!projects && !!projects.length) {
+    if (!!projects && !!projects.length) {
       return
     }
 
