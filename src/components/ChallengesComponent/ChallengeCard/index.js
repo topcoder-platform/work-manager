@@ -276,7 +276,7 @@ class ChallengeCard extends React.Component {
 
   render () {
     const { isLaunch, isConfirm, isSaving, isDeleteLaunch, isCheckChalengePermission, hasEditChallengePermission } = this.state
-    const { challenge, shouldShowCurrentPhase, reloadChallengeList, isBillingAccountExpired } = this.props
+    const { challenge, shouldShowCurrentPhase, reloadChallengeList, isBillingAccountExpired, disableHover } = this.props
     const { phaseMessage, endTime } = getPhaseInfo(challenge)
     const deleteMessage = isCheckChalengePermission
       ? 'Checking permissions...'
@@ -313,7 +313,7 @@ class ChallengeCard extends React.Component {
           />
         )
         }
-        { isLaunch && isConfirm && (
+        {isLaunch && isConfirm && (
           <AlertModal
             title='Success'
             message={`Challenge "${challenge.name}" is activated successfuly`}
@@ -324,7 +324,7 @@ class ChallengeCard extends React.Component {
             okLink={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}
             onClose={this.resetModal}
           />
-        ) }
+        )}
 
         <Link className={styles.col1} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
           <div className={styles.name}>
@@ -342,7 +342,7 @@ class ChallengeCard extends React.Component {
           <span className='block light-text'>{endTime}</span>
         </Link>)}
         <div className={cn(styles.col4, styles.editingContainer)}>
-          {hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch)}
+          {(!disableHover && hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch))}
         </div>
         <div className={cn(styles.col4, styles.iconsContainer)}>
           <div className={styles.faIconContainer}>
@@ -361,7 +361,7 @@ class ChallengeCard extends React.Component {
 
 ChallengeCard.defaultPrps = {
   shouldShowCurrentPhase: true,
-  reloadChallengeList: () => {}
+  reloadChallengeList: () => { }
 }
 
 ChallengeCard.propTypes = {
@@ -370,7 +370,8 @@ ChallengeCard.propTypes = {
   reloadChallengeList: PropTypes.func,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
-  isBillingAccountExpired: PropTypes.bool
+  isBillingAccountExpired: PropTypes.bool,
+  disableHover: PropTypes.bool
 }
 
 export default withRouter(ChallengeCard)

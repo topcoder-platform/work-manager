@@ -58,7 +58,7 @@ import { removeChallengeFromPhaseProduct, saveChallengeAsPhaseProduct } from '..
 /**
  * Loads active challenges of project by page
  */
-export function loadChallengesByPage (page, projectId, status, filterChallengeName = null) {
+export function loadChallengesByPage (page, projectId, status, filterChallengeName = null, selfService = false) {
   return (dispatch, getState) => {
     dispatch({
       type: LOAD_CHALLENGES_PENDING,
@@ -84,6 +84,9 @@ export function loadChallengesByPage (page, projectId, status, filterChallengeNa
       filters['status'] = status === '' ? undefined : _.startCase(status.toLowerCase())
     } else if (!(_.isInteger(projectId) && projectId > 0)) {
       filters['status'] = 'Active'
+    }
+    if (selfService) {
+      filters.selfService = true
     }
 
     return fetchChallenges(filters, {

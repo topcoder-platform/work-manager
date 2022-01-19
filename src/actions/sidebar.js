@@ -53,6 +53,18 @@ export function loadProjects (filterProjectName = '', myProjects = true) {
 }
 
 /**
+ * Unlads projects of the authenticated user
+ */
+export function unloadProjects () {
+  return (dispatch) => {
+    dispatch({
+      type: LOAD_PROJECTS_SUCCESS,
+      projects: []
+    })
+  }
+}
+
+/**
  * Reset active params. e.g activeProjectId
  */
 export function resetSidebarActiveParams () {

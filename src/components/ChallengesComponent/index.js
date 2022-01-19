@@ -27,7 +27,8 @@ const ChallengesComponent = ({
   totalChallenges,
   partiallyUpdateChallengeDetails,
   deleteChallenge,
-  isBillingAccountExpired
+  isBillingAccountExpired,
+  selfService
 }) => {
   return (
     <Sticky top={10}>
@@ -41,7 +42,7 @@ const ChallengesComponent = ({
                 __html: xss(activeProject ? activeProject.name : '')
               }}
             />
-            { activeProject && activeProject.id && (
+            {activeProject && activeProject.id && (
               <span>
                 (<a href={`${CONNECT_APP_URL}/projects/${activeProject.id}`} target='_blank' rel='noopener noreferrer'>View Project</a>)
               </span>
@@ -76,6 +77,7 @@ const ChallengesComponent = ({
               partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
               deleteChallenge={deleteChallenge}
               isBillingAccountExpired={isBillingAccountExpired}
+              selfService={selfService}
             />
           )}
         </div>
@@ -101,7 +103,8 @@ ChallengesComponent.propTypes = {
   totalChallenges: PropTypes.number.isRequired,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
-  isBillingAccountExpired: PropTypes.bool
+  isBillingAccountExpired: PropTypes.bool,
+  selfService: PropTypes.bool
 }
 
 ChallengesComponent.defaultProps = {

@@ -11,7 +11,9 @@ import styles from './Sidebar.module.scss'
 import { isBetaMode } from '../../util/cookie'
 
 const Sidebar = ({
-  projectId, resetSidebarActiveParams
+  projectId,
+  resetSidebarActiveParams,
+  selfService
 }) => {
   return (
     <div className={styles.sidebar}>
@@ -21,12 +23,17 @@ const Sidebar = ({
         {isBetaMode() && <span className={styles.beta}>beta</span>}
       </div>
       <Link to='/'>
-        <div className={cn(styles.homeLink, { [styles.active]: !projectId })} onClick={resetSidebarActiveParams}>
+        <div className={cn(styles.homeLink, { [styles.active]: !projectId && !selfService })} onClick={resetSidebarActiveParams}>
           All Work
         </div>
       </Link>
+      <Link to='/self-service'>
+        <div className={cn(styles.homeLink, { [styles.active]: !projectId && selfService })} onClick={resetSidebarActiveParams}>
+          Self-Service Opportunities
+        </div>
+      </Link>
       <a href='https://github.com/topcoder-platform/work-manager/issues/new' target='_blank' rel='noopener noreferrer' className='chameleon-feedback'>
-        <div className={cn(styles.homeLink, { [styles.active]: !projectId })}>
+        <div className={cn(styles.homeLink, {})}>
           Give Application Feedback
         </div>
       </a>
@@ -40,7 +47,8 @@ const Sidebar = ({
 
 Sidebar.propTypes = {
   projectId: PropTypes.string,
-  resetSidebarActiveParams: PropTypes.func
+  resetSidebarActiveParams: PropTypes.func,
+  selfService: PropTypes.bool
 }
 
 export default Sidebar

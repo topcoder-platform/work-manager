@@ -48,10 +48,10 @@ class ChallengeList extends Component {
    * @param {String} projectStatus project status
    */
   updateSearchParam (searchText, projectStatus) {
-    const { status, filterChallengeName, loadChallengesByPage, activeProjectId } = this.props
+    const { status, filterChallengeName, loadChallengesByPage, activeProjectId, selfService } = this.props
     this.setState({ searchText }, () => {
       if (status !== projectStatus || searchText !== filterChallengeName) {
-        loadChallengesByPage(1, activeProjectId, projectStatus, searchText)
+        loadChallengesByPage(1, activeProjectId, projectStatus, searchText, selfService)
       }
     })
   }
@@ -62,9 +62,9 @@ class ChallengeList extends Component {
    */
   handlePageChange (pageNumber) {
     const { searchText } = this.state
-    const { page, loadChallengesByPage, activeProjectId, status } = this.props
+    const { page, loadChallengesByPage, activeProjectId, status, selfService } = this.props
     if (page !== pageNumber) {
-      loadChallengesByPage(pageNumber, activeProjectId, status, searchText)
+      loadChallengesByPage(pageNumber, activeProjectId, status, searchText, selfService)
     }
   }
 
@@ -73,8 +73,8 @@ class ChallengeList extends Component {
    */
   reloadChallengeList () {
     const { searchText } = this.state
-    const { page, loadChallengesByPage, activeProjectId, status } = this.props
-    loadChallengesByPage(page, activeProjectId, status, searchText)
+    const { page, loadChallengesByPage, activeProjectId, status, selfService } = this.props
+    loadChallengesByPage(page, activeProjectId, status, searchText, selfService)
   }
 
   /**
@@ -104,7 +104,8 @@ class ChallengeList extends Component {
       totalChallenges,
       partiallyUpdateChallengeDetails,
       deleteChallenge,
-      isBillingAccountExpired
+      isBillingAccountExpired,
+      selfService
     } = this.props
     if (warnMessage) {
       return <Message warnMessage={warnMessage} />
@@ -167,7 +168,8 @@ class ChallengeList extends Component {
                 break
               }
               case 1: {
-                this.directUpdateSearchParam(searchText, CHALLENGE_STATUS.NEW)
+                const status = selfService ? CHALLENGE_STATUS.DRAFT : CHALLENGE_STATUS.NEW
+                this.directUpdateSearchParam(searchText, status)
                 break
               }
               case 2: {
@@ -186,10 +188,10 @@ class ChallengeList extends Component {
           }}>
           <TabList>
             <Tab>Active</Tab>
-            <Tab>New</Tab>
+            {(!selfService && <Tab>New</Tab>)}
             <Tab>Draft</Tab>
-            <Tab>Completed</Tab>
-            <Tab>Cancelled</Tab>
+            {(!selfService && <Tab>Completed</Tab>)}
+            {(!selfService && <Tab>Cancelled</Tab>)}
           </TabList>
           <TabPanel />
           <TabPanel />
@@ -197,7 +199,10 @@ class ChallengeList extends Component {
         </Tabs>)}
         {
           challenges.length === 0 && (
-            <NoChallenge activeProject={activeProject} />
+            <NoChallenge
+              activeProject={activeProject}
+              selfService={selfService}
+            />
           )
         }
         {
@@ -225,6 +230,7 @@ class ChallengeList extends Component {
                         partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
                         deleteChallenge={deleteChallenge}
                         isBillingAccountExpired={isBillingAccountExpired}
+                        disableHover={selfService}
                       />
                     </li>
                   )
@@ -269,7 +275,8 @@ ChallengeList.propTypes = {
   totalChallenges: PropTypes.number.isRequired,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
-  isBillingAccountExpired: PropTypes.bool
+  isBillingAccountExpired: PropTypes.bool,
+  selfService: PropTypes.bool
 }
 
 export default ChallengeList
