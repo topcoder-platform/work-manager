@@ -230,6 +230,7 @@ class ChallengeList extends Component {
                         partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
                         deleteChallenge={deleteChallenge}
                         isBillingAccountExpired={isBillingAccountExpired}
+                        disableHover={selfService}
                       />
                     </li>
                   )
