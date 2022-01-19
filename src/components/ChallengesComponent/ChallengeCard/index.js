@@ -342,7 +342,7 @@ class ChallengeCard extends React.Component {
           <span className='block light-text'>{endTime}</span>
         </Link>)}
         <div className={cn(styles.col4, styles.editingContainer)}>
-          {(!disableHover && hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch))}
+          {(disableHover ? <Link className={styles.link} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>View Challenge</Link> : hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch))}
         </div>
         <div className={cn(styles.col4, styles.iconsContainer)}>
           <div className={styles.faIconContainer}>

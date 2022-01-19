@@ -117,7 +117,7 @@ class ChallengeList extends Component {
         selectedTab = 1
         break
       case CHALLENGE_STATUS.DRAFT:
-        selectedTab = 2
+        selectedTab = selfService ? 1 : 2
         break
       case CHALLENGE_STATUS.COMPLETED:
         selectedTab = 3
