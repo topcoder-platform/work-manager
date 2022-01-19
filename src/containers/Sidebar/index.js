@@ -15,8 +15,8 @@ class SidebarContainer extends Component {
   }
 
   componentDidMount () {
-    const { projectId, activeProjectId, isLoading, selfServe } = this.props
-    if (!projectId && activeProjectId === -1 && !isLoading && !selfServe) {
+    const { projectId, activeProjectId, isLoading, selfService } = this.props
+    if (!projectId && activeProjectId === -1 && !isLoading && !selfService) {
       this.props.loadProjects()
     }
 
@@ -26,13 +26,13 @@ class SidebarContainer extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    const { projectId, isLoading, selfServe, projects } = nextProps
+    const { projectId, isLoading, selfService, projects } = nextProps
 
     // if we're viewing a specific project,
     // or we're viewing the self serve page,
     // or if the project is already loading,
     // don't load the projects
-    if (!!projectId || selfServe || isLoading) {
+    if (!!projectId || selfService || isLoading) {
       // if we're not in the middle of loading,
       // and we have projects to unload,
       // unload them
@@ -59,7 +59,7 @@ class SidebarContainer extends Component {
   }
 
   render () {
-    const { isLoading, setActiveProject, projectId, resetSidebarActiveParams, projects, selfServe, unloadProjects } = this.props
+    const { isLoading, setActiveProject, projectId, resetSidebarActiveParams, projects, selfService, unloadProjects } = this.props
     const { searchProjectName } = this.state
 
     return (
@@ -71,7 +71,7 @@ class SidebarContainer extends Component {
         resetSidebarActiveParams={resetSidebarActiveParams}
         updateProjectsList={this.updateProjectName}
         searchProjectName={searchProjectName}
-        selfServe={selfServe}
+        selfService={selfService}
         unloadProjects={unloadProjects}
       />
     )
@@ -87,7 +87,7 @@ SidebarContainer.propTypes = {
   setActiveProject: PropTypes.func,
   projectId: PropTypes.string,
   resetSidebarActiveParams: PropTypes.func,
-  selfServe: PropTypes.bool
+  selfService: PropTypes.bool
 }
 
 const mapStateToProps = ({ sidebar }) => ({

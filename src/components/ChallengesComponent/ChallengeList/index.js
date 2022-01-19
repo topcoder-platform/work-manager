@@ -48,10 +48,10 @@ class ChallengeList extends Component {
    * @param {String} projectStatus project status
    */
   updateSearchParam (searchText, projectStatus) {
-    const { status, filterChallengeName, loadChallengesByPage, activeProjectId, selfServe } = this.props
+    const { status, filterChallengeName, loadChallengesByPage, activeProjectId, selfService } = this.props
     this.setState({ searchText }, () => {
       if (status !== projectStatus || searchText !== filterChallengeName) {
-        loadChallengesByPage(1, activeProjectId, projectStatus, searchText, selfServe)
+        loadChallengesByPage(1, activeProjectId, projectStatus, searchText, selfService)
       }
     })
   }
@@ -62,9 +62,9 @@ class ChallengeList extends Component {
    */
   handlePageChange (pageNumber) {
     const { searchText } = this.state
-    const { page, loadChallengesByPage, activeProjectId, status, selfServe } = this.props
+    const { page, loadChallengesByPage, activeProjectId, status, selfService } = this.props
     if (page !== pageNumber) {
-      loadChallengesByPage(pageNumber, activeProjectId, status, searchText, selfServe)
+      loadChallengesByPage(pageNumber, activeProjectId, status, searchText, selfService)
     }
   }
 
@@ -73,8 +73,8 @@ class ChallengeList extends Component {
    */
   reloadChallengeList () {
     const { searchText } = this.state
-    const { page, loadChallengesByPage, activeProjectId, status, selfServe } = this.props
-    loadChallengesByPage(page, activeProjectId, status, searchText, selfServe)
+    const { page, loadChallengesByPage, activeProjectId, status, selfService } = this.props
+    loadChallengesByPage(page, activeProjectId, status, searchText, selfService)
   }
 
   /**
@@ -270,7 +270,7 @@ ChallengeList.propTypes = {
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
   isBillingAccountExpired: PropTypes.bool,
-  selfServe: PropTypes.bool
+  selfService: PropTypes.bool
 }
 
 export default ChallengeList

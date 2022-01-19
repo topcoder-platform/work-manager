@@ -119,11 +119,11 @@ class Routes extends React.Component {
             <Sidebar />
           )()}
         />
-        <Route exact path='/self-serve'
+        <Route exact path='/self-service'
           render={() => renderApp(
-            <Challenges selfServe='true' />,
+            <Challenges selfService='true' />,
             <TopBarContainer />,
-            <Sidebar selfServe='true' />
+            <Sidebar selfService='true' />
           )()}
         />
         <Route exact path='/projects/:projectId/challenges/new'

@@ -28,10 +28,10 @@ class Challenges extends Component {
   }
 
   componentDidMount () {
-    const { activeProjectId, resetSidebarActiveParams, menu, projectId, selfServe } = this.props
+    const { activeProjectId, resetSidebarActiveParams, menu, projectId, selfService } = this.props
     if (menu === 'NULL' && activeProjectId !== -1) {
       resetSidebarActiveParams()
-    } else if (projectId || selfServe) {
+    } else if (projectId || selfService) {
       if (projectId) {
         this.props.loadProject(projectId)
       }
@@ -46,10 +46,10 @@ class Challenges extends Component {
   }
 
   reloadChallenges (props) {
-    const { activeProjectId, projectDetail: reduxProjectInfo, projectId, challengeProjectId, loadProject, selfServe } = props
-    if (activeProjectId !== challengeProjectId || selfServe) {
-      this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, CHALLENGE_STATUS.ACTIVE, '', selfServe)
-      if (!selfServe && (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId)
+    const { activeProjectId, projectDetail: reduxProjectInfo, projectId, challengeProjectId, loadProject, selfService } = props
+    if (activeProjectId !== challengeProjectId || selfService) {
+      this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, CHALLENGE_STATUS.ACTIVE, '', selfService)
+      if (!selfService && (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId)
       ) {
         loadProject(projectId)
       }
@@ -85,7 +85,7 @@ class Challenges extends Component {
       partiallyUpdateChallengeDetails,
       deleteChallenge,
       isBillingAccountExpired,
-      selfServe
+      selfService
     } = this.props
     const { searchProjectName, onlyMyProjects } = this.state
     const projectInfo = _.find(projects, { id: activeProjectId }) || {}
@@ -120,7 +120,7 @@ class Challenges extends Component {
             <label>My Projects</label>
           </div>
           {
-            activeProjectId === -1 && !selfServe && <div>No project selected. Select one below</div>
+            activeProjectId === -1 && !selfService && <div>No project selected. Select one below</div>
           }
           {
             isLoading ? <Loader /> : (
@@ -130,7 +130,7 @@ class Challenges extends Component {
             )
           }
         </div>
-        {(activeProjectId !== -1 || selfServe) && <ChallengesComponent
+        {(activeProjectId !== -1 || selfService) && <ChallengesComponent
           activeProject={({
             ...projectInfo,
             ...((reduxProjectInfo && reduxProjectInfo.id === activeProjectId) ? reduxProjectInfo : {})
@@ -148,7 +148,7 @@ class Challenges extends Component {
           partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
           deleteChallenge={deleteChallenge}
           isBillingAccountExpired={isBillingAccountExpired}
-          selfServe={selfServe}
+          selfService={selfService}
         />
         }
       </Fragment>
@@ -178,7 +178,7 @@ Challenges.propTypes = {
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
   isBillingAccountExpired: PropTypes.bool,
-  selfServe: PropTypes.bool
+  selfService: PropTypes.bool
 }
 
 const mapStateToProps = ({ challenges, sidebar, projects }) => ({
