@@ -1233,7 +1233,8 @@ class ChallengeEditor extends Component {
       projectDetail,
       attachments,
       projectPhases,
-      challengeId
+      challengeId,
+      assignYourselfCopilot
     } = this.props
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
@@ -1514,7 +1515,7 @@ class ChallengeEditor extends Component {
               />
             )}
             {projectDetail.version === 'v4' && <MilestoneField milestones={activeProjectMilestones} onUpdateSelect={this.onUpdateSelect} projectId={projectDetail.id} selectedMilestoneId={selectedMilestoneId} />}
-            <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} />
+            <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} assignYourselfCopilot={assignYourselfCopilot} />
             <ReviewTypeField
               reviewers={metadata.members}
               challenge={challenge}
@@ -1694,7 +1695,8 @@ ChallengeEditor.propTypes = {
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
   loggedInUser: PropTypes.shape().isRequired,
-  projectPhases: PropTypes.arrayOf(PropTypes.object).isRequired
+  projectPhases: PropTypes.arrayOf(PropTypes.object).isRequired,
+  assignYourselfCopilot: PropTypes.func.isRequired
 }
 
 export default withRouter(ChallengeEditor)

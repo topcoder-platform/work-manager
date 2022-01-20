@@ -309,7 +309,7 @@ class ChallengeEditor extends Component {
   }
 
   async assignYourselfCopilot () {
-    const { challengeDetails, loggedInUser, metadata } = this.props
+    const { challengeDetails, loggedInUser, metadata, createResource } = this.props
     const copilotRole = getResourceRoleByName(metadata.resourceRoles, 'Copilot')
     await createResource(challengeDetails.id, copilotRole.id, loggedInUser.handle)
   }
@@ -343,7 +343,6 @@ class ChallengeEditor extends Component {
       loggedInUser,
       projectPhases,
       isProjectPhasesLoading,
-      assignYourselfCopilot,
       rejectChallenge
       // members
     } = this.props
@@ -438,7 +437,7 @@ class ChallengeEditor extends Component {
               replaceResourceInRole={replaceResourceInRole}
               partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
               projectPhases={projectPhases}
-              assignYourselfCopilot={assignYourselfCopilot}
+              assignYourselfCopilot={this.assignYourselfCopilot}
               rejectChallenge={rejectChallenge}
               loggedInUser={loggedInUser}
             />
@@ -479,7 +478,7 @@ class ChallengeEditor extends Component {
                 deleteChallenge={deleteChallenge}
                 loggedInUser={loggedInUser}
                 projectPhases={projectPhases}
-                assignYourselfCopilot={assignYourselfCopilot}
+                assignYourselfCopilot={this.assignYourselfCopilot}
               />
             )}
           />
@@ -517,6 +516,7 @@ class ChallengeEditor extends Component {
 }
 
 ChallengeEditor.propTypes = {
+  createResource: PropTypes.func.isRequired,
   match: PropTypes.shape({
     path: PropTypes.string,
     params: PropTypes.shape({
@@ -563,7 +563,6 @@ ChallengeEditor.propTypes = {
   loadProject: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
   isProjectPhasesLoading: PropTypes.bool,
-  assignYourselfCopilot: PropTypes.func.isRequired,
   rejectChallenge: PropTypes.func.isRequired
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
