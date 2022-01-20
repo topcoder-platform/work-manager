@@ -82,7 +82,8 @@ const ChallengeViewTabs = ({
   const isTask = _.get(challenge, 'task.isTask', false)
 
   const isSelfService = challenge.legacy.selfService
-  const launchText = `${isSelfService && challenge.status.toUpperCase() === CHALLENGE_STATUS.DRAFT ? 'Approve and ' : ''}Launch`
+  const isDraft = challenge.status.toUpperCase() === CHALLENGE_STATUS.DRAFT
+  const launchText = `${isSelfService && isDraft ? 'Approve and ' : ''}Launch`
 
   return (
     <div className={styles.list}>
@@ -146,6 +147,14 @@ const ChallengeViewTabs = ({
           {enableEdit && !isSelfService && (
             <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} />
           )}
+          {isSelfService && isDraft &&
+            (
+              <PrimaryButton
+                text={'Reject challenge'}
+                type={'danger'}
+                onClick={onLaunchChallenge} // TODO
+              />
+            )}
           <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
         </div>
       </div>
