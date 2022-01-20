@@ -43,7 +43,8 @@ const ChallengeViewTabs = ({
   onLaunchChallenge,
   cancelChallenge,
   onCloseTask,
-  projectPhases
+  projectPhases,
+  assignYourselfCopilit
 }) => {
   const [selectedTab, setSelectedTab] = useState(0)
 
@@ -94,7 +95,7 @@ const ChallengeViewTabs = ({
               styles.actionButtonsLeft
             )}
           >
-            { isTask ? (<ForumLink challenge={challenge} />)
+            {isTask ? (<ForumLink challenge={challenge} />)
               : (<LegacyLinks challenge={challenge} challengeView />)
             }
           </div>
@@ -208,6 +209,7 @@ const ChallengeViewTabs = ({
           onLaunchChallenge={onLaunchChallenge}
           onCloseTask={onCloseTask}
           projectPhases={projectPhases}
+          assignYourselfCopilit={assignYourselfCopilit}
         />
       )}
       {selectedTab === 1 && (
@@ -244,7 +246,8 @@ ChallengeViewTabs.propTypes = {
   onLaunchChallenge: PropTypes.func,
   cancelChallenge: PropTypes.func.isRequired,
   onCloseTask: PropTypes.func,
-  projectPhases: PropTypes.arrayOf(PropTypes.object)
+  projectPhases: PropTypes.arrayOf(PropTypes.object),
+  assignYourselfCopilit: PropTypes.func.isRequired
 }
 
 export default ChallengeViewTabs

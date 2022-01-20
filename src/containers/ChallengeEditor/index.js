@@ -306,6 +306,10 @@ class ChallengeEditor extends Component {
     }
   }
 
+  assignYourselfCopilit () {
+    console.debug('assign copilit')
+  }
+
   render () {
     const {
       match,
@@ -330,7 +334,8 @@ class ChallengeEditor extends Component {
       deleteChallenge,
       loggedInUser,
       projectPhases,
-      isProjectPhasesLoading
+      isProjectPhasesLoading,
+      assignYourselfCopilit
       // members
     } = this.props
     const {
@@ -424,6 +429,7 @@ class ChallengeEditor extends Component {
               replaceResourceInRole={replaceResourceInRole}
               partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
               projectPhases={projectPhases}
+              assignYourselfCopilit={assignYourselfCopilit}
             />
           )}
         />
@@ -487,6 +493,7 @@ class ChallengeEditor extends Component {
               enableEdit={enableEdit}
               onLaunchChallenge={this.onLaunchChallenge}
               onCloseTask={this.onCloseTask}
+              assignYourselfCopilit={this.assignYourselfCopilit}
             />
           )}
         />
@@ -541,7 +548,8 @@ ChallengeEditor.propTypes = {
   replaceResourceInRole: PropTypes.func,
   loadProject: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
-  isProjectPhasesLoading: PropTypes.bool
+  isProjectPhasesLoading: PropTypes.bool,
+  assignYourselfCopilit: PropTypes.func.isRequired
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
 
