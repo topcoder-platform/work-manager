@@ -6,7 +6,7 @@ import moment from 'moment'
 import ChallengeEditorComponent from '../../components/ChallengeEditor'
 import ChallengeViewTabs from '../../components/ChallengeEditor/ChallengeViewTabs'
 import Loader from '../../components/Loader'
-import { checkAdmin } from '../../util/tc'
+import { checkAdmin, getResourceRoleByName } from '../../util/tc'
 import styles from './ChallengeEditor.module.scss'
 
 import {
@@ -27,7 +27,8 @@ import {
   partiallyUpdateChallengeDetails,
   deleteChallenge,
   createChallenge,
-  replaceResourceInRole
+  replaceResourceInRole,
+  createResource
 } from '../../actions/challenges'
 
 import { loadSubmissions } from '../../actions/challengeSubmissions'
@@ -65,6 +66,7 @@ class ChallengeEditor extends Component {
     this.onCloseTask = this.onCloseTask.bind(this)
     this.closeTask = this.closeTask.bind(this)
     this.fetchProjectDetails = this.fetchProjectDetails.bind(this)
+    this.assignYourselfCopilot = this.assignYourselfCopilot.bind(this)
   }
 
   componentDidMount () {
@@ -306,8 +308,10 @@ class ChallengeEditor extends Component {
     }
   }
 
-  assignYourselfCopilot () {
-    console.debug('assign copilot')
+  async assignYourselfCopilot () {
+    const { challengeDetails, loggedInUser, metadata } = this.props
+    const copilotRole = getResourceRoleByName(metadata.resourceRoles, 'Copilot')
+    await createResource(challengeDetails.id, copilotRole.id, loggedInUser.handle)
   }
 
   rejectChallenge () {
@@ -475,6 +479,7 @@ class ChallengeEditor extends Component {
                 deleteChallenge={deleteChallenge}
                 loggedInUser={loggedInUser}
                 projectPhases={projectPhases}
+                assignYourselfCopilot={assignYourselfCopilot}
               />
             )}
           />
@@ -617,7 +622,8 @@ const mapDispatchToProps = {
   deleteChallenge,
   createChallenge,
   replaceResourceInRole,
-  loadProject
+  loadProject,
+  createResource
 }
 
 export default withRouter(
