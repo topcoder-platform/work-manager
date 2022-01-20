@@ -310,6 +310,10 @@ class ChallengeEditor extends Component {
     console.debug('assign copilit')
   }
 
+  rejectChallenge () {
+    console.debug('rejecting challenge')
+  }
+
   render () {
     const {
       match,
@@ -335,7 +339,8 @@ class ChallengeEditor extends Component {
       loggedInUser,
       projectPhases,
       isProjectPhasesLoading,
-      assignYourselfCopilit
+      assignYourselfCopilit,
+      rejectChallenge
       // members
     } = this.props
     const {
@@ -430,6 +435,7 @@ class ChallengeEditor extends Component {
               partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
               projectPhases={projectPhases}
               assignYourselfCopilit={assignYourselfCopilit}
+              rejectChallenge={rejectChallenge}
             />
           )}
         />
@@ -494,6 +500,7 @@ class ChallengeEditor extends Component {
               onLaunchChallenge={this.onLaunchChallenge}
               onCloseTask={this.onCloseTask}
               assignYourselfCopilit={this.assignYourselfCopilit}
+              rejectChallenge={this.rejectChallenge}
             />
           )}
         />
@@ -549,7 +556,8 @@ ChallengeEditor.propTypes = {
   loadProject: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
   isProjectPhasesLoading: PropTypes.bool,
-  assignYourselfCopilit: PropTypes.func.isRequired
+  assignYourselfCopilit: PropTypes.func.isRequired,
+  rejectChallenge: PropTypes.func.isRequired
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
 

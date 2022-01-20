@@ -44,7 +44,8 @@ const ChallengeViewTabs = ({
   cancelChallenge,
   onCloseTask,
   projectPhases,
-  assignYourselfCopilit
+  assignYourselfCopilit,
+  rejectChallenge
 }) => {
   const [selectedTab, setSelectedTab] = useState(0)
 
@@ -147,14 +148,15 @@ const ChallengeViewTabs = ({
           {enableEdit && !isSelfService && (
             <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} />
           )}
-          {isSelfService && isDraft &&
-            (
+          {isSelfService && isDraft && (
+            <div className={styles.button}>
               <PrimaryButton
                 text={'Reject challenge'}
                 type={'danger'}
-                onClick={onLaunchChallenge} // TODO
+                onClick={rejectChallenge}
               />
-            )}
+            </div>
+          )}
           <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
         </div>
       </div>
@@ -223,6 +225,7 @@ const ChallengeViewTabs = ({
           onCloseTask={onCloseTask}
           projectPhases={projectPhases}
           assignYourselfCopilit={assignYourselfCopilit}
+          rejectChallenge={rejectChallenge}
         />
       )}
       {selectedTab === 1 && (
@@ -260,7 +263,8 @@ ChallengeViewTabs.propTypes = {
   cancelChallenge: PropTypes.func.isRequired,
   onCloseTask: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
-  assignYourselfCopilit: PropTypes.func.isRequired
+  assignYourselfCopilit: PropTypes.func.isRequired,
+  rejectChallenge: PropTypes.func.isRequired
 }
 
 export default ChallengeViewTabs
