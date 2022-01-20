@@ -51,7 +51,7 @@ class ChallengeList extends Component {
     const { status, filterChallengeName, loadChallengesByPage, activeProjectId, selfService } = this.props
     this.setState({ searchText }, () => {
       if (status !== projectStatus || searchText !== filterChallengeName) {
-        loadChallengesByPage(1, activeProjectId, projectStatus, searchText, selfService)
+        loadChallengesByPage(1, activeProjectId, projectStatus, searchText, selfService, this.getHandle())
       }
     })
   }
@@ -64,7 +64,7 @@ class ChallengeList extends Component {
     const { searchText } = this.state
     const { page, loadChallengesByPage, activeProjectId, status, selfService } = this.props
     if (page !== pageNumber) {
-      loadChallengesByPage(pageNumber, activeProjectId, status, searchText, selfService)
+      loadChallengesByPage(pageNumber, activeProjectId, status, searchText, selfService, this.getHandle())
     }
   }
 
@@ -74,7 +74,7 @@ class ChallengeList extends Component {
   reloadChallengeList () {
     const { searchText } = this.state
     const { page, loadChallengesByPage, activeProjectId, status, selfService } = this.props
-    loadChallengesByPage(page, activeProjectId, status, searchText, selfService)
+    loadChallengesByPage(page, activeProjectId, status, searchText, selfService, this.getHandle())
   }
 
   /**
@@ -90,6 +90,22 @@ class ChallengeList extends Component {
    */
   hideError () {
     this.setState({ errorMessage: null })
+  }
+
+  getStatusTextFunc (selfService) {
+    const draftText = selfService ? 'Waiting for approval' : 'Draft'
+    return (status) => {
+      switch (status) {
+        case CHALLENGE_STATUS.DRAFT:
+          return draftText
+        default:
+          return status
+      }
+    }
+  }
+
+  getHandle () {
+    return this.props.auth && this.props.auth.user ? this.props.auth.user.handle : null
   }
 
   render () {
@@ -187,9 +203,9 @@ class ChallengeList extends Component {
             }
           }}>
           <TabList>
-            <Tab>Active</Tab>
+            <Tab>{(selfService ? 'Assigned challenges' : 'Active')}</Tab>
             {(!selfService && <Tab>New</Tab>)}
-            <Tab>Draft</Tab>
+            <Tab>{this.getStatusTextFunc(selfService)(CHALLENGE_STATUS.DRAFT)}</Tab>
             {(!selfService && <Tab>Completed</Tab>)}
             {(!selfService && <Tab>Cancelled</Tab>)}
           </TabList>
@@ -231,6 +247,7 @@ class ChallengeList extends Component {
                         deleteChallenge={deleteChallenge}
                         isBillingAccountExpired={isBillingAccountExpired}
                         disableHover={selfService}
+                        getStatusText={this.getStatusTextFunc(selfService)}
                       />
                     </li>
                   )
@@ -276,7 +293,8 @@ ChallengeList.propTypes = {
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
   isBillingAccountExpired: PropTypes.bool,
-  selfService: PropTypes.bool
+  selfService: PropTypes.bool,
+  auth: PropTypes.object.isRequired
 }
 
 export default ChallengeList

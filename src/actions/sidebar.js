@@ -53,7 +53,7 @@ export function loadProjects (filterProjectName = '', myProjects = true) {
 }
 
 /**
- * Unlads projects of the authenticated user
+ * Unloads projects of the authenticated user
  */
 export function unloadProjects () {
   return (dispatch) => {

@@ -37,7 +37,7 @@ const Sidebar = ({
         )
       }
       <a href='https://github.com/topcoder-platform/work-manager/issues/new' target='_blank' rel='noopener noreferrer' className='chameleon-feedback'>
-        <div className={cn(styles.homeLink, {})}>
+        <div className={cn(styles.homeLink)}>
           Give Application Feedback
         </div>
       </a>

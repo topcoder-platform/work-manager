@@ -37,7 +37,8 @@ const ChallengeView = ({
   enableEdit,
   onLaunchChallenge,
   onCloseTask,
-  projectPhases
+  projectPhases,
+  assignYourselfCopilit
 }) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
@@ -103,18 +104,18 @@ const ChallengeView = ({
                 </span>
               </div>
               {selectedMilestone &&
-              <div className={styles.col}>
-                <span><span className={styles.fieldTitle}>Milestone:</span> {selectedMilestone ? (
-                  <a href={`${CONNECT_APP_URL}/projects/${projectDetail.id}`} target='_blank'
-                    rel='noopener noreferrer'>
-                    {selectedMilestone.name}
-                  </a>
-                ) : ''}</span>
-              </div>
+                <div className={styles.col}>
+                  <span><span className={styles.fieldTitle}>Milestone:</span> {selectedMilestone ? (
+                    <a href={`${CONNECT_APP_URL}/projects/${projectDetail.id}`} target='_blank'
+                      rel='noopener noreferrer'>
+                      {selectedMilestone.name}
+                    </a>
+                  ) : ''}</span>
+                </div>
               }
               <div className={styles.col}>
                 <span className={styles.fieldTitle}>Track:</span>
-                <Track disabled type={challengeTrack} isActive key={challenge.trackId} onUpdateOthers={() => {}} />
+                <Track disabled type={challengeTrack} isActive key={challenge.trackId} onUpdateOthers={() => { }} />
               </div>
               <div className={styles.col}>
                 <span><span className={styles.fieldTitle}>Type:</span> {selectedType ? selectedType.name : ''}</span>
@@ -130,10 +131,11 @@ const ChallengeView = ({
               </div>
             </div>
             {isTask &&
-            <AssignedMemberField challenge={challenge} assignedMemberDetails={assignedMemberDetails} readOnly />}
+              <AssignedMemberField challenge={challenge} assignedMemberDetails={assignedMemberDetails} readOnly />}
             <CopilotField challenge={{
-              copilot
-            }} copilots={metadata.members} readOnly />
+              copilot,
+              selfService: challenge.legacy.selfService
+            }} copilots={metadata.members} assignYourselfCopilit={assignYourselfCopilit} readOnly />
             <div className={cn(styles.row, styles.topRow)}>
               <div className={styles.col}>
                 <span><span
@@ -259,7 +261,8 @@ ChallengeView.propTypes = {
   enableEdit: PropTypes.bool,
   onLaunchChallenge: PropTypes.func,
   onCloseTask: PropTypes.func,
-  projectPhases: PropTypes.arrayOf(PropTypes.object)
+  projectPhases: PropTypes.arrayOf(PropTypes.object),
+  assignYourselfCopilit: PropTypes.func.isRequired
 }
 
 export default withRouter(ChallengeView)

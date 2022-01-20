@@ -14,7 +14,7 @@ import ForumLink from '../../ForumLink'
 import Registrants from '../Registrants'
 import Submissions from '../Submissions'
 import { getResourceRoleByName } from '../../../util/tc'
-import { MESSAGE } from '../../../config/constants'
+import { CHALLENGE_STATUS, MESSAGE } from '../../../config/constants'
 import Tooltip from '../../Tooltip'
 import CancelDropDown from '../Cancel-Dropdown'
 import 'react-tabs/style/react-tabs.css'
@@ -43,7 +43,8 @@ const ChallengeViewTabs = ({
   onLaunchChallenge,
   cancelChallenge,
   onCloseTask,
-  projectPhases
+  projectPhases,
+  assignYourselfCopilit
 }) => {
   const [selectedTab, setSelectedTab] = useState(0)
 
@@ -80,6 +81,10 @@ const ChallengeViewTabs = ({
 
   const isTask = _.get(challenge, 'task.isTask', false)
 
+  const isSelfService = challenge.legacy.selfService
+  const isDraft = challenge.status.toUpperCase() === CHALLENGE_STATUS.DRAFT
+  const launchText = `${isSelfService && isDraft ? 'Approve and ' : ''}Launch`
+
   return (
     <div className={styles.list}>
       <Helmet title='View Details' />
@@ -94,7 +99,7 @@ const ChallengeViewTabs = ({
               styles.actionButtonsLeft
             )}
           >
-            { isTask ? (<ForumLink challenge={challenge} />)
+            {isTask ? (<ForumLink challenge={challenge} />)
               : (<LegacyLinks challenge={challenge} challengeView />)
             }
           </div>
@@ -107,12 +112,13 @@ const ChallengeViewTabs = ({
             styles.actionButtonsRight
           )}
         >
-          {(challenge.status === 'Draft' || challenge.status === 'New') && <div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>}
+          {(challenge.status === 'Draft' || challenge.status === 'New') && !isSelfService &&
+            (<div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>)}
           {challenge.status === 'Draft' && (
             <div className={styles.button}>
               {challenge.legacyId || isTask ? (
                 <PrimaryButton
-                  text={'Launch'}
+                  text={launchText}
                   type={'info'}
                   onClick={onLaunchChallenge}
                 />
@@ -138,9 +144,17 @@ const ChallengeViewTabs = ({
               )}
             </div>
           )}
-          {enableEdit && (
+          {enableEdit && !isSelfService && (
             <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} />
           )}
+          {isSelfService && isDraft &&
+            (
+              <PrimaryButton
+                text={'Reject challenge'}
+                type={'danger'}
+                onClick={onLaunchChallenge} // TODO
+              />
+            )}
           <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
         </div>
       </div>
@@ -208,6 +222,7 @@ const ChallengeViewTabs = ({
           onLaunchChallenge={onLaunchChallenge}
           onCloseTask={onCloseTask}
           projectPhases={projectPhases}
+          assignYourselfCopilit={assignYourselfCopilit}
         />
       )}
       {selectedTab === 1 && (
@@ -244,7 +259,8 @@ ChallengeViewTabs.propTypes = {
   onLaunchChallenge: PropTypes.func,
   cancelChallenge: PropTypes.func.isRequired,
   onCloseTask: PropTypes.func,
-  projectPhases: PropTypes.arrayOf(PropTypes.object)
+  projectPhases: PropTypes.arrayOf(PropTypes.object),
+  assignYourselfCopilit: PropTypes.func.isRequired
 }
 
 export default ChallengeViewTabs
