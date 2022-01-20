@@ -6,7 +6,7 @@ import cn from 'classnames'
 import _ from 'lodash'
 import CopilotCard from '../../CopilotCard'
 
-const CopilotField = ({ copilots, challenge, onUpdateOthers, readOnly, assignYourselfCopilit }) => {
+const CopilotField = ({ copilots, challenge, onUpdateOthers, readOnly, assignYourselfCopilot }) => {
   let errMessage = 'Please set a copilot'
   const selectedCopilot = _.find(copilots, { handle: challenge.copilot })
   const copilotFee = _.find(challenge.prizeSets, p => p.type === 'copilot', [])
@@ -23,7 +23,7 @@ const CopilotField = ({ copilots, challenge, onUpdateOthers, readOnly, assignYou
           {(selfService && <PrimaryButton
             text={'Assign Yourself'}
             type={'info'}
-            onClick={assignYourselfCopilit}
+            onClick={assignYourselfCopilot}
           />)}
         </div>)}
       </div>
@@ -65,7 +65,7 @@ CopilotField.propTypes = {
   challenge: PropTypes.shape().isRequired,
   onUpdateOthers: PropTypes.func,
   readOnly: PropTypes.bool,
-  assignYourselfCopilit: PropTypes.func.isRequired
+  assignYourselfCopilot: PropTypes.func.isRequired
 }
 
 export default CopilotField

@@ -306,8 +306,8 @@ class ChallengeEditor extends Component {
     }
   }
 
-  assignYourselfCopilit () {
-    console.debug('assign copilit')
+  assignYourselfCopilot () {
+    console.debug('assign copilot')
   }
 
   rejectChallenge () {
@@ -339,7 +339,7 @@ class ChallengeEditor extends Component {
       loggedInUser,
       projectPhases,
       isProjectPhasesLoading,
-      assignYourselfCopilit,
+      assignYourselfCopilot,
       rejectChallenge
       // members
     } = this.props
@@ -434,8 +434,9 @@ class ChallengeEditor extends Component {
               replaceResourceInRole={replaceResourceInRole}
               partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
               projectPhases={projectPhases}
-              assignYourselfCopilit={assignYourselfCopilit}
+              assignYourselfCopilot={assignYourselfCopilot}
               rejectChallenge={rejectChallenge}
+              loggedInUser={loggedInUser}
             />
           )}
         />
@@ -499,8 +500,9 @@ class ChallengeEditor extends Component {
               enableEdit={enableEdit}
               onLaunchChallenge={this.onLaunchChallenge}
               onCloseTask={this.onCloseTask}
-              assignYourselfCopilit={this.assignYourselfCopilit}
+              assignYourselfCopilot={this.assignYourselfCopilot}
               rejectChallenge={this.rejectChallenge}
+              loggedInUser={loggedInUser}
             />
           )}
         />
@@ -556,7 +558,7 @@ ChallengeEditor.propTypes = {
   loadProject: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
   isProjectPhasesLoading: PropTypes.bool,
-  assignYourselfCopilit: PropTypes.func.isRequired,
+  assignYourselfCopilot: PropTypes.func.isRequired,
   rejectChallenge: PropTypes.func.isRequired
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
