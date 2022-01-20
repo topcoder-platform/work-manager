@@ -181,7 +181,7 @@ class ChallengeEditor extends Component {
     }
   }
 
-  async resetChallengeData (setState = () => {}) {
+  async resetChallengeData (setState = () => { }) {
     const { isNew, challengeDetails, metadata, attachments, challengeId, assignedMemberDetails } = this.props
     if (
       challengeDetails &&
@@ -214,11 +214,13 @@ class ChallengeEditor extends Component {
         setState({
           challenge: challengeDetail,
           assignedMemberDetails,
-          draftChallenge: { data: {
-            ..._.cloneDeep(challengeDetails),
-            copilot: challengeData.copilot,
-            reviewer: challengeData.reviewer
-          } },
+          draftChallenge: {
+            data: {
+              ..._.cloneDeep(challengeDetails),
+              copilot: challengeData.copilot,
+              reviewer: challengeData.reviewer
+            }
+          },
           isLoading: false,
           isOpenAdvanceSettings,
           currentTemplate
@@ -506,7 +508,7 @@ class ChallengeEditor extends Component {
     if (fileTypesMetadataIndex > -1) {
       fileTypesMetadata = { ...newChallenge.metadata[fileTypesMetadataIndex] }
       newChallenge.metadata[fileTypesMetadataIndex] = fileTypesMetadata
-    // if not yet, create an empty record in metadata
+      // if not yet, create an empty record in metadata
     } else {
       fileTypesMetadata = { name: 'fileTypes', value: '[]' }
       newChallenge.metadata.push(fileTypesMetadata)
@@ -1038,7 +1040,8 @@ class ChallengeEditor extends Component {
           newChallenge.phases = _.cloneDeep(draftChallenge.data.phases)
           this.setState({
             draftChallenge,
-            challenge: newChallenge })
+            challenge: newChallenge
+          })
         } else {
           this.setState({ draftChallenge })
         }
@@ -1065,7 +1068,7 @@ class ChallengeEditor extends Component {
     return challengeId
   }
 
-  async updateAllChallengeInfo (status, cb = () => {}) {
+  async updateAllChallengeInfo (status, cb = () => { }) {
     const { updateChallengeDetails, assignedMemberDetails: oldAssignedMember, projectDetail } = this.props
     if (this.state.isSaving) return
     this.setState({ isSaving: true }, async () => {
@@ -1095,11 +1098,13 @@ class ChallengeEditor extends Component {
         const draftChallenge = { data: action.challengeDetails }
         draftChallenge.data.copilot = copilot
         draftChallenge.data.reviewer = reviewer
-        this.setState({ isLaunch: true,
+        this.setState({
+          isLaunch: true,
           isConfirm: newChallenge.id,
           draftChallenge,
           challenge: newChallenge,
-          isSaving: false }, cb)
+          isSaving: false
+        }, cb)
       } catch (e) {
         const error = this.formatResponseError(e) || `Unable to update the challenge to status ${status}`
         this.setState({ isSaving: false, error }, cb)
@@ -1353,7 +1358,7 @@ class ChallengeEditor extends Component {
           />
         )
 
-      // if some information for closing task is missing, ask to complete it
+        // if some information for closing task is missing, ask to complete it
       } else {
         const formattedErrors = validationErrors.length === 1 ? validationErrors[0] : (
           validationErrors.slice(0, -1).join(', ') + ' and ' + validationErrors[validationErrors.length - 1]
@@ -1410,7 +1415,7 @@ class ChallengeEditor extends Component {
                 <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
               </div> */}
               <div className={styles.button}>
-                { !this.state.hasValidationErrors ? (
+                {!this.state.hasValidationErrors ? (
                   <PrimaryButton text={isSaving ? 'Saving...' : 'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
                 ) : (
                   <PrimaryButton text={'Save Draft'} type={'disabled'} />
@@ -1468,11 +1473,11 @@ class ChallengeEditor extends Component {
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             {projectDetail.version === 'v4' && <MilestoneField milestones={activeProjectMilestones} onUpdateSelect={this.onUpdateSelect} projectId={projectDetail.id} selectedMilestoneId={selectedMilestoneId} />}
-            { useTask && (<DiscussionField hasForum={hasForum} toggleForum={this.toggleForumOnCreate} />) }
+            {useTask && (<DiscussionField hasForum={hasForum} toggleForum={this.toggleForumOnCreate} />)}
           </div>
           {showDesignChallengeWarningModel && designChallengeModal}
-          { errorContainer }
-          { actionButtons }
+          {errorContainer}
+          {actionButtons}
         </form>
       ) : (
         <form name='challenge-info-form' noValidate autoComplete='off' onSubmit={(e) => e.preventDefault()}>
@@ -1489,7 +1494,7 @@ class ChallengeEditor extends Component {
               </div>
               <div className={styles.col}>
                 <span className={styles.fieldTitle}>Track:</span>
-                <Track disabled type={challengeTrack} isActive key={challenge.trackId} onUpdateOthers={() => {}} />
+                <Track disabled type={challengeTrack} isActive key={challenge.trackId} onUpdateOthers={() => { }} />
               </div>
               <div className={styles.col}>
                 <span><span className={styles.fieldTitle}>Type:</span> {selectedType ? selectedType.name : ''}</span>
@@ -1531,7 +1536,7 @@ class ChallengeEditor extends Component {
                 </label>
               </div>
             </div>
-            { isOpenAdvanceSettings && (
+            {isOpenAdvanceSettings && (
               <React.Fragment>
                 <NDAField challenge={challenge} toggleNdaRequire={this.toggleNdaRequire} />
                 {/* remove terms field and use default term */}
@@ -1580,7 +1585,7 @@ class ChallengeEditor extends Component {
                 />
               )
             }
-            { showTimeline && (
+            {showTimeline && (
               <ChallengeScheduleField
                 templates={this.getAvailableTimelineTemplates()}
                 challengePhases={metadata.challengePhases}
@@ -1612,7 +1617,7 @@ class ChallengeEditor extends Component {
               onUpdateMetadata={this.onUpdateMetadata}
             />
             {/* hide until challenge API change is pushed to PROD https://github.com/topcoder-platform/challenge-api/issues/348 */}
-            { false && <AttachmentField
+            {false && <AttachmentField
               challenge={{ ...challenge, id: currentChallengeId }}
               challengeId={currentChallengeId}
               attachments={attachments}
@@ -1624,8 +1629,8 @@ class ChallengeEditor extends Component {
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <ChallengeTotalField challenge={challenge} />
           </div>
-          { errorContainer }
-          { actionButtons }
+          {errorContainer}
+          {actionButtons}
         </form>
       )
 
@@ -1644,11 +1649,11 @@ class ChallengeEditor extends Component {
         </div>
         <div className={styles.textRequired}>* Required</div>
         <div className={styles.container}>
-          { activateModal }
-          { draftModal }
-          { closeTaskModal }
+          {activateModal}
+          {draftModal}
+          {closeTaskModal}
           <div className={styles.formContainer}>
-            { challengeForm }
+            {challengeForm}
           </div>
         </div>
       </div>
