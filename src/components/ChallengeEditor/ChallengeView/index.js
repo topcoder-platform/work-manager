@@ -39,7 +39,7 @@ const ChallengeView = ({
   onCloseTask,
   projectPhases,
   assignYourselfCopilot,
-  rejectChallenge
+  showRejectChallengeModal
 }) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
@@ -136,7 +136,7 @@ const ChallengeView = ({
             <CopilotField challenge={{
               copilot,
               selfService: challenge.legacy.selfService
-            }} copilots={metadata.members} assignYourselfCopilot={assignYourselfCopilot} rejectChallenge={rejectChallenge} readOnly />
+            }} copilots={metadata.members} assignYourselfCopilot={assignYourselfCopilot} showRejectChallengeModal={showRejectChallengeModal} readOnly />
             <div className={cn(styles.row, styles.topRow)}>
               <div className={styles.col}>
                 <span><span
@@ -264,7 +264,7 @@ ChallengeView.propTypes = {
   onCloseTask: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
   assignYourselfCopilot: PropTypes.func.isRequired,
-  rejectChallenge: PropTypes.func.isRequired
+  showRejectChallengeModal: PropTypes.func.isRequired
 }
 
 export default withRouter(ChallengeView)

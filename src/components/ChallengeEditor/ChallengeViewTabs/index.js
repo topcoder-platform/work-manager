@@ -45,7 +45,7 @@ const ChallengeViewTabs = ({
   onCloseTask,
   projectPhases,
   assignYourselfCopilot,
-  rejectChallenge,
+  showRejectChallengeModal,
   loggedInUser
 }) => {
   const [selectedTab, setSelectedTab] = useState(0)
@@ -155,7 +155,7 @@ const ChallengeViewTabs = ({
               <PrimaryButton
                 text={'Reject challenge'}
                 type={'danger'}
-                onClick={rejectChallenge}
+                onClick={showRejectChallengeModal}
               />
             </div>
           )}
@@ -227,7 +227,7 @@ const ChallengeViewTabs = ({
           onCloseTask={onCloseTask}
           projectPhases={projectPhases}
           assignYourselfCopilot={assignYourselfCopilot}
-          rejectChallenge={rejectChallenge}
+          showRejectChallengeModal={showRejectChallengeModal}
         />
       )}
       {selectedTab === 1 && (
@@ -266,7 +266,7 @@ ChallengeViewTabs.propTypes = {
   onCloseTask: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
   assignYourselfCopilot: PropTypes.func.isRequired,
-  rejectChallenge: PropTypes.func.isRequired,
+  showRejectChallengeModal: PropTypes.func.isRequired,
   loggedInUser: PropTypes.object.isRequired
 }
 
