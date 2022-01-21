@@ -77,6 +77,7 @@ class ChallengeEditor extends Component {
     this.closeRejectModal = this.closeRejectModal.bind(this)
     this.rejectChallenge = this.rejectChallenge.bind(this)
     this.onChangeCancelReason = this.onChangeCancelReason.bind(this)
+    this.onApproveChallenge = this.onApproveChallenge.bind(this)
   }
 
   componentDidMount () {
@@ -201,6 +202,20 @@ class ChallengeEditor extends Component {
           'Unable to activate challenge as Billing Account is not active.'
       })
     }
+  }
+
+  async onApproveChallenge () {
+    const { partiallyUpdateChallengeDetails, challengeDetails } = this.props
+    const newStatus = 'Approved'
+    await partiallyUpdateChallengeDetails(challengeDetails.id, {
+      status: newStatus
+    })
+    this.setState({
+      challengeDetails: {
+        ...challengeDetails,
+        status: newStatus
+      }
+    })
   }
 
   async cancelChallenge (challenge, cancelReason) {
@@ -580,6 +595,7 @@ class ChallengeEditor extends Component {
               assignYourselfCopilot={this.assignYourselfCopilot}
               showRejectChallengeModal={this.showRejectChallengeModal}
               loggedInUser={loggedInUser}
+              onApproveChallenge={this.onApproveChallenge}
             />
           )}
         />
