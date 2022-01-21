@@ -74,6 +74,7 @@ class ChallengeEditor extends Component {
     this.assignYourselfCopilot = this.assignYourselfCopilot.bind(this)
     this.showRejectChallengeModal = this.showRejectChallengeModal.bind(this)
     this.closeRejectModal = this.closeRejectModal.bind(this)
+    this.rejectChallenge = this.rejectChallenge.bind(this)
   }
 
   componentDidMount () {
@@ -321,14 +322,19 @@ class ChallengeEditor extends Component {
 
   async assignYourselfCopilot () {
     const { challengeDetails, loggedInUser, metadata, createResource } = this.props
+
+    // create the role resource
     const copilotRole = getResourceRoleByName(metadata.resourceRoles, 'Copilot')
     const copilotHandle = loggedInUser.handle
     await createResource(challengeDetails.id, copilotRole.id, copilotHandle)
-    const updatedChallenge = await patchChallenge(challengeDetails.id, {
+
+    // update the challenge
+    const partialChallenge = {
       legacy: {
         selfServiceCopilot: copilotHandle
       }
-    })
+    }
+    const updatedChallenge = await patchChallenge(challengeDetails.id, partialChallenge)
     this.setState({ challengeDetails: updatedChallenge })
   }
 
@@ -336,8 +342,15 @@ class ChallengeEditor extends Component {
     this.setState({ showRejectModal: true })
   }
 
-  rejectChallenge () {
-    console.debug('rejecting')
+  async rejectChallenge () {
+    const { challengeDetails } = this.props
+    const partialChallenge = {
+      status: 'Cancelled - Requirements Infeasible',
+      cancelReason: 'TODO' // TODO
+    }
+    const updatedChallenge = await patchChallenge(challengeDetails.id, partialChallenge)
+    this.setState({ challengeDetails: updatedChallenge })
+    this.closeRejectModal()
   }
 
   render () {
