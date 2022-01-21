@@ -6,8 +6,9 @@ import moment from 'moment'
 import ChallengeEditorComponent from '../../components/ChallengeEditor'
 import ChallengeViewTabs from '../../components/ChallengeEditor/ChallengeViewTabs'
 import Loader from '../../components/Loader'
-import { checkAdmin } from '../../util/tc'
+import { checkAdmin, getResourceRoleByName } from '../../util/tc'
 import styles from './ChallengeEditor.module.scss'
+import modalStyles from '../../components/Modal/ConfirmationModal.module.scss'
 
 import {
   loadTimelineTemplates,
@@ -27,7 +28,8 @@ import {
   partiallyUpdateChallengeDetails,
   deleteChallenge,
   createChallenge,
-  replaceResourceInRole
+  replaceResourceInRole,
+  createResource
 } from '../../actions/challenges'
 
 import { loadSubmissions } from '../../actions/challengeSubmissions'
@@ -39,6 +41,9 @@ import { SUBMITTER_ROLE_UUID, MESSAGE } from '../../config/constants'
 import { patchChallenge } from '../../services/challenges'
 import ConfirmationModal from '../../components/Modal/ConfirmationModal'
 import AlertModal from '../../components/Modal/AlertModal'
+import Modal from '../../components/Modal'
+import PrimaryButton from '../../components/Buttons/PrimaryButton'
+import OutlineButton from '../../components/Buttons/OutlineButton'
 
 const theme = {
   container: styles.modalContainer
@@ -53,7 +58,8 @@ class ChallengeEditor extends Component {
       mountedWithCreatePage,
       isLaunching: false,
       showSuccessModal: false,
-      showLaunchModal: false
+      showLaunchModal: false,
+      showRejectModal: false
     }
 
     this.onLaunchChallenge = this.onLaunchChallenge.bind(this)
@@ -65,6 +71,10 @@ class ChallengeEditor extends Component {
     this.onCloseTask = this.onCloseTask.bind(this)
     this.closeTask = this.closeTask.bind(this)
     this.fetchProjectDetails = this.fetchProjectDetails.bind(this)
+    this.assignYourselfCopilot = this.assignYourselfCopilot.bind(this)
+    this.showRejectChallengeModal = this.showRejectChallengeModal.bind(this)
+    this.closeRejectModal = this.closeRejectModal.bind(this)
+    this.rejectChallenge = this.rejectChallenge.bind(this)
   }
 
   componentDidMount () {
@@ -216,6 +226,10 @@ class ChallengeEditor extends Component {
     this.setState({ showSuccessModal: false })
   }
 
+  closeRejectModal () {
+    this.setState({ showRejectModal: false })
+  }
+
   async activateChallenge () {
     const { partiallyUpdateChallengeDetails } = this.props
     if (this.state.isLaunching) return
@@ -306,8 +320,37 @@ class ChallengeEditor extends Component {
     }
   }
 
-  assignYourselfCopilit () {
-    console.debug('assign copilit')
+  async assignYourselfCopilot () {
+    const { challengeDetails, loggedInUser, metadata, createResource } = this.props
+
+    // create the role resource
+    const copilotRole = getResourceRoleByName(metadata.resourceRoles, 'Copilot')
+    const copilotHandle = loggedInUser.handle
+    await createResource(challengeDetails.id, copilotRole.id, copilotHandle)
+
+    // update the challenge
+    const partialChallenge = {
+      legacy: {
+        selfServiceCopilot: copilotHandle
+      }
+    }
+    const updatedChallenge = await patchChallenge(challengeDetails.id, partialChallenge)
+    this.setState({ challengeDetails: updatedChallenge })
+  }
+
+  showRejectChallengeModal () {
+    this.setState({ showRejectModal: true })
+  }
+
+  async rejectChallenge () {
+    const { challengeDetails } = this.props
+    const partialChallenge = {
+      status: 'Cancelled - Requirements Infeasible',
+      cancelReason: 'TODO' // TODO
+    }
+    const updatedChallenge = await patchChallenge(challengeDetails.id, partialChallenge)
+    this.setState({ challengeDetails: updatedChallenge })
+    this.closeRejectModal()
   }
 
   render () {
@@ -335,7 +378,8 @@ class ChallengeEditor extends Component {
       loggedInUser,
       projectPhases,
       isProjectPhasesLoading,
-      assignYourselfCopilit
+      rejectChallenge,
+      showRejectChallengeModal
       // members
     } = this.props
     const {
@@ -345,7 +389,8 @@ class ChallengeEditor extends Component {
       showCloseTaskModal,
       showSuccessModal,
       suceessMessage,
-      challengeDetails
+      challengeDetails,
+      showRejectModal
     } = this.state
     if (isProjectLoading || isLoading || isProjectPhasesLoading) return <Loader />
     const challengeId = _.get(match.params, 'challengeId', null)
@@ -397,11 +442,36 @@ class ChallengeEditor extends Component {
         onClose={this.closeSuccessModal}
       />
     )
+    const rejectModal = (
+      <Modal theme={theme} onCancel={this.closeRejectModal}>
+        <div className={modalStyles.contentContainer}>
+          <div className={modalStyles.title}>Reject Challenge</div>
+          <span> Please provide a reason for rejecting "{challengeDetails.name}?"</span>
+          <div className={modalStyles.buttonGroup}>
+            <div className={modalStyles.buttonSizeA}>
+              <PrimaryButton
+                text='Reject challenge'
+                type='danger'
+                onClick={this.rejectChallenge}
+              />
+            </div>
+            <div className={modalStyles.buttonSizeA}>
+              <OutlineButton
+                text='Cancel'
+                type='info'
+                onClick={this.closeRejectModal}
+              />
+            </div>
+          </div>
+        </div>
+      </Modal>
+    )
     return (
       <div>
         {showLaunchModal && activateModal}
         {showCloseTaskModal && closeTaskModal}
         {showSuccessModal && successModal}
+        {showRejectModal && rejectModal}
         <Route
           exact
           path={this.props.match.path}
@@ -429,7 +499,10 @@ class ChallengeEditor extends Component {
               replaceResourceInRole={replaceResourceInRole}
               partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
               projectPhases={projectPhases}
-              assignYourselfCopilit={assignYourselfCopilit}
+              assignYourselfCopilot={this.assignYourselfCopilot}
+              rejectChallenge={rejectChallenge}
+              showRejectChallengeModal={showRejectChallengeModal}
+              loggedInUser={loggedInUser}
             />
           )}
         />
@@ -468,6 +541,7 @@ class ChallengeEditor extends Component {
                 deleteChallenge={deleteChallenge}
                 loggedInUser={loggedInUser}
                 projectPhases={projectPhases}
+                assignYourselfCopilot={this.assignYourselfCopilot}
               />
             )}
           />
@@ -493,7 +567,9 @@ class ChallengeEditor extends Component {
               enableEdit={enableEdit}
               onLaunchChallenge={this.onLaunchChallenge}
               onCloseTask={this.onCloseTask}
-              assignYourselfCopilit={this.assignYourselfCopilit}
+              assignYourselfCopilot={this.assignYourselfCopilot}
+              showRejectChallengeModal={this.showRejectChallengeModal}
+              loggedInUser={loggedInUser}
             />
           )}
         />
@@ -503,6 +579,7 @@ class ChallengeEditor extends Component {
 }
 
 ChallengeEditor.propTypes = {
+  createResource: PropTypes.func.isRequired,
   match: PropTypes.shape({
     path: PropTypes.string,
     params: PropTypes.shape({
@@ -549,7 +626,8 @@ ChallengeEditor.propTypes = {
   loadProject: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
   isProjectPhasesLoading: PropTypes.bool,
-  assignYourselfCopilit: PropTypes.func.isRequired
+  rejectChallenge: PropTypes.func.isRequired,
+  showRejectChallengeModal: PropTypes.func
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
 
@@ -607,7 +685,8 @@ const mapDispatchToProps = {
   deleteChallenge,
   createChallenge,
   replaceResourceInRole,
-  loadProject
+  loadProject,
+  createResource
 }
 
 export default withRouter(

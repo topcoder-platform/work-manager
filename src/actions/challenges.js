@@ -46,7 +46,8 @@ import {
   DELETE_CHALLENGE_PENDING,
   DELETE_CHALLENGE_SUCCESS,
   DELETE_CHALLENGE_FAILURE,
-  LOAD_CHALLENGE_RESOURCES
+  LOAD_CHALLENGE_RESOURCES,
+  CHALLENGE_STATUS
 } from '../config/constants'
 import { loadProject } from './projects'
 import { removeChallengeFromPhaseProduct, saveChallengeAsPhaseProduct } from '../services/projects'
@@ -87,7 +88,7 @@ export function loadChallengesByPage (page, projectId, status, filterChallengeNa
     }
     if (selfService) {
       filters.selfService = true
-      if (userHandle) {
+      if (userHandle && filters.status.toUpperCase() !== CHALLENGE_STATUS.DRAFT) {
         filters.selfServiceCopilot = userHandle
       }
     }

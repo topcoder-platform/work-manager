@@ -44,7 +44,9 @@ const ChallengeViewTabs = ({
   cancelChallenge,
   onCloseTask,
   projectPhases,
-  assignYourselfCopilit
+  assignYourselfCopilot,
+  showRejectChallengeModal,
+  loggedInUser
 }) => {
   const [selectedTab, setSelectedTab] = useState(0)
 
@@ -84,6 +86,7 @@ const ChallengeViewTabs = ({
   const isSelfService = challenge.legacy.selfService
   const isDraft = challenge.status.toUpperCase() === CHALLENGE_STATUS.DRAFT
   const launchText = `${isSelfService && isDraft ? 'Approve and ' : ''}Launch`
+  const isCopilot = challenge.legacy.selfServiceCopilot === loggedInUser.handle
 
   return (
     <div className={styles.list}>
@@ -112,9 +115,9 @@ const ChallengeViewTabs = ({
             styles.actionButtonsRight
           )}
         >
-          {(challenge.status === 'Draft' || challenge.status === 'New') && !isSelfService &&
+          {(isDraft || challenge.status === 'New') && !isSelfService &&
             (<div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>)}
-          {challenge.status === 'Draft' && (
+          {isDraft && (!isSelfService || isCopilot) && (
             <div className={styles.button}>
               {challenge.legacyId || isTask ? (
                 <PrimaryButton
@@ -147,14 +150,15 @@ const ChallengeViewTabs = ({
           {enableEdit && !isSelfService && (
             <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} />
           )}
-          {isSelfService && isDraft &&
-            (
+          {isSelfService && isDraft && isCopilot && (
+            <div className={styles.button}>
               <PrimaryButton
                 text={'Reject challenge'}
                 type={'danger'}
-                onClick={onLaunchChallenge} // TODO
+                onClick={showRejectChallengeModal}
               />
-            )}
+            </div>
+          )}
           <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
         </div>
       </div>
@@ -222,7 +226,8 @@ const ChallengeViewTabs = ({
           onLaunchChallenge={onLaunchChallenge}
           onCloseTask={onCloseTask}
           projectPhases={projectPhases}
-          assignYourselfCopilit={assignYourselfCopilit}
+          assignYourselfCopilot={assignYourselfCopilot}
+          showRejectChallengeModal={showRejectChallengeModal}
         />
       )}
       {selectedTab === 1 && (
@@ -260,7 +265,9 @@ ChallengeViewTabs.propTypes = {
   cancelChallenge: PropTypes.func.isRequired,
   onCloseTask: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
-  assignYourselfCopilit: PropTypes.func.isRequired
+  assignYourselfCopilot: PropTypes.func.isRequired,
+  showRejectChallengeModal: PropTypes.func.isRequired,
+  loggedInUser: PropTypes.object.isRequired
 }
 
 export default ChallengeViewTabs

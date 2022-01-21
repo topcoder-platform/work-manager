@@ -38,7 +38,8 @@ const ChallengeView = ({
   onLaunchChallenge,
   onCloseTask,
   projectPhases,
-  assignYourselfCopilit
+  assignYourselfCopilot,
+  showRejectChallengeModal
 }) => {
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
@@ -75,7 +76,7 @@ const ChallengeView = ({
   const reviewerFromResources = reviewerResource ? reviewerResource.memberHandle : ''
   let copilot, reviewer
   if (challenge) {
-    copilot = challenge.copilot
+    copilot = challenge.copilot || (challenge.legacy && challenge.legacy.selfServiceCopilot)
     reviewer = challenge.reviewer
   }
   copilot = copilot || copilotFromResources
@@ -135,7 +136,7 @@ const ChallengeView = ({
             <CopilotField challenge={{
               copilot,
               selfService: challenge.legacy.selfService
-            }} copilots={metadata.members} assignYourselfCopilit={assignYourselfCopilit} readOnly />
+            }} copilots={metadata.members} assignYourselfCopilot={assignYourselfCopilot} showRejectChallengeModal={showRejectChallengeModal} readOnly />
             <div className={cn(styles.row, styles.topRow)}>
               <div className={styles.col}>
                 <span><span
@@ -262,7 +263,8 @@ ChallengeView.propTypes = {
   onLaunchChallenge: PropTypes.func,
   onCloseTask: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
-  assignYourselfCopilit: PropTypes.func.isRequired
+  assignYourselfCopilot: PropTypes.func.isRequired,
+  showRejectChallengeModal: PropTypes.func.isRequired
 }
 
 export default withRouter(ChallengeView)
