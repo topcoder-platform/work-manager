@@ -26,3 +26,38 @@
   justify-content: center;
   align-items: center;
 }
+
+.rejectChallengeContainer {
+
+  .cancelReasonContainer {
+    margin-top: 25px;
+    width: 100%;
+    text-align: center;
+  
+    textarea.cancelReason {
+      width: 75%;
+    }
+  }
+
+  .rejectButtonContainer {
+    display: flex;
+    margin: 0px 30px;
+    flex-direction: row;
+    justify-content: flex-end;
+    flex-shrink: 0;
+    width: 70%;
+
+    button {
+      height: 40px;
+      margin-right: 30px;
+
+      span {
+        padding: 0 20px;
+      }
+    }
+
+    .button:last-of-type {
+      margin-right: 0;
+    }
+  }
+}

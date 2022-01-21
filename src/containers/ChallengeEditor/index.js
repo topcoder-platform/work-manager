@@ -59,7 +59,8 @@ class ChallengeEditor extends Component {
       isLaunching: false,
       showSuccessModal: false,
       showLaunchModal: false,
-      showRejectModal: false
+      showRejectModal: false,
+      cancelReason: null
     }
 
     this.onLaunchChallenge = this.onLaunchChallenge.bind(this)
@@ -75,6 +76,7 @@ class ChallengeEditor extends Component {
     this.showRejectChallengeModal = this.showRejectChallengeModal.bind(this)
     this.closeRejectModal = this.closeRejectModal.bind(this)
     this.rejectChallenge = this.rejectChallenge.bind(this)
+    this.onChangeCancelReason = this.onChangeCancelReason.bind(this)
   }
 
   componentDidMount () {
@@ -328,13 +330,15 @@ class ChallengeEditor extends Component {
     const copilotHandle = loggedInUser.handle
     await createResource(challengeDetails.id, copilotRole.id, copilotHandle)
 
-    this.setState({ challengeDetails: {
-      ...challengeDetails,
-      legacy: {
-        ...challengeDetails.legacy,
-        selfServiceCopilot: copilotHandle
+    this.setState({
+      challengeDetails: {
+        ...challengeDetails,
+        legacy: {
+          ...challengeDetails.legacy,
+          selfServiceCopilot: copilotHandle
+        }
       }
-    } })
+    })
   }
 
   showRejectChallengeModal () {
@@ -343,13 +347,18 @@ class ChallengeEditor extends Component {
 
   async rejectChallenge () {
     const { challengeDetails } = this.props
+    const { cancelReason } = this.state
     const partialChallenge = {
       status: 'Cancelled - Requirements Infeasible',
-      cancelReason: 'TODO' // TODO
+      cancelReason: cancelReason
     }
     const updatedChallenge = await patchChallenge(challengeDetails.id, partialChallenge)
     this.setState({ challengeDetails: updatedChallenge })
     this.closeRejectModal()
+  }
+
+  onChangeCancelReason (reason) {
+    this.setState({ cancelReason: reason })
   }
 
   render () {
@@ -389,7 +398,8 @@ class ChallengeEditor extends Component {
       showSuccessModal,
       suceessMessage,
       challengeDetails,
-      showRejectModal
+      showRejectModal,
+      cancelReason
     } = this.state
     if (isProjectLoading || isLoading || isProjectPhasesLoading) return <Loader />
     const challengeId = _.get(match.params, 'challengeId', null)
@@ -441,26 +451,27 @@ class ChallengeEditor extends Component {
         onClose={this.closeSuccessModal}
       />
     )
+    const rejectModalContainerClasses = `${modalStyles.contentContainer} ${styles.rejectChallengeContainer}`
     const rejectModal = (
       <Modal theme={theme} onCancel={this.closeRejectModal}>
-        <div className={modalStyles.contentContainer}>
+        <div className={rejectModalContainerClasses}>
           <div className={modalStyles.title}>Reject Challenge</div>
           <span> Please provide a reason for rejecting "{challengeDetails.name}?"</span>
-          <div className={modalStyles.buttonGroup}>
-            <div className={modalStyles.buttonSizeA}>
-              <PrimaryButton
-                text='Reject challenge'
-                type='danger'
-                onClick={this.rejectChallenge}
-              />
-            </div>
-            <div className={modalStyles.buttonSizeA}>
-              <OutlineButton
-                text='Cancel'
-                type='info'
-                onClick={this.closeRejectModal}
-              />
-            </div>
+          <div className={styles.cancelReasonContainer}>
+            <textarea id='cancelReason' name='cancelReason' placeholder='Enter your reason' rows='4' className={styles.cancelReason} onChange={e => this.onChangeCancelReason(e.target.value)} />
+          </div>
+          <div className={styles.rejectButtonContainer}>
+            <PrimaryButton
+              text='Reject challenge'
+              type='danger'
+              onClick={this.rejectChallenge}
+              disabled={_.isEmpty(cancelReason)}
+            />
+            <OutlineButton
+              text='Cancel'
+              type='info'
+              onClick={this.closeRejectModal}
+            />
           </div>
         </div>
       </Modal>
