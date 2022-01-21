@@ -86,10 +86,12 @@ const ChallengeViewTabs = ({
 
   const isSelfService = challenge.legacy.selfService
   const isDraft = challenge.status.toUpperCase() === CHALLENGE_STATUS.DRAFT
+  const isCopilot = challenge.legacy.selfServiceCopilot === loggedInUser.handle
+  const canApprove = isCopilot && isDraft && isSelfService
+  // only the copilot can launch AND
   // if this isn't self-service, permit launching if the challenge is draft
   // OR if this is self-service, permit launching if the challenge is approved
-  const canLaunch = (!isSelfService && isDraft) || challenge.status.toUpperCase() === CHALLENGE_STATUS.APPROVED
-  const isCopilot = challenge.legacy.selfServiceCopilot === loggedInUser.handle
+  const canLaunch = isCopilot && ((!isSelfService && isDraft) || challenge.status.toUpperCase() === CHALLENGE_STATUS.APPROVED)
 
   return (
     <div className={styles.list}>
@@ -136,7 +138,7 @@ const ChallengeViewTabs = ({
               )}
             </div>
           )}
-          {isDraft && isSelfService && (
+          {canApprove && (
             <div className={styles.button}>
               <PrimaryButton
                 text='Approve'
