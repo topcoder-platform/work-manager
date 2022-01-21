@@ -328,14 +328,13 @@ class ChallengeEditor extends Component {
     const copilotHandle = loggedInUser.handle
     await createResource(challengeDetails.id, copilotRole.id, copilotHandle)
 
-    // update the challenge
-    const partialChallenge = {
+    this.setState({ challengeDetails: {
+      ...challengeDetails,
       legacy: {
+        ...challengeDetails.legacy,
         selfServiceCopilot: copilotHandle
       }
-    }
-    const updatedChallenge = await patchChallenge(challengeDetails.id, partialChallenge)
-    this.setState({ challengeDetails: updatedChallenge })
+    } })
   }
 
   showRejectChallengeModal () {
