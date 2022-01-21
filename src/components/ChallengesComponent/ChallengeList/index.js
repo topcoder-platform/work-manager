@@ -211,7 +211,7 @@ class ChallengeList extends Component {
           </TabList>
           <TabPanel />
           <TabPanel />
-          <TabPanel />
+          {(!selfService && <TabPanel />)}
         </Tabs>)}
         {
           challenges.length === 0 && (

@@ -121,9 +121,9 @@ class Routes extends React.Component {
         />
         <Route exact path='/self-service'
           render={() => renderApp(
-            <Challenges selfService='true' />,
+            <Challenges selfService />,
             <TopBarContainer />,
-            <Sidebar selfService='true' />
+            <Sidebar selfService />
           )()}
         />
         <Route exact path='/projects/:projectId/challenges/new'
