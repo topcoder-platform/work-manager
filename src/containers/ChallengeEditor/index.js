@@ -322,7 +322,14 @@ class ChallengeEditor extends Component {
   async assignYourselfCopilot () {
     const { challengeDetails, loggedInUser, metadata, createResource } = this.props
     const copilotRole = getResourceRoleByName(metadata.resourceRoles, 'Copilot')
-    createResource(challengeDetails.id, copilotRole.id, loggedInUser.handle)
+    const copilotHandle = loggedInUser.handle
+    await createResource(challengeDetails.id, copilotRole.id, copilotHandle)
+    const updatedChallenge = await patchChallenge(challengeDetails.id, {
+      legacy: {
+        selfServiceCopilot: copilotHandle
+      }
+    })
+    this.setState({ challengeDetails: updatedChallenge })
   }
 
   showRejectChallengeModal () {

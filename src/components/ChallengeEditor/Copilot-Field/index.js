@@ -20,7 +20,7 @@ const CopilotField = ({ copilots, challenge, onUpdateOthers, readOnly, assignYou
         </div>
         {(selectedCopilot || selfService) && (<div className={cn(styles.field, styles.col2)}>
           {(selectedCopilot && <CopilotCard copilot={selectedCopilot} selectedCopilot='' key={selectedCopilot.handle} />)}
-          {(selfService && <PrimaryButton
+          {(selfService && !selectedCopilot && <PrimaryButton
             text={'Assign Yourself'}
             type={'info'}
             onClick={assignYourselfCopilot}

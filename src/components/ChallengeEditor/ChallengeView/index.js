@@ -76,7 +76,7 @@ const ChallengeView = ({
   const reviewerFromResources = reviewerResource ? reviewerResource.memberHandle : ''
   let copilot, reviewer
   if (challenge) {
-    copilot = challenge.copilot
+    copilot = challenge.copilot || (challenge.legacy && challenge.legacy.selfServiceCopilot)
     reviewer = challenge.reviewer
   }
   copilot = copilot || copilotFromResources
