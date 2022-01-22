@@ -13,7 +13,7 @@ import LegacyLinks from '../../LegacyLinks'
 import ForumLink from '../../ForumLink'
 import Registrants from '../Registrants'
 import Submissions from '../Submissions'
-import { getResourceRoleByName } from '../../../util/tc'
+import { checkAdmin, getResourceRoleByName } from '../../../util/tc'
 import { CHALLENGE_STATUS, MESSAGE } from '../../../config/constants'
 import Tooltip from '../../Tooltip'
 import CancelDropDown from '../Cancel-Dropdown'
@@ -86,13 +86,16 @@ const ChallengeViewTabs = ({
 
   const isSelfService = challenge.legacy.selfService
   const isDraft = challenge.status.toUpperCase() === CHALLENGE_STATUS.DRAFT
-  const isCopilot = challenge.legacy.selfServiceCopilot === loggedInUser.handle
-  const canApprove = isCopilot && isDraft && isSelfService
+  const isSelfServiceCopilot = challenge.legacy.selfServiceCopilot === loggedInUser.handle
+  const isAdmin = checkAdmin(token)
+  const canApprove = isSelfServiceCopilot && isDraft && isSelfService
   // only the copilot can launch AND
   // if this isn't self-service, permit launching if the challenge is draft
   // OR if this is self-service, permit launching if the challenge is approved
-  const canLaunch = isCopilot && ((!isSelfService && isDraft) || challenge.status.toUpperCase() === CHALLENGE_STATUS.APPROVED)
-
+  const hasBA = _.get(projectDetail, 'billingAccountId') !== null
+  const canLaunch = hasBA && ((!isSelfService && isDraft) || ((isSelfServiceCopilot || isAdmin) && challenge.status.toUpperCase() === CHALLENGE_STATUS.APPROVED))
+  console.log(`can launch ${_.isEmpty(_.get(projectDetail, 'billingAccountId'))}`)
+  console.log(_.get(projectDetail, 'billingAccountId'))
   return (
     <div className={styles.list}>
       <Helmet title='View Details' />
@@ -164,7 +167,7 @@ const ChallengeViewTabs = ({
           {enableEdit && !isSelfService && (
             <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} />
           )}
-          {isSelfService && isDraft && isCopilot && (
+          {isSelfService && isDraft && (isAdmin || isSelfServiceCopilot) && (
             <div className={styles.button}>
               <PrimaryButton
                 text='Reject challenge'
