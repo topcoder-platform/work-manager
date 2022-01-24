@@ -89,13 +89,17 @@ const ChallengeViewTabs = ({
   const isSelfServiceCopilot = challenge.legacy.selfServiceCopilot === loggedInUser.handle
   const isAdmin = checkAdmin(token)
   const canApprove = isSelfServiceCopilot && isDraft && isSelfService
-  // only the copilot can launch AND
+  const hasBillingAccount = _.get(projectDetail, 'billingAccountId') !== null
+  // only challenges that have a billing account can be launched AND
   // if this isn't self-service, permit launching if the challenge is draft
-  // OR if this is self-service, permit launching if the challenge is approved
-  const hasBA = _.get(projectDetail, 'billingAccountId') !== null
-  const canLaunch = hasBA && ((!isSelfService && isDraft) || ((isSelfServiceCopilot || isAdmin) && challenge.status.toUpperCase() === CHALLENGE_STATUS.APPROVED))
-  console.log(`can launch ${_.isEmpty(_.get(projectDetail, 'billingAccountId'))}`)
-  console.log(_.get(projectDetail, 'billingAccountId'))
+  // OR if this isn't a non-self-service draft, permit launching if:
+  // a) the current user is either the self-service copilot or is an admin AND
+  // b) the challenge is approved
+  const canLaunch = hasBillingAccount &&
+    ((!isSelfService && isDraft) ||
+      ((isSelfServiceCopilot || isAdmin) &&
+        challenge.status.toUpperCase() === CHALLENGE_STATUS.APPROVED))
+
   return (
     <div className={styles.list}>
       <Helmet title='View Details' />

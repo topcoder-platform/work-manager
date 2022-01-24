@@ -129,11 +129,12 @@ class ChallengeList extends Component {
 
     let selectedTab = 0
     switch (status) {
+      case CHALLENGE_STATUS.APPROVED:
       case CHALLENGE_STATUS.NEW:
         selectedTab = 1
         break
       case CHALLENGE_STATUS.DRAFT:
-        selectedTab = selfService ? 1 : 2
+        selectedTab = 2
         break
       case CHALLENGE_STATUS.COMPLETED:
         selectedTab = 3
@@ -184,7 +185,7 @@ class ChallengeList extends Component {
                 break
               }
               case 1: {
-                const status = selfService ? CHALLENGE_STATUS.DRAFT : CHALLENGE_STATUS.NEW
+                const status = selfService ? CHALLENGE_STATUS.APPROVED : CHALLENGE_STATUS.NEW
                 this.directUpdateSearchParam(searchText, status)
                 break
               }
@@ -204,14 +205,14 @@ class ChallengeList extends Component {
           }}>
           <TabList>
             <Tab>{(selfService ? 'Assigned challenges' : 'Active')}</Tab>
-            {(!selfService && <Tab>New</Tab>)}
+            <Tab>{(selfService ? 'Approved' : 'New')}</Tab>
             <Tab>{this.getStatusTextFunc(selfService)(CHALLENGE_STATUS.DRAFT)}</Tab>
             {(!selfService && <Tab>Completed</Tab>)}
             {(!selfService && <Tab>Cancelled</Tab>)}
           </TabList>
           <TabPanel />
           <TabPanel />
-          {(!selfService && <TabPanel />)}
+          <TabPanel />
         </Tabs>)}
         {
           challenges.length === 0 && (
