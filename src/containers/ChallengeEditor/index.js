@@ -342,8 +342,12 @@ class ChallengeEditor extends Component {
 
     // create the role resource
     const copilotRole = getResourceRoleByName(metadata.resourceRoles, 'Copilot')
+    const approverRole = getResourceRoleByName(metadata.resourceRoles, 'Approver')
+    const screenerRole = getResourceRoleByName(metadata.resourceRoles, 'Screener')
     const copilotHandle = loggedInUser.handle
     await createResource(challengeDetails.id, copilotRole.id, copilotHandle)
+    await createResource(challengeDetails.id, approverRole.id, copilotHandle)
+    await createResource(challengeDetails.id, screenerRole.id, copilotHandle)
 
     this.setState({
       challengeDetails: {
