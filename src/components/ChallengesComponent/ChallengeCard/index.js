@@ -166,6 +166,7 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
 const renderStatus = (status, getStatusText) => {
   switch (status) {
     case CHALLENGE_STATUS.ACTIVE:
+    case CHALLENGE_STATUS.APPROVED:
     case CHALLENGE_STATUS.NEW:
     case CHALLENGE_STATUS.DRAFT:
     case CHALLENGE_STATUS.COMPLETED:
