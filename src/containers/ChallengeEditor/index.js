@@ -28,8 +28,7 @@ import {
   partiallyUpdateChallengeDetails,
   deleteChallenge,
   createChallenge,
-  replaceResourceInRole,
-  createResource
+  replaceResourceInRole
 } from '../../actions/challenges'
 
 import { loadSubmissions } from '../../actions/challengeSubmissions'
@@ -338,23 +337,28 @@ class ChallengeEditor extends Component {
   }
 
   async assignYourselfCopilot () {
-    const { challengeDetails, loggedInUser, metadata, createResource } = this.props
+    const { challengeDetails, loggedInUser, metadata, replaceResourceInRole } = this.props
 
-    // create the role resource
+    // get the resource roles and new/old resource values
     const copilotRole = getResourceRoleByName(metadata.resourceRoles, 'Copilot')
     const approverRole = getResourceRoleByName(metadata.resourceRoles, 'Approver')
     const screenerRole = getResourceRoleByName(metadata.resourceRoles, 'Primary Screener')
     const copilotHandle = loggedInUser.handle
-    await createResource(challengeDetails.id, copilotRole.id, copilotHandle)
-    await createResource(challengeDetails.id, approverRole.id, copilotHandle)
-    await createResource(challengeDetails.id, screenerRole.id, copilotHandle)
+    const challengeId = challengeDetails.id
+    const oldPilot = challengeDetails.legacy.selfServiceCopilot
+    const newPilot = oldPilot === copilotHandle ? null : copilotHandle
+
+    // replace the roles
+    await replaceResourceInRole(challengeId, copilotRole.id, newPilot, oldPilot)
+    await replaceResourceInRole(challengeId, approverRole.id, newPilot, oldPilot)
+    await replaceResourceInRole(challengeId, screenerRole.id, newPilot, oldPilot)
 
     this.setState({
       challengeDetails: {
         ...challengeDetails,
         legacy: {
           ...challengeDetails.legacy,
-          selfServiceCopilot: copilotHandle
+          selfServiceCopilot: newPilot
         }
       }
     })
@@ -608,7 +612,6 @@ class ChallengeEditor extends Component {
 }
 
 ChallengeEditor.propTypes = {
-  createResource: PropTypes.func.isRequired,
   match: PropTypes.shape({
     path: PropTypes.string,
     params: PropTypes.shape({
@@ -713,8 +716,7 @@ const mapDispatchToProps = {
   deleteChallenge,
   createChallenge,
   replaceResourceInRole,
-  loadProject,
-  createResource
+  loadProject
 }
 
 export default withRouter(
