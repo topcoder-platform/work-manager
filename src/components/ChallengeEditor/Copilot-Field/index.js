@@ -8,7 +8,9 @@ import CopilotCard from '../../CopilotCard'
 
 const CopilotField = ({ copilots, challenge, onUpdateOthers, readOnly, assignYourselfCopilot }) => {
   let errMessage = 'Please set a copilot'
-  const selectedCopilot = _.find(copilots, { handle: challenge.copilot })
+  const handleProperty = copilots.handle ? 'handle' : 'memberHandle'
+  const selectedCopilot = _.find(copilots, { [handleProperty]: challenge.copilot })
+  const selectedCopilotHandle = selectedCopilot ? selectedCopilot[handle] : undefined
   const copilotFee = _.find(challenge.prizeSets, p => p.type === 'copilot', [])
   const selfService = challenge.selfService
 
@@ -19,10 +21,10 @@ const CopilotField = ({ copilots, challenge, onUpdateOthers, readOnly, assignYou
           <label htmlFor='copilot'>Copilot:</label>
         </div>
         {(selectedCopilot || selfService) && (<div className={cn(styles.field, styles.col2)}>
-          {(selectedCopilot && <CopilotCard copilot={selectedCopilot} selectedCopilot='' key={selectedCopilot.handle} />)}
+          {(selectedCopilot && <CopilotCard copilot={selectedCopilot} selectedCopilot={challenge.copilot} key={selectedCopilotHandle} />)}
           {(selfService && !selectedCopilot && <PrimaryButton
-            text={'Assign Yourself'}
-            type={'info'}
+            text='Assign Yourself'
+            type='info'
             onClick={assignYourselfCopilot}
           />)}
         </div>)}

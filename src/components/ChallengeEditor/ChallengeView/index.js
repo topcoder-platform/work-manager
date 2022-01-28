@@ -136,7 +136,7 @@ const ChallengeView = ({
             <CopilotField challenge={{
               copilot,
               selfService: challenge.legacy.selfService
-            }} copilots={metadata.members} assignYourselfCopilot={assignYourselfCopilot} showRejectChallengeModal={showRejectChallengeModal} readOnly />
+            }} copilots={challengeResources} assignYourselfCopilot={assignYourselfCopilot} showRejectChallengeModal={showRejectChallengeModal} readOnly />
             <div className={cn(styles.row, styles.topRow)}>
               <div className={styles.col}>
                 <span><span
