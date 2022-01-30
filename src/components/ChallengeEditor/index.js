@@ -1234,7 +1234,8 @@ class ChallengeEditor extends Component {
       attachments,
       projectPhases,
       challengeId,
-      assignYourselfCopilot
+      assignYourselfCopilot,
+      challengeResources
     } = this.props
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
@@ -1466,6 +1467,7 @@ class ChallengeEditor extends Component {
     const activeProjectMilestones = projectPhases.filter(phase => phase.status === MILESTONE_STATUS.ACTIVE)
     const currentChallengeId = this.getCurrentChallengeId()
     const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
+    const copilotResources = metadata.members || challengeResources
     const challengeForm = isNew
       ? (
         <form name='challenge-new-form' noValidate autoComplete='off' onSubmit={this.createChallengeHandler}>
@@ -1515,7 +1517,7 @@ class ChallengeEditor extends Component {
               />
             )}
             {projectDetail.version === 'v4' && <MilestoneField milestones={activeProjectMilestones} onUpdateSelect={this.onUpdateSelect} projectId={projectDetail.id} selectedMilestoneId={selectedMilestoneId} />}
-            <CopilotField challenge={challenge} copilots={metadata.members} onUpdateOthers={this.onUpdateOthers} assignYourselfCopilot={assignYourselfCopilot} />
+            <CopilotField challenge={challenge} copilots={copilotResources} onUpdateOthers={this.onUpdateOthers} assignYourselfCopilot={assignYourselfCopilot} />
             <ReviewTypeField
               reviewers={metadata.members}
               challenge={challenge}

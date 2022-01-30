@@ -405,7 +405,6 @@ class ChallengeEditor extends Component {
       loggedInUser,
       projectPhases,
       isProjectPhasesLoading,
-      rejectChallenge,
       showRejectChallengeModal
       // members
     } = this.props
@@ -529,7 +528,7 @@ class ChallengeEditor extends Component {
               partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
               projectPhases={projectPhases}
               assignYourselfCopilot={this.assignYourselfCopilot}
-              rejectChallenge={rejectChallenge}
+              rejectChallenge={this.rejectChallenge}
               showRejectChallengeModal={showRejectChallengeModal}
               loggedInUser={loggedInUser}
             />
@@ -656,7 +655,6 @@ ChallengeEditor.propTypes = {
   loadProject: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
   isProjectPhasesLoading: PropTypes.bool,
-  rejectChallenge: PropTypes.func.isRequired,
   showRejectChallengeModal: PropTypes.func
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
