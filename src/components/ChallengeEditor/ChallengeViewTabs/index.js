@@ -250,6 +250,7 @@ const ChallengeViewTabs = ({
           assignYourselfCopilot={assignYourselfCopilot}
           showRejectChallengeModal={showRejectChallengeModal}
           onApproveChallenge={onApproveChallenge}
+          loggedInUser={loggedInUser}
         />
       )}
       {selectedTab === 1 && (
