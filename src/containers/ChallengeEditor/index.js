@@ -6,8 +6,9 @@ import moment from 'moment'
 import ChallengeEditorComponent from '../../components/ChallengeEditor'
 import ChallengeViewTabs from '../../components/ChallengeEditor/ChallengeViewTabs'
 import Loader from '../../components/Loader'
-import { checkAdmin } from '../../util/tc'
+import { checkAdmin, getResourceRoleByName } from '../../util/tc'
 import styles from './ChallengeEditor.module.scss'
+import modalStyles from '../../components/Modal/ConfirmationModal.module.scss'
 
 import {
   loadTimelineTemplates,
@@ -39,6 +40,9 @@ import { SUBMITTER_ROLE_UUID, MESSAGE } from '../../config/constants'
 import { patchChallenge } from '../../services/challenges'
 import ConfirmationModal from '../../components/Modal/ConfirmationModal'
 import AlertModal from '../../components/Modal/AlertModal'
+import Modal from '../../components/Modal'
+import PrimaryButton from '../../components/Buttons/PrimaryButton'
+import OutlineButton from '../../components/Buttons/OutlineButton'
 
 const theme = {
   container: styles.modalContainer
@@ -53,7 +57,9 @@ class ChallengeEditor extends Component {
       mountedWithCreatePage,
       isLaunching: false,
       showSuccessModal: false,
-      showLaunchModal: false
+      showLaunchModal: false,
+      showRejectModal: false,
+      cancelReason: null
     }
 
     this.onLaunchChallenge = this.onLaunchChallenge.bind(this)
@@ -65,6 +71,12 @@ class ChallengeEditor extends Component {
     this.onCloseTask = this.onCloseTask.bind(this)
     this.closeTask = this.closeTask.bind(this)
     this.fetchProjectDetails = this.fetchProjectDetails.bind(this)
+    this.assignYourselfCopilot = this.assignYourselfCopilot.bind(this)
+    this.showRejectChallengeModal = this.showRejectChallengeModal.bind(this)
+    this.closeRejectModal = this.closeRejectModal.bind(this)
+    this.rejectChallenge = this.rejectChallenge.bind(this)
+    this.onChangeCancelReason = this.onChangeCancelReason.bind(this)
+    this.onApproveChallenge = this.onApproveChallenge.bind(this)
   }
 
   componentDidMount () {
@@ -191,6 +203,20 @@ class ChallengeEditor extends Component {
     }
   }
 
+  async onApproveChallenge () {
+    const { partiallyUpdateChallengeDetails, challengeDetails } = this.props
+    const newStatus = 'Approved'
+    await partiallyUpdateChallengeDetails(challengeDetails.id, {
+      status: newStatus
+    })
+    this.setState({
+      challengeDetails: {
+        ...challengeDetails,
+        status: newStatus
+      }
+    })
+  }
+
   async cancelChallenge (challenge, cancelReason) {
     const { partiallyUpdateChallengeDetails, history } = this.props
 
@@ -214,6 +240,10 @@ class ChallengeEditor extends Component {
 
   closeSuccessModal () {
     this.setState({ showSuccessModal: false })
+  }
+
+  closeRejectModal () {
+    this.setState({ showRejectModal: false })
   }
 
   async activateChallenge () {
@@ -306,6 +336,54 @@ class ChallengeEditor extends Component {
     }
   }
 
+  async assignYourselfCopilot () {
+    const { challengeDetails, loggedInUser, metadata, replaceResourceInRole } = this.props
+
+    // get the resource roles and new/old resource values
+    const copilotRole = getResourceRoleByName(metadata.resourceRoles, 'Copilot')
+    const approverRole = getResourceRoleByName(metadata.resourceRoles, 'Approver')
+    const screenerRole = getResourceRoleByName(metadata.resourceRoles, 'Primary Screener')
+    const copilotHandle = loggedInUser.handle
+    const challengeId = challengeDetails.id
+    const oldPilot = challengeDetails.legacy.selfServiceCopilot
+    const newPilot = oldPilot === copilotHandle ? null : copilotHandle
+
+    // replace the roles
+    await replaceResourceInRole(challengeId, copilotRole.id, newPilot, oldPilot)
+    await replaceResourceInRole(challengeId, approverRole.id, newPilot, oldPilot)
+    await replaceResourceInRole(challengeId, screenerRole.id, newPilot, oldPilot)
+
+    this.setState({
+      challengeDetails: {
+        ...challengeDetails,
+        legacy: {
+          ...challengeDetails.legacy,
+          selfServiceCopilot: newPilot
+        }
+      }
+    })
+  }
+
+  showRejectChallengeModal () {
+    this.setState({ showRejectModal: true })
+  }
+
+  async rejectChallenge () {
+    const { challengeDetails } = this.props
+    const { cancelReason } = this.state
+    const partialChallenge = {
+      status: 'Cancelled - Requirements Infeasible',
+      cancelReason: cancelReason
+    }
+    const updatedChallenge = await patchChallenge(challengeDetails.id, partialChallenge)
+    this.setState({ challengeDetails: updatedChallenge })
+    this.closeRejectModal()
+  }
+
+  onChangeCancelReason (reason) {
+    this.setState({ cancelReason: reason })
+  }
+
   render () {
     const {
       match,
@@ -330,7 +408,8 @@ class ChallengeEditor extends Component {
       deleteChallenge,
       loggedInUser,
       projectPhases,
-      isProjectPhasesLoading
+      isProjectPhasesLoading,
+      showRejectChallengeModal
       // members
     } = this.props
     const {
@@ -340,7 +419,9 @@ class ChallengeEditor extends Component {
       showCloseTaskModal,
       showSuccessModal,
       suceessMessage,
-      challengeDetails
+      challengeDetails,
+      showRejectModal,
+      cancelReason
     } = this.state
     if (isProjectLoading || isLoading || isProjectPhasesLoading) return <Loader />
     const challengeId = _.get(match.params, 'challengeId', null)
@@ -392,11 +473,37 @@ class ChallengeEditor extends Component {
         onClose={this.closeSuccessModal}
       />
     )
+    const rejectModalContainerClasses = `${modalStyles.contentContainer} ${styles.rejectChallengeContainer}`
+    const rejectModal = (
+      <Modal theme={theme} onCancel={this.closeRejectModal}>
+        <div className={rejectModalContainerClasses}>
+          <div className={modalStyles.title}>Reject Challenge</div>
+          <span> Please provide a reason for rejecting "{challengeDetails.name}?"</span>
+          <div className={styles.cancelReasonContainer}>
+            <textarea id='cancelReason' name='cancelReason' placeholder='Enter your reason' rows='4' className={styles.cancelReason} onChange={e => this.onChangeCancelReason(e.target.value)} />
+          </div>
+          <div className={styles.rejectButtonContainer}>
+            <PrimaryButton
+              text='Reject challenge'
+              type='danger'
+              onClick={this.rejectChallenge}
+              disabled={_.isEmpty(cancelReason)}
+            />
+            <OutlineButton
+              text='Cancel'
+              type='info'
+              onClick={this.closeRejectModal}
+            />
+          </div>
+        </div>
+      </Modal>
+    )
     return (
       <div>
         {showLaunchModal && activateModal}
         {showCloseTaskModal && closeTaskModal}
         {showSuccessModal && successModal}
+        {showRejectModal && rejectModal}
         <Route
           exact
           path={this.props.match.path}
@@ -424,6 +531,10 @@ class ChallengeEditor extends Component {
               replaceResourceInRole={replaceResourceInRole}
               partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
               projectPhases={projectPhases}
+              assignYourselfCopilot={this.assignYourselfCopilot}
+              rejectChallenge={this.rejectChallenge}
+              showRejectChallengeModal={showRejectChallengeModal}
+              loggedInUser={loggedInUser}
             />
           )}
         />
@@ -462,6 +573,7 @@ class ChallengeEditor extends Component {
                 deleteChallenge={deleteChallenge}
                 loggedInUser={loggedInUser}
                 projectPhases={projectPhases}
+                assignYourselfCopilot={this.assignYourselfCopilot}
               />
             )}
           />
@@ -487,6 +599,10 @@ class ChallengeEditor extends Component {
               enableEdit={enableEdit}
               onLaunchChallenge={this.onLaunchChallenge}
               onCloseTask={this.onCloseTask}
+              assignYourselfCopilot={this.assignYourselfCopilot}
+              showRejectChallengeModal={this.showRejectChallengeModal}
+              loggedInUser={loggedInUser}
+              onApproveChallenge={this.onApproveChallenge}
             />
           )}
         />
@@ -541,7 +657,8 @@ ChallengeEditor.propTypes = {
   replaceResourceInRole: PropTypes.func,
   loadProject: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
-  isProjectPhasesLoading: PropTypes.bool
+  isProjectPhasesLoading: PropTypes.bool,
+  showRejectChallengeModal: PropTypes.func
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
 

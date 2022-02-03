@@ -100,14 +100,12 @@ class ChallengeScheduleField extends Component {
       phase.scheduledStartDate = startDate
       phase.scheduledEndDate = moment(startDate).add(phase.duration || 0, 'hours').toDate()
       phase.actualStartDate = phase.scheduledStartDate
-      phase.actualEndDate = phase.scheduledEndDate
     } else {
       const preIndex = _.findIndex(phases, (p) => p.id === phase.predecessor)
       // `Invalid phase predecessor: ${phase.predecessor}`
       phase.scheduledStartDate = phases[preIndex].scheduledEndDate
       phase.scheduledEndDate = moment(phase.scheduledStartDate).add(phase.duration || 0, 'hours').toDate()
       phase.actualStartDate = phase.scheduledStartDate
-      phase.actualEndDate = phase.scheduledEndDate
     }
   }
 

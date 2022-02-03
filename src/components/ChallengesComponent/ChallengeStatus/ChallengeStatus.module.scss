@@ -1,12 +1,13 @@
 @import "../../../styles/includes";
 
 .container {
-  height: 22px;
+  min-height: 22px;
   width: 86px;
   border-radius: 3px;
   display: flex;
   justify-content: center;
   align-items: center;
+  text-align: center;
 
   span {
     @include roboto;

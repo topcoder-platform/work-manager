@@ -48,10 +48,10 @@ class ChallengeList extends Component {
    * @param {String} projectStatus project status
    */
   updateSearchParam (searchText, projectStatus) {
-    const { status, filterChallengeName, loadChallengesByPage, activeProjectId } = this.props
+    const { status, filterChallengeName, loadChallengesByPage, activeProjectId, selfService } = this.props
     this.setState({ searchText }, () => {
       if (status !== projectStatus || searchText !== filterChallengeName) {
-        loadChallengesByPage(1, activeProjectId, projectStatus, searchText)
+        loadChallengesByPage(1, activeProjectId, projectStatus, searchText, selfService, this.getHandle())
       }
     })
   }
@@ -62,9 +62,9 @@ class ChallengeList extends Component {
    */
   handlePageChange (pageNumber) {
     const { searchText } = this.state
-    const { page, loadChallengesByPage, activeProjectId, status } = this.props
+    const { page, loadChallengesByPage, activeProjectId, status, selfService } = this.props
     if (page !== pageNumber) {
-      loadChallengesByPage(pageNumber, activeProjectId, status, searchText)
+      loadChallengesByPage(pageNumber, activeProjectId, status, searchText, selfService, this.getHandle())
     }
   }
 
@@ -73,8 +73,8 @@ class ChallengeList extends Component {
    */
   reloadChallengeList () {
     const { searchText } = this.state
-    const { page, loadChallengesByPage, activeProjectId, status } = this.props
-    loadChallengesByPage(page, activeProjectId, status, searchText)
+    const { page, loadChallengesByPage, activeProjectId, status, selfService } = this.props
+    loadChallengesByPage(page, activeProjectId, status, searchText, selfService, this.getHandle())
   }
 
   /**
@@ -92,6 +92,22 @@ class ChallengeList extends Component {
     this.setState({ errorMessage: null })
   }
 
+  getStatusTextFunc (selfService) {
+    const draftText = selfService ? 'Waiting for approval' : 'Draft'
+    return (status) => {
+      switch (status) {
+        case CHALLENGE_STATUS.DRAFT:
+          return draftText
+        default:
+          return status
+      }
+    }
+  }
+
+  getHandle () {
+    return this.props.auth && this.props.auth.user ? this.props.auth.user.handle : null
+  }
+
   render () {
     const { searchText, errorMessage } = this.state
     const {
@@ -104,7 +120,8 @@ class ChallengeList extends Component {
       totalChallenges,
       partiallyUpdateChallengeDetails,
       deleteChallenge,
-      isBillingAccountExpired
+      isBillingAccountExpired,
+      selfService
     } = this.props
     if (warnMessage) {
       return <Message warnMessage={warnMessage} />
@@ -112,6 +129,7 @@ class ChallengeList extends Component {
 
     let selectedTab = 0
     switch (status) {
+      case CHALLENGE_STATUS.APPROVED:
       case CHALLENGE_STATUS.NEW:
         selectedTab = 1
         break
@@ -167,7 +185,8 @@ class ChallengeList extends Component {
                 break
               }
               case 1: {
-                this.directUpdateSearchParam(searchText, CHALLENGE_STATUS.NEW)
+                const status = selfService ? CHALLENGE_STATUS.APPROVED : CHALLENGE_STATUS.NEW
+                this.directUpdateSearchParam(searchText, status)
                 break
               }
               case 2: {
@@ -185,11 +204,11 @@ class ChallengeList extends Component {
             }
           }}>
           <TabList>
-            <Tab>Active</Tab>
-            <Tab>New</Tab>
-            <Tab>Draft</Tab>
-            <Tab>Completed</Tab>
-            <Tab>Cancelled</Tab>
+            <Tab>{(selfService ? 'Assigned challenges' : 'Active')}</Tab>
+            <Tab>{(selfService ? 'Approved' : 'New')}</Tab>
+            <Tab>{this.getStatusTextFunc(selfService)(CHALLENGE_STATUS.DRAFT)}</Tab>
+            {(!selfService && <Tab>Completed</Tab>)}
+            {(!selfService && <Tab>Cancelled</Tab>)}
           </TabList>
           <TabPanel />
           <TabPanel />
@@ -197,13 +216,16 @@ class ChallengeList extends Component {
         </Tabs>)}
         {
           challenges.length === 0 && (
-            <NoChallenge activeProject={activeProject} />
+            <NoChallenge
+              activeProject={activeProject}
+              selfService={selfService}
+            />
           )
         }
         {
           challenges.length > 0 && (
             <div className={styles.header}>
-              <div className={styles.col1}>Challenges Name</div>
+              <div className={styles.col1}>Challenge Name</div>
               <div className={styles.col2}>Last Updated</div>
               <div className={styles.col2}>Status</div>
               {(selectedTab === 0) && (<div className={styles.col3}>Current phase</div>)}
@@ -225,6 +247,8 @@ class ChallengeList extends Component {
                         partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
                         deleteChallenge={deleteChallenge}
                         isBillingAccountExpired={isBillingAccountExpired}
+                        disableHover={selfService}
+                        getStatusText={this.getStatusTextFunc(selfService)}
                       />
                     </li>
                   )
@@ -269,7 +293,9 @@ ChallengeList.propTypes = {
   totalChallenges: PropTypes.number.isRequired,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
-  isBillingAccountExpired: PropTypes.bool
+  isBillingAccountExpired: PropTypes.bool,
+  selfService: PropTypes.bool,
+  auth: PropTypes.object.isRequired
 }
 
 export default ChallengeList

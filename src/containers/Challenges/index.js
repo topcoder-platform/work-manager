@@ -13,9 +13,7 @@ import Loader from '../../components/Loader'
 import { loadChallengesByPage, partiallyUpdateChallengeDetails, deleteChallenge } from '../../actions/challenges'
 import { loadProject } from '../../actions/projects'
 import { loadProjects, setActiveProject, resetSidebarActiveParams } from '../../actions/sidebar'
-import {
-  CHALLENGE_STATUS
-} from '../../config/constants'
+import { CHALLENGE_STATUS } from '../../config/constants'
 import styles from './Challenges.module.scss'
 
 class Challenges extends Component {
@@ -25,20 +23,19 @@ class Challenges extends Component {
       searchProjectName: '',
       onlyMyProjects: true
     }
-
     this.updateProjectName = this.updateProjectName.bind(this)
     this.toggleMyProjects = this.toggleMyProjects.bind(this)
   }
 
   componentDidMount () {
-    const { activeProjectId, resetSidebarActiveParams, menu, projectId } = this.props
+    const { activeProjectId, resetSidebarActiveParams, menu, projectId, selfService } = this.props
     if (menu === 'NULL' && activeProjectId !== -1) {
       resetSidebarActiveParams()
-    } else {
+    } else if (projectId || selfService) {
       if (projectId) {
         this.props.loadProject(projectId)
-        this.reloadChallenges(this.props)
       }
+      this.reloadChallenges(this.props)
     }
   }
 
@@ -49,11 +46,10 @@ class Challenges extends Component {
   }
 
   reloadChallenges (props) {
-    const { activeProjectId, projectDetail: reduxProjectInfo, projectId, challengeProjectId, loadProject } = props
-    if (activeProjectId !== challengeProjectId) {
-      this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, CHALLENGE_STATUS.ACTIVE, '')
-      if (
-        (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId)
+    const { activeProjectId, projectDetail: reduxProjectInfo, projectId, challengeProjectId, loadProject, selfService } = props
+    if (activeProjectId !== challengeProjectId || selfService) {
+      this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, CHALLENGE_STATUS.ACTIVE, '', selfService)
+      if (!selfService && (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId)
       ) {
         loadProject(projectId)
       }
@@ -88,7 +84,9 @@ class Challenges extends Component {
       setActiveProject,
       partiallyUpdateChallengeDetails,
       deleteChallenge,
-      isBillingAccountExpired
+      isBillingAccountExpired,
+      selfService,
+      auth
     } = this.props
     const { searchProjectName, onlyMyProjects } = this.state
     const projectInfo = _.find(projects, { id: activeProjectId }) || {}
@@ -123,7 +121,7 @@ class Challenges extends Component {
             <label>My Projects</label>
           </div>
           {
-            activeProjectId === -1 && <div>No project selected. Select one below</div>
+            activeProjectId === -1 && !selfService && <div>No project selected. Select one below</div>
           }
           {
             isLoading ? <Loader /> : (
@@ -133,7 +131,7 @@ class Challenges extends Component {
             )
           }
         </div>
-        { activeProjectId !== -1 && <ChallengesComponent
+        {(activeProjectId !== -1 || selfService) && <ChallengesComponent
           activeProject={({
             ...projectInfo,
             ...((reduxProjectInfo && reduxProjectInfo.id === activeProjectId) ? reduxProjectInfo : {})
@@ -151,6 +149,8 @@ class Challenges extends Component {
           partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
           deleteChallenge={deleteChallenge}
           isBillingAccountExpired={isBillingAccountExpired}
+          selfService={selfService}
+          auth={auth}
         />
         }
       </Fragment>
@@ -179,16 +179,19 @@ Challenges.propTypes = {
   setActiveProject: PropTypes.func.isRequired,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
-  isBillingAccountExpired: PropTypes.bool
+  isBillingAccountExpired: PropTypes.bool,
+  selfService: PropTypes.bool,
+  auth: PropTypes.object.isRequired
 }
 
-const mapStateToProps = ({ challenges, sidebar, projects }) => ({
+const mapStateToProps = ({ challenges, sidebar, projects, auth }) => ({
   ..._.omit(challenges, ['projectId']),
   challengeProjectId: challenges.projectId,
   activeProjectId: sidebar.activeProjectId,
   projects: sidebar.projects,
   projectDetail: projects.projectDetail,
-  isBillingAccountExpired: projects.isBillingAccountExpired
+  isBillingAccountExpired: projects.isBillingAccountExpired,
+  auth: auth
 })
 
 const mapDispatchToProps = {

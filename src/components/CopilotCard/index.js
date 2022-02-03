@@ -8,11 +8,12 @@ const assets = require.context('../../assets/images', false, /svg/)
 
 const CopilotCard = ({ copilot, selectedCopilot, onUpdateOthers }) => {
   const icon = './user.svg'
+  const copilotHandle = copilot.handle || copilot.memberHandle
   return (
-    <div className={cn(styles.container, { [styles.active]: copilot.handle === selectedCopilot })} onClick={() => onUpdateOthers({ field: 'copilot', value: copilot.handle })}>
+    <div className={cn(styles.container, { [styles.active]: copilotHandle === selectedCopilot })} onClick={() => onUpdateOthers({ field: 'copilot', value: copilotHandle })}>
       {copilot.photoURL && <img src={copilot.photoURL} alt='copilot' />}
       {!copilot.photoURL && <ReactSVG path={assets(`${icon}`)} />}
-      <span className={cn(styles.handle, styles[copilot.color])}>{copilot.handle}</span>
+      <span className={cn(styles.handle, styles[copilot.color])}>{copilotHandle}</span>
     </div>
   )
 }

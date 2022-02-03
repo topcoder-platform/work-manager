@@ -163,15 +163,17 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
   )
 }
 
-const renderStatus = (status) => {
+const renderStatus = (status, getStatusText) => {
   switch (status) {
     case CHALLENGE_STATUS.ACTIVE:
+    case CHALLENGE_STATUS.APPROVED:
     case CHALLENGE_STATUS.NEW:
     case CHALLENGE_STATUS.DRAFT:
     case CHALLENGE_STATUS.COMPLETED:
-      return (<ChallengeStatus status={status} />)
+      const statusText = getStatusText ? getStatusText(status) : status
+      return (<ChallengeStatus status={status} statusText={statusText} />)
     default:
-      return (<span className={styles.statusText}>{status}</span>)
+      return (<span className={styles.statusText}>{statusText}</span>)
   }
 }
 
@@ -276,7 +278,7 @@ class ChallengeCard extends React.Component {
 
   render () {
     const { isLaunch, isConfirm, isSaving, isDeleteLaunch, isCheckChalengePermission, hasEditChallengePermission } = this.state
-    const { challenge, shouldShowCurrentPhase, reloadChallengeList, isBillingAccountExpired } = this.props
+    const { challenge, shouldShowCurrentPhase, reloadChallengeList, isBillingAccountExpired, disableHover, getStatusText } = this.props
     const { phaseMessage, endTime } = getPhaseInfo(challenge)
     const deleteMessage = isCheckChalengePermission
       ? 'Checking permissions...'
@@ -313,7 +315,7 @@ class ChallengeCard extends React.Component {
           />
         )
         }
-        { isLaunch && isConfirm && (
+        {isLaunch && isConfirm && (
           <AlertModal
             title='Success'
             message={`Challenge "${challenge.name}" is activated successfuly`}
@@ -324,7 +326,7 @@ class ChallengeCard extends React.Component {
             okLink={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}
             onClose={this.resetModal}
           />
-        ) }
+        )}
 
         <Link className={styles.col1} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
           <div className={styles.name}>
@@ -335,14 +337,14 @@ class ChallengeCard extends React.Component {
         </Link>
         {renderLastUpdated(challenge)}
         <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
-          {renderStatus(challenge.status.toUpperCase())}
+          {renderStatus(challenge.status.toUpperCase(), getStatusText)}
         </Link>
         {shouldShowCurrentPhase && (<Link className={styles.col3} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
           <span className={styles.block}>{phaseMessage}</span>
           <span className='block light-text'>{endTime}</span>
         </Link>)}
         <div className={cn(styles.col4, styles.editingContainer)}>
-          {hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch)}
+          {(disableHover ? <Link className={styles.link} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>View Challenge</Link> : hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch))}
         </div>
         <div className={cn(styles.col4, styles.iconsContainer)}>
           <div className={styles.faIconContainer}>
@@ -361,7 +363,7 @@ class ChallengeCard extends React.Component {
 
 ChallengeCard.defaultPrps = {
   shouldShowCurrentPhase: true,
-  reloadChallengeList: () => {}
+  reloadChallengeList: () => { }
 }
 
 ChallengeCard.propTypes = {
@@ -370,7 +372,9 @@ ChallengeCard.propTypes = {
   reloadChallengeList: PropTypes.func,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
-  isBillingAccountExpired: PropTypes.bool
+  isBillingAccountExpired: PropTypes.bool,
+  disableHover: PropTypes.bool,
+  getStatusText: PropTypes.func
 }
 
 export default withRouter(ChallengeCard)

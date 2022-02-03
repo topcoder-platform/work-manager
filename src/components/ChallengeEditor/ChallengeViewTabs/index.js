@@ -13,8 +13,8 @@ import LegacyLinks from '../../LegacyLinks'
 import ForumLink from '../../ForumLink'
 import Registrants from '../Registrants'
 import Submissions from '../Submissions'
-import { getResourceRoleByName } from '../../../util/tc'
-import { MESSAGE } from '../../../config/constants'
+import { checkAdmin, getResourceRoleByName } from '../../../util/tc'
+import { CHALLENGE_STATUS, MESSAGE } from '../../../config/constants'
 import Tooltip from '../../Tooltip'
 import CancelDropDown from '../Cancel-Dropdown'
 import 'react-tabs/style/react-tabs.css'
@@ -43,7 +43,11 @@ const ChallengeViewTabs = ({
   onLaunchChallenge,
   cancelChallenge,
   onCloseTask,
-  projectPhases
+  projectPhases,
+  assignYourselfCopilot,
+  showRejectChallengeModal,
+  loggedInUser,
+  onApproveChallenge
 }) => {
   const [selectedTab, setSelectedTab] = useState(0)
 
@@ -80,6 +84,22 @@ const ChallengeViewTabs = ({
 
   const isTask = _.get(challenge, 'task.isTask', false)
 
+  const isSelfService = challenge.legacy.selfService
+  const isDraft = challenge.status.toUpperCase() === CHALLENGE_STATUS.DRAFT
+  const isSelfServiceCopilot = challenge.legacy.selfServiceCopilot === loggedInUser.handle
+  const isAdmin = checkAdmin(token)
+  const canApprove = isSelfServiceCopilot && isDraft && isSelfService
+  const hasBillingAccount = _.get(projectDetail, 'billingAccountId') !== null
+  // only challenges that have a billing account can be launched AND
+  // if this isn't self-service, permit launching if the challenge is draft
+  // OR if this isn't a non-self-service draft, permit launching if:
+  // a) the current user is either the self-service copilot or is an admin AND
+  // b) the challenge is approved
+  const canLaunch = hasBillingAccount &&
+    ((!isSelfService && isDraft) ||
+      ((isSelfServiceCopilot || isAdmin) &&
+        challenge.status.toUpperCase() === CHALLENGE_STATUS.APPROVED))
+
   return (
     <div className={styles.list}>
       <Helmet title='View Details' />
@@ -94,7 +114,7 @@ const ChallengeViewTabs = ({
               styles.actionButtonsLeft
             )}
           >
-            { isTask ? (<ForumLink challenge={challenge} />)
+            {isTask ? (<ForumLink challenge={challenge} />)
               : (<LegacyLinks challenge={challenge} challengeView />)
             }
           </div>
@@ -107,13 +127,14 @@ const ChallengeViewTabs = ({
             styles.actionButtonsRight
           )}
         >
-          {(challenge.status === 'Draft' || challenge.status === 'New') && <div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>}
-          {challenge.status === 'Draft' && (
+          {(isDraft || challenge.status === 'New') && !isSelfService &&
+            (<div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>)}
+          {canLaunch && (
             <div className={styles.button}>
               {challenge.legacyId || isTask ? (
                 <PrimaryButton
-                  text={'Launch'}
-                  type={'info'}
+                  text='Launch'
+                  type='info'
                   onClick={onLaunchChallenge}
                 />
               ) : (
@@ -122,6 +143,15 @@ const ChallengeViewTabs = ({
                   <PrimaryButton text={'Launch'} type={'disabled'} />
                 </Tooltip>
               )}
+            </div>
+          )}
+          {canApprove && (
+            <div className={styles.button}>
+              <PrimaryButton
+                text='Approve'
+                type='info'
+                onClick={onApproveChallenge}
+              />
             </div>
           )}
           {isTask && challenge.status === 'Active' && (
@@ -138,8 +168,17 @@ const ChallengeViewTabs = ({
               )}
             </div>
           )}
-          {enableEdit && (
+          {enableEdit && !isSelfService && (
             <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} />
+          )}
+          {isSelfService && isDraft && (isAdmin || isSelfServiceCopilot) && (
+            <div className={styles.button}>
+              <PrimaryButton
+                text='Reject challenge'
+                type='danger'
+                onClick={showRejectChallengeModal}
+              />
+            </div>
           )}
           <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
         </div>
@@ -208,6 +247,10 @@ const ChallengeViewTabs = ({
           onLaunchChallenge={onLaunchChallenge}
           onCloseTask={onCloseTask}
           projectPhases={projectPhases}
+          assignYourselfCopilot={assignYourselfCopilot}
+          showRejectChallengeModal={showRejectChallengeModal}
+          onApproveChallenge={onApproveChallenge}
+          loggedInUser={loggedInUser}
         />
       )}
       {selectedTab === 1 && (
@@ -244,7 +287,11 @@ ChallengeViewTabs.propTypes = {
   onLaunchChallenge: PropTypes.func,
   cancelChallenge: PropTypes.func.isRequired,
   onCloseTask: PropTypes.func,
-  projectPhases: PropTypes.arrayOf(PropTypes.object)
+  projectPhases: PropTypes.arrayOf(PropTypes.object),
+  assignYourselfCopilot: PropTypes.func.isRequired,
+  showRejectChallengeModal: PropTypes.func.isRequired,
+  loggedInUser: PropTypes.object.isRequired,
+  onApproveChallenge: PropTypes.func
 }
 
 export default ChallengeViewTabs
