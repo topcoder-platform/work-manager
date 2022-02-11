@@ -341,8 +341,8 @@ class ChallengeEditor extends Component {
 
     // get the resource roles and new/old resource values
     const copilotRole = getResourceRoleByName(metadata.resourceRoles, 'Copilot')
-    // const approverRole = getResourceRoleByName(metadata.resourceRoles, 'Approver')
-    // const screenerRole = getResourceRoleByName(metadata.resourceRoles, 'Primary Screener')
+    const approverRole = getResourceRoleByName(metadata.resourceRoles, 'Approver')
+    const screenerRole = getResourceRoleByName(metadata.resourceRoles, 'Primary Screener')
     const copilotHandle = loggedInUser.handle
     const challengeId = challengeDetails.id
     const oldPilot = challengeDetails.legacy.selfServiceCopilot
@@ -350,8 +350,8 @@ class ChallengeEditor extends Component {
 
     // replace the roles
     await replaceResourceInRole(challengeId, copilotRole.id, newPilot, oldPilot)
-    // await replaceResourceInRole(challengeId, approverRole.id, newPilot, oldPilot)
-    // await replaceResourceInRole(challengeId, screenerRole.id, newPilot, oldPilot)
+    await replaceResourceInRole(challengeId, approverRole.id, newPilot, oldPilot)
+    await replaceResourceInRole(challengeId, screenerRole.id, newPilot, oldPilot)
 
     this.setState({
       challengeDetails: {
