@@ -8,8 +8,11 @@
     "clean": "rimraf temp/ && rimraf download/ && rimraf test-results/",
     "webdriver-update": "node node_modules/protractor/bin/webdriver-manager update",
     "pretest": "npm run webdriver-update && npm run clean && npm run tsc",
+    "lint": "npx tslint --project . --fix",
     "test": "protractor temp/conf.js",
-    "lint": "npx tslint --project . --fix"
+    "test:local": "cp config/wm-automation-config-local.json config/config.json && npm run pretest && protractor temp/conf.js",
+    "test:dev": "cp config/wm-automation-config-dev.json config/config.json && npm run pretest && protractor temp/conf.js",
+    "test:prod": "cp config/wm-automation-config-prod.json config/config.json && npm run pretest && protractor temp/conf.js"
   },
   "keywords": [
     "protractor",
@@ -28,6 +31,7 @@
     "winston": "^3.3.3"
   },
   "devDependencies": {
-    "@types/jasmine": "^3.8.2"
+    "@types/jasmine": "^3.8.2",
+    "tslint": "^6.1.3"
   }
 }

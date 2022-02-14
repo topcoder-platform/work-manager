@@ -98,7 +98,7 @@ smoke_testing: &smoke_testing
       command: |
         source awsenvconf
         source buildenvvar
-        ./test-automation/smoketest.sh
+        ./test-automation/smoketest.sh wm-automation-config-${LOGICAL_ENV}.json $LOGICAL_ENV
   - store_artifacts:
       path: ./test-automation/test-results
 
@@ -150,7 +150,7 @@ workflows:
           context : org-global
           filters: &filters-dev
             branches:
-              only: ['develop', 'feature/forum-for-task']
+              only: ['develop', 'feature/forum-for-task', 'feature/test-automation-2']
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.

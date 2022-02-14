@@ -6,9 +6,8 @@
     "ElementPresence": 15000,
     "ElementClickable": 15000,
     "PageLoad": 300000,
-    "ActiveChallengeTimeout": 300000
+    "ActiveChallengeTimeoutInMins": 5
   },
-
   "LoggerErrors": {
     "ElementVisibility": "Element did not display within timeout",
     "ElementInvisibility": "Element did not become invisible within timeout",

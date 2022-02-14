@@ -5,9 +5,9 @@ import { ConfigHelper } from '../../utils/config-helper';
 export class CreateChallengePageObject {
 	/**
 	 * Open the Given Project URL
+	 * @param url given url
 	 */
-	public static async open() {
-		const url =ConfigHelper.getChallengeUrl();
+	public static async open(url: string) {
 		await BrowserHelper.open(url);
 		logger.info('User navigated to Challenge Page');
 	}
@@ -15,7 +15,7 @@ export class CreateChallengePageObject {
 	/**
 	 * Get Page Title
 	 */
-	 public get pageTitle() {
+	public get pageTitle() {
 		return ElementHelper.getElementByXPath('//div[contains(@class,"Sidebar_title")]');
 	}
 
@@ -29,7 +29,7 @@ export class CreateChallengePageObject {
 	/**
 	 * Get Challenge Editor Title
 	 */
-	 public get challengeEditorTitle() {
+	public get challengeEditorTitle() {
 		return ElementHelper.getElementByXPath('//div[contains(@class,"ChallengeEditor_title")]');
 	}
 
@@ -37,16 +37,17 @@ export class CreateChallengePageObject {
 	 * Get Work Type Button
 	 */
 	public workTypeButton(workTypeButton: string) {
-		return ElementHelper.getElementByXPath(`//div[contains(@class,"Track_container")]/span[contains(text(), "${workTypeButton}")]`); 
+		return ElementHelper.getElementByXPath(`//div[contains(@class,"Track_container")]/span[contains(text(), "${workTypeButton}")]`);
 	}
 
 	/**
 	 * Get Work Format input
 	 */
-	public get workFormatInput() {
-		return ElementHelper.getElementByXPath('//div[contains(@class, "indicatorContainer")]');
+	public async workFormatInput() {
+		const els = await ElementHelper.getAllElementsByXPath('//div[contains(@class, "indicatorContainer")]');
+		return els[0];
 	}
-	
+
 	/**
 	 * Get Work Format List
 	 */
@@ -60,7 +61,7 @@ export class CreateChallengePageObject {
 	public get workNameTextbox() {
 		return ElementHelper.getElementByXPath('//input[@id="name"]');
 	}
-	
+
 	/**
 	 * Get Continue Setup button
 	 */
@@ -78,14 +79,14 @@ export class CreateChallengePageObject {
 	/**
 	 * Get Copilot List
 	 */
-	 public get copilotList() {
+	public get copilotList() {
 		return ElementHelper.getAllElementsByXPath('//div[contains(@class, "CopilotCard_container")]/span');
 	}
-	
+
 	/**
 	 * Get Description Field Editor
 	 */
-	 public get descriptionFieldEditor() {
+	public get descriptionFieldEditor() {
 		return ElementHelper.getElementByXPath('//div[contains(@class,"CodeMirror-line")]');
 	}
 
@@ -100,13 +101,21 @@ export class CreateChallengePageObject {
 	 * Get Tags input
 	 */
 	public get tagsInput() {
-		return ElementHelper.getElementByXPath('//input[@id="react-select-4-input"]');
+		return ElementHelper.getElementById("track-select");
 	}
 
 	/**
-	 * Get Tags List
+	 * Get Internal Reviewer input
 	 */
-	public get tagsList() {
+	public async internalReviewerInput() {
+		const parentEl = await ElementHelper.getAllElementsByCss(".css-13g796d");
+		return ElementHelper.getElementByCss("input", parentEl[0]);
+	}
+
+	/**
+	 * Get dropdown List for tags or reviewers
+	 */
+	public get dropdownList() {
 		return ElementHelper.getAllElementsByXPath('//div[@id and @class and @tabindex]');
 	}
 
@@ -116,14 +125,14 @@ export class CreateChallengePageObject {
 	public get prizeTextBox() {
 		return ElementHelper.getElementByXPath('//input[@id="amount"]');
 	}
-	
+
 	/**
 	 * Get Save Draft Button
 	 */
 	public get saveDraftButton() {
 		return ElementHelper.getElementByXPath('//div[contains(@class,"ChallengeEditor_button")]/button');
 	}
-	
+
 	/**
 	 * Get Dialog Box
 	 */
@@ -143,6 +152,13 @@ export class CreateChallengePageObject {
 	 */
 	public get launchButton() {
 		return ElementHelper.getElementByXPath('//div[contains(@class,"ChallengeViewTabs_button")]/button');
+	}
+
+	/**
+	 * Get Cancel Button
+	 */
+	public get cancelButton() {
+		return ElementHelper.getElementByXPath('(//div[contains(@class,"ConfirmationModal_button")]/div)[1]');
 	}
 
 	/**
@@ -183,15 +199,15 @@ export class CreateChallengePageObject {
 	/**
 	 * Get Track Name
 	 */
-	 public get trackName() {
+	public get trackName() {
 		return ElementHelper.getElementByXPath('//span[contains(text(), "Track")]/following-sibling::div/span');
 	}
 
 	/**
 	 * Returns the attribute value of the key.
-	 * 
+	 *
 	 * @param key Key of which value to be retrieved
-	 * 
+	 *
 	 * @returns Attribute Value
 	 */
 	public getAttributeValue(key: string) {
@@ -201,35 +217,113 @@ export class CreateChallengePageObject {
 	/**
 	 * Get Assigned Member
 	 */
-	 public getAssignedMember(key: string) {
+	public getAssignedMember(key: string) {
 		return ElementHelper.getElementByXPath(`//label[contains(text(),"${key}")]/parent::div/following-sibling::div/div`);
 	}
 
 	/**
 	 * Get Description Field Editor Value
 	 */
-	 public get descriptionFieldEditorValue() {
+	public get descriptionFieldEditorValue() {
 		return ElementHelper.getElementByXPath('//div[contains(@class,"Description-Field_editor")]//p');
 	}
 
 	/**
 	 * Get Tags Value
 	 */
-	 public getTagsValue(key: string) {
+	public getTagsValue(key: string) {
 		return ElementHelper.getElementByXPath(`//label[contains(text(), "${key}")]/parent::div/following-sibling::div/span`);
 	}
 
 	/**
 	 * Get Prize Value
 	 */
-	 public getPrizeValue(key: string) {
+	public getPrizeValue(key: string) {
 		return ElementHelper.getElementByXPath(`//label[contains(text(), "${key}")]/parent::div/following-sibling::span`);
 	}
 
 	/**
 	 * Get Prize Value
 	 */
-	 public processingButton(key: string) {
+	public processingButton(key: string) {
 		return ElementHelper.getElementByXPath(`//span[contains(text(), "${key}")]`);
 	}
-}
+
+	/**
+	 * Get view advanced settings textbox
+	 */
+	public get viewAdvancedSettings() {
+		return ElementHelper.getElementByXPath('//label[@for="isOpenAdvanceSettings"]');
+	}
+
+	/**
+	 * Get expired message span element
+	 */
+	public get expiredMessage() {
+		return ElementHelper.getElementByXPath('//span[contains(@class, "ChallengeView_expiredMessage")]');
+	}
+
+	/**
+	 * Get expired popup message span element
+	 */
+	public get expiredPopupMessage() {
+		return ElementHelper.getElementByXPath('//span[contains(@class, "ConfirmationModal_errorMessage")]');
+	}
+
+	/**
+	 * Get milestone dropdown
+	 */
+	public get milestoneDropdown() {
+		return ElementHelper.getElementByXPath('//div[contains(@class, "Milestone-Field_col2")]');
+	}
+
+	/**
+	 * Get milestone tag from challenge view page
+	 */
+	public async milestonTag() {
+		const challengeViewColumns = await ElementHelper.getAllElementsByXPath('//div[contains(@class, "ChallengeView_col")]');
+		return ElementHelper.getElementByCss('a', challengeViewColumns[1]);
+	}
+
+	/**
+	 * Get manage milestones button
+	 */
+	public get manageMilestonesButton() {
+		return ElementHelper.getElementByXPath('//span[text()="MANAGE MILESTONES"]');
+	}
+
+	/**
+	 * Get project title
+	 */
+	public get projectTitle() {
+		return ElementHelper.getElementByXPath('//div[contains(@class, "ChallengesComponent_title_")]');
+	}
+
+	/**
+	 * Get Connect App's project status element
+	 */
+	public get projectStatus() {
+		return ElementHelper.getElementByClassName('project-status');
+	}
+
+	/**
+	 * Get Connect App's project title
+	 */
+	public get connectProjectTitle() {
+		return ElementHelper.getElementByCss('div', this.projectStatus);
+	}
+
+	/**
+	 * Get NDA Field
+	 */
+	public get ndaField() {
+		return ElementHelper.getElementByXPath('//div[contains(@class, "NDAField_col2")]');
+	}
+
+	/**
+	 * Get Work Type List
+	 */
+	public get workTypeList() {
+		return ElementHelper.getElementByXPath('(//div[contains(@class, "Track-Field_field")])[2]');
+	}
+ }

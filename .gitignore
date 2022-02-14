@@ -31,3 +31,6 @@ yarn-error.log*
 # e2e test case
 test-automation/temp
 test-automation/test-results
+test-automation/config/config.json
+# avoid accidental pushing of the production config to the repository
+test-automation/config/wm-automation-config-prod.json

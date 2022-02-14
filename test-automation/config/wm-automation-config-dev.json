@@ -1,0 +1,21 @@
+{
+  "env": "dev",
+  "copilotRole": {
+    "email": "topcoderconnect+Copilot@gmail.com",
+    "password": "appirio123",
+    "handle": "TCConnCopilot"
+  },
+  "copilotManagerRole": {
+    "email": "topcoderconnect+CopilotManager@gmail.com",
+    "password": "appirio123",
+    "handle": "TCConCopilotMgr"
+  },
+  "givenUrl": "https://challenges.topcoder-dev.com/",
+  "logoutUrl": "https://accounts-auth0.topcoder-dev.com/?logout=true&retUrl=https://connect.topcoder-dev.com",
+  "activeProjectUrl": "https://challenges.topcoder-dev.com/projects/16573/challenges",
+  "expiredProjectUrl": "https://challenges.topcoder-dev.com/projects/17236/challenges",
+  "milestoneProjectUrl": "https://challenges.topcoder-dev.com/projects/18694/challenges",
+  "ndaVerificationUrl": "https://challenges.topcoder-dev.com/projects/18173/challenges/dc3cb372-86ea-4bfa-8edc-7dc03d367d5c/view",
+  "searchTextProjectId": "18694",
+  "projectName": "[Do not Update] Project for Smoke Test Automation [Active with Milestones]"
+}

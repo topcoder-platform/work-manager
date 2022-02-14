@@ -9,6 +9,13 @@ export const ConfigHelper = {
   },
 
   /**
+   * Get Environment
+   */
+  getEnvironment() {
+    return this.getConfig().env;
+  },
+
+  /**
    * Gets email, password of copilot user
    */
   getCopilotUser() {
@@ -25,21 +32,56 @@ export const ConfigHelper = {
   /**
    * Get Given URL
    */
-   getGivenUrl(): string {
+  getGivenUrl(): string {
     return this.getConfig().givenUrl;
-  },
-  
-  /**
-   * Get Challenge URL
-   */
-   getChallengeUrl(): string {
-    return this.getConfig().challengeUrl;
   },
 
   /**
    * Gets Logout URL
    */
-   getLogoutUrl() {
+  getLogoutUrl() {
     return this.getConfig().logoutUrl;
+  },
+
+  /**
+   * Gets active project url
+   */
+  getActiveProjectUrl() {
+    return this.getConfig().activeProjectUrl;
+  },
+
+  /**
+   * Gets expired project url
+   */
+  getExpiredProjectUrl() {
+    return this.getConfig().expiredProjectUrl;
+  },
+
+  /**
+   * Gets milestone project url
+   */
+  getMilestoneProjectUrl() {
+    return this.getConfig().milestoneProjectUrl;
+  },
+
+  /**
+   * Gets NDA verification project url
+   */
+  getNdaVerificationUrl() {
+    return this.getConfig().ndaVerificationUrl;
+  },
+
+  /**
+   * Gets search text project id
+   */
+  getSearchTextProjectId() {
+    return this.getConfig().searchTextProjectId;
+  },
+
+  /**
+   * Gets project name
+   */
+  getProjectName() {
+    return this.getConfig().projectName;
   },
 };
