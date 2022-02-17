@@ -15,6 +15,7 @@ import { loadProject } from '../../actions/projects'
 import { loadProjects, setActiveProject, resetSidebarActiveParams } from '../../actions/sidebar'
 import { CHALLENGE_STATUS } from '../../config/constants'
 import styles from './Challenges.module.scss'
+import { checkAdmin } from '../../util/tc'
 
 class Challenges extends Component {
   constructor (props) {
@@ -48,7 +49,8 @@ class Challenges extends Component {
   reloadChallenges (props) {
     const { activeProjectId, projectDetail: reduxProjectInfo, projectId, challengeProjectId, loadProject, selfService } = props
     if (activeProjectId !== challengeProjectId || selfService) {
-      this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, CHALLENGE_STATUS.ACTIVE, '', selfService)
+      const isAdmin = checkAdmin(this.props.auth.token)
+      this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, CHALLENGE_STATUS.ACTIVE, '', selfService, isAdmin ? null : this.props.auth.user.handle)
       if (!selfService && (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId)
       ) {
         loadProject(projectId)
@@ -68,6 +70,7 @@ class Challenges extends Component {
   }
 
   render () {
+    console.log('im here', this.props.auth)
     const {
       challenges,
       isLoading,
@@ -103,23 +106,27 @@ class Challenges extends Component {
     return (
       <Fragment>
         <div className={styles.projectSearch}>
-          <div className={styles.projectSearchHeader}>
-            <label>Switch Project</label>
-            <DebounceInput
-              minLength={2}
-              debounceTimeout={300}
-              placeholder='Search projects (Enter project id or project title in double quotes or any text from project)'
-              onChange={(e) => this.updateProjectName(e.target.value)}
-              value={searchProjectName}
-            />
-            <input
-              type='checkbox'
-              label='My Projects'
-              checked={onlyMyProjects}
-              onChange={this.toggleMyProjects}
-            />
-            <label>My Projects</label>
-          </div>
+          {
+            !selfService && (
+              <div className={styles.projectSearchHeader}>
+                <label>Switch Project</label>
+                <DebounceInput
+                  minLength={2}
+                  debounceTimeout={300}
+                  placeholder='Search projects (Enter project id or project title in double quotes or any text from project)'
+                  onChange={(e) => this.updateProjectName(e.target.value)}
+                  value={searchProjectName}
+                />
+                <input
+                  type='checkbox'
+                  label='My Projects'
+                  checked={onlyMyProjects}
+                  onChange={this.toggleMyProjects}
+                />
+                <label>My Projects</label>
+              </div>
+            )
+          }
           {
             activeProjectId === -1 && !selfService && <div>No project selected. Select one below</div>
           }

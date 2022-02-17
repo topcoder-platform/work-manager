@@ -42,7 +42,13 @@ class DescriptionField extends Component {
         }
       })
     } else {
-      this.ref.current.innerHTML = challenge[type] ? marked(challenge[type]) : ''
+      if (challenge.legacy.selfService) {
+        const regex = new RegExp('{{[a-zA-Z0-9.]+}}', 'g')
+        const newDescription = challenge[type] ? challenge[type].replace(regex, '<span style="color:red">MISSING DATA FROM INTAKE FORM</span>') : ''
+        this.ref.current.innerHTML = marked(newDescription)
+      } else {
+        this.ref.current.innerHTML = challenge[type] ? marked(challenge[type]) : ''
+      }
     }
   }
 
