@@ -88,7 +88,7 @@ export function loadChallengesByPage (page, projectId, status, filterChallengeNa
     }
     if (selfService) {
       filters.selfService = true
-      if (userHandle && filters.status.toUpperCase() !== CHALLENGE_STATUS.DRAFT) {
+      if (userHandle && filters.status.toUpperCase() !== CHALLENGE_STATUS.DRAFT && filters.status.toUpperCase() !== CHALLENGE_STATUS.NEW) {
         filters.selfServiceCopilot = userHandle
       }
     }
