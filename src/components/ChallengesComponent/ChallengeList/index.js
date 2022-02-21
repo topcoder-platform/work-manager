@@ -20,6 +20,7 @@ import Message from '../Message'
 import {
   CHALLENGE_STATUS
 } from '../../../config/constants'
+import { checkAdmin } from '../../../util/tc'
 
 require('bootstrap/scss/bootstrap.scss')
 
@@ -105,6 +106,9 @@ class ChallengeList extends Component {
   }
 
   getHandle () {
+    if (checkAdmin(this.props.auth.token)) {
+      return null
+    }
     return this.props.auth && this.props.auth.user ? this.props.auth.user.handle : null
   }
 
@@ -130,8 +134,10 @@ class ChallengeList extends Component {
     let selectedTab = 0
     switch (status) {
       case CHALLENGE_STATUS.APPROVED:
-      case CHALLENGE_STATUS.NEW:
         selectedTab = 1
+        break
+      case CHALLENGE_STATUS.NEW:
+        selectedTab = selfService ? 3 : 1
         break
       case CHALLENGE_STATUS.DRAFT:
         selectedTab = 2
@@ -194,7 +200,8 @@ class ChallengeList extends Component {
                 break
               }
               case 3: {
-                this.directUpdateSearchParam(searchText, CHALLENGE_STATUS.COMPLETED)
+                const status = selfService ? CHALLENGE_STATUS.NEW : CHALLENGE_STATUS.COMPLETED
+                this.directUpdateSearchParam(searchText, status)
                 break
               }
               case 4: {
@@ -203,12 +210,18 @@ class ChallengeList extends Component {
               }
             }
           }}>
+          {
+            selfService && <h4>Total Challenges: {totalChallenges}</h4>
+          }
           <TabList>
             <Tab>{(selfService ? 'Assigned challenges' : 'Active')}</Tab>
             <Tab>{(selfService ? 'Approved' : 'New')}</Tab>
             <Tab>{this.getStatusTextFunc(selfService)(CHALLENGE_STATUS.DRAFT)}</Tab>
             {(!selfService && <Tab>Completed</Tab>)}
             {(!selfService && <Tab>Cancelled</Tab>)}
+            {
+              selfService && checkAdmin(this.props.auth.token) && <Tab>Draft</Tab>
+            }
           </TabList>
           <TabPanel />
           <TabPanel />
