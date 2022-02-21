@@ -70,7 +70,6 @@ class Challenges extends Component {
   }
 
   render () {
-    console.log('im here', this.props.auth)
     const {
       challenges,
       isLoading,
