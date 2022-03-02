@@ -1,28 +1,38 @@
 import _ from 'lodash'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import styles from './PhaseInput.module.scss'
 import cn from 'classnames'
-import DayPickerInput from 'react-day-picker/DayPickerInput'
-import TimePicker from 'rc-time-picker'
-import {
-  formatDate,
-  parseDate
-} from 'react-day-picker/moment'
 import 'react-day-picker/lib/style.css'
 import 'rc-time-picker/assets/index.css'
 import Select from '../Select'
+import DateTime from '@nateradebaugh/react-datetime'
+import isAfter from 'date-fns/isAfter'
+import subDays from 'date-fns/subDays'
+import '@nateradebaugh/react-datetime/scss/styles.scss'
 
-const timeFormat = 'HH:mm'
-const dateFormat = 'MM/DD/YYYY'
+const dateFormat = 'MM/DD/YYYY HH:mm'
+// const tcTimeZone = 'America/New_York'
 
 class PhaseInput extends Component {
+  constructor (props) {
+    super(props)
+
+    this.onDateChange = this.onDateChange.bind(this)
+  }
+
+  onDateChange (e) {
+    const { onUpdatePhase } = this.props
+
+    onUpdatePhase(moment(e, dateFormat))
+  }
+
   render () {
     const { phase, onUpdateSelect, onUpdatePhase, withDates, withDuration, endDate, readOnly } = this.props
     if (_.isEmpty(phase)) return null
+
     const date = moment(phase.date).format(dateFormat)
-    const time = moment(phase.date)
 
     return (
       <div className={styles.container}>
@@ -33,13 +43,32 @@ class PhaseInput extends Component {
               withDuration && endDate && (
                 <div className={styles.previewDates}>
                   <span>Ends:</span>
-                  {moment(endDate).format(`${dateFormat} ${timeFormat}`)}
+                  {moment(endDate).local().format(`${dateFormat}`)}
                 </div>
               )
             }
           </div>
           <div className={cn(styles.field, styles.col2)}>
             {
+              withDates && (
+                <div className={styles.dayPicker}>
+                  {
+                    readOnly ? (
+                      <span className={styles.readOnlyValue}>{date}</span>
+                    )
+                      : (
+                        <DateTime
+                          value={date}
+                          onChange={this.onDateChange}
+                          isValidDate={(current) => {
+                            const yesterday = subDays(new Date(), 1)
+                            return isAfter(current, yesterday)
+                          }}
+                        />)}
+                </div>
+              )
+            }
+            {/* {
               withDates && (
                 <div className={styles.dayPicker}>
                   {readOnly ? (
@@ -62,7 +91,7 @@ class PhaseInput extends Component {
                   />)}
                 </div>
               )
-            }
+            } */}
             {
               withDuration && (
                 <div className={styles.durationPicker}>

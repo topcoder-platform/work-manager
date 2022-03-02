@@ -1,5 +1,10 @@
 @import "../../styles/includes";
-@i
+
+:global {
+  div[data-reach-popover] {
+    z-index: 10;
+  }
+}
 
 .container {
   display: flex;
