@@ -4,11 +4,12 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import cn from 'classnames'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import { pick } from 'lodash/fp'
 import { withRouter } from 'react-router-dom'
 import { toastr } from 'react-redux-toastr'
 import xss from 'xss'
+import { v4 as uuidv4 } from 'uuid'
 
 import {
   VALIDATION_VALUE_TYPE,
@@ -810,6 +811,15 @@ class ChallengeEditor extends Component {
     this.setState({ challenge: newChallenge })
   }
 
+  onUpdatePhaseDate (phase, index) {
+    let newChallenge = _.cloneDeep(this.state.challenge)
+    const hourToSecond = 60 * 60
+    newChallenge.phases[index]['duration'] = phase.duration / hourToSecond
+    newChallenge.phases[index]['scheduledStartDate'] = phase.scheduledStartDate
+    newChallenge.phases[index]['scheduledEndDate'] = phase.scheduledEndDate
+    this.setState({ challenge: newChallenge })
+  }
+
   collectChallengeData (status) {
     const { attachments, metadata } = this.props
     const challenge = pick([
@@ -1280,7 +1290,7 @@ class ChallengeEditor extends Component {
     let closeTaskModal = null
     let draftModal = null
 
-    let { type } = challenge
+    let { type, phases = [] } = challenge
     if (!type) {
       const { typeId } = challenge
       if (typeId && metadata.challengeTypes) {
@@ -1561,20 +1571,24 @@ class ChallengeEditor extends Component {
               </React.Fragment>
             )}
             {!isTask && (
-              <div className={styles.PhaseRow}>
-                <PhaseInput
-                  withDates
-                  phase={{
-                    name: 'Start Date',
-                    date: challenge.startDate
-                  }}
-                  onUpdatePhase={newValue => this.onUpdateOthers({
-                    field: 'startDate',
-                    value: newValue.format()
-                  })}
-                  readOnly={false}
-                />
-              </div>
+                <>
+                  {
+                    phases.map((phase, index) => (
+                      <PhaseInput
+                        phase={phase}
+                        phaseIndex={uuidv4()}
+                        readOnly={false}
+                        onUpdatePhase={(item) => {
+                          if ((item.startDate && !moment(item.startDate).isSame(phase.scheduledStartDate)) ||
+                          (item.endDate && !moment(item.endDate).isSame(phase.scheduledEndDate))
+                          ) {
+                            this.onUpdatePhaseDate(item, index)
+                          }
+                        }}
+                      />
+                    ))
+                  }
+                </>
             )}
             {
               this.state.isDeleteLaunch && !this.state.isConfirm && (
