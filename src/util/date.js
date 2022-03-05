@@ -111,7 +111,9 @@ export const updateChallengePhaseBeforeSendRequest = (challengeDetail) => {
     const challengeDetailTmp = _.cloneDeep(challengeDetail)
     challengeDetailTmp.phases = challengeDetailTmp.phases.map((p) => ({
       duration: p.duration * hourToSecond,
-      phaseId: p.phaseId
+      phaseId: p.phaseId,
+      scheduledStartDate: p.scheduledStartDate,
+      scheduledEndDate: p.scheduledEndDate
     }))
     return challengeDetailTmp
   }

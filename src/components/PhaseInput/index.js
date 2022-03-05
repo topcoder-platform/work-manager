@@ -1,141 +1,146 @@
-import _ from 'lodash'
-import moment from 'moment-timezone'
-import React, { Component } from 'react'
+import moment from 'moment'
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import styles from './PhaseInput.module.scss'
 import cn from 'classnames'
 import 'react-day-picker/lib/style.css'
 import 'rc-time-picker/assets/index.css'
-import Select from '../Select'
 import DateTime from '@nateradebaugh/react-datetime'
 import isAfter from 'date-fns/isAfter'
 import subDays from 'date-fns/subDays'
 import '@nateradebaugh/react-datetime/scss/styles.scss'
 
 const dateFormat = 'MM/DD/YYYY HH:mm'
-// const tcTimeZone = 'America/New_York'
+const MAX_LENGTH = 5
 
-class PhaseInput extends Component {
-  constructor (props) {
-    super(props)
+const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
+  const [startDate, setStartDate] = useState()
+  const [endDate, setEndDate] = useState()
+  const [duration, setDuration] = useState()
 
-    this.onDateChange = this.onDateChange.bind(this)
+  useEffect(() => {
+    if (phase) {
+      setStartDate(phase.scheduledStartDate)
+      setEndDate(phase.scheduledEndDate)
+      setDuration(moment(phase.scheduledEndDate).diff(phase.scheduledStartDate, 'seconds'))
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!readOnly) {
+      onUpdatePhase({
+        startDate,
+        endDate,
+        duration
+      })
+    }
+  }, [startDate, endDate, duration])
+
+  const onStartDateChange = (e) => {
+    const start = moment(e).format()
+    let end = moment(endDate).format()
+
+    if (moment(end).isBefore(moment(start))) {
+      end = moment(e).add(1, 'day').format(dateFormat)
+      setEndDate(moment(end).format(dateFormat))
+    }
+
+    setStartDate(moment(e).format(dateFormat))
+    setDuration(moment(end).diff(start, 'seconds'))
   }
 
-  onDateChange (e) {
-    const { onUpdatePhase } = this.props
+  const onEndDateChange = (e) => {
+    const end = moment(e).format()
+    const start = moment(startDate).format()
 
-    onUpdatePhase(moment(e, dateFormat))
+    if (moment(end).isBefore(moment(start))) {
+      return null
+    }
+
+    setEndDate(moment(e).format(dateFormat))
+    setDuration(moment(end).diff(start, 'seconds'))
   }
 
-  render () {
-    const { phase, onUpdateSelect, onUpdatePhase, withDates, withDuration, endDate, readOnly } = this.props
-    if (_.isEmpty(phase)) return null
+  const onDurationChange = (e) => {
+    if (e.target.value.length > MAX_LENGTH) return null
 
-    const date = moment(phase.date).format(dateFormat)
+    const dur = parseInt(e.target.value || 0)
+    setDuration(dur)
+    const end = moment(startDate).add(duration, 'seconds')
+    setEndDate(moment(end).format(dateFormat))
+  }
 
-    return (
-      <div className={styles.container}>
-        <div className={styles.row}>
-          <div className={cn(styles.field, styles.col1, styles.phaseName)}>
-            <label htmlFor={`${phase.name}`}>{phase.name} :</label>
+  return (
+    <div className={styles.container} key={phaseIndex}>
+      <div className={styles.row}>
+        <div className={cn(styles.field, styles.col1, styles.phaseName)}>
+          <label htmlFor={`${phase.name}`}>{phase.name} :</label>
+        </div>
+        <div className={cn(styles.field, styles.col2)}>
+          <span className={styles.title}>Start Date:</span>
+          <div className={styles.dayPicker}>
             {
-              withDuration && endDate && (
-                <div className={styles.previewDates}>
-                  <span>Ends:</span>
-                  {moment(endDate).local().format(`${dateFormat}`)}
-                </div>
+              readOnly ? (
+                <span className={styles.readOnlyValue}>{moment(startDate).format(dateFormat)}</span>
               )
-            }
-          </div>
-          <div className={cn(styles.field, styles.col2)}>
-            {
-              withDates && (
-                <div className={styles.dayPicker}>
-                  {
-                    readOnly ? (
-                      <span className={styles.readOnlyValue}>{date}</span>
-                    )
-                      : (
-                        <DateTime
-                          value={date}
-                          onChange={this.onDateChange}
-                          isValidDate={(current) => {
-                            const yesterday = subDays(new Date(), 1)
-                            return isAfter(current, yesterday)
-                          }}
-                        />)}
-                </div>
-              )
-            }
-            {/* {
-              withDates && (
-                <div className={styles.dayPicker}>
-                  {readOnly ? (
-                    <span className={styles.readOnlyValue}>{date}</span>
-                  ) : (<DayPickerInput formatDate={formatDate} inputProps={{ readOnly: true }} dayPickerProps={{ disabledDays: { before: new Date() } }} parseDate={parseDate} placeholder={dateFormat} value={date} onDayChange={(selectedDay) => onUpdatePhase(moment(`${moment(selectedDay).format(dateFormat)} ${time.format(timeFormat)}`, `${dateFormat} ${timeFormat}`))} format={dateFormat} />)}
-                </div>
-              )
-            }
-            {
-              withDates && (
-                <div className={styles.timePicker}>
-                  {readOnly ? (
-                    <span className={styles.readOnlyValue}>{time.format(timeFormat)}</span>
-                  ) : (<TimePicker
-                    showSecond={false}
-                    inputReadOnly
-                    value={time}
-                    format={timeFormat}
-                    onChange={(value) => onUpdatePhase(value)}
+                : (
+                  <DateTime
+                    value={moment(startDate).format(dateFormat)}
+                    onChange={onStartDateChange}
+                    isValidDate={(current) => {
+                      const yesterday = subDays(new Date(), 1)
+                      return isAfter(current, yesterday)
+                    }}
                   />)}
-                </div>
-              )
-            } */}
+          </div>
+        </div>
+        <div className={cn(styles.field, styles.col2)}>
+          <span className={styles.title}>End Date:</span>
+          <div className={styles.dayPicker}>
             {
-              withDuration && (
-                <div className={styles.durationPicker}>
-                  {readOnly ? (
-                    <span className={styles.readOnlyValue}>{phase.duration}</span>
-                  ) : (<input type='number' value={phase.duration} onChange={e => onUpdatePhase(e.target.value)} min={1} placeholder='Duration (hours)' />)}
-                </div>
+              readOnly ? (
+                <span className={styles.readOnlyValue}>{moment(endDate).format(dateFormat)}</span>
               )
-            }
+                : (
+                  <DateTime
+                    value={moment(endDate).format(dateFormat)}
+                    onChange={onEndDateChange}
+                    isValidDate={(current) => {
+                      return isAfter(current, new Date(startDate))
+                    }}
+                  />)}
+          </div>
+        </div>
+        <div className={cn(styles.field, styles.col2)}>
+          <span className={styles.title}>Duration:</span>
+          <div className={styles.inputField}>
             {
-              !_.isEmpty(phase.scorecards) && (
-                <div className={styles.scorecards}>
-                  <Select
-                    name='scorecard'
-                    options={phase.scorecards.map(({ name }) => ({ label: name, value: name, name }))}
-                    placeholder='Select Scorecard'
-                    isClearable={false}
-                    value={phase.scorecard}
-                    onChange={(e) => onUpdateSelect(e, true, 'phases')}
-                  />
-                </div>
+              readOnly ? (
+                <span className={styles.readOnlyValue}>{duration}</span>
               )
-            }
+                : (
+                  <input
+                    min={0}
+                    type='number'
+                    value={Number(duration).toString()}
+                    onChange={onDurationChange}
+                  />)}
           </div>
         </div>
       </div>
-    )
-  }
+    </div>
+  )
 }
 
 PhaseInput.defaultProps = {
-  withDates: false,
-  withDuration: false,
   endDate: null,
   readOnly: false
 }
 
 PhaseInput.propTypes = {
   phase: PropTypes.shape().isRequired,
-  onUpdateSelect: PropTypes.func,
   onUpdatePhase: PropTypes.func.isRequired,
-  withDates: PropTypes.bool,
-  withDuration: PropTypes.bool,
-  endDate: PropTypes.shape(),
-  readOnly: PropTypes.bool
+  readOnly: PropTypes.bool,
+  phaseIndex: PropTypes.string.isRequired
 }
 export default PhaseInput

@@ -16,12 +16,13 @@ import ChallengePrizesField from '../ChallengePrizes-Field'
 import CopilotFeeField from '../CopilotFee-Field'
 import ChallengeTotalField from '../ChallengeTotal-Field'
 import Loader from '../../Loader'
-import PhaseInput from '../../PhaseInput'
 import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
 import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
 import { REVIEW_TYPES, CONNECT_APP_URL, PHASE_PRODUCT_CHALLENGE_ID_FIELD } from '../../../config/constants'
+import PhaseInput from '../../PhaseInput'
+import { v4 as uuidv4 } from 'uuid'
 
 const ChallengeView = ({
   projectDetail,
@@ -90,6 +91,7 @@ const ChallengeView = ({
   if (isLoading || _.isEmpty(metadata.challengePhases) || challenge.id !== challengeId) return <Loader />
   const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
   const isTask = _.get(challenge, 'task.isTask', false)
+  const phases = _.get(challenge, 'phases', [])
 
   return (
     <div className={styles.wrapper}>
@@ -188,16 +190,13 @@ const ChallengeView = ({
               </>
             )}
             {
-              <div className={styles.PhaseRow}>
+              phases.map((phase) => (
                 <PhaseInput
-                  withDates
-                  phase={{
-                    name: 'Start Date',
-                    date: challenge.startDate
-                  }}
+                  phase={phase}
+                  phaseIndex={uuidv4()}
                   readOnly
                 />
-              </div>
+              ))
             }
             {showTimeline && (
               <ChallengeScheduleField
