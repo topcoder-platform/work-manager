@@ -23,7 +23,7 @@ const ConfirmationModal = ({ title, message, errorMessage, theme, isProcessing, 
         <div className={styles.button}>
           <PrimaryButton
             text={isProcessing ? 'Processing...' : confirmText || 'Confirm'}
-            disabled={disableConfirmButton}
+            disabled={disableConfirmButton || isProcessing}
             type={'info'}
             onClick={onConfirm}
           />
