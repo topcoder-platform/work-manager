@@ -813,8 +813,7 @@ class ChallengeEditor extends Component {
 
   onUpdatePhaseDate (phase, index) {
     let newChallenge = _.cloneDeep(this.state.challenge)
-    const hourToSecond = 60 * 60
-    newChallenge.phases[index]['duration'] = phase.duration / hourToSecond
+    newChallenge.phases[index]['duration'] = phase.duration
     newChallenge.phases[index]['scheduledStartDate'] = phase.scheduledStartDate
     newChallenge.phases[index]['scheduledEndDate'] = phase.scheduledEndDate
     this.setState({ challenge: newChallenge })

@@ -9,6 +9,7 @@ import DateTime from '@nateradebaugh/react-datetime'
 import isAfter from 'date-fns/isAfter'
 import subDays from 'date-fns/subDays'
 import '@nateradebaugh/react-datetime/scss/styles.scss'
+import DurationInput from '../DurationInput'
 
 const dateFormat = 'MM/DD/YYYY HH:mm'
 const MAX_LENGTH = 5
@@ -22,7 +23,7 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
     if (phase) {
       setStartDate(phase.scheduledStartDate)
       setEndDate(phase.scheduledEndDate)
-      setDuration(moment(phase.scheduledEndDate).diff(phase.scheduledStartDate, 'seconds'))
+      setDuration(moment(phase.scheduledEndDate).diff(phase.scheduledStartDate, 'hours'))
     }
   }, [])
 
@@ -46,7 +47,7 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
     }
 
     setStartDate(moment(e).format(dateFormat))
-    setDuration(moment(end).diff(start, 'seconds'))
+    setDuration(moment(end).diff(start, 'hours'))
   }
 
   const onEndDateChange = (e) => {
@@ -58,20 +59,20 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
     }
 
     setEndDate(moment(e).format(dateFormat))
-    setDuration(moment(end).diff(start, 'seconds'))
+    setDuration(moment(end).diff(start, 'hours'))
   }
 
   const onDurationChange = (e) => {
-    if (e.target.value.length > MAX_LENGTH) return null
+    if (e.length > MAX_LENGTH) return null
 
-    const dur = parseInt(e.target.value || 0)
+    const dur = parseInt(e || 0)
     setDuration(dur)
-    const end = moment(startDate).add(duration, 'seconds')
+    const end = moment(startDate).add(dur, 'hours')
     setEndDate(moment(end).format(dateFormat))
   }
 
   return (
-    <div className={styles.container} key={phaseIndex}>
+    <div className={styles.container}>
       <div className={styles.row}>
         <div className={cn(styles.field, styles.col1, styles.phaseName)}>
           <label htmlFor={`${phase.name}`}>{phase.name} :</label>
@@ -118,13 +119,12 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
               readOnly ? (
                 <span className={styles.readOnlyValue}>{duration}</span>
               )
-                : (
-                  <input
-                    min={0}
-                    type='number'
-                    value={Number(duration).toString()}
-                    onChange={onDurationChange}
-                  />)}
+                : <DurationInput
+                  duration={duration}
+                  name={phase.name}
+                  onDurationChange={onDurationChange}
+                  index={phaseIndex}
+                />}
           </div>
         </div>
       </div>
