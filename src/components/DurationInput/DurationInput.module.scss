@@ -1,0 +1,8 @@
+@import "../../styles/includes";
+
+.durationInput {
+  &:disabled {
+    cursor: not-allowed !important;
+    background-color: $inactive !important;
+  }
+}
