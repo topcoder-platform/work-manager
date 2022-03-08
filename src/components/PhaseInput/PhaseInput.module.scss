@@ -146,4 +146,9 @@
   color: black;
 }
 
-
+.dateTimeInput {
+  &:disabled {
+    cursor: not-allowed !important;
+    background-color: $inactive !important;
+  }
+}

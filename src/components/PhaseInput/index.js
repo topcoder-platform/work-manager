@@ -14,7 +14,7 @@ import DurationInput from '../DurationInput'
 const dateFormat = 'MM/DD/YYYY HH:mm'
 const MAX_LENGTH = 5
 
-const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
+const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) => {
   const [startDate, setStartDate] = useState()
   const [endDate, setEndDate] = useState()
   const [duration, setDuration] = useState()
@@ -86,12 +86,14 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
               )
                 : (
                   <DateTime
+                    className={styles.dateTimeInput}
                     value={moment(startDate).format(dateFormat)}
                     onChange={onStartDateChange}
                     isValidDate={(current) => {
                       const yesterday = subDays(new Date(), 1)
                       return isAfter(current, yesterday)
                     }}
+                    disabled={!isActive}
                   />)}
           </div>
         </div>
@@ -104,11 +106,13 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
               )
                 : (
                   <DateTime
+                    className={styles.dateTimeInput}
                     value={moment(endDate).format(dateFormat)}
                     onChange={onEndDateChange}
                     isValidDate={(current) => {
                       return isAfter(current, new Date(startDate))
                     }}
+                    disabled={!isActive}
                   />)}
           </div>
         </div>
@@ -124,6 +128,7 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
                   name={phase.name}
                   onDurationChange={onDurationChange}
                   index={phaseIndex}
+                  isActive={isActive}
                 />}
           </div>
         </div>
@@ -134,13 +139,15 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
 
 PhaseInput.defaultProps = {
   endDate: null,
-  readOnly: false
+  readOnly: false,
+  isActive: false
 }
 
 PhaseInput.propTypes = {
   phase: PropTypes.shape().isRequired,
   onUpdatePhase: PropTypes.func.isRequired,
   readOnly: PropTypes.bool,
-  phaseIndex: PropTypes.string.isRequired
+  phaseIndex: PropTypes.string.isRequired,
+  isActive: PropTypes.bool
 }
 export default PhaseInput

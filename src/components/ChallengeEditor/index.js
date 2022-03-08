@@ -139,6 +139,7 @@ class ChallengeEditor extends Component {
     this.onDeleteChallenge = this.onDeleteChallenge.bind(this)
     this.deleteModalLaunch = this.deleteModalLaunch.bind(this)
     this.toggleForumOnCreate = this.toggleForumOnCreate.bind(this)
+    this.isPhaseEditable = this.isPhaseEditable.bind(this)
   }
 
   componentDidMount () {
@@ -1216,6 +1217,22 @@ class ChallengeEditor extends Component {
     return _.filter(timelineTemplates, tt => availableTemplateIds.indexOf(tt.id) !== -1)
   }
 
+  /**
+   * Check if current phase is active for edit
+   */
+  isPhaseEditable (phaseIndex) {
+    const { challenge } = this.state
+    const { phases, currentPhaseNames } = challenge
+
+    let currentIndex = phases.findIndex((item) => {
+      return item.name !== 'Registration' && currentPhaseNames.includes(item.name) && item.isOpen
+    })
+
+    if (currentIndex === -1 || currentIndex > phaseIndex) return false
+
+    return true
+  }
+
   render () {
     const {
       isLaunch,
@@ -1577,15 +1594,17 @@ class ChallengeEditor extends Component {
                         phase={phase}
                         phaseIndex={uuidv4()}
                         readOnly={false}
+                        isActive={this.isPhaseEditable(index)}
                         onUpdatePhase={(item) => {
                           if ((item.startDate && !moment(item.startDate).isSame(phase.scheduledStartDate)) ||
-                          (item.endDate && !moment(item.endDate).isSame(phase.scheduledEndDate))
+                            (item.endDate && !moment(item.endDate).isSame(phase.scheduledEndDate))
                           ) {
                             this.onUpdatePhaseDate(item, index)
                           }
                         }}
                       />
-                    ))
+                    )
+                    )
                   }
                 </>
             )}
