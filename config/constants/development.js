@@ -39,5 +39,9 @@ module.exports = {
   FILE_PICKER_API_KEY: process.env.FILE_PICKER_API_KEY,
   FILE_PICKER_CONTAINER_NAME: 'tc-challenge-v5-dev',
   FILE_PICKER_REGION: 'us-east-1',
-  FILE_PICKER_CNAME: 'fs.topcoder.com'
+  FILE_PICKER_CNAME: 'fs.topcoder.com',
+  // if idle for this many minutes, show user a prompt saying they'll be logged out
+  IDLE_TIMEOUT_MINUTES: 10,
+  // duration to show the prompt saying user will be logged out, before actually logging out the user
+  IDLE_TIMEOUT_GRACE_MINUTES: 5
 }
