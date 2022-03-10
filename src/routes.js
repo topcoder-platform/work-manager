@@ -18,8 +18,8 @@ import { connect } from 'react-redux'
 import { checkAllowedRoles } from './util/tc'
 import { setCookie, removeCookie, isBetaMode } from './util/cookie'
 import IdleTimer from 'react-idle-timer'
-import AlertModal from './components/Modal/AlertModal'
 import modalStyles from './styles/modal.module.scss'
+import ConfirmationModal from './components/Modal/ConfirmationModal'
 
 const { ACCOUNTS_APP_LOGIN_URL, IDLE_TIMEOUT_MINUTES, IDLE_TIMEOUT_GRACE_MINUTES, COMMUNITY_APP_URL } = process.env
 
@@ -127,20 +127,24 @@ class Routes extends React.Component {
     }
 
     const isAllowed = checkAllowedRoles(_.get(decodeToken(this.props.token), 'roles'))
-    const modal = (<AlertModal
+    const modal = (<ConfirmationModal
       theme={theme}
       title='Session Timeout'
       message={`You've been idle for quite sometime. You'll be automatically logged out in ${this.state.logsoutIn >= 60 ? Math.ceil(this.state.logsoutIn / 60) + ' minute(s).' : this.state.logsoutIn + ' second(s)'}`}
-      closeText='Resume Session'
-      onClose={() => {
+      confirmText='Logout Now'
+      cancelText='Resume Session'
+      onCancel={() => {
         clearInterval(this.state.logoutIntervalRef)
         if (this.idleTimer.isIdle()) {
           this.idleTimer.resume()
           this.idleTimer.reset()
           this.setState(state => ({
-            ...state, showIdleModal: false, logsoutIn: 120
+            ...state, showIdleModal: false, logsoutIn: IDLE_TIMEOUT_GRACE_MINUTES * 60
           }))
         }
+      }}
+      onConfirm={() => {
+        window.location = `${COMMUNITY_APP_URL}/logout`
       }}
     />)
 
