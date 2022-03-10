@@ -813,10 +813,28 @@ class ChallengeEditor extends Component {
   }
 
   onUpdatePhaseDate (phase, index) {
+    const { phases } = this.state.challenge
     let newChallenge = _.cloneDeep(this.state.challenge)
     newChallenge.phases[index]['duration'] = phase.duration
-    newChallenge.phases[index]['scheduledStartDate'] = phase.scheduledStartDate
-    newChallenge.phases[index]['scheduledEndDate'] = phase.scheduledEndDate
+    newChallenge.phases[index]['scheduledStartDate'] = phase.startDate
+    newChallenge.phases[index]['scheduledEndDate'] = phase.endDate
+
+    let lastDate = phase.endDate
+    for (let phaseIndex = index + 1; phaseIndex < phases.length; phaseIndex++) {
+      if (moment(phases[phaseIndex]['scheduledStartDate']).isBefore(lastDate)) {
+        lastDate = moment(lastDate).add('1', 'hour').format('MM/DD/YYYY HH:mm')
+        newChallenge.phases[phaseIndex]['scheduledStartDate'] = lastDate
+
+        if (moment(phases[phaseIndex]['scheduledEndDate']).isBefore(lastDate)) {
+          lastDate = moment(lastDate).add('1', 'hour').format('MM/DD/YYYY HH:mm')
+          newChallenge.phases[phaseIndex]['scheduledEndDate'] = lastDate
+        }
+
+        newChallenge.phases[phaseIndex]['duration'] =
+          moment(newChallenge.phases[phaseIndex]['scheduledEndDate']).diff(newChallenge.phases[phaseIndex]['scheduledStartDate'], 'hours')
+      }
+    }
+
     this.setState({ challenge: newChallenge })
   }
 
@@ -1594,7 +1612,8 @@ class ChallengeEditor extends Component {
                         phase={phase}
                         phaseIndex={uuidv4()}
                         readOnly={false}
-                        isActive={this.isPhaseEditable(index)}
+                        // isActive={this.isPhaseEditable(index)}
+                        isActive
                         onUpdatePhase={(item) => {
                           if ((item.startDate && !moment(item.startDate).isSame(phase.scheduledStartDate)) ||
                             (item.endDate && !moment(item.endDate).isSame(phase.scheduledEndDate))
