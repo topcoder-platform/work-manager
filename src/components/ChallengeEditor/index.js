@@ -1239,16 +1239,8 @@ class ChallengeEditor extends Component {
    * Check if current phase is active for edit
    */
   isPhaseEditable (phaseIndex) {
-    const { challenge } = this.state
-    const { phases, currentPhaseNames } = challenge
-
-    let currentIndex = phases.findIndex((item) => {
-      return item.name !== 'Registration' && currentPhaseNames.includes(item.name) && item.isOpen
-    })
-
-    if (currentIndex === -1 || currentIndex > phaseIndex) return false
-
-    return true
+    const { phases } = this.state.challenge
+    return moment(phases[phaseIndex].scheduledEndDate).isAfter(moment())
   }
 
   render () {
@@ -1612,8 +1604,7 @@ class ChallengeEditor extends Component {
                         phase={phase}
                         phaseIndex={uuidv4()}
                         readOnly={false}
-                        // isActive={this.isPhaseEditable(index)}
-                        isActive
+                        isActive={this.isPhaseEditable(index)}
                         onUpdatePhase={(item) => {
                           if ((item.startDate && !moment(item.startDate).isSame(phase.scheduledStartDate)) ||
                             (item.endDate && !moment(item.endDate).isSame(phase.scheduledEndDate))
