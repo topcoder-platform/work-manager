@@ -99,7 +99,7 @@
     "topcoder-healthcheck-dropin": "^1.0.3",
     "url-loader": "1.1.1",
     "webpack": "^4.43.0",
-    "webpack-dev-server": "^3.11.0",
+    "webpack-dev-server": "^3.11.3",
     "webpack-manifest-plugin": "2.0.4",
     "xss": "^1.0.6"
   },
