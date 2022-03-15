@@ -39,5 +39,7 @@ module.exports = {
   FILE_PICKER_API_KEY: process.env.FILE_PICKER_API_KEY,
   FILE_PICKER_CONTAINER_NAME: 'tc-challenge-v5-prod',
   FILE_PICKER_REGION: 'us-east-1',
-  FILE_PICKER_CNAME: 'fs.topcoder.com'
+  FILE_PICKER_CNAME: 'fs.topcoder.com',
+  IDLE_TIMEOUT_MINUTES: 10,
+  IDLE_TIMEOUT_GRACE_MINUTES: 5
 }
