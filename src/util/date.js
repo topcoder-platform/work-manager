@@ -109,6 +109,7 @@ export const updateChallengePhaseBeforeSendRequest = (challengeDetail) => {
   const hourToSecond = 60 * 60
   if (challengeDetail.phases) {
     const challengeDetailTmp = _.cloneDeep(challengeDetail)
+    challengeDetailTmp.startDate = challengeDetail.phases[0].scheduledStartDate
     challengeDetailTmp.phases = challengeDetailTmp.phases.map((p) => ({
       duration: p.duration * hourToSecond,
       phaseId: p.phaseId,
