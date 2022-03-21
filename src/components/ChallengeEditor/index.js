@@ -879,7 +879,9 @@ class ChallengeEditor extends Component {
     }
     challenge.phases = challenge.phases.map((p) => pick([
       'duration',
-      'phaseId'
+      'phaseId',
+      'scheduledStartDate',
+      'scheduledEndDate'
     ], p))
     if (challenge.terms && challenge.terms.length === 0) delete challenge.terms
     delete challenge.attachments
