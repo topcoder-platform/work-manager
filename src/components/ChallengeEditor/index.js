@@ -1242,7 +1242,14 @@ class ChallengeEditor extends Component {
    */
   isPhaseEditable (phaseIndex) {
     const { phases } = this.state.challenge
-    return moment(phases[phaseIndex].scheduledEndDate).isAfter(moment())
+    const phase = phases[phaseIndex]
+    if (phase.name === 'Registration' && moment(phase.scheduledEndDate).isAfter(moment())) {
+      return true
+    }
+    if (!phase.isOpen) {
+      return false
+    }
+    return moment(phase.scheduledEndDate).isAfter(moment())
   }
 
   render () {
