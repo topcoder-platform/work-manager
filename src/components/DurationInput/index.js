@@ -15,7 +15,10 @@ const DurationInput = ({ duration, onDurationChange, index, isActive }) => {
         min={0}
         type='number'
         value={Number(duration).toString()}
-        onChange={e => onDurationChange(e.target.value)}
+        onChange={e => {
+          e.preventDefault()
+          onDurationChange(e.target.value)
+        }}
         autoFocus={inputRef.current === document.activeElement}
         disabled={!isActive}
       />

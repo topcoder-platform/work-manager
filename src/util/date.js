@@ -110,11 +110,13 @@ export const updateChallengePhaseBeforeSendRequest = (challengeDetail) => {
   if (challengeDetail.phases) {
     const challengeDetailTmp = _.cloneDeep(challengeDetail)
     challengeDetailTmp.startDate = challengeDetail.phases[0].scheduledStartDate
+    // challengeDetailTmp.registrationStartDate = moment(challengeDetail.phases[0].scheduledStartDate)
+    // challengeDetailTmp.registrationEndDate = moment(challengeDetail.phases[0].scheduledEndDate)
+    // challengeDetailTmp.submissionStartDate = moment(challengeDetail.phases[1].scheduledStartDate)
+    // challengeDetailTmp.submissionEndDate = moment(challengeDetail.phases[1].scheduledEndDate)
     challengeDetailTmp.phases = challengeDetailTmp.phases.map((p) => ({
       duration: p.duration * hourToSecond,
-      phaseId: p.phaseId,
-      scheduledStartDate: p.scheduledStartDate,
-      scheduledEndDate: p.scheduledEndDate
+      phaseId: p.phaseId
     }))
     return challengeDetailTmp
   }
