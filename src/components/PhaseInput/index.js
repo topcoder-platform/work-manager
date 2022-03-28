@@ -128,7 +128,7 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) =>
                   name={phase.name}
                   onDurationChange={onDurationChange}
                   index={phaseIndex}
-                  isActive={isActive}
+                  isActive
                 />}
           </div>
         </div>
