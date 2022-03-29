@@ -12,6 +12,8 @@ import '@nateradebaugh/react-datetime/scss/styles.scss'
 import DurationInput from '../DurationInput'
 
 const dateFormat = 'MM/DD/YYYY HH:mm'
+const inputDateFormat = 'MM/dd/yyyy'
+const inputTimeFormat = 'HH:mm'
 const MAX_LENGTH = 5
 
 const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) => {
@@ -24,6 +26,13 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) =>
       setStartDate(phase.scheduledStartDate)
       setEndDate(phase.scheduledEndDate)
       setDuration(moment(phase.scheduledEndDate).diff(phase.scheduledStartDate, 'hours'))
+    }
+  }, [])
+
+  useEffect(() => {
+    if (phase) {
+      setStartDate(phase.scheduledStartDate)
+      setEndDate(phase.scheduledEndDate)
     }
   }, [phase])
 
@@ -94,6 +103,8 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) =>
                       return isAfter(current, yesterday)
                     }}
                     disabled={!isActive}
+                    dateFormat={inputDateFormat}
+                    timeFormat={inputTimeFormat}
                   />)}
           </div>
         </div>
@@ -113,6 +124,8 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) =>
                       return isAfter(current, new Date(startDate))
                     }}
                     disabled={!isActive}
+                    dateFormat={inputDateFormat}
+                    timeFormat={inputTimeFormat}
                   />)}
           </div>
         </div>

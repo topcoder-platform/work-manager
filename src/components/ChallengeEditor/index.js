@@ -823,7 +823,12 @@ class ChallengeEditor extends Component {
     for (let phaseIndex = index + 1; phaseIndex < phases.length; phaseIndex++) {
       if (moment(phases[phaseIndex]['scheduledStartDate']).isBefore(lastDate)) {
         lastDate = moment(lastDate).add('1', 'hour').format('MM/DD/YYYY HH:mm')
-        newChallenge.phases[phaseIndex]['scheduledStartDate'] = lastDate
+
+        if (newChallenge.phases[phaseIndex]['name'] !== 'Submission') {
+          newChallenge.phases[phaseIndex]['scheduledStartDate'] = lastDate
+        } else {
+          newChallenge.phases[phaseIndex]['scheduledStartDate'] = newChallenge.phases[index]['scheduledStartDate']
+        }
 
         if (moment(phases[phaseIndex]['scheduledEndDate']).isBefore(lastDate)) {
           lastDate = moment(lastDate).add('1', 'hour').format('MM/DD/YYYY HH:mm')
