@@ -109,7 +109,7 @@ export const updateChallengePhaseBeforeSendRequest = (challengeDetail) => {
   const hourToSecond = 60 * 60
   if (challengeDetail.phases) {
     const challengeDetailTmp = _.cloneDeep(challengeDetail)
-    challengeDetailTmp.startDate = challengeDetail.phases[0].scheduledStartDate
+    challengeDetailTmp.startDate = moment(challengeDetail.phases[0].scheduledStartDate)
     // challengeDetailTmp.registrationStartDate = moment(challengeDetail.phases[0].scheduledStartDate)
     // challengeDetailTmp.registrationEndDate = moment(challengeDetail.phases[0].scheduledEndDate)
     // challengeDetailTmp.submissionStartDate = moment(challengeDetail.phases[1].scheduledStartDate)

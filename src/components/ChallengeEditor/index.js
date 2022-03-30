@@ -1251,7 +1251,7 @@ class ChallengeEditor extends Component {
     if (phase.name !== 'Registration') {
       return false
     }
-    return moment(phase.scheduledEndDate).isAfter(moment())
+    return !phase.isOpen
   }
 
   render () {
