@@ -59,18 +59,6 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) =>
     setDuration(moment(end).diff(start, 'hours'))
   }
 
-  const onEndDateChange = (e) => {
-    const end = moment(e).format()
-    const start = moment(startDate).format()
-
-    if (moment(end).isBefore(moment(start))) {
-      return null
-    }
-
-    setEndDate(moment(e).format(dateFormat))
-    setDuration(moment(end).diff(start, 'hours'))
-  }
-
   const onDurationChange = (e) => {
     if (e.length > MAX_LENGTH) return null
 
@@ -90,7 +78,7 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) =>
           <span className={styles.title}>Start Date:</span>
           <div className={styles.dayPicker}>
             {
-              readOnly ? (
+              readOnly || !isActive ? (
                 <span className={styles.readOnlyValue}>{moment(startDate).format(dateFormat)}</span>
               )
                 : (
@@ -102,7 +90,6 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) =>
                       const yesterday = subDays(new Date(), 1)
                       return isAfter(current, yesterday)
                     }}
-                    disabled={!isActive}
                     dateFormat={inputDateFormat}
                     timeFormat={inputTimeFormat}
                   />)}
@@ -111,22 +98,7 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) =>
         <div className={cn(styles.field, styles.col2)}>
           <span className={styles.title}>End Date:</span>
           <div className={styles.dayPicker}>
-            {
-              readOnly ? (
-                <span className={styles.readOnlyValue}>{moment(endDate).format(dateFormat)}</span>
-              )
-                : (
-                  <DateTime
-                    className={styles.dateTimeInput}
-                    value={moment(endDate).format(dateFormat)}
-                    onChange={onEndDateChange}
-                    isValidDate={(current) => {
-                      return isAfter(current, new Date(startDate))
-                    }}
-                    disabled={!isActive}
-                    dateFormat={inputDateFormat}
-                    timeFormat={inputTimeFormat}
-                  />)}
+            <span className={styles.readOnlyValue}>{moment(endDate).format(dateFormat)}</span>
           </div>
         </div>
         <div className={cn(styles.field, styles.col2)}>
