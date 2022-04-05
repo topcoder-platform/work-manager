@@ -820,23 +820,25 @@ class ChallengeEditor extends Component {
     newChallenge.phases[index]['scheduledEndDate'] = phase.endDate
 
     let lastDate = phase.endDate
-    for (let phaseIndex = index + 1; phaseIndex < phases.length; phaseIndex++) {
-      if (moment(phases[phaseIndex]['scheduledStartDate']).isBefore(lastDate)) {
-        lastDate = moment(lastDate).add('1', 'hour').format('MM/DD/YYYY HH:mm')
-
-        if (newChallenge.phases[phaseIndex]['name'] !== 'Submission') {
-          newChallenge.phases[phaseIndex]['scheduledStartDate'] = lastDate
-        } else {
-          newChallenge.phases[phaseIndex]['scheduledStartDate'] = newChallenge.phases[index]['scheduledStartDate']
-        }
-
-        if (moment(phases[phaseIndex]['scheduledEndDate']).isBefore(lastDate)) {
+    for (let phaseIndex = 0; phaseIndex < phases.length; phaseIndex++) {
+      if (phaseIndex !== index) {
+        if (moment(phases[phaseIndex]['scheduledStartDate']).isBefore(lastDate)) {
           lastDate = moment(lastDate).add('1', 'hour').format('MM/DD/YYYY HH:mm')
-          newChallenge.phases[phaseIndex]['scheduledEndDate'] = lastDate
-        }
 
-        newChallenge.phases[phaseIndex]['duration'] =
+          if (newChallenge.phases[phaseIndex]['name'] !== 'Submission') {
+            newChallenge.phases[phaseIndex]['scheduledStartDate'] = lastDate
+          } else {
+            newChallenge.phases[phaseIndex]['scheduledStartDate'] = newChallenge.phases[index]['scheduledStartDate']
+          }
+
+          if (moment(phases[phaseIndex]['scheduledEndDate']).isBefore(lastDate)) {
+            lastDate = moment(lastDate).add('1', 'hour').format('MM/DD/YYYY HH:mm')
+            newChallenge.phases[phaseIndex]['scheduledEndDate'] = lastDate
+          }
+
+          newChallenge.phases[phaseIndex]['duration'] =
           moment(newChallenge.phases[phaseIndex]['scheduledEndDate']).diff(newChallenge.phases[phaseIndex]['scheduledStartDate'], 'hours')
+        }
       }
     }
 
