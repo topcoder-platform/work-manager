@@ -12,7 +12,7 @@ const DurationInput = ({ duration, onDurationChange, index, isActive }) => {
         id={`duration-${index}`}
         key={`duration-${index}`}
         ref={inputRef}
-        min={0}
+        min={1}
         type='number'
         value={Number(duration).toString()}
         onChange={e => {
