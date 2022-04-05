@@ -836,6 +836,10 @@ class ChallengeEditor extends Component {
             newChallenge.phases[phaseIndex]['scheduledEndDate'] = lastDate
           }
 
+          if (moment(newChallenge.phases[phaseIndex]['scheduledEndDate']).isAfter(phases[phaseIndex]['scheduledStartDate'])) {
+            newChallenge.phases[phaseIndex]['scheduledStartDate'] = moment(newChallenge.phases[phaseIndex]['scheduledEndDate']).subtract('1', 'hour').format('MM/DD/YYYY HH:mm')
+          }
+
           newChallenge.phases[phaseIndex]['duration'] =
           moment(newChallenge.phases[phaseIndex]['scheduledEndDate']).diff(newChallenge.phases[phaseIndex]['scheduledStartDate'], 'hours')
         }
