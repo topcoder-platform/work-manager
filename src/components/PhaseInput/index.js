@@ -27,13 +27,6 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) =>
       setEndDate(phase.scheduledEndDate)
       setDuration(moment(phase.scheduledEndDate).diff(phase.scheduledStartDate, 'hours'))
     }
-  }, [])
-
-  useEffect(() => {
-    if (phase) {
-      setStartDate(phase.scheduledStartDate)
-      setEndDate(phase.scheduledEndDate)
-    }
   }, [phase])
 
   useEffect(() => {
