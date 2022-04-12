@@ -819,31 +819,21 @@ class ChallengeEditor extends Component {
     newChallenge.phases[index]['scheduledStartDate'] = phase.startDate
     newChallenge.phases[index]['scheduledEndDate'] = phase.endDate
 
-    let lastDate = phase.endDate
-    for (let phaseIndex = 0; phaseIndex < phases.length; phaseIndex++) {
-      if (phaseIndex !== index) {
-        if (moment(phases[phaseIndex]['scheduledStartDate']).isBefore(lastDate)) {
-          lastDate = moment(lastDate).add('1', 'hour').format('MM/DD/YYYY HH:mm')
-
-          if (newChallenge.phases[phaseIndex]['name'] !== 'Submission') {
-            newChallenge.phases[phaseIndex]['scheduledStartDate'] = lastDate
-          } else {
-            newChallenge.phases[phaseIndex]['scheduledStartDate'] = newChallenge.phases[index]['scheduledStartDate']
-          }
-
-          if (moment(phases[phaseIndex]['scheduledEndDate']).isBefore(lastDate)) {
-            lastDate = moment(lastDate).add('1', 'hour').format('MM/DD/YYYY HH:mm')
-            newChallenge.phases[phaseIndex]['scheduledEndDate'] = lastDate
-          }
-
-          // if (moment(newChallenge.phases[phaseIndex]['scheduledEndDate']).isAfter(phases[phaseIndex]['scheduledStartDate'])) {
-          //   newChallenge.phases[phaseIndex]['scheduledStartDate'] = moment(newChallenge.phases[phaseIndex]['scheduledEndDate']).subtract('1', 'hour').format('MM/DD/YYYY HH:mm')
-          // }
-
-          newChallenge.phases[phaseIndex]['duration'] =
-          moment(newChallenge.phases[phaseIndex]['scheduledEndDate']).diff(newChallenge.phases[phaseIndex]['scheduledStartDate'], 'hours')
-        }
+    for (let phaseIndex = index + 1; phaseIndex < phases.length; ++phaseIndex) {
+      if (newChallenge.phases[phaseIndex]['name'] === 'Submission') {
+        newChallenge.phases[phaseIndex]['scheduledStartDate'] =
+          newChallenge.phases[phaseIndex - 1]['scheduledStartDate']
+        newChallenge.phases[phaseIndex]['duration'] =
+          _.max(newChallenge.phases[phaseIndex - 1]['duration'],
+            newChallenge.phases[phaseIndex]['duration'])
+      } else {
+        newChallenge.phases[phaseIndex]['scheduledStartDate'] =
+          newChallenge.phases[phaseIndex - 1]['scheduledEndDate']
       }
+      newChallenge.phases[phaseIndex]['scheduledEndDate'] =
+        moment(newChallenge.phases[phaseIndex]['scheduledStartDate'])
+          .add(newChallenge.phases[phaseIndex]['duration'], 'hours')
+          .format('MM/DD/YYYY HH:mm')
     }
 
     this.setState({ challenge: newChallenge })
