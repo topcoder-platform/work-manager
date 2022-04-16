@@ -824,7 +824,7 @@ class ChallengeEditor extends Component {
         newChallenge.phases[phaseIndex]['scheduledStartDate'] =
           newChallenge.phases[phaseIndex - 1]['scheduledStartDate']
         newChallenge.phases[phaseIndex]['duration'] =
-          _.max(newChallenge.phases[phaseIndex - 1]['duration'],
+          Math.max(newChallenge.phases[phaseIndex - 1]['duration'],
             newChallenge.phases[phaseIndex]['duration'])
       } else {
         newChallenge.phases[phaseIndex]['scheduledStartDate'] =
