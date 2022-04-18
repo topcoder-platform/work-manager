@@ -1,5 +1,5 @@
 import moment from 'moment'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
 import styles from './PhaseInput.module.scss'
 import cn from 'classnames'
@@ -17,47 +17,31 @@ const inputTimeFormat = 'HH:mm'
 const MAX_LENGTH = 5
 
 const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) => {
-  const [startDate, setStartDate] = useState()
-  const [endDate, setEndDate] = useState()
-  const [duration, setDuration] = useState()
+  const { scheduledStartDate: startDate, scheduledEndDate: endDate, duration } = phase
 
-  useEffect(() => {
-    if (phase) {
-      setStartDate(phase.scheduledStartDate)
-      setEndDate(phase.scheduledEndDate)
-      setDuration(moment(phase.scheduledEndDate).diff(phase.scheduledStartDate, 'hours'))
-    }
-  }, [])
-
-  useEffect(() => {
-    if (phase) {
-      setStartDate(phase.scheduledStartDate)
-      setEndDate(phase.scheduledEndDate)
-    }
-  }, [phase])
-
-  useEffect(() => {
-    if (!readOnly) {
-      onUpdatePhase({
-        startDate,
-        endDate,
-        duration
-      })
-    }
-  }, [startDate, endDate, duration])
+  const getEndDate = (startDate, duration) => moment(startDate).add(duration, 'hours')
 
   const onStartDateChange = (e) => {
-    setStartDate(moment(e).format(dateFormat))
-    setEndDate(moment(e).add(duration, 'hours').format(dateFormat))
+    let startDate = moment(e).format(dateFormat)
+    let endDate = getEndDate(startDate, duration)
+    onUpdatePhase({
+      startDate,
+      endDate,
+      duration
+    })
   }
 
-  const onDurationChange = (e) => {
+  const onDurationChange = (e, isBlur = false) => {
     if (e.length > MAX_LENGTH) return null
 
-    const dur = parseInt(e || 0)
-    setDuration(dur)
-    const end = moment(startDate).add(dur, 'hours')
-    setEndDate(moment(end).format(dateFormat))
+    let duration = parseInt(e || 0)
+    let endDate = getEndDate(startDate, duration)
+    onUpdatePhase({
+      startDate,
+      endDate,
+      duration,
+      isBlur
+    })
   }
 
   return (
@@ -96,17 +80,17 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) =>
         <div className={cn(styles.field, styles.col2)}>
           <span className={styles.title}>Duration:</span>
           <div className={styles.inputField}>
-            {
-              readOnly ? (
-                <span className={styles.readOnlyValue}>{duration}</span>
-              )
-                : <DurationInput
-                  duration={duration}
-                  name={phase.name}
-                  onDurationChange={onDurationChange}
-                  index={phaseIndex}
-                  isActive
-                />}
+            {readOnly ? (
+              <span className={styles.readOnlyValue}>{duration}</span>
+            ) : (
+              <DurationInput
+                duration={duration}
+                name={phase.name}
+                onDurationChange={onDurationChange}
+                index={phaseIndex}
+                isActive
+              />
+            )}
           </div>
         </div>
       </div>
@@ -122,9 +106,9 @@ PhaseInput.defaultProps = {
 
 PhaseInput.propTypes = {
   phase: PropTypes.shape().isRequired,
-  onUpdatePhase: PropTypes.func.isRequired,
+  onUpdatePhase: PropTypes.func,
   readOnly: PropTypes.bool,
-  phaseIndex: PropTypes.string.isRequired,
+  phaseIndex: PropTypes.number.isRequired,
   isActive: PropTypes.bool
 }
 export default PhaseInput

@@ -14,10 +14,14 @@ const DurationInput = ({ duration, onDurationChange, index, isActive }) => {
         ref={inputRef}
         min={1}
         type='number'
-        value={Number(duration).toString()}
+        value={duration}
         onChange={e => {
           e.preventDefault()
           onDurationChange(e.target.value)
+        }}
+        onBlur={e => {
+          e.preventDefault()
+          onDurationChange(e.target.value, true)
         }}
         autoFocus={inputRef.current === document.activeElement}
         disabled={!isActive}
@@ -27,9 +31,9 @@ const DurationInput = ({ duration, onDurationChange, index, isActive }) => {
 }
 
 DurationInput.propTypes = {
-  duration: PropTypes.string,
+  duration: PropTypes.number,
   onDurationChange: PropTypes.func.isRequired,
-  index: PropTypes.string.isRequired,
+  index: PropTypes.number.isRequired,
   isActive: PropTypes.bool.isRequired
 }
 
