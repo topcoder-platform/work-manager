@@ -47,16 +47,8 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) =>
   }, [startDate, endDate, duration])
 
   const onStartDateChange = (e) => {
-    const start = moment(e).format()
-    let end = moment(endDate).format()
-
-    if (moment(end).isBefore(moment(start))) {
-      end = moment(e).add(1, 'day').format(dateFormat)
-      setEndDate(moment(end).format(dateFormat))
-    }
-
     setStartDate(moment(e).format(dateFormat))
-    setDuration(moment(end).diff(start, 'hours'))
+    setEndDate(moment(e).add(duration, 'hours').format(dateFormat))
   }
 
   const onDurationChange = (e) => {
