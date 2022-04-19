@@ -9,7 +9,6 @@ import { pick } from 'lodash/fp'
 import { withRouter } from 'react-router-dom'
 import { toastr } from 'react-redux-toastr'
 import xss from 'xss'
-import { v4 as uuidv4 } from 'uuid'
 
 import {
   VALIDATION_VALUE_TYPE,
@@ -815,9 +814,20 @@ class ChallengeEditor extends Component {
   onUpdatePhaseDate (phase, index) {
     const { phases } = this.state.challenge
     let newChallenge = _.cloneDeep(this.state.challenge)
-    newChallenge.phases[index]['duration'] = phase.duration
-    newChallenge.phases[index]['scheduledStartDate'] = phase.startDate
-    newChallenge.phases[index]['scheduledEndDate'] = phase.endDate
+    if (phase.isBlur && newChallenge.phases[index]['name'] === 'Submission') {
+      newChallenge.phases[index]['duration'] = _.max([
+        newChallenge.phases[index - 1]['duration'],
+        phase.duration
+      ])
+      newChallenge.phases[index]['scheduledEndDate'] =
+        moment(newChallenge.phases[index]['scheduledStartDate'])
+          .add(newChallenge.phases[index]['duration'], 'hours')
+          .format('MM/DD/YYYY HH:mm')
+    } else {
+      newChallenge.phases[index]['duration'] = phase.duration
+      newChallenge.phases[index]['scheduledStartDate'] = phase.startDate
+      newChallenge.phases[index]['scheduledEndDate'] = phase.endDate
+    }
 
     for (let phaseIndex = index + 1; phaseIndex < phases.length; ++phaseIndex) {
       if (newChallenge.phases[phaseIndex]['name'] === 'Submission') {
@@ -1610,15 +1620,12 @@ class ChallengeEditor extends Component {
                     phases.map((phase, index) => (
                       <PhaseInput
                         phase={phase}
-                        phaseIndex={uuidv4()}
+                        phaseIndex={index}
+                        key={index}
                         readOnly={false}
                         isActive={this.isPhaseEditable(index)}
                         onUpdatePhase={(item) => {
-                          if ((item.startDate && !moment(item.startDate).isSame(phase.scheduledStartDate)) ||
-                            (item.endDate && !moment(item.endDate).isSame(phase.scheduledEndDate))
-                          ) {
-                            this.onUpdatePhaseDate(item, index)
-                          }
+                          this.onUpdatePhaseDate(item, index)
                         }}
                       />
                     )

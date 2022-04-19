@@ -22,7 +22,6 @@ import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
 import { REVIEW_TYPES, CONNECT_APP_URL, PHASE_PRODUCT_CHALLENGE_ID_FIELD } from '../../../config/constants'
 import PhaseInput from '../../PhaseInput'
-import { v4 as uuidv4 } from 'uuid'
 
 const ChallengeView = ({
   projectDetail,
@@ -190,10 +189,11 @@ const ChallengeView = ({
               </>
             )}
             {
-              phases.map((phase) => (
+              phases.map((phase, index) => (
                 <PhaseInput
                   phase={phase}
-                  phaseIndex={uuidv4()}
+                  phaseIndex={index}
+                  key={index}
                   readOnly
                 />
               ))
