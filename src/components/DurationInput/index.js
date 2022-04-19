@@ -1,9 +1,13 @@
-import React, { useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import PropTypes from 'prop-types'
 import styles from './DurationInput.module.scss'
 
 const DurationInput = ({ duration, onDurationChange, index, isActive }) => {
   const inputRef = useRef(null)
+
+  useEffect(() => {
+    document.getElementById(`duration-${index}`).disabled = !isActive
+  }, [isActive, index])
 
   return (
     <div key={`duration-${index}-edit`}>
@@ -24,7 +28,6 @@ const DurationInput = ({ duration, onDurationChange, index, isActive }) => {
           onDurationChange(e.target.value, true)
         }}
         autoFocus={inputRef.current === document.activeElement}
-        disabled={!isActive}
       />
     </div>
   )

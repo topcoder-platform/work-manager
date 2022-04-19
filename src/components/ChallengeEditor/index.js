@@ -138,11 +138,21 @@ class ChallengeEditor extends Component {
     this.onDeleteChallenge = this.onDeleteChallenge.bind(this)
     this.deleteModalLaunch = this.deleteModalLaunch.bind(this)
     this.toggleForumOnCreate = this.toggleForumOnCreate.bind(this)
-    this.isPhaseEditable = this.isPhaseEditable.bind(this)
+    this.intervalId = null
   }
 
   componentDidMount () {
     this.resetChallengeData(this.setState.bind(this))
+    setTimeout(() => {
+      this.onTick()
+    }, 500)
+    this.intervalId = setInterval(() => {
+      this.onTick()
+    }, 60000)
+  }
+
+  componentDidUnMount () {
+    clearInterval(this.intervalId)
   }
 
   componentDidUpdate () {
@@ -811,6 +821,22 @@ class ChallengeEditor extends Component {
     this.setState({ challenge: newChallenge })
   }
 
+  onTick () {
+    if (this.state && this.state) {
+      const { phases } = this.state.challenge
+      let newChallenge = _.cloneDeep(this.state.challenge)
+      for (let index = 0; index < phases.length; ++index) {
+        newChallenge.phases[index].isDurationActive =
+          moment(newChallenge.phases[index]['scheduledEndDate']).isAfter()
+        newChallenge.phases[index].isStartTimeActive = index > 0 ? false
+          : moment(newChallenge.phases[0]['scheduledStartDate']).isAfter()
+        newChallenge.phases[index].isOpen =
+          newChallenge.phases[index].isDurationActive
+      }
+      this.setState({ challenge: newChallenge })
+    }
+  }
+
   onUpdatePhaseDate (phase, index) {
     const { phases } = this.state.challenge
     let newChallenge = _.cloneDeep(this.state.challenge)
@@ -848,6 +874,10 @@ class ChallengeEditor extends Component {
     }
 
     this.setState({ challenge: newChallenge })
+
+    setTimeout(() => {
+      this.onTick()
+    }, 500)
   }
 
   collectChallengeData (status) {
@@ -1249,18 +1279,6 @@ class ChallengeEditor extends Component {
     return _.filter(timelineTemplates, tt => availableTemplateIds.indexOf(tt.id) !== -1)
   }
 
-  /**
-   * Check if current phase is active for edit
-   */
-  isPhaseEditable (phaseIndex) {
-    const { phases } = this.state.challenge
-    const phase = phases[phaseIndex]
-    if (phase.name !== 'Registration') {
-      return false
-    }
-    return !phase.isOpen
-  }
-
   render () {
     const {
       isLaunch,
@@ -1623,7 +1641,6 @@ class ChallengeEditor extends Component {
                         phaseIndex={index}
                         key={index}
                         readOnly={false}
-                        isActive={this.isPhaseEditable(index)}
                         onUpdatePhase={(item) => {
                           this.onUpdatePhaseDate(item, index)
                         }}

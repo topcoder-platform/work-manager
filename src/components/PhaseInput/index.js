@@ -16,10 +16,10 @@ const inputDateFormat = 'MM/dd/yyyy'
 const inputTimeFormat = 'HH:mm'
 const MAX_LENGTH = 5
 
-const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) => {
-  const { scheduledStartDate: startDate, scheduledEndDate: endDate, duration } = phase
+const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
+  const { scheduledStartDate: startDate, scheduledEndDate: endDate, duration, isStartTimeActive, isDurationActive } = phase
 
-  const getEndDate = (startDate, duration) => moment(startDate).add(duration, 'hours')
+  const getEndDate = (startDate, duration) => moment(startDate).add(duration, 'hours').format(dateFormat)
 
   const onStartDateChange = (e) => {
     let startDate = moment(e).format(dateFormat)
@@ -54,7 +54,7 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) =>
           <span className={styles.title}>Start Date:</span>
           <div className={styles.dayPicker}>
             {
-              readOnly || !isActive ? (
+              readOnly || !isStartTimeActive ? (
                 <span className={styles.readOnlyValue}>{moment(startDate).format(dateFormat)}</span>
               )
                 : (
@@ -88,7 +88,7 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) =>
                 name={phase.name}
                 onDurationChange={onDurationChange}
                 index={phaseIndex}
-                isActive
+                isActive={isDurationActive || false}
               />
             )}
           </div>
@@ -100,15 +100,13 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) =>
 
 PhaseInput.defaultProps = {
   endDate: null,
-  readOnly: false,
-  isActive: false
+  readOnly: false
 }
 
 PhaseInput.propTypes = {
   phase: PropTypes.shape().isRequired,
   onUpdatePhase: PropTypes.func,
   readOnly: PropTypes.bool,
-  phaseIndex: PropTypes.number.isRequired,
-  isActive: PropTypes.bool
+  phaseIndex: PropTypes.number.isRequired
 }
 export default PhaseInput
