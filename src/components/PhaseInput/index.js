@@ -80,7 +80,7 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isActive }) =>
         <div className={cn(styles.field, styles.col2)}>
           <span className={styles.title}>Duration:</span>
           <div className={styles.inputField}>
-            {readOnly ? (
+            {readOnly || !isActive ? (
               <span className={styles.readOnlyValue}>{duration}</span>
             ) : (
               <DurationInput

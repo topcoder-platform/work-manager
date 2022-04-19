@@ -1255,10 +1255,13 @@ class ChallengeEditor extends Component {
   isPhaseEditable (phaseIndex) {
     const { phases } = this.state.challenge
     const phase = phases[phaseIndex]
+    if (phase.isOpen) {
+      return true
+    }
     if (phase.name !== 'Registration') {
       return false
     }
-    return !phase.isOpen
+    return phase.isOpen
   }
 
   render () {
