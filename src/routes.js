@@ -17,15 +17,8 @@ import { loadChallengeDetails } from './actions/challenges'
 import { connect } from 'react-redux'
 import { checkAllowedRoles } from './util/tc'
 import { setCookie, removeCookie, isBetaMode } from './util/cookie'
-import IdleTimer from 'react-idle-timer'
-import AlertModal from './components/Modal/AlertModal'
-import modalStyles from './styles/modal.module.scss'
 
-const { ACCOUNTS_APP_LOGIN_URL, IDLE_TIMEOUT_MINUTES, IDLE_TIMEOUT_GRACE_MINUTES, COMMUNITY_APP_URL } = process.env
-
-const theme = {
-  container: modalStyles.modalContainer
-}
+const { ACCOUNTS_APP_LOGIN_URL } = process.env
 
 class RedirectToChallenge extends React.Component {
   componentWillMount () {
@@ -66,19 +59,6 @@ RedirectToChallenge.propTypes = {
 const ConnectRedirectToChallenge = connect(mapStateToProps, mapDispatchToProps)(RedirectToChallenge)
 
 class Routes extends React.Component {
-  constructor (props) {
-    super(props)
-    this.idleTimer = null
-    this.handleOnIdle = this.handleOnIdle.bind(this)
-
-    this.logoutIntervalRef = null
-    this.state = {
-      showIdleModal: false,
-      logsoutIn: IDLE_TIMEOUT_GRACE_MINUTES * 60, // convert to seconds
-      logoutIntervalRef: null
-    }
-  }
-
   componentWillMount () {
     this.checkAuth()
   }
@@ -107,95 +87,68 @@ class Routes extends React.Component {
     }
   }
 
-  handleOnIdle () {
-    this.idleTimer.pause()
-    const intervalId = setInterval(() => {
-      const remaining = this.state.logsoutIn
-      if (remaining > 0) {
-        this.setState(state => ({ ...state, logsoutIn: remaining - 1 }))
-      } else {
-        window.location = `${COMMUNITY_APP_URL}/logout`
-      }
-    }, 1000)
-
-    this.setState(state => ({ ...state, showIdleModal: true, logoutIntervalRef: intervalId }))
-  }
-
   render () {
     if (!this.props.isLoggedIn) {
       return null
     }
 
-    const isAllowed = checkAllowedRoles(_.get(decodeToken(this.props.token), 'roles'))
-    const modal = (<AlertModal
-      theme={theme}
-      title='Session Timeout'
-      message={`You've been idle for quite sometime. You'll be automatically logged out in ${this.state.logsoutIn >= 60 ? Math.ceil(this.state.logsoutIn / 60) + ' minute(s).' : this.state.logsoutIn + ' second(s)'}`}
-      closeText='Resume Session'
-      onClose={() => {
-        clearInterval(this.state.logoutIntervalRef)
-        if (this.idleTimer.isIdle()) {
-          this.idleTimer.resume()
-          this.idleTimer.reset()
-          this.setState(state => ({
-            ...state, showIdleModal: false, logsoutIn: 120
-          }))
-        }
-      }}
-    />)
+    let isAllowed = checkAllowedRoles(_.get(decodeToken(this.props.token), 'roles'))
+
+    if (!isAllowed) {
+      let warnMessage = 'You are not authorized to use this application'
+      return (
+        <Switch>
+          <Route exact path='/'
+            render={() => renderApp(
+              <Challenges menu='NULL' warnMessage={warnMessage} />,
+              <TopBarContainer />,
+              <Sidebar />
+            )()}
+          />
+          <Redirect to='/' />
+        </Switch>
+      )
+    }
 
     return (
-      <IdleTimer ref={ref => { this.idleTimer = ref }} timeout={1000 * 60 * IDLE_TIMEOUT_MINUTES} onIdle={this.handleOnIdle} debounce={250}>
-        {!isAllowed && <Switch>
-          <Route exact path='/'
-            render={() => renderApp(
-              <Challenges menu='NULL' warnMessage={'You are not authorized to use this application'} />,
-              <TopBarContainer />,
-              <Sidebar />
-            )()}
-          />
-          <Redirect to='/' />
-        </Switch>}
-        {isAllowed && <Switch>
-          <Route exact path='/'
-            render={() => renderApp(
-              <Challenges menu='NULL' />,
-              <TopBarContainer />,
-              <Sidebar />
-            )()}
-          />
-          <Route exact path='/self-service'
-            render={() => renderApp(
-              <Challenges selfService />,
-              <TopBarContainer />,
-              <Sidebar selfService />
-            )()}
-          />
-          <Route exact path='/projects/:projectId/challenges/new'
-            render={({ match }) => renderApp(
-              <ChallengeEditor />,
-              <TopBarContainer />,
-              <Sidebar projectId={match.params.projectId} menu={'New Challenge'} />
-            )()} />
-          <Route exact path='/challenges/:challengeId' component={ConnectRedirectToChallenge} />
-          <Route
-            path='/projects/:projectId/challenges/:challengeId'
-            render={({ match }) => renderApp(
-              <ChallengeEditor />,
-              <TopBarContainer />,
-              <Sidebar projectId={match.params.projectId} menu={'New Challenge'} />
-            )()} />
-          <Route exact path='/projects/:projectId/challenges'
-            render={({ match }) => renderApp(
-              <Challenges projectId={match.params.projectId} />,
-              <TopBarContainer projectId={match.params.projectId} />,
-              <Sidebar projectId={match.params.projectId} />
-            )()} />
-          {/* If path is not defined redirect to landing page */}
-          <Redirect to='/' />
-        </Switch>}
-        {this.state.showIdleModal && modal}
-      </IdleTimer>
+      <Switch>
+        <Route exact path='/'
+          render={() => renderApp(
+            <Challenges menu='NULL' />,
+            <TopBarContainer />,
+            <Sidebar />
+          )()}
+        />
+        <Route exact path='/self-service'
+          render={() => renderApp(
+            <Challenges selfService />,
+            <TopBarContainer />,
+            <Sidebar selfService />
+          )()}
+        />
+        <Route exact path='/projects/:projectId/challenges/new'
+          render={({ match }) => renderApp(
+            <ChallengeEditor />,
+            <TopBarContainer />,
+            <Sidebar projectId={match.params.projectId} menu={'New Challenge'} />
+          )()} />
+        <Route exact path='/challenges/:challengeId' component={ConnectRedirectToChallenge} />
+        <Route
+          path='/projects/:projectId/challenges/:challengeId'
+          render={({ match }) => renderApp(
+            <ChallengeEditor />,
+            <TopBarContainer />,
+            <Sidebar projectId={match.params.projectId} menu={'New Challenge'} />
+          )()} />
+        <Route exact path='/projects/:projectId/challenges'
+          render={({ match }) => renderApp(
+            <Challenges projectId={match.params.projectId} />,
+            <TopBarContainer projectId={match.params.projectId} />,
+            <Sidebar projectId={match.params.projectId} />
+          )()} />
+        {/* If path is not defined redirect to landing page */}
+        <Redirect to='/' />
+      </Switch>
     )
   }
 }
