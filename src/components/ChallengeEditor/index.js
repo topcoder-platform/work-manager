@@ -4,7 +4,7 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import cn from 'classnames'
-import moment from 'moment'
+import moment from 'moment-timezone'
 import { pick } from 'lodash/fp'
 import { withRouter } from 'react-router-dom'
 import { toastr } from 'react-redux-toastr'
@@ -138,10 +138,21 @@ class ChallengeEditor extends Component {
     this.onDeleteChallenge = this.onDeleteChallenge.bind(this)
     this.deleteModalLaunch = this.deleteModalLaunch.bind(this)
     this.toggleForumOnCreate = this.toggleForumOnCreate.bind(this)
+    this.intervalId = null
   }
 
   componentDidMount () {
     this.resetChallengeData(this.setState.bind(this))
+    setTimeout(() => {
+      this.onTick()
+    }, 500)
+    this.intervalId = setInterval(() => {
+      this.onTick()
+    }, 60000)
+  }
+
+  componentDidUnMount () {
+    clearInterval(this.intervalId)
   }
 
   componentDidUpdate () {
@@ -810,6 +821,65 @@ class ChallengeEditor extends Component {
     this.setState({ challenge: newChallenge })
   }
 
+  onTick () {
+    if (this.state && this.state) {
+      const { phases } = this.state.challenge
+      let newChallenge = _.cloneDeep(this.state.challenge)
+      for (let index = 0; index < phases.length; ++index) {
+        newChallenge.phases[index].isDurationActive =
+          moment(newChallenge.phases[index]['scheduledEndDate']).isAfter()
+        newChallenge.phases[index].isStartTimeActive = index > 0 ? false
+          : moment(newChallenge.phases[0]['scheduledStartDate']).isAfter()
+        newChallenge.phases[index].isOpen =
+          newChallenge.phases[index].isDurationActive
+      }
+      this.setState({ challenge: newChallenge })
+    }
+  }
+
+  onUpdatePhaseDate (phase, index) {
+    const { phases } = this.state.challenge
+    let newChallenge = _.cloneDeep(this.state.challenge)
+    if (phase.isBlur && newChallenge.phases[index]['name'] === 'Submission') {
+      newChallenge.phases[index]['duration'] = _.max([
+        newChallenge.phases[index - 1]['duration'],
+        phase.duration
+      ])
+      newChallenge.phases[index]['scheduledEndDate'] =
+        moment(newChallenge.phases[index]['scheduledStartDate'])
+          .add(newChallenge.phases[index]['duration'], 'hours')
+          .format('MM/DD/YYYY HH:mm')
+    } else {
+      newChallenge.phases[index]['duration'] = phase.duration
+      newChallenge.phases[index]['scheduledStartDate'] = phase.startDate
+      newChallenge.phases[index]['scheduledEndDate'] = phase.endDate
+    }
+
+    for (let phaseIndex = index + 1; phaseIndex < phases.length; ++phaseIndex) {
+      if (newChallenge.phases[phaseIndex]['name'] === 'Submission') {
+        newChallenge.phases[phaseIndex]['scheduledStartDate'] =
+          newChallenge.phases[phaseIndex - 1]['scheduledStartDate']
+        newChallenge.phases[phaseIndex]['duration'] = _.max([
+          newChallenge.phases[phaseIndex - 1]['duration'],
+          newChallenge.phases[phaseIndex]['duration']
+        ])
+      } else {
+        newChallenge.phases[phaseIndex]['scheduledStartDate'] =
+          newChallenge.phases[phaseIndex - 1]['scheduledEndDate']
+      }
+      newChallenge.phases[phaseIndex]['scheduledEndDate'] =
+        moment(newChallenge.phases[phaseIndex]['scheduledStartDate'])
+          .add(newChallenge.phases[phaseIndex]['duration'], 'hours')
+          .format('MM/DD/YYYY HH:mm')
+    }
+
+    this.setState({ challenge: newChallenge })
+
+    setTimeout(() => {
+      this.onTick()
+    }, 500)
+  }
+
   collectChallengeData (status) {
     const { attachments, metadata } = this.props
     const challenge = pick([
@@ -851,7 +921,9 @@ class ChallengeEditor extends Component {
     }
     challenge.phases = challenge.phases.map((p) => pick([
       'duration',
-      'phaseId'
+      'phaseId',
+      'scheduledStartDate',
+      'scheduledEndDate'
     ], p))
     if (challenge.terms && challenge.terms.length === 0) delete challenge.terms
     delete challenge.attachments
@@ -1280,7 +1352,7 @@ class ChallengeEditor extends Component {
     let closeTaskModal = null
     let draftModal = null
 
-    let { type } = challenge
+    let { type, phases = [] } = challenge
     if (!type) {
       const { typeId } = challenge
       if (typeId && metadata.challengeTypes) {
@@ -1561,20 +1633,22 @@ class ChallengeEditor extends Component {
               </React.Fragment>
             )}
             {!isTask && (
-              <div className={styles.PhaseRow}>
-                <PhaseInput
-                  withDates
-                  phase={{
-                    name: 'Start Date',
-                    date: challenge.startDate
-                  }}
-                  onUpdatePhase={newValue => this.onUpdateOthers({
-                    field: 'startDate',
-                    value: newValue.format()
-                  })}
-                  readOnly={false}
-                />
-              </div>
+                <>
+                  {
+                    phases.map((phase, index) => (
+                      <PhaseInput
+                        phase={phase}
+                        phaseIndex={index}
+                        key={index}
+                        readOnly={false}
+                        onUpdatePhase={(item) => {
+                          this.onUpdatePhaseDate(item, index)
+                        }}
+                      />
+                    )
+                    )
+                  }
+                </>
             )}
             {
               this.state.isDeleteLaunch && !this.state.isConfirm && (

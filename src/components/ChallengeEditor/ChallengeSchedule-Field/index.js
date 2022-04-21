@@ -6,7 +6,7 @@ import $ from 'jquery'
 import styles from './ChallengeSchedule-Field.module.scss'
 import cn from 'classnames'
 import jstz from 'jstimezonedetect'
-import PhaseInput from '../../PhaseInput'
+import StartDateInput from '../../StartDateInput'
 import Chart from 'react-google-charts'
 import Select from '../../Select'
 import { parseSVG } from '../../../util/svg'
@@ -183,7 +183,7 @@ class ChallengeScheduleField extends Component {
     return (
       _.map(challenge.phases, (p, index) => (
         <div className={styles.PhaseRow} key={index}>
-          <PhaseInput
+          <StartDateInput
             phase={this.getPhaseTemplate(p)}
             withDuration
             onUpdateSelect={onUpdateSelect}
@@ -345,7 +345,7 @@ class ChallengeScheduleField extends Component {
           </div>
         </div> }
         <div className={styles.PhaseRow}>
-          <PhaseInput
+          <StartDateInput
             withDates
             phase={{
               name: 'Start Date',
