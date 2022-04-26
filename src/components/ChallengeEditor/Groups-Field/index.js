@@ -26,7 +26,7 @@ const GroupsField = ({ onUpdateMultiSelect, challenge }) => {
 
   React.useEffect(() => {
     Promise.all(
-      challenge.groups
+      (challenge.groups || [])
         .map(group => fetchGroups({}, `/${group}`))
     ).then(groups => {
       setGroups(groups.map(group => ({
