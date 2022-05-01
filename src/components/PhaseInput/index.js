@@ -54,7 +54,7 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
           <span className={styles.title}>Start Date:</span>
           <div className={styles.dayPicker}>
             {
-              readOnly || !isStartTimeActive ? (
+              readOnly ? (
                 <span className={styles.readOnlyValue}>{moment(startDate).format(dateFormat)}</span>
               )
                 : (
