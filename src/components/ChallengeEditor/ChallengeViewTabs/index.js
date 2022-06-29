@@ -47,7 +47,9 @@ const ChallengeViewTabs = ({
   assignYourselfCopilot,
   showRejectChallengeModal,
   loggedInUser,
-  onApproveChallenge
+  onApproveChallenge,
+  getCustomerPaymentById,
+  refundPayment
 }) => {
   const [selectedTab, setSelectedTab] = useState(0)
 
@@ -99,6 +101,20 @@ const ChallengeViewTabs = ({
     ((!isSelfService && isDraft) ||
       ((isSelfServiceCopilot || isAdmin) &&
         challenge.status.toUpperCase() === CHALLENGE_STATUS.APPROVED))
+
+  const getCustomerPaymentId = () => {
+    console.log(challenge)
+    return challenge.metadata && challenge.metadata.filter(item => item.name === 'customerPayment')[0]
+  }
+
+  const paymentInfo = getCustomerPaymentId()
+
+  const onRefund = () => {
+    getCustomerPaymentById(paymentInfo.value)
+      .then((res) => {
+        console.log(res)
+      })
+  }
 
   return (
     <div className={styles.list}>
@@ -171,6 +187,15 @@ const ChallengeViewTabs = ({
           {enableEdit && !isSelfService && (
             <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} />
           )}
+          {
+            isSelfService && paymentInfo && (
+              <PrimaryButton
+                text='Refund'
+                type='danger'
+                onClick={onRefund}
+              />
+            )
+          }
           {isSelfService && isDraft && (isAdmin || isSelfServiceCopilot) && (
             <div className={styles.button}>
               <PrimaryButton
@@ -291,7 +316,9 @@ ChallengeViewTabs.propTypes = {
   assignYourselfCopilot: PropTypes.func.isRequired,
   showRejectChallengeModal: PropTypes.func.isRequired,
   loggedInUser: PropTypes.object.isRequired,
-  onApproveChallenge: PropTypes.func
+  onApproveChallenge: PropTypes.func,
+  getCustomerPaymentById: PropTypes.func,
+  refundPayment: PropTypes.func
 }
 
 export default ChallengeViewTabs

@@ -31,6 +31,11 @@ import {
   replaceResourceInRole
 } from '../../actions/challenges'
 
+import {
+  getCustomerPaymentById,
+  refundPayment
+} from '../../actions/customerPayments'
+
 import { loadSubmissions } from '../../actions/challengeSubmissions'
 
 import { loadProject } from '../../actions/projects'
@@ -600,6 +605,8 @@ class ChallengeEditor extends Component {
               showRejectChallengeModal={this.showRejectChallengeModal}
               loggedInUser={loggedInUser}
               onApproveChallenge={this.onApproveChallenge}
+              getCustomerPaymentById={this.props.getCustomerPaymentById}
+              refundPayment={this.props.refundPayment}
             />
           )}
         />
@@ -625,6 +632,7 @@ ChallengeEditor.propTypes = {
   // loadChallengeTerms: PropTypes.func,
   loadGroups: PropTypes.func,
   loadChallengeDetails: PropTypes.func,
+  getCustomerPaymentById: PropTypes.func,
   loadResources: PropTypes.func,
   loadResourceRoles: PropTypes.func,
   loadSubmissions: PropTypes.func,
@@ -655,7 +663,8 @@ ChallengeEditor.propTypes = {
   loadProject: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
   isProjectPhasesLoading: PropTypes.bool,
-  showRejectChallengeModal: PropTypes.func
+  showRejectChallengeModal: PropTypes.func,
+  refundPayment: PropTypes.func
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
 
@@ -713,7 +722,9 @@ const mapDispatchToProps = {
   deleteChallenge,
   createChallenge,
   replaceResourceInRole,
-  loadProject
+  loadProject,
+  getCustomerPaymentById,
+  refundPayment
 }
 
 export default withRouter(

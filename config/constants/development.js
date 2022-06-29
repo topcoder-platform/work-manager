@@ -8,6 +8,7 @@ module.exports = {
   MEMBER_API_URL: `${DEV_API_HOSTNAME}/v4/members`,
   MEMBER_API_V3_URL: `${DEV_API_HOSTNAME}/v3/members`,
   CHALLENGE_API_URL: `${DEV_API_HOSTNAME}/v5/challenges`,
+  CUSTOMER_PAYMENT_API_URL: `${DEV_API_HOSTNAME}/v5/customer-payments`,
   CHALLENGE_TIMELINE_TEMPLATES_URL: `${DEV_API_HOSTNAME}/v5/timeline-templates`,
   CHALLENGE_TYPES_URL: `${DEV_API_HOSTNAME}/v5/challenge-types`,
   CHALLENGE_TRACKS_URL: `${DEV_API_HOSTNAME}/v5/challenge-tracks`,
