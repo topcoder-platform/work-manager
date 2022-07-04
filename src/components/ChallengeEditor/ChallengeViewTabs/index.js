@@ -88,7 +88,7 @@ const ChallengeViewTabs = ({
   const isDraft = challenge.status.toUpperCase() === CHALLENGE_STATUS.DRAFT
   const isSelfServiceCopilot = challenge.legacy.selfServiceCopilot === loggedInUser.handle
   const isAdmin = checkAdmin(token)
-  const canApprove = isSelfServiceCopilot && isDraft && isSelfService
+  const canApprove = (isSelfServiceCopilot || enableEdit) && isDraft && isSelfService
   const hasBillingAccount = _.get(projectDetail, 'billingAccountId') !== null
   // only challenges that have a billing account can be launched AND
   // if this isn't self-service, permit launching if the challenge is draft
@@ -97,7 +97,7 @@ const ChallengeViewTabs = ({
   // b) the challenge is approved
   const canLaunch = hasBillingAccount &&
     ((!isSelfService && isDraft) ||
-      ((isSelfServiceCopilot || isAdmin) &&
+      ((isSelfServiceCopilot || enableEdit || isAdmin) &&
         challenge.status.toUpperCase() === CHALLENGE_STATUS.APPROVED))
 
   return (
@@ -168,10 +168,10 @@ const ChallengeViewTabs = ({
               )}
             </div>
           )}
-          {enableEdit && !isSelfService && (
+          {enableEdit && (
             <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} />
           )}
-          {isSelfService && isDraft && (isAdmin || isSelfServiceCopilot) && (
+          {isSelfService && isDraft && (isAdmin || isSelfServiceCopilot || enableEdit) && (
             <div className={styles.button}>
               <PrimaryButton
                 text='Reject challenge'
