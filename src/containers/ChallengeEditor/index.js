@@ -175,9 +175,6 @@ class ChallengeEditor extends Component {
     if (isAdmin) {
       return true
     }
-    if (!hasProjectAccess) {
-      return false
-    }
     const userRoles = _.filter(
       challengeResources,
       cr => cr.memberId === `${loggedInUser.userId}`
@@ -185,7 +182,7 @@ class ChallengeEditor extends Component {
     const userResourceRoles = _.filter(resourceRoles, rr =>
       _.some(userRoles, ur => ur.roleId === rr.id)
     )
-    return _.some(
+    return hasProjectAccess || _.some(
       userResourceRoles,
       urr => urr.fullWriteAccess && urr.isActive
     )
