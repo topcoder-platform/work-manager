@@ -150,7 +150,7 @@ workflows:
           context : org-global
           filters: &filters-dev
             branches:
-              only: ['develop', 'jira-vuln-2333']
+              only: ['develop', 'jira-vuln-2333', 'justin-fixes']
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.

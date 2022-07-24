@@ -87,6 +87,10 @@ class Challenges extends Component {
       partiallyUpdateChallengeDetails,
       deleteChallenge,
       isBillingAccountExpired,
+      billingStartDate,
+      billingEndDate,
+      isBillingAccountLoadingFailed,
+      isBillingAccountLoading,
       selfService,
       auth
     } = this.props
@@ -155,6 +159,10 @@ class Challenges extends Component {
           partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
           deleteChallenge={deleteChallenge}
           isBillingAccountExpired={isBillingAccountExpired}
+          billingStartDate={billingStartDate}
+          billingEndDate={billingEndDate}
+          isBillingAccountLoadingFailed={isBillingAccountLoadingFailed}
+          isBillingAccountLoading={isBillingAccountLoading}
           selfService={selfService}
           auth={auth}
         />
@@ -186,6 +194,10 @@ Challenges.propTypes = {
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
   isBillingAccountExpired: PropTypes.bool,
+  billingStartDate: PropTypes.string,
+  billingEndDate: PropTypes.string,
+  isBillingAccountLoadingFailed: PropTypes.bool,
+  isBillingAccountLoading: PropTypes.bool,
   selfService: PropTypes.bool,
   auth: PropTypes.object.isRequired
 }
@@ -197,6 +209,10 @@ const mapStateToProps = ({ challenges, sidebar, projects, auth }) => ({
   projects: sidebar.projects,
   projectDetail: projects.projectDetail,
   isBillingAccountExpired: projects.isBillingAccountExpired,
+  billingStartDate: projects.billingStartDate,
+  billingEndDate: projects.billingEndDate,
+  isBillingAccountLoadingFailed: projects.isBillingAccountLoadingFailed,
+  isBillingAccountLoading: projects.isBillingAccountLoading,
   auth: auth
 })
 
