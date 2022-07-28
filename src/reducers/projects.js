@@ -30,6 +30,7 @@ const checkBillingExpired = (active, endDate) => {
   }
   return true
 }
+const dateFormat = 'MMM DD, YYYY'
 
 const initialState = {
   isLoading: false,
@@ -71,8 +72,8 @@ export default function (state = initialState, action) {
         ...state,
         isBillingAccountLoading: false,
         isBillingAccountExpired: checkBillingExpired(action.payload.active, action.payload.endDate),
-        billingStartDate: action.payload.startDate,
-        billingEndDate: action.payload.endDate,
+        billingStartDate: moment(action.payload.startDate).format(dateFormat),
+        billingEndDate: moment(action.payload.endDate).format(dateFormat),
         isBillingAccountLoadingFailed: false
       }
     case LOAD_PROJECT_BILLING_ACCOUNT_FAILURE:

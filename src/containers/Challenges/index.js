@@ -34,6 +34,7 @@ class Challenges extends Component {
       resetSidebarActiveParams()
     } else if (projectId || selfService) {
       if (projectId) {
+        window.localStorage.setItem('projectLoading', 'true')
         this.props.loadProject(projectId)
       }
       this.reloadChallenges(this.props)
@@ -51,9 +52,12 @@ class Challenges extends Component {
     if (activeProjectId !== challengeProjectId || selfService) {
       const isAdmin = checkAdmin(this.props.auth.token)
       this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, CHALLENGE_STATUS.ACTIVE, '', selfService, isAdmin ? null : this.props.auth.user.handle)
-      if (!selfService && (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId)
+      const projectLoading = window.localStorage.getItem('projectLoading') !== null
+      if (!selfService && (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId) && !projectLoading
       ) {
         loadProject(projectId)
+      } else {
+        window.localStorage.removeItem('projectLoading')
       }
     }
   }
