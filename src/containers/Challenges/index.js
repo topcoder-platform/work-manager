@@ -34,6 +34,7 @@ class Challenges extends Component {
       resetSidebarActiveParams()
     } else if (projectId || selfService) {
       if (projectId) {
+        window.localStorage.setItem('projectLoading', 'true')
         this.props.loadProject(projectId)
       }
       this.reloadChallenges(this.props)
@@ -51,9 +52,12 @@ class Challenges extends Component {
     if (activeProjectId !== challengeProjectId || selfService) {
       const isAdmin = checkAdmin(this.props.auth.token)
       this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, CHALLENGE_STATUS.ACTIVE, '', selfService, isAdmin ? null : this.props.auth.user.handle)
-      if (!selfService && (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId)
+      const projectLoading = window.localStorage.getItem('projectLoading') !== null
+      if (!selfService && (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId) && !projectLoading
       ) {
         loadProject(projectId)
+      } else {
+        window.localStorage.removeItem('projectLoading')
       }
     }
   }
@@ -87,6 +91,10 @@ class Challenges extends Component {
       partiallyUpdateChallengeDetails,
       deleteChallenge,
       isBillingAccountExpired,
+      billingStartDate,
+      billingEndDate,
+      isBillingAccountLoadingFailed,
+      isBillingAccountLoading,
       selfService,
       auth
     } = this.props
@@ -155,6 +163,10 @@ class Challenges extends Component {
           partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
           deleteChallenge={deleteChallenge}
           isBillingAccountExpired={isBillingAccountExpired}
+          billingStartDate={billingStartDate}
+          billingEndDate={billingEndDate}
+          isBillingAccountLoadingFailed={isBillingAccountLoadingFailed}
+          isBillingAccountLoading={isBillingAccountLoading}
           selfService={selfService}
           auth={auth}
         />
@@ -186,6 +198,10 @@ Challenges.propTypes = {
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
   isBillingAccountExpired: PropTypes.bool,
+  billingStartDate: PropTypes.string,
+  billingEndDate: PropTypes.string,
+  isBillingAccountLoadingFailed: PropTypes.bool,
+  isBillingAccountLoading: PropTypes.bool,
   selfService: PropTypes.bool,
   auth: PropTypes.object.isRequired
 }
@@ -197,6 +213,10 @@ const mapStateToProps = ({ challenges, sidebar, projects, auth }) => ({
   projects: sidebar.projects,
   projectDetail: projects.projectDetail,
   isBillingAccountExpired: projects.isBillingAccountExpired,
+  billingStartDate: projects.billingStartDate,
+  billingEndDate: projects.billingEndDate,
+  isBillingAccountLoadingFailed: projects.isBillingAccountLoadingFailed,
+  isBillingAccountLoading: projects.isBillingAccountLoading,
   auth: auth
 })
 

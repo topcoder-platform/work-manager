@@ -13,12 +13,33 @@ import {
   LOAD_PROJECT_PHASES_PENDING,
   LOAD_PROJECT_PHASES_SUCCESS
 } from '../config/constants'
+import moment from 'moment-timezone'
+
+/**
+ * checks if billing is expired or not
+ * @param {boolean} active if billing account is active or not
+ * @param {string} endDate the end date
+ * @returns if billing expired or not
+ */
+const checkBillingExpired = (active, endDate) => {
+  if (active) {
+    if (moment().isBefore(endDate)) {
+      return false
+    }
+    return true
+  }
+  return true
+}
+const dateFormat = 'MMM DD, YYYY'
 
 const initialState = {
   isLoading: false,
   projectDetail: {},
   isBillingAccountExpired: false,
   isBillingAccountLoading: false,
+  isBillingAccountLoadingFailed: false,
+  billingStartDate: null,
+  billingEndDate: null,
   isPhasesLoading: false,
   phases: []
 }
@@ -42,19 +63,27 @@ export default function (state = initialState, action) {
       return {
         ...state,
         isBillingAccountLoading: true,
-        isBillingAccountExpired: false
+        isBillingAccountExpired: false,
+        billingStartDate: '',
+        billingEndDate: ''
       }
     case LOAD_PROJECT_BILLING_ACCOUNT_SUCCESS:
       return {
         ...state,
         isBillingAccountLoading: false,
-        isBillingAccountExpired: !action.payload.active
+        isBillingAccountExpired: checkBillingExpired(action.payload.active, action.payload.endDate),
+        billingStartDate: moment(action.payload.startDate).format(dateFormat),
+        billingEndDate: moment(action.payload.endDate).format(dateFormat),
+        isBillingAccountLoadingFailed: false
       }
     case LOAD_PROJECT_BILLING_ACCOUNT_FAILURE:
       return {
         ...state,
         isBillingAccountLoading: false,
-        isBillingAccountExpired: false
+        isBillingAccountExpired: false,
+        billingStartDate: '',
+        billingEndDate: '',
+        isBillingAccountLoadingFailed: true
       }
     case LOAD_PROJECT_PHASES_PENDING:
       return {

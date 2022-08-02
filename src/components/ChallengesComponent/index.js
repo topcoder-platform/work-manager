@@ -28,6 +28,10 @@ const ChallengesComponent = ({
   partiallyUpdateChallengeDetails,
   deleteChallenge,
   isBillingAccountExpired,
+  billingStartDate,
+  billingEndDate,
+  isBillingAccountLoadingFailed,
+  isBillingAccountLoading,
   selfService,
   auth
 }) => {
@@ -78,6 +82,10 @@ const ChallengesComponent = ({
               partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
               deleteChallenge={deleteChallenge}
               isBillingAccountExpired={isBillingAccountExpired}
+              billingStartDate={billingStartDate}
+              billingEndDate={billingEndDate}
+              isBillingAccountLoadingFailed={isBillingAccountLoadingFailed}
+              isBillingAccountLoading={isBillingAccountLoading}
               selfService={selfService}
               auth={auth}
             />
@@ -106,6 +114,10 @@ ChallengesComponent.propTypes = {
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
   isBillingAccountExpired: PropTypes.bool,
+  billingStartDate: PropTypes.string,
+  billingEndDate: PropTypes.string,
+  isBillingAccountLoadingFailed: PropTypes.bool,
+  isBillingAccountLoading: PropTypes.bool,
   selfService: PropTypes.bool,
   auth: PropTypes.object.isRequired
 }

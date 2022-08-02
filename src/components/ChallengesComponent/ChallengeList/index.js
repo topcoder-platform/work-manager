@@ -125,6 +125,10 @@ class ChallengeList extends Component {
       partiallyUpdateChallengeDetails,
       deleteChallenge,
       isBillingAccountExpired,
+      billingStartDate,
+      billingEndDate,
+      isBillingAccountLoadingFailed,
+      isBillingAccountLoading,
       selfService
     } = this.props
     if (warnMessage) {
@@ -172,14 +176,29 @@ class ChallengeList extends Component {
     return (
       <div className={styles.list}>
         <div className={styles.row}>
-          <DebounceInput
-            className={styles.challengeInput}
-            minLength={2}
-            debounceTimeout={300}
-            placeholder='Search Challenges'
-            onChange={(e) => this.updateSearchParam(e.target.value, status)}
-            value={searchText}
-          />
+          {!isBillingAccountLoading && !isBillingAccountLoadingFailed && !isBillingAccountExpired && (
+            <div className={'col-9'}>
+              <span className={styles.title}>Billing Account: </span><span className={styles.active}>{status}</span> &nbsp;  <span className={styles.title}>Start Date:</span> {billingStartDate} &nbsp;  <span className={styles.title}>End Date:</span> {billingEndDate}
+            </div>
+          )}
+          {!isBillingAccountLoading && !isBillingAccountLoadingFailed && isBillingAccountExpired && (
+            <div className={'col-9'}>
+              <span className={styles.title}>Billing Account: </span><span className={styles.inactive}>INACTIVE</span> &nbsp;  <span className={styles.title}>Start Date:</span> {billingStartDate} &nbsp;  <span className={styles.title}>End Date:</span> {billingEndDate}
+            </div>
+          )}
+          {!isBillingAccountLoading && isBillingAccountLoadingFailed && (
+            <div className={'col-9'}><span className={styles.error}>Billing Account failed to load</span></div>
+          )}
+          <div className={'col-3'}>
+            <DebounceInput
+              className={styles.challengeInput}
+              minLength={2}
+              debounceTimeout={300}
+              placeholder='Search Challenges'
+              onChange={(e) => this.updateSearchParam(e.target.value, status)}
+              value={searchText}
+            />
+          </div>
         </div>
         {activeProject && (<Tabs
           selectedIndex={selectedTab}
@@ -307,6 +326,10 @@ ChallengeList.propTypes = {
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
   isBillingAccountExpired: PropTypes.bool,
+  billingStartDate: PropTypes.string,
+  billingEndDate: PropTypes.string,
+  isBillingAccountLoadingFailed: PropTypes.bool,
+  isBillingAccountLoading: PropTypes.bool,
   selfService: PropTypes.bool,
   auth: PropTypes.object.isRequired
 }

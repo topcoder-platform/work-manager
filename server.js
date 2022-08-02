@@ -16,6 +16,16 @@ function check () {
   return true
 }
 app.use(healthCheck.middleware([check]))
+app.use((req, res, next) => {
+  res.header('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.header('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+  res.header('X-Content-Type-Options', 'nosniff');
+  res.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
+  res.header('Cache-control', 'public, max-age=0');
+  res.header('Pragma', 'no-cache');
+
+  next();
+});
 // app.use(requireHTTPS) // removed because app servers don't handle https
 // app.use(express.static(__dirname))
 app.use(express.static(path.join(__dirname, 'build')))
