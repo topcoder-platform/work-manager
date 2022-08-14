@@ -23,7 +23,8 @@ import {
   CHALLENGE_TYPE_ID,
   REVIEW_TYPES,
   MILESTONE_STATUS,
-  PHASE_PRODUCT_CHALLENGE_ID_FIELD
+  PHASE_PRODUCT_CHALLENGE_ID_FIELD,
+  QA_TRACK_ID
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
@@ -965,6 +966,8 @@ class ChallengeEditor extends Component {
     // chooses first available timeline template or fallback template for the new challenge
     const defaultTemplate = avlTemplates && avlTemplates.length > 0 ? avlTemplates[0] : STD_DEV_TIMELINE_TEMPLATE
     const isTask = _.find(metadata.challengeTypes, { id: typeId, isTask: true })
+    const tags = trackId === QA_TRACK_ID ? ['QA'] : []
+
     const newChallenge = {
       status: 'New',
       projectId: this.props.projectId,
@@ -979,7 +982,8 @@ class ChallengeEditor extends Component {
       timelineTemplateId: defaultTemplate.id,
       terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }],
       groups: [],
-      milestoneId
+      milestoneId,
+      tags
       // prizeSets: this.getDefaultPrizeSets()
     }
     if (isTask) {
