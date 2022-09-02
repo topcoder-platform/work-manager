@@ -178,7 +178,7 @@ class ChallengeList extends Component {
         <div className={styles.row}>
           {!isBillingAccountLoading && !isBillingAccountLoadingFailed && !isBillingAccountExpired && (
             <div className={'col-9'}>
-              <span className={styles.title}>Billing Account: </span><span className={styles.active}>{activeProject.status}</span> &nbsp;  <span className={styles.title}>Start Date:</span> {billingStartDate} &nbsp;  <span className={styles.title}>End Date:</span> {billingEndDate}
+              <span className={styles.title}>Billing Account: </span><span className={styles.active}>ACTIVE</span> &nbsp;  <span className={styles.title}>Start Date:</span> {billingStartDate} &nbsp;  <span className={styles.title}>End Date:</span> {billingEndDate}
             </div>
           )}
           {!isBillingAccountLoading && !isBillingAccountLoadingFailed && isBillingAccountExpired && (
