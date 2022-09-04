@@ -23,6 +23,8 @@ app.use((req, res, next) => {
   res.header('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   res.header('Cache-control', 'public, max-age=0');
   res.header('Pragma', 'no-cache');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Content-Security-Policy', "frame-ancestors 'none';");
 
   next();
 });
