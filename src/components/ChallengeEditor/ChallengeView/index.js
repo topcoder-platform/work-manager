@@ -20,8 +20,14 @@ import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
 import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
-import { REVIEW_TYPES, CONNECT_APP_URL, PHASE_PRODUCT_CHALLENGE_ID_FIELD } from '../../../config/constants'
+import {
+  REVIEW_TYPES,
+  CONNECT_APP_URL,
+  PHASE_PRODUCT_CHALLENGE_ID_FIELD,
+  MULTI_ROUND_CHALLENGE_TEMPLATE_ID
+} from '../../../config/constants'
 import PhaseInput from '../../PhaseInput'
+import CheckpointPrizesField from '../CheckpointPrizes-Field'
 
 const ChallengeView = ({
   projectDetail,
@@ -91,6 +97,7 @@ const ChallengeView = ({
   const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
   const isTask = _.get(challenge, 'task.isTask', false)
   const phases = _.get(challenge, 'phases', [])
+  const showCheckpointPrizes = _.get(challenge, 'timelineTemplateId') === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
 
   return (
     <div className={styles.wrapper}>
@@ -224,6 +231,11 @@ const ChallengeView = ({
               readOnly
             />}
             <ChallengePrizesField challenge={challenge} readOnly />
+            {
+              showCheckpointPrizes && (
+                <CheckpointPrizesField challenge={challenge} readOnly />
+              )
+            }
             <CopilotFeeField challenge={challenge} readOnly />
             <ChallengeTotalField challenge={challenge} />
           </div>

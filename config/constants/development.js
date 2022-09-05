@@ -43,5 +43,6 @@ module.exports = {
   // if idle for this many minutes, show user a prompt saying they'll be logged out
   IDLE_TIMEOUT_MINUTES: 10,
   // duration to show the prompt saying user will be logged out, before actually logging out the user
-  IDLE_TIMEOUT_GRACE_MINUTES: 5
+  IDLE_TIMEOUT_GRACE_MINUTES: 5,
+  MULTI_ROUND_CHALLENGE_TEMPLATE_ID: 'd4201ca4-8437-4d63-9957-3f7708184b07'
 }
