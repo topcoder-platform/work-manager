@@ -289,11 +289,11 @@ export const MILESTONE_STATUS = {
   CANCELLED: 'cancelled'
 }
 
-export const MULTI_ROUND_CHALLENGE_DESC_TEMPLATE = '\n\n### Round 1 Requirements\n' +
+export const MULTI_ROUND_CHALLENGE_DESC_TEMPLATE = '\n\n### ROUND 1\n' +
   '\n' +
-  '### Round 2 Requirements\n' +
+  '### ROUND 2\n' +
   '\n' +
-  '### Challenge Description'
+  '### CHALLENGE DESCRIPTION'
 
 export const MAX_CHECKPOINT_PRIZE_COUNT = 8
 export const DEFAULT_CHECKPOINT_PRIZE = 50
