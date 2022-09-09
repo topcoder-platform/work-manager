@@ -290,9 +290,9 @@ export const MILESTONE_STATUS = {
 }
 
 export const MULTI_ROUND_CHALLENGE_DESC_TEMPLATE = '\n\n### ROUND 1\n' +
-  '\n' +
+  '**Submit your initial designs for checkpoint feedback**\n\n' +
   '### ROUND 2\n' +
-  '\n' +
+  '**Submit your final designs with all checkpoint feedback implemented**\n\n' +
   '### CHALLENGE DESCRIPTION'
 
 export const MAX_CHECKPOINT_PRIZE_COUNT = 8
