@@ -48,9 +48,6 @@ const CheckpointPrizesField = ({ challenge, onUpdateOthers, readOnly }) => {
           ) : (
             <div className={cn(styles.field, styles.col2)}>
               <div>
-                Pay&nbsp;&nbsp;
-              </div>
-              <div>
                 <div className={styles.checkpointPrizeInputContainer}>
                   <div className={styles.checkpointPrizeAmountContainer}>
                     <FontAwesomeIcon className={styles.dollarIcon} icon={faDollarSign} />
