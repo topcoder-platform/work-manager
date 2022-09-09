@@ -5,7 +5,7 @@ module.exports = {
   ACCOUNTS_APP_CONNECTOR_URL: process.env.ACCOUNTS_APP_CONNECTOR_URL || `https://accounts-auth0.${DOMAIN}`,
   ACCOUNTS_APP_LOGIN_URL: `https://accounts-auth0.${DOMAIN}`,
   COMMUNITY_APP_URL: `https://www.${DOMAIN}`,
-  MEMBER_API_URL: `${PROD_API_HOSTNAME}/v4/members`,
+  MEMBER_API_URL: `${PROD_API_HOSTNAME}/v5/members`,
   MEMBER_API_V3_URL: `${PROD_API_HOSTNAME}/v3/members`,
   CHALLENGE_API_URL: `${PROD_API_HOSTNAME}/v5/challenges`,
   CHALLENGE_TIMELINE_TEMPLATES_URL: `${PROD_API_HOSTNAME}/v5/timeline-templates`,
