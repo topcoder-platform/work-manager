@@ -55,7 +55,7 @@ export default {
     paddingLeft: '10px',
     border: 'none',
     input: {
-      width: 'auto !important',
+      width: '100% !important',
       height: 'auto !important',
       lineHeight: 'normal !important'
     }

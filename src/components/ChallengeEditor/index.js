@@ -949,17 +949,9 @@ class ChallengeEditor extends Component {
   async createNewChallenge () {
     if (!this.props.isNew) return
     const { metadata, createChallenge, projectDetail } = this.props
-    const { showDesignChallengeWarningModel, challenge: { name, trackId, typeId, milestoneId, roundType, challengeType } } = this.state
+    const { challenge: { name, trackId, typeId, milestoneId, roundType, challengeType } } = this.state
     const { timelineTemplates } = metadata
     const isDesignChallenge = trackId === DES_TRACK_ID
-    const isChallengeType = typeId === CHALLENGE_TYPE_ID
-
-    if (!showDesignChallengeWarningModel && isDesignChallenge && isChallengeType) {
-      this.setState({
-        showDesignChallengeWarningModel: true
-      })
-      return
-    }
 
     // indicate that creating process has started
     this.setState({ isSaving: true })

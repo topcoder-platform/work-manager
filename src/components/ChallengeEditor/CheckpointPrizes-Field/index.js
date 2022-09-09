@@ -9,7 +9,8 @@ import {
   PRIZE_SETS_TYPE,
   CHALLENGE_PRIZE_TYPE,
   MAX_CHECKPOINT_PRIZE_COUNT,
-  DEFAULT_CHECKPOINT_PRIZE
+  DEFAULT_CHECKPOINT_PRIZE,
+  DEFAULT_CHECKPOINT_PRIZE_COUNT
 } from '../../../config/constants'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faDollarSign } from '@fortawesome/free-solid-svg-icons'
@@ -19,7 +20,7 @@ const CheckpointPrizesField = ({ challenge, onUpdateOthers, readOnly }) => {
   const type = PRIZE_SETS_TYPE.CHECKPOINT_PRIZES
   const prizeSets = _.get(challenge, 'prizeSets') || []
   const checkpointPrize = prizeSets.find(p => p.type === type) || { type: PRIZE_SETS_TYPE.CHECKPOINT_PRIZES, prizes: [], 'description': 'Checkpoint Prizes' }
-  const number = _.get(checkpointPrize, 'prizes.length') || MAX_CHECKPOINT_PRIZE_COUNT
+  const number = _.get(checkpointPrize, 'prizes.length') || DEFAULT_CHECKPOINT_PRIZE_COUNT
   const amount = _.get(checkpointPrize, 'prizes.length') ? checkpointPrize.prizes[0].value : DEFAULT_CHECKPOINT_PRIZE
 
   // update the check point prize with default values if it's not already defined
@@ -39,42 +40,41 @@ const CheckpointPrizesField = ({ challenge, onUpdateOthers, readOnly }) => {
         <div className={cn(styles.field, styles.col1)}>
           <label htmlFor={`checkpointPrizes`} className={styles.checkpointLabel}>Checkpoint Prizes :</label>
         </div>
-      </div>
-      {
-        readOnly ? (
-          <div className={styles.checkpointPrizeContainer}>
+        {
+          readOnly ? (
+            <div className={cn(styles.field, styles.col2)}>
             ${amount} for each submission up to {number} submissions
-          </div>
-        ) : (
-          <div className={styles.checkpointPrizeContainer}>
-            <div>
-              Pay
             </div>
-            <div>
-              <div className={styles.checkpointPrizeInputContainer}>
-                <div className={styles.checkpointPrizeAmountContainer}>
-                  <FontAwesomeIcon className={styles.dollarIcon} icon={faDollarSign} />
+          ) : (
+            <div className={cn(styles.field, styles.col2)}>
+              <div>
+                Pay&nbsp;&nbsp;
+              </div>
+              <div>
+                <div className={styles.checkpointPrizeInputContainer}>
+                  <div className={styles.checkpointPrizeAmountContainer}>
+                    <FontAwesomeIcon className={styles.dollarIcon} icon={faDollarSign} />
+                  </div>
+                  <input id='checkpointPrize' name='checkpointPrize' type='text' placeholder='' value={amount} maxLength='7' required onChange={(e) => onChange(number, e.target.value)} />
                 </div>
-                <input id='checkpointPrize' name='checkpointPrize' type='text' placeholder='' value={amount} maxLength='7' required onChange={(e) => onChange(number, e.target.value)} />
+              </div>
+              <div>
+                for each submission up to&nbsp;&nbsp;
+              </div>
+              <div className={styles.checkpointSelect}>
+                <Select
+                  name='submissions'
+                  options={_.range(1, MAX_CHECKPOINT_PRIZE_COUNT + 1).map((v) => ({ label: v, value: v }))}
+                  value={{ label: number, value: number }}
+                  isClearable={false}
+                  onChange={e => onChange(e.value, amount)}
+                  isDisabled={false}
+                />
               </div>
             </div>
-            <div>
-              for each submission up to
-            </div>
-            <div>
-              <Select
-                name='submissions'
-                options={_.range(1, MAX_CHECKPOINT_PRIZE_COUNT + 1).map((v) => ({ label: v, value: v }))}
-                value={{ label: number, value: number }}
-                isClearable={false}
-                onChange={e => onChange(e.value, amount)}
-                isDisabled={false}
-              />
-            </div>
-
-          </div>
-        )
-      }
+          )
+        }
+      </div>
     </>
   )
 }

@@ -297,5 +297,6 @@ export const MULTI_ROUND_CHALLENGE_DESC_TEMPLATE = '## Challenge Introduction\n'
   '\n' +
   '## Challenge Description'
 
-export const MAX_CHECKPOINT_PRIZE_COUNT = 5
+export const MAX_CHECKPOINT_PRIZE_COUNT = 8
 export const DEFAULT_CHECKPOINT_PRIZE = 50
+export const DEFAULT_CHECKPOINT_PRIZE_COUNT = 5
