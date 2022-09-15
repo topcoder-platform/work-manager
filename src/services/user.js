@@ -59,3 +59,12 @@ export async function suggestProfiles (partialHandle) {
   const response = await axiosInstance.get(`${MEMBER_API_V3_URL}/_suggest/${encodeURIComponent(partialHandle)}`)
   return _.get(response, 'data.result.content')
 }
+
+/**
+ * Api request for finding (suggesting) users by the part of the handle
+ * @returns {Promise<*>}
+ */
+export async function suggestProfilesV5 (partialHandle) {
+  const response = await axiosInstance.get(`${MEMBER_API_URL}/autocomplete?term=${encodeURIComponent(partialHandle)}`)
+  return _.get(response, 'data')
+}
