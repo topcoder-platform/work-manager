@@ -24,7 +24,8 @@ import {
   REVIEW_TYPES,
   CONNECT_APP_URL,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
-  MULTI_ROUND_CHALLENGE_TEMPLATE_ID
+  MULTI_ROUND_CHALLENGE_TEMPLATE_ID,
+  DS_TRACK_ID
 } from '../../../config/constants'
 import PhaseInput from '../../PhaseInput'
 import CheckpointPrizesField from '../CheckpointPrizes-Field'
@@ -98,6 +99,9 @@ const ChallengeView = ({
   const isTask = _.get(challenge, 'task.isTask', false)
   const phases = _.get(challenge, 'phases', [])
   const showCheckpointPrizes = _.get(challenge, 'timelineTemplateId') === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
+  const isDataScience = challenge.trackId === DS_TRACK_ID
+  const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
+  const useDashboard = useDashboardData ? useDashboardData.value : true
 
   return (
     <div className={styles.wrapper}>
@@ -140,6 +144,13 @@ const ChallengeView = ({
                 <span><span className={styles.fieldTitle}>Challenge Name:</span> {challenge.name}</span>
               </div>
             </div>
+            {isDataScience && (
+              <div className={cn(styles.row, styles.topRow)}>
+                <div className={styles.col}>
+                  <span><span className={styles.fieldTitle}>Show data dashboard:</span> {useDashboard ? 'Yes' : 'No'}</span>
+                </div>
+              </div>
+            )}
             {isTask &&
               <AssignedMemberField challenge={challenge} assignedMemberDetails={assignedMemberDetails} readOnly />}
             <CopilotField challenge={{
