@@ -17,7 +17,9 @@ export const {
   DS_TRACK_ID,
   QA_TRACK_ID,
   CHALLENGE_TYPE_ID,
-  SEGMENT_API_KEY
+  MARATHON_TYPE_ID,
+  SEGMENT_API_KEY,
+  MULTI_ROUND_CHALLENGE_TEMPLATE_ID
 } = process.env
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
 
@@ -158,6 +160,19 @@ export const REVIEW_TYPES = {
   COMMUNITY: 'COMMUNITY'
 }
 
+export const ROUND_TYPES = {
+  'SINGLE_ROUND': 'Single round',
+  'TWO_ROUNDS': 'Two rounds'
+}
+
+export const DESIGN_CHALLENGE_TYPES = [
+  'Application Front-End Design',
+  'Print/Presentation',
+  'Web Design',
+  'Widget or Mobile Screen Design',
+  'Wireframes'
+]
+
 // List of subtracks that should be considered as Marathon Matches
 export const MARATHON_MATCH_SUBTRACKS = [
   'DEVELOP_MARATHON_MATCH'
@@ -274,3 +289,13 @@ export const MILESTONE_STATUS = {
   COMPLETED: 'completed',
   CANCELLED: 'cancelled'
 }
+
+export const MULTI_ROUND_CHALLENGE_DESC_TEMPLATE = '\n\n### ROUND 1\n' +
+  '**Submit your initial designs for checkpoint feedback**\n\n' +
+  '### ROUND 2\n' +
+  '**Submit your final designs with all checkpoint feedback implemented**\n\n' +
+  '### CHALLENGE DESCRIPTION'
+
+export const MAX_CHECKPOINT_PRIZE_COUNT = 8
+export const DEFAULT_CHECKPOINT_PRIZE = 50
+export const DEFAULT_CHECKPOINT_PRIZE_COUNT = 5
