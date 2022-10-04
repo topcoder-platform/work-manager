@@ -20,7 +20,9 @@ import {
   MESSAGE,
   COMMUNITY_APP_URL,
   DES_TRACK_ID,
+  DEV_TRACK_ID,
   CHALLENGE_TYPE_ID,
+  MARATHON_TYPE_ID,
   REVIEW_TYPES,
   MILESTONE_STATUS,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
@@ -955,6 +957,10 @@ class ChallengeEditor extends Component {
     const { timelineTemplates } = metadata
     const isDesignChallenge = trackId === DES_TRACK_ID
     const isDataScience = trackId === DS_TRACK_ID
+    const isChallengeType = typeId === CHALLENGE_TYPE_ID
+    const isDevChallenge = trackId === DEV_TRACK_ID
+    const isMM = typeId === MARATHON_TYPE_ID
+    const showDashBoard = (isDataScience && isChallengeType) || (isDevChallenge && isMM)
 
     // indicate that creating process has started
     this.setState({ isSaving: true })
@@ -1012,7 +1018,7 @@ class ChallengeEditor extends Component {
         newChallenge.discussions = discussions
       }
     }
-    if (isDataScience) {
+    if (showDashBoard) {
       if (!newChallenge.metadata) {
         newChallenge.metadata = []
       }
@@ -1561,10 +1567,12 @@ class ChallengeEditor extends Component {
     const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
     const copilotResources = metadata.members || challengeResources
     const isDesignChallenge = challenge.trackId === DES_TRACK_ID
+    const isDevChallenge = challenge.trackId === DEV_TRACK_ID
+    const isMM = challenge.typeId === MARATHON_TYPE_ID
     const isChallengeType = challenge.typeId === CHALLENGE_TYPE_ID
     const showRoundType = isDesignChallenge && isChallengeType
     const showCheckpointPrizes = challenge.timelineTemplateId === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
-    const isDataScience = challenge.trackId === DS_TRACK_ID
+    const showDashBoard = (challenge.trackId === DS_TRACK_ID && isChallengeType) || (isDevChallenge && isMM)
     const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
     const useDashboard = useDashboardData ? useDashboardData.value : true
 
@@ -1584,7 +1592,7 @@ class ChallengeEditor extends Component {
             }
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             {
-              isDataScience && (
+              showDashBoard && (
                 <div className={styles.row}>
                   <div className={cn(styles.field, styles.col1)}>
                     <label htmlFor='isDashboardEnabled'>Use data dashboard :</label>
@@ -1635,7 +1643,7 @@ class ChallengeEditor extends Component {
 
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             {
-              isDataScience && (
+              showDashBoard && (
                 <div className={styles.row}>
                   <div className={cn(styles.field, styles.col1)}>
                     <label htmlFor='isDashboardEnabled'>Use data dashboard :</label>
