@@ -6,6 +6,7 @@ import cn from 'classnames'
 import styles from './Type-Field.module.scss'
 
 const TypeField = ({ types, onUpdateSelect, challenge, disabled }) => {
+  types = _.sortBy(types, ['name'])
   return (
     <>
       <div className={styles.row}>
