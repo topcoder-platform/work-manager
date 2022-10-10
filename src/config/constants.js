@@ -18,8 +18,7 @@ export const {
   QA_TRACK_ID,
   CHALLENGE_TYPE_ID,
   MARATHON_TYPE_ID,
-  SEGMENT_API_KEY,
-  MULTI_ROUND_CHALLENGE_TEMPLATE_ID
+  SEGMENT_API_KEY
 } = process.env
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
 
@@ -289,13 +288,3 @@ export const MILESTONE_STATUS = {
   COMPLETED: 'completed',
   CANCELLED: 'cancelled'
 }
-
-export const MULTI_ROUND_CHALLENGE_DESC_TEMPLATE = '\n\n### ROUND 1\n' +
-  '**Submit your initial designs for checkpoint feedback**\n\n' +
-  '### ROUND 2\n' +
-  '**Submit your final designs with all checkpoint feedback implemented**\n\n' +
-  '### CHALLENGE DESCRIPTION'
-
-export const MAX_CHECKPOINT_PRIZE_COUNT = 8
-export const DEFAULT_CHECKPOINT_PRIZE = 50
-export const DEFAULT_CHECKPOINT_PRIZE_COUNT = 5

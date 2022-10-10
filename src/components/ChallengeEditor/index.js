@@ -27,7 +27,7 @@ import {
   MILESTONE_STATUS,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
   QA_TRACK_ID, DESIGN_CHALLENGE_TYPES, ROUND_TYPES,
-  MULTI_ROUND_CHALLENGE_TEMPLATE_ID, DS_TRACK_ID
+  DS_TRACK_ID
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
@@ -976,9 +976,6 @@ class ChallengeEditor extends Component {
       tags.push(challengeType)
     }
     let timelineTemplateId = defaultTemplate.id
-    if (roundType === ROUND_TYPES.TWO_ROUNDS) {
-      timelineTemplateId = MULTI_ROUND_CHALLENGE_TEMPLATE_ID
-    }
 
     const newChallenge = {
       status: 'New',

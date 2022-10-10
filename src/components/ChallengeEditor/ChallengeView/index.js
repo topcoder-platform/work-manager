@@ -24,7 +24,6 @@ import {
   REVIEW_TYPES,
   CONNECT_APP_URL,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
-  MULTI_ROUND_CHALLENGE_TEMPLATE_ID,
   DS_TRACK_ID
 } from '../../../config/constants'
 import PhaseInput from '../../PhaseInput'
