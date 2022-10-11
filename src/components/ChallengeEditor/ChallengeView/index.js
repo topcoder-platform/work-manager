@@ -27,7 +27,6 @@ import {
   DS_TRACK_ID
 } from '../../../config/constants'
 import PhaseInput from '../../PhaseInput'
-import CheckpointPrizesField from '../CheckpointPrizes-Field'
 
 const ChallengeView = ({
   projectDetail,

@@ -64,7 +64,6 @@ import { getResourceRoleByName } from '../../util/tc'
 import { isBetaMode } from '../../util/cookie'
 import MilestoneField from './Milestone-Field'
 import DiscussionField from './Discussion-Field'
-import CheckpointPrizesField from './CheckpointPrizes-Field'
 
 const theme = {
   container: styles.modalContainer
@@ -953,7 +952,7 @@ class ChallengeEditor extends Component {
   async createNewChallenge () {
     if (!this.props.isNew) return
     const { metadata, createChallenge, projectDetail } = this.props
-    const { challenge: { name, trackId, typeId, milestoneId, roundType, challengeType, metadata: challengeMetadata } } = this.state
+    const { challenge: { name, trackId, typeId, milestoneId, challengeType, metadata: challengeMetadata } } = this.state
     const { timelineTemplates } = metadata
     const isDesignChallenge = trackId === DES_TRACK_ID
     const isDataScience = trackId === DS_TRACK_ID
@@ -1568,7 +1567,6 @@ class ChallengeEditor extends Component {
     const isMM = challenge.typeId === MARATHON_TYPE_ID
     const isChallengeType = challenge.typeId === CHALLENGE_TYPE_ID
     const showRoundType = isDesignChallenge && isChallengeType
-    const showCheckpointPrizes = challenge.timelineTemplateId === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
     const showDashBoard = (challenge.trackId === DS_TRACK_ID && isChallengeType) || (isDevChallenge && isMM)
     const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
     const useDashboard = useDashboardData ? useDashboardData.value : true
@@ -1780,11 +1778,6 @@ class ChallengeEditor extends Component {
               removeAttachment={removeAttachment}
             />}
             <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
-            {
-              showCheckpointPrizes && (
-                <CheckpointPrizesField onUpdateOthers={this.onUpdateOthers} challenge={challenge} />
-              )
-            }
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <ChallengeTotalField challenge={challenge} />
           </div>
