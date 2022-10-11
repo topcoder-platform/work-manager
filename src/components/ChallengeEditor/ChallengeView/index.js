@@ -128,7 +128,7 @@ const ChallengeView = ({
                 </div>
               }
               <div className={styles.col}>
-                <span className={styles.fieldTitle}>Track:</span>
+                <span className={styles.fieldTitle}>Domain:</span>
                 <Track disabled type={challengeTrack} isActive key={challenge.trackId} onUpdateOthers={() => { }} />
               </div>
               <div className={styles.col}>
