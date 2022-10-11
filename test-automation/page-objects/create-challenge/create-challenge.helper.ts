@@ -33,12 +33,12 @@ export class CreateChallengePageHelper {
 
 		// Click Work Type Button
 		await this.createChallengePageObject.workTypeButton(data.workType[0]).click();
-		logger.info(`Clicked on Work Type button: ${data.workType[0]}`);
+		logger.info(`Clicked on Domain button: ${data.workType[0]}`);
 
 		// Click Work Form Input and Select Format from the list
 		await this.createChallengePageObject.workFormatInput.click();
 		await CommonHelper.searchTextFromListAndClick(await this.createChallengePageObject.workFormatList, workFormat);
-		logger.info(`Selected Work Type: ${workFormat} from the list`);
+		logger.info(`Selected Work Format: ${workFormat} from the list`);
 
 		// Specify Work Name
 		const workName = CommonHelper.appendDate(`${data.workType[0]}${workFormat}${data.automation}`);
