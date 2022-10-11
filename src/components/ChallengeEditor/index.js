@@ -26,13 +26,12 @@ import {
   REVIEW_TYPES,
   MILESTONE_STATUS,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
-  QA_TRACK_ID, DESIGN_CHALLENGE_TYPES,
+  QA_TRACK_ID,
   DS_TRACK_ID
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
 import TypeField from './Type-Field'
-import ChallengeTypeField from './ChallengeType-Field'
 import ChallengeNameField from './ChallengeName-Field'
 import CopilotField from './Copilot-Field'
 import ReviewTypeField from './ReviewType-Field'
@@ -1561,11 +1560,9 @@ class ChallengeEditor extends Component {
     const currentChallengeId = this.getCurrentChallengeId()
     const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
     const copilotResources = metadata.members || challengeResources
-    const isDesignChallenge = challenge.trackId === DES_TRACK_ID
     const isDevChallenge = challenge.trackId === DEV_TRACK_ID
     const isMM = challenge.typeId === MARATHON_TYPE_ID
     const isChallengeType = challenge.typeId === CHALLENGE_TYPE_ID
-    const showRoundType = isDesignChallenge && isChallengeType
     const showDashBoard = (challenge.trackId === DS_TRACK_ID && isChallengeType) || (isDevChallenge && isMM)
     const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
     const useDashboard = useDashboardData ? useDashboardData.value : true

@@ -159,19 +159,6 @@ export const REVIEW_TYPES = {
   COMMUNITY: 'COMMUNITY'
 }
 
-export const ROUND_TYPES = {
-  'SINGLE_ROUND': 'Single round',
-  'TWO_ROUNDS': 'Two rounds'
-}
-
-export const DESIGN_CHALLENGE_TYPES = [
-  'Application Front-End Design',
-  'Print/Presentation',
-  'Web Design',
-  'Widget or Mobile Screen Design',
-  'Wireframes'
-]
-
 // List of subtracks that should be considered as Marathon Matches
 export const MARATHON_MATCH_SUBTRACKS = [
   'DEVELOP_MARATHON_MATCH'
