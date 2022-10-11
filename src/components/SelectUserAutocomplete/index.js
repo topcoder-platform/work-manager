@@ -7,7 +7,7 @@
 import React, { useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import Select from '../Select'
-import { suggestProfiles } from '../../services/user'
+import { suggestProfilesV5, fetchProfileV5 } from '../../services/user'
 import _ from 'lodash'
 import { AUTOCOMPLETE_MIN_LENGTH, AUTOCOMPLETE_DEBOUNCE_TIME_MS } from '../../config/constants'
 
@@ -27,13 +27,17 @@ export default function SelectUserAutocomplete (props) {
       return
     }
 
-    suggestProfiles(inputValue).then((suggestions) => {
-      const suggestedOptions = suggestions.map((user) => ({
-        label: user.handle,
-        value: user.userId.toString()
-      }))
-      setOptions(suggestedOptions)
-    })
+    Promise.all([suggestProfilesV5(inputValue), fetchProfileV5(inputValue)]).then(
+      ([suggestions, user]) => {
+        const suggestedOptions = suggestions.map((u) => ({
+          label: u.handle,
+          value: u.userId.toString()
+        }))
+        if (user && !_.find(suggestions, u => u.userId === user.userId)) {
+          suggestedOptions.push({ label: user.handle, value: user.userId.toString() })
+        }
+        setOptions(suggestedOptions)
+      })
   }, AUTOCOMPLETE_DEBOUNCE_TIME_MS), []) // debounce, to reduce API calling rate
 
   return (

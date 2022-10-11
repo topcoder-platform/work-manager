@@ -20,7 +20,12 @@ import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
 import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
-import { REVIEW_TYPES, CONNECT_APP_URL, PHASE_PRODUCT_CHALLENGE_ID_FIELD } from '../../../config/constants'
+import {
+  REVIEW_TYPES,
+  CONNECT_APP_URL,
+  PHASE_PRODUCT_CHALLENGE_ID_FIELD,
+  DS_TRACK_ID
+} from '../../../config/constants'
 import PhaseInput from '../../PhaseInput'
 
 const ChallengeView = ({
@@ -91,6 +96,9 @@ const ChallengeView = ({
   const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
   const isTask = _.get(challenge, 'task.isTask', false)
   const phases = _.get(challenge, 'phases', [])
+  const isDataScience = challenge.trackId === DS_TRACK_ID
+  const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
+  const useDashboard = useDashboardData ? useDashboardData.value : true
 
   return (
     <div className={styles.wrapper}>
@@ -133,6 +141,13 @@ const ChallengeView = ({
                 <span><span className={styles.fieldTitle}>Challenge Name:</span> {challenge.name}</span>
               </div>
             </div>
+            {isDataScience && (
+              <div className={cn(styles.row, styles.topRow)}>
+                <div className={styles.col}>
+                  <span><span className={styles.fieldTitle}>Show data dashboard:</span> {useDashboard ? 'Yes' : 'No'}</span>
+                </div>
+              </div>
+            )}
             {isTask &&
               <AssignedMemberField challenge={challenge} assignedMemberDetails={assignedMemberDetails} readOnly />}
             <CopilotField challenge={{

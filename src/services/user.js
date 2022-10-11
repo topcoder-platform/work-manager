@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { axiosInstance } from './axiosWithAuth'
-const { MEMBER_API_V3_URL } = process.env
+const { MEMBER_API_URL, MEMBER_API_V3_URL } = process.env
 
 /**
  * Api request for fetching user profile
@@ -9,6 +9,16 @@ const { MEMBER_API_V3_URL } = process.env
 export async function fetchProfile (handle) {
   const response = await axiosInstance.get(`${MEMBER_API_V3_URL}/${handle}`)
   return _.get(response, 'data.result.content')
+}
+
+/**
+ * Api request for fetching user profile v5
+ * @returns {Promise<*>}
+ */
+export async function fetchProfileV5 (handle) {
+  const response = await axiosInstance.get(`${MEMBER_API_URL}?handle=${handle}`)
+  const data = _.get(response, 'data')
+  return data.length ? data[0] : undefined
 }
 
 /**
@@ -48,4 +58,13 @@ export async function searchProfilesByUserIds (userIds, fields = 'userId,handle,
 export async function suggestProfiles (partialHandle) {
   const response = await axiosInstance.get(`${MEMBER_API_V3_URL}/_suggest/${encodeURIComponent(partialHandle)}`)
   return _.get(response, 'data.result.content')
+}
+
+/**
+ * Api request for finding (suggesting) users by the part of the handle
+ * @returns {Promise<*>}
+ */
+export async function suggestProfilesV5 (partialHandle) {
+  const response = await axiosInstance.get(`${MEMBER_API_URL}/autocomplete?term=${encodeURIComponent(partialHandle)}`)
+  return _.get(response, 'data')
 }

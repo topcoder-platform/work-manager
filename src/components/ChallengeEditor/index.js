@@ -20,11 +20,14 @@ import {
   MESSAGE,
   COMMUNITY_APP_URL,
   DES_TRACK_ID,
+  DEV_TRACK_ID,
   CHALLENGE_TYPE_ID,
+  MARATHON_TYPE_ID,
   REVIEW_TYPES,
   MILESTONE_STATUS,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
-  QA_TRACK_ID
+  QA_TRACK_ID,
+  DS_TRACK_ID
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
@@ -594,6 +597,8 @@ class ChallengeEditor extends Component {
         submissionLimit.count = ''
       }
       existingMetadata.value = JSON.stringify(submissionLimit)
+    } else if (existingMetadata.name === 'show_data_dashboard') {
+      existingMetadata.value = Boolean(value)
     } else {
       existingMetadata.value = `${value}`
     }
@@ -945,17 +950,14 @@ class ChallengeEditor extends Component {
   async createNewChallenge () {
     if (!this.props.isNew) return
     const { metadata, createChallenge, projectDetail } = this.props
-    const { showDesignChallengeWarningModel, challenge: { name, trackId, typeId, milestoneId } } = this.state
+    const { challenge: { name, trackId, typeId, milestoneId, challengeType, metadata: challengeMetadata } } = this.state
     const { timelineTemplates } = metadata
     const isDesignChallenge = trackId === DES_TRACK_ID
+    const isDataScience = trackId === DS_TRACK_ID
     const isChallengeType = typeId === CHALLENGE_TYPE_ID
-
-    if (!showDesignChallengeWarningModel && isDesignChallenge && isChallengeType) {
-      this.setState({
-        showDesignChallengeWarningModel: true
-      })
-      return
-    }
+    const isDevChallenge = trackId === DEV_TRACK_ID
+    const isMM = typeId === MARATHON_TYPE_ID
+    const showDashBoard = (isDataScience && isChallengeType) || (isDevChallenge && isMM)
 
     // indicate that creating process has started
     this.setState({ isSaving: true })
@@ -967,6 +969,10 @@ class ChallengeEditor extends Component {
     const defaultTemplate = avlTemplates && avlTemplates.length > 0 ? avlTemplates[0] : STD_DEV_TIMELINE_TEMPLATE
     const isTask = _.find(metadata.challengeTypes, { id: typeId, isTask: true })
     const tags = trackId === QA_TRACK_ID ? ['QA'] : []
+    if (challengeType) {
+      tags.push(challengeType)
+    }
+    let timelineTemplateId = defaultTemplate.id
 
     const newChallenge = {
       status: 'New',
@@ -979,7 +985,7 @@ class ChallengeEditor extends Component {
         reviewType: isTask || isDesignChallenge ? REVIEW_TYPES.INTERNAL : REVIEW_TYPES.COMMUNITY
       },
       descriptionFormat: 'markdown',
-      timelineTemplateId: defaultTemplate.id,
+      timelineTemplateId,
       terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }],
       groups: [],
       milestoneId,
@@ -1005,6 +1011,16 @@ class ChallengeEditor extends Component {
       if (discussions) {
         newChallenge.discussions = discussions
       }
+    }
+    if (showDashBoard) {
+      if (!newChallenge.metadata) {
+        newChallenge.metadata = []
+      }
+      let useDashboard = _.find(challengeMetadata, { name: 'show_data_dashboard' })
+      if (useDashboard === undefined) {
+        useDashboard = { name: 'show_data_dashboard', value: true }
+      }
+      newChallenge.metadata.push(useDashboard)
     }
     try {
       const action = await createChallenge(newChallenge, projectDetail.id)
@@ -1544,6 +1560,13 @@ class ChallengeEditor extends Component {
     const currentChallengeId = this.getCurrentChallengeId()
     const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
     const copilotResources = metadata.members || challengeResources
+    const isDevChallenge = challenge.trackId === DEV_TRACK_ID
+    const isMM = challenge.typeId === MARATHON_TYPE_ID
+    const isChallengeType = challenge.typeId === CHALLENGE_TYPE_ID
+    const showDashBoard = (challenge.trackId === DS_TRACK_ID && isChallengeType) || (isDevChallenge && isMM)
+    const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
+    const useDashboard = useDashboardData ? useDashboardData.value : true
+
     const challengeForm = isNew
       ? (
         <form name='challenge-new-form' noValidate autoComplete='off' onSubmit={this.createChallengeHandler}>
@@ -1551,6 +1574,24 @@ class ChallengeEditor extends Component {
             <TrackField tracks={metadata.challengeTracks} challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
+            {
+              showDashBoard && (
+                <div className={styles.row}>
+                  <div className={cn(styles.field, styles.col1)}>
+                    <label htmlFor='isDashboardEnabled'>Use data dashboard :</label>
+                  </div>
+                  <div className={cn(styles.field, styles.col2)}>
+                    <input
+                      name='isDashboardEnabled'
+                      type='checkbox'
+                      id='isDashboardEnabled'
+                      checked={useDashboard}
+                      onChange={(e) => this.onUpdateMetadata('show_data_dashboard', e.target.checked)}
+                    />
+                  </div>
+                </div>
+              )
+            }
             {projectDetail.version === 'v4' && <MilestoneField milestones={activeProjectMilestones} onUpdateSelect={this.onUpdateSelect} projectId={projectDetail.id} selectedMilestoneId={selectedMilestoneId} />}
             {useTask && (<DiscussionField hasForum={hasForum} toggleForum={this.toggleForumOnCreate} />)}
           </div>
@@ -1584,6 +1625,24 @@ class ChallengeEditor extends Component {
             </div>
 
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
+            {
+              showDashBoard && (
+                <div className={styles.row}>
+                  <div className={cn(styles.field, styles.col1)}>
+                    <label htmlFor='isDashboardEnabled'>Use data dashboard :</label>
+                  </div>
+                  <div className={cn(styles.field, styles.col2)}>
+                    <input
+                      name='isDashboardEnabled'
+                      type='checkbox'
+                      id='isDashboardEnabled'
+                      checked={useDashboard}
+                      onChange={(e) => this.onUpdateMetadata('show_data_dashboard', e.target.checked)}
+                    />
+                  </div>
+                </div>
+              )
+            }
             {isTask && (
               <AssignedMemberField
                 challenge={challenge}
