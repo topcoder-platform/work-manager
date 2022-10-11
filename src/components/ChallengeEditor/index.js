@@ -26,7 +26,7 @@ import {
   REVIEW_TYPES,
   MILESTONE_STATUS,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
-  QA_TRACK_ID, DESIGN_CHALLENGE_TYPES, ROUND_TYPES,
+  QA_TRACK_ID, DESIGN_CHALLENGE_TYPES,
   DS_TRACK_ID
 } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
