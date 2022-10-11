@@ -32,7 +32,6 @@ import {
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
 import TypeField from './Type-Field'
-import RoundTypeField from './RoundType-Field'
 import ChallengeTypeField from './ChallengeType-Field'
 import ChallengeNameField from './ChallengeName-Field'
 import CopilotField from './Copilot-Field'
@@ -1577,14 +1576,6 @@ class ChallengeEditor extends Component {
           <div className={styles.newFormContainer}>
             <TrackField tracks={metadata.challengeTracks} challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
-            {
-              showRoundType && (
-                <>
-                  <RoundTypeField roundType={challenge.roundType} onUpdateOthers={this.onUpdateOthers} />
-                  <ChallengeTypeField types={DESIGN_CHALLENGE_TYPES} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
-                </>
-              )
-            }
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             {
               showDashBoard && (
