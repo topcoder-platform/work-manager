@@ -29,6 +29,7 @@ import {
   QA_TRACK_ID, DESIGN_CHALLENGE_TYPES, ROUND_TYPES,
   MULTI_ROUND_CHALLENGE_TEMPLATE_ID, DS_TRACK_ID
 } from '../../config/constants'
+import { getDomainTypes, getResourceRoleByName } from '../../util/tc'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
 import TypeField from './Type-Field'
@@ -60,7 +61,7 @@ import AssignedMemberField from './AssignedMember-Field'
 import Tooltip from '../Tooltip'
 import CancelDropDown from './Cancel-Dropdown'
 import UseSchedulingAPIField from './UseSchedulingAPIField'
-import { getResourceRoleByName } from '../../util/tc'
+
 import { isBetaMode } from '../../util/cookie'
 import MilestoneField from './Milestone-Field'
 import DiscussionField from './Discussion-Field'
@@ -1575,13 +1576,15 @@ class ChallengeEditor extends Component {
     const showDashBoard = (challenge.trackId === DS_TRACK_ID && isChallengeType) || (isDevChallenge && isMM)
     const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
     const useDashboard = useDashboardData ? useDashboardData.value : true
+    const workTypes = getDomainTypes(challenge.trackId)
+    const filteredTypes = metadata.challengeTypes.filter(type => workTypes.includes(type.abbreviation))
 
     const challengeForm = isNew
       ? (
         <form name='challenge-new-form' noValidate autoComplete='off' onSubmit={this.createChallengeHandler}>
           <div className={styles.newFormContainer}>
             <TrackField tracks={metadata.challengeTracks} challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
-            <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
+            <TypeField types={filteredTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
             {
               showRoundType && (
                 <>
