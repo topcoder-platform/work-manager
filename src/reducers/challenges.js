@@ -47,6 +47,10 @@ const initialState = {
   attachments: [],
   challenge: null,
   filterChallengeName: '',
+  filterChallengeType: {},
+  filterDate: {},
+  filterSortBy: 'startDate',
+  filterSortOrder: 'desc',
   failedToDelete: false,
   status: '',
   perPage: 0,
@@ -84,6 +88,10 @@ export default function (state = initialState, action) {
         projectId: action.projectId,
         status: action.status,
         filterChallengeName: action.filterChallengeName,
+        filterChallengeType: action.filterChallengeType,
+        filterDate: action.filterDate,
+        filterSortBy: action.filterSortBy,
+        filterSortOrder: action.filterSortOrder,
         perPage: action.perPage,
         page: action.page
       }

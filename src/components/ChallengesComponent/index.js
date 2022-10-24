@@ -18,6 +18,10 @@ const ChallengesComponent = ({
   isLoading,
   warnMessage,
   filterChallengeName,
+  filterChallengeType,
+  filterDate,
+  filterSortBy,
+  filterSortOrder,
   activeProject,
   status,
   loadChallengesByPage,
@@ -33,7 +37,8 @@ const ChallengesComponent = ({
   isBillingAccountLoadingFailed,
   isBillingAccountLoading,
   selfService,
-  auth
+  auth,
+  challengeTypes
 }) => {
   return (
     <Sticky top={10}>
@@ -73,6 +78,10 @@ const ChallengesComponent = ({
               warnMessage={warnMessage}
               activeProject={activeProject}
               filterChallengeName={filterChallengeName}
+              filterChallengeType={filterChallengeType}
+              filterDate={filterDate}
+              filterSortBy={filterSortBy}
+              filterSortOrder={filterSortOrder}
               status={status}
               loadChallengesByPage={loadChallengesByPage}
               activeProjectId={activeProjectId}
@@ -88,6 +97,7 @@ const ChallengesComponent = ({
               isBillingAccountLoading={isBillingAccountLoading}
               selfService={selfService}
               auth={auth}
+              challengeTypes={challengeTypes}
             />
           )}
         </div>
@@ -105,6 +115,10 @@ ChallengesComponent.propTypes = {
   isLoading: PropTypes.bool,
   warnMessage: PropTypes.string,
   filterChallengeName: PropTypes.string,
+  filterChallengeType: PropTypes.shape(),
+  filterDate: PropTypes.shape(),
+  filterSortBy: PropTypes.string,
+  filterSortOrder: PropTypes.string,
   status: PropTypes.string,
   activeProjectId: PropTypes.number,
   loadChallengesByPage: PropTypes.func.isRequired,
@@ -119,12 +133,14 @@ ChallengesComponent.propTypes = {
   isBillingAccountLoadingFailed: PropTypes.bool,
   isBillingAccountLoading: PropTypes.bool,
   selfService: PropTypes.bool,
-  auth: PropTypes.object.isRequired
+  auth: PropTypes.object.isRequired,
+  challengeTypes: PropTypes.arrayOf(PropTypes.shape())
 }
 
 ChallengesComponent.defaultProps = {
   challenges: [],
-  isLoading: true
+  isLoading: true,
+  challengeTypes: []
 }
 
 export default ChallengesComponent

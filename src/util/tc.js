@@ -244,3 +244,15 @@ export function getFinalScore (submission) {
   }
   return finalScore
 }
+
+/**
+ * Get challenge type abbreviation
+ * @param {Object} challenge challenge info
+ */
+export function getChallengeTypeAbbr (track, challengeTypes) {
+  const type = _.find(challengeTypes, { name: track })
+  if (type) {
+    return type.abbreviation
+  }
+  return null
+}

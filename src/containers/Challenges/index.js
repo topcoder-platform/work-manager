@@ -10,10 +10,9 @@ import { DebounceInput } from 'react-debounce-input'
 import ChallengesComponent from '../../components/ChallengesComponent'
 import ProjectCard from '../../components/ProjectCard'
 import Loader from '../../components/Loader'
-import { loadChallengesByPage, partiallyUpdateChallengeDetails, deleteChallenge } from '../../actions/challenges'
+import { loadChallengesByPage, partiallyUpdateChallengeDetails, deleteChallenge, loadChallengeTypes } from '../../actions/challenges'
 import { loadProject } from '../../actions/projects'
 import { loadProjects, setActiveProject, resetSidebarActiveParams } from '../../actions/sidebar'
-import { CHALLENGE_STATUS } from '../../config/constants'
 import styles from './Challenges.module.scss'
 import { checkAdmin } from '../../util/tc'
 
@@ -29,7 +28,8 @@ class Challenges extends Component {
   }
 
   componentDidMount () {
-    const { activeProjectId, resetSidebarActiveParams, menu, projectId, selfService } = this.props
+    const { activeProjectId, resetSidebarActiveParams, menu, projectId, selfService, loadChallengeTypes } = this.props
+    loadChallengeTypes()
     if (menu === 'NULL' && activeProjectId !== -1) {
       resetSidebarActiveParams()
     } else if (projectId || selfService) {
@@ -51,7 +51,7 @@ class Challenges extends Component {
     const { activeProjectId, projectDetail: reduxProjectInfo, projectId, challengeProjectId, loadProject, selfService } = props
     if (activeProjectId !== challengeProjectId || selfService) {
       const isAdmin = checkAdmin(this.props.auth.token)
-      this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, CHALLENGE_STATUS.ACTIVE, '', selfService, isAdmin ? null : this.props.auth.user.handle)
+      this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, '', '', selfService, isAdmin ? null : this.props.auth.user.handle)
       const projectLoading = window.localStorage.getItem('projectLoading') !== null
       if (!selfService && (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId) && !projectLoading
       ) {
@@ -79,6 +79,10 @@ class Challenges extends Component {
       isLoading,
       warnMessage,
       filterChallengeName,
+      filterChallengeType,
+      filterDate,
+      filterSortBy,
+      filterSortOrder,
       projects,
       activeProjectId,
       status,
@@ -96,9 +100,11 @@ class Challenges extends Component {
       isBillingAccountLoadingFailed,
       isBillingAccountLoading,
       selfService,
-      auth
+      auth,
+      metadata
     } = this.props
     const { searchProjectName, onlyMyProjects } = this.state
+    const { challengeTypes = [] } = metadata
     const projectInfo = _.find(projects, { id: activeProjectId }) || {}
     const projectComponents = projects.map(p => (
       <li key={p.id}>
@@ -154,6 +160,10 @@ class Challenges extends Component {
           challenges={challenges}
           isLoading={isLoading}
           filterChallengeName={filterChallengeName}
+          filterChallengeType={filterChallengeType}
+          filterDate={filterDate}
+          filterSortBy={filterSortBy}
+          filterSortOrder={filterSortOrder}
           status={status}
           activeProjectId={activeProjectId}
           loadChallengesByPage={loadChallengesByPage}
@@ -169,6 +179,7 @@ class Challenges extends Component {
           isBillingAccountLoading={isBillingAccountLoading}
           selfService={selfService}
           auth={auth}
+          challengeTypes={challengeTypes}
         />
         }
       </Fragment>
@@ -188,6 +199,10 @@ Challenges.propTypes = {
   activeProjectId: PropTypes.number,
   warnMessage: PropTypes.string,
   filterChallengeName: PropTypes.string,
+  filterChallengeType: PropTypes.shape(),
+  filterDate: PropTypes.shape(),
+  filterSortBy: PropTypes.string,
+  filterSortOrder: PropTypes.string,
   status: PropTypes.string,
   resetSidebarActiveParams: PropTypes.func,
   page: PropTypes.number.isRequired,
@@ -203,7 +218,11 @@ Challenges.propTypes = {
   isBillingAccountLoadingFailed: PropTypes.bool,
   isBillingAccountLoading: PropTypes.bool,
   selfService: PropTypes.bool,
-  auth: PropTypes.object.isRequired
+  auth: PropTypes.object.isRequired,
+  loadChallengeTypes: PropTypes.func,
+  metadata: PropTypes.shape({
+    challengeTypes: PropTypes.array
+  })
 }
 
 const mapStateToProps = ({ challenges, sidebar, projects, auth }) => ({
@@ -217,7 +236,8 @@ const mapStateToProps = ({ challenges, sidebar, projects, auth }) => ({
   billingEndDate: projects.billingEndDate,
   isBillingAccountLoadingFailed: projects.isBillingAccountLoadingFailed,
   isBillingAccountLoading: projects.isBillingAccountLoading,
-  auth: auth
+  auth: auth,
+  metadata: challenges.metadata
 })
 
 const mapDispatchToProps = {
@@ -225,6 +245,7 @@ const mapDispatchToProps = {
   resetSidebarActiveParams,
   loadProject,
   loadProjects,
+  loadChallengeTypes,
   setActiveProject,
   partiallyUpdateChallengeDetails,
   deleteChallenge

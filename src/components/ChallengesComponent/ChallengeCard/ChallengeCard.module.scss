@@ -1,144 +1,59 @@
 @import "../../../styles/includes";
 
 .item {
-  width: 100%;
   display: flex;
-  justify-content: space-between;
-  font-size: 16px;
+  font-size: 14px;
+  gap: 30px;
   height: 100%;
+  padding: 0 20px;
+
   .editingContainer {
     display: none;
   }
   .iconsContainer {
     display: flex;
   }
-  &:hover {@import "../../../styles/includes";
 
-    .item {
-      width: 100%;
-      display: flex;
-      justify-content: space-between;
-      font-size: 16px;
-      height: 100%;
-      &:hover {
-        cursor: pointer;
-        background-color: $lighter-gray;
-      }
+  .col1 {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+  }
 
-      .block {
-        color: $text-color;
-        word-break: break-all;
-      }
+  .col2 {
+    display: flex;
+    flex: 2;
+    flex-direction: column;
+    justify-content: center;
+  }
 
-      .light-text {
-        color: $light-text;
-      }
+  .col3 {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: center;
+  }
 
-      .linkGroup {
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
-        padding-left: 20px;
-        padding-right: 20px;
+  .col4 {
+    display: flex;
+    width: 30px;
+    flex-direction: column;
+    justify-content: center;
+  }
 
-        .link,
-        .link:hover,
-        .link:visited {
-          color: $status-blue;
-          margin: 0;
-          text-decoration-line: underline;
-        }
+  .col5 {
+    display: flex;
+    width: 80px;
+    flex-direction: column;
+    justify-content: center;
+  }
 
-        span.link,
-        span.link:hover,
-        span.link:visited {
-          color: $inactive;
-          cursor: default;
-        }
-
-        &.onlyOne {
-          justify-content: center;
-        }
-      }
-
-
-    }
-
-    .icon {
-      vertical-align: bottom;
-    }
-
-    .faIcon {
-      color: $gray;
-      margin-right: 10px;
-      margin-left: 20px;
-    }
-
-    .faIconContainer {
-      flex:1;
-      width: 100%;
-      display: flex;
-      justify-items: flex-end;
-      align-items: center;
-
-      span {
-        flex-grow: 1;
-        flex-shrink: 0;
-        color: $text-color;
-      }
-    }
-
-    .col1 {
-      flex: 6;
-      flex-wrap: nowrap;
-      display: flex;
-      text-decoration: none;
-
-      .name {
-        flex:1;
-        display: flex;
-        flex-direction: column;
-      }
-
-      align-items: center;
-      padding-left: 20px;
-    }
-
-    .col2 {
-      flex: 2;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-decoration: none;
-    }
-
-    .col3 {
-      flex: 2;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
-
-    .col4 {
-      flex: 2;
-      display: flex;
-      flex-wrap: wrap;
-      width: 100%;
-      align-items: center;
-      padding-right: 20px;
-      justify-content: center;
-    }
-
-    cursor: pointer;
-    background-color: $lighter-gray;
-
-    .editingContainer {
-      display: flex;
-    }
-    .iconsContainer {
-      display: none;
-    }
+  .col6 {
+    display: flex;
+    width: 40px;
+    flex-direction: column;
+    justify-content: center;
   }
 
   .block {
@@ -303,54 +218,6 @@
     flex-shrink: 0;
     color: $text-color;
   }
-}
-
-.col1 {
-  flex: 6;
-  flex-wrap: nowrap;
-  display: flex;
-
-  .name {
-    flex:1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  align-items: center;
-  padding-left: 20px;
-}
-
-.col2 {
-  flex: 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-
-  .statusText {
-    color: $text-color;
-    font-size: 14px;
-    overflow-wrap: break-word;
-    word-wrap: break-word;
-    //hyphens: auto;
-    max-width: 100px;
-  }
-}
-
-.col3 {
-  flex: 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.col4 {
-  flex: 2;
-  display: flex;
-  flex-wrap: wrap;
-  width: 100%;
-  align-items: center;
-  padding-right: 20px;
 }
 
 .modalContainer {

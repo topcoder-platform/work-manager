@@ -1,11 +1,13 @@
 /**
  * Component to render list of challenges
  */
-import { debounce, map } from 'lodash'
+import _, { debounce, map } from 'lodash'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { DebounceInput } from 'react-debounce-input'
-import { Tab, Tabs, TabList, TabPanel } from 'react-tabs'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faFile, faUser } from '@fortawesome/free-solid-svg-icons'
+import DateTime from '@nateradebaugh/react-datetime'
 import Pagination from 'react-js-pagination'
 import cn from 'classnames'
 
@@ -16,6 +18,8 @@ import styles from './ChallengeList.module.scss'
 import NoChallenge from '../NoChallenge'
 import ChallengeCard from '../ChallengeCard'
 import Message from '../Message'
+import SortIcon from '../../../assets/images/sort-icon.svg'
+import Select from '../../Select'
 
 import {
   CHALLENGE_STATUS
@@ -33,7 +37,12 @@ class ChallengeList extends Component {
     super(props)
     this.state = {
       searchText: this.props.filterChallengeName,
-      errorMessage: null
+      errorMessage: null,
+      sortBy: this.props.filterSortBy || 'startDate',
+      sortOrder: this.props.filterSortOrder || 'desc',
+      challengeStatus: this.props.status,
+      challengeType: this.props.filterChallengeType,
+      challengeDate: this.props.filterDate
     }
     this.directUpdateSearchParam = this.updateSearchParam.bind(this) // update search param without debounce
     this.handlePageChange = this.handlePageChange.bind(this) // update search param without debounce
@@ -41,6 +50,8 @@ class ChallengeList extends Component {
     this.hideError = this.hideError.bind(this)
     this.reloadChallengeList = this.reloadChallengeList.bind(this)
     this.updateSearchParam = debounce(this.updateSearchParam.bind(this), 1000)
+    this.updateSort = this.updateSort.bind(this)
+    this.update = debounce(this.updateSearchParam.bind(this), 1000)
   }
 
   /**
@@ -48,11 +59,14 @@ class ChallengeList extends Component {
    * @param {String} searchText search text
    * @param {String} projectStatus project status
    */
-  updateSearchParam (searchText, projectStatus) {
-    const { status, filterChallengeName, loadChallengesByPage, activeProjectId, selfService } = this.props
-    this.setState({ searchText }, () => {
-      if (status !== projectStatus || searchText !== filterChallengeName) {
-        loadChallengesByPage(1, activeProjectId, projectStatus, searchText, selfService, this.getHandle())
+  updateSearchParam (searchText, projectStatus, challengeType = {}, challengeDate = {}) {
+    const { status, filterChallengeName, filterChallengeType, filterDate, loadChallengesByPage, activeProjectId, selfService } = this.props
+    this.setState({ searchText, challengeStatus: projectStatus, challengeType, challengeDate }, () => {
+      if (status !== projectStatus ||
+          searchText !== filterChallengeName ||
+          (challengeType || {}).value !== (filterChallengeType || {}).value ||
+          !_.isEqual(filterDate, challengeDate)) {
+        loadChallengesByPage(1, activeProjectId, projectStatus, searchText, selfService, this.getHandle(), challengeType, challengeDate)
       }
     })
   }
@@ -112,8 +126,48 @@ class ChallengeList extends Component {
     return this.props.auth && this.props.auth.user ? this.props.auth.user.handle : null
   }
 
+  /**
+   * Hide error message
+   */
+  updateSort (name) {
+    const { searchText, challengeType, sortBy, sortOrder, challengeDate } = this.state
+    const { page, activeProjectId, status, selfService, loadChallengesByPage } = this.props
+    let order = sortOrder === 'asc' ? 'desc' : 'asc'
+
+    if (sortBy !== name) {
+      order = 'desc'
+    }
+
+    loadChallengesByPage(
+      page,
+      activeProjectId,
+      status,
+      searchText,
+      selfService,
+      this.getHandle(),
+      challengeType,
+      challengeDate,
+      name,
+      order
+    )
+
+    this.setState({
+      sortBy: name,
+      sortOrder: order
+    })
+  }
+
   render () {
-    const { searchText, errorMessage } = this.state
+    const {
+      searchText,
+      errorMessage,
+      sortBy,
+      sortOrder,
+      challengeStatus,
+      challengeType,
+      challengeDate
+    } = this.state
+
     const {
       activeProject,
       warnMessage,
@@ -129,11 +183,30 @@ class ChallengeList extends Component {
       billingEndDate,
       isBillingAccountLoadingFailed,
       isBillingAccountLoading,
-      selfService
+      selfService,
+      challengeTypes
     } = this.props
     if (warnMessage) {
       return <Message warnMessage={warnMessage} />
     }
+
+    const statusOptions = _.map(CHALLENGE_STATUS, (item) => (
+      {
+        label: _.capitalize(item),
+        value: _.capitalize(item)
+      }
+    ))
+
+    statusOptions.unshift({
+      label: 'All Challenge Status',
+      value: null
+    })
+
+    const challengeTypesOptions = challengeTypes.map(item => ({ label: item.name, value: item.abbreviation }))
+    challengeTypesOptions.unshift({
+      label: 'All Challenge Types',
+      value: null
+    })
 
     let selectedTab = 0
     switch (status) {
@@ -195,57 +268,84 @@ class ChallengeList extends Component {
               minLength={2}
               debounceTimeout={300}
               placeholder='Search Challenges'
-              onChange={(e) => this.updateSearchParam(e.target.value, status)}
+              onChange={(e) => this.updateSearchParam(e.target.value, status, challengeType, challengeDate)}
               value={searchText}
             />
           </div>
         </div>
-        {activeProject && (<Tabs
-          selectedIndex={selectedTab}
-          className={styles.tabsContainer}
-          onSelect={(index) => {
-            switch (index) {
-              case 0: {
-                this.directUpdateSearchParam(searchText, CHALLENGE_STATUS.ACTIVE)
-                break
-              }
-              case 1: {
-                const status = selfService ? CHALLENGE_STATUS.APPROVED : CHALLENGE_STATUS.NEW
-                this.directUpdateSearchParam(searchText, status)
-                break
-              }
-              case 2: {
-                this.directUpdateSearchParam(searchText, CHALLENGE_STATUS.DRAFT)
-                break
-              }
-              case 3: {
-                const status = selfService ? CHALLENGE_STATUS.NEW : CHALLENGE_STATUS.COMPLETED
-                this.directUpdateSearchParam(searchText, status)
-                break
-              }
-              case 4: {
-                this.directUpdateSearchParam(searchText, CHALLENGE_STATUS.CANCELLED)
-                break
-              }
-            }
-          }}>
-          {
-            selfService && <h4>Total Challenges: {totalChallenges}</h4>
-          }
-          <TabList>
-            <Tab>{(selfService ? 'Assigned challenges' : 'Active')}</Tab>
-            <Tab>{(selfService ? 'Approved' : 'New')}</Tab>
-            <Tab>{this.getStatusTextFunc(selfService)(CHALLENGE_STATUS.DRAFT)}</Tab>
-            {(!selfService && <Tab>Completed</Tab>)}
-            {(!selfService && <Tab>Cancelled</Tab>)}
-            {
-              selfService && checkAdmin(this.props.auth.token) && <Tab>Draft</Tab>
-            }
-          </TabList>
-          <TabPanel />
-          <TabPanel />
-          <TabPanel />
-        </Tabs>)}
+        <div className={styles.row}>
+          <div className={'col-6'}>
+            <div className={cn(styles.field, styles.input1)}>
+              <label htmlFor='status'>Challenge Status :</label>
+            </div>
+            <div className={cn(styles.field, styles.input2)}>
+              <Select
+                name='challengeStatus'
+                options={statusOptions}
+                placeholder='All Challenge Status'
+                value={challengeStatus ? { label: challengeStatus, value: challengeStatus } : null}
+                onChange={(e) => this.updateSearchParam(searchText, e.value, challengeType, challengeDate)}
+              />
+            </div>
+          </div>
+          <div className={'col-6'}>
+            <div className={cn(styles.field, styles.input1)}>
+              <label htmlFor='startDate'>Start Date :</label>
+            </div>
+            <div className={cn(styles.field, styles.input2)}>
+              <DateTime
+                className={styles.dateTimeInput}
+                placeholder='Start Date From'
+                value={challengeDate.startDateStart ? challengeDate.startDateStart : null}
+                onChange={(e) => this.updateSearchParam(searchText, status, challengeType, { ...challengeDate, startDateStart: e })}
+              />
+              <label className={cn(styles.field, styles.to)}>To: </label>
+              <DateTime
+                className={styles.dateTimeInput}
+                placeholder='Start Date To'
+                value={challengeDate.startDateEnd ? challengeDate.startDateEnd : null}
+                onChange={(e) => this.updateSearchParam(searchText, status, challengeType, { ...challengeDate, startDateEnd: e })}
+              />
+            </div>
+          </div>
+        </div>
+        <div className={styles.row}>
+          <div className={'col-6'}>
+            <div className={cn(styles.field, styles.input1)}>
+              <label htmlFor='type'>Challenge Type :</label>
+            </div>
+            <div className={cn(styles.field, styles.input2)}>
+              <Select
+                name='challengeTypes'
+                options={challengeTypesOptions}
+                placeholder='All Challenge Types'
+                value={_.isEmpty(challengeType) ? null : challengeType}
+                onChange={(e) => this.updateSearchParam(searchText, challengeStatus, e, challengeDate)}
+              />
+            </div>
+          </div>
+
+          <div className={'col-6'}>
+            <div className={cn(styles.field, styles.input1)}>
+              <label htmlFor='endDate'>End Date :</label>
+            </div>
+            <div className={cn(styles.field, styles.input2)}>
+              <DateTime
+                className={styles.dateTimeInput}
+                placeholder='End Date From'
+                value={challengeDate.endDateStart ? challengeDate.endDateStart : null}
+                onChange={(e) => this.updateSearchParam(searchText, status, challengeType, { ...challengeDate, endDateStart: e })}
+              />
+              <label className={cn(styles.field, styles.to)}>To: </label>
+              <DateTime
+                className={styles.dateTimeInput}
+                placeholder='End Date To'
+                value={challengeDate.endDateEnd ? challengeDate.endDateEnd : null}
+                onChange={(e) => this.updateSearchParam(searchText, status, challengeType, { ...challengeDate, endDateEnd: e })}
+              />
+            </div>
+          </div>
+        </div>
         {
           challenges.length === 0 && (
             <NoChallenge
@@ -257,11 +357,56 @@ class ChallengeList extends Component {
         {
           challenges.length > 0 && (
             <div className={styles.header}>
-              <div className={styles.col1}>Challenge Name</div>
-              <div className={styles.col2}>Last Updated</div>
-              <div className={styles.col2}>Status</div>
-              {(selectedTab === 0) && (<div className={styles.col3}>Current phase</div>)}
-              <div className={styles.col4}>&nbsp;</div>
+              <div className={cn(styles.col5, styles.sortable)}>
+                Challenge Type
+              </div>
+              <div className={cn(styles.col2, styles.sortable)} onClick={() => this.updateSort('name')}>
+                <span className={styles.filterItem}>
+                  Challenge Name
+                  {
+                    sortBy === 'name' && (
+                      <img className={cn(styles.sortIcon, sortOrder === 'asc' ? styles.asc : '')} src={SortIcon} />
+                    )
+                  }
+                </span>
+              </div>
+              <div className={cn(styles.col3, styles.sortable)} onClick={() => this.updateSort('startDate')}>
+                <span className={styles.filterItem}>
+                  Start Date
+                  {
+                    sortBy === 'startDate' && (
+                      <img className={cn(styles.sortIcon, sortOrder === 'asc' ? styles.asc : '')} src={SortIcon} />
+                    )
+                  }
+                </span>
+              </div>
+              <div className={cn(styles.col3, styles.sortable)} onClick={() => this.updateSort('endDate')}>
+                <span className={styles.filterItem}>
+                  End Date
+                  {
+                    sortBy === 'endDate' && (
+                      <img className={cn(styles.sortIcon, sortOrder === 'asc' ? styles.asc : '')} src={SortIcon} />
+                    )
+                  }
+                </span>
+              </div>
+              <div className={cn(styles.col4, styles.sortable)}>
+                <span className={styles.filterItem}>
+                  <FontAwesomeIcon icon={faUser} className={styles.faIcon} />
+                </span>
+              </div>
+              <div className={cn(styles.col4, styles.sortable)}>
+                <FontAwesomeIcon icon={faFile} className={styles.faIcon} />
+              </div>
+              <div className={cn(styles.col4, styles.sortable)}>
+                  Forums
+              </div>
+              <div className={cn(styles.col3, styles.sortable)}>
+                  Status
+              </div>
+              <div className={styles.col6}>Edit</div>
+              <div className={styles.col6}>OR</div>
+              <div className={styles.col6}>CA</div>
             </div>
           )
         }
@@ -279,8 +424,9 @@ class ChallengeList extends Component {
                         partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
                         deleteChallenge={deleteChallenge}
                         isBillingAccountExpired={isBillingAccountExpired}
-                        disableHover={selfService}
+                        disableHover
                         getStatusText={this.getStatusTextFunc(selfService)}
+                        challengeTypes={challengeTypes}
                       />
                     </li>
                   )
@@ -317,6 +463,10 @@ ChallengeList.propTypes = {
   }),
   warnMessage: PropTypes.string,
   filterChallengeName: PropTypes.string,
+  filterChallengeType: PropTypes.shape(),
+  filterDate: PropTypes.shape(),
+  filterSortBy: PropTypes.string,
+  filterSortOrder: PropTypes.string,
   status: PropTypes.string,
   activeProjectId: PropTypes.number,
   loadChallengesByPage: PropTypes.func.isRequired,
@@ -331,7 +481,8 @@ ChallengeList.propTypes = {
   isBillingAccountLoadingFailed: PropTypes.bool,
   isBillingAccountLoading: PropTypes.bool,
   selfService: PropTypes.bool,
-  auth: PropTypes.object.isRequired
+  auth: PropTypes.object.isRequired,
+  challengeTypes: PropTypes.arrayOf(PropTypes.shape()).isRequired
 }
 
 export default ChallengeList

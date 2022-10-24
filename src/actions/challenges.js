@@ -59,7 +59,18 @@ import { removeChallengeFromPhaseProduct, saveChallengeAsPhaseProduct } from '..
 /**
  * Loads active challenges of project by page
  */
-export function loadChallengesByPage (page, projectId, status, filterChallengeName = null, selfService = false, userHandle = null) {
+export function loadChallengesByPage (
+  page,
+  projectId,
+  status,
+  filterChallengeName = null,
+  selfService = false,
+  userHandle = null,
+  filterChallengeType = {},
+  filterDate = {},
+  filterSortBy = null,
+  filterSortOrder = null
+) {
   return (dispatch, getState) => {
     dispatch({
       type: LOAD_CHALLENGES_PENDING,
@@ -67,13 +78,38 @@ export function loadChallengesByPage (page, projectId, status, filterChallengeNa
       projectId: projectId,
       status,
       filterChallengeName,
+      filterChallengeType,
+      filterDate,
+      filterSortBy,
+      filterSortOrder,
       perPage: PAGE_SIZE,
       page
     })
 
     const filters = {
-      sortBy: 'updated',
+      sortBy: 'startDate',
       sortOrder: 'desc'
+    }
+    if (_.isObject(filterChallengeType) && filterChallengeType.value) {
+      filters['type'] = filterChallengeType.value
+    }
+    if (_.isObject(filterDate) && filterDate.startDateStart) {
+      filters['startDateStart'] = filterDate.startDateStart
+    }
+    if (_.isObject(filterDate) && filterDate.startDateEnd) {
+      filters['startDateEnd'] = filterDate.startDateEnd
+    }
+    if (_.isObject(filterDate) && filterDate.endDateStart) {
+      filters['endDateStart'] = filterDate.endDateStart
+    }
+    if (_.isObject(filterDate) && filterDate.endDateEnd) {
+      filters['endDateEnd'] = filterDate.endDateEnd
+    }
+    if (filterSortBy) {
+      filters['sortBy'] = filterSortBy
+    }
+    if (filterSortOrder) {
+      filters['sortOrder'] = filterSortOrder
     }
     if (!_.isEmpty(filterChallengeName)) {
       filters['name'] = filterChallengeName
@@ -113,14 +149,24 @@ export function loadChallengesByPage (page, projectId, status, filterChallengeNa
 /**
  * Loads active challenges of project
  */
-export function loadChallenges (projectId, status, filterChallengeName = null) {
+export function loadChallenges (
+  projectId,
+  status,
+  filterChallengeName = null,
+  filterChallengeType = null,
+  filterSortBy,
+  filterSortOrder
+) {
   return (dispatch, getState) => {
     dispatch({
       type: LOAD_CHALLENGES_PENDING,
       challenges: [],
       projectId: projectId ? `${projectId}` : '',
       status,
-      filterChallengeName
+      filterChallengeName,
+      filterChallengeType,
+      filterSortBy,
+      filterSortOrder
     })
 
     const filters = {}
