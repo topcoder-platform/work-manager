@@ -594,7 +594,7 @@ class ChallengeList extends Component {
         {challenges.length > 0 && (
           <div className={styles.header}>
             <div className={cn(styles.col5, styles.sortable)}>
-              Challenge Type
+              Type
             </div>
             <div
               className={cn(styles.col2, styles.sortable)}
@@ -657,9 +657,9 @@ class ChallengeList extends Component {
             </div>
             <div className={cn(styles.col4, styles.sortable)}>Forums</div>
             <div className={cn(styles.col3, styles.sortable)}>Status</div>
-            <div className={styles.col6}>Edit</div>
-            <div className={styles.col6}>OR</div>
-            <div className={styles.col6}>CA</div>
+            <div className={styles.col6}></div>
+            <div className={styles.col6}></div>
+            <div className={styles.col6}></div>
           </div>
         )}
         {challenges.length > 0 && (
