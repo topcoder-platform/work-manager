@@ -1,32 +1,18 @@
 .container {
   display: flex;
+  flex-direction: column;
 
   &.scrollIndependent {
 
-    .sidebar,
     .content {
-      min-height: 0;
-      height: 100vh;
-      overflow: auto;
+      // min-height: 0;
+      // height: 100vh;
+      // overflow: auto;
     }
   }
 }
 
-.sidebar {
-  height: 100vh;
-  position: relative;
-  width: 280px;
-
-  @media screen and (max-width: 300px * 4) {
-    width: auto;
-    flex: 1;
-  }
-
-}
-
 .content {
-  /* minus sidebar width and minus sidebar border width */
-  width: calc(100% - 280px);
   max-height: 100vh;
   display: flex;
   position: relative;

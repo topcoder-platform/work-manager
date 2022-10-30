@@ -200,7 +200,7 @@ class ChallengeCard extends React.Component {
 
   render () {
     const { isLaunch, isConfirm, isSaving, isDeleteLaunch, isCheckChalengePermission, hasEditChallengePermission } = this.state
-    const { challenge, reloadChallengeList, isBillingAccountExpired, disableHover, getStatusText, challengeTypes } = this.props
+    const { setActiveProject, challenge, reloadChallengeList, isBillingAccountExpired, disableHover, getStatusText, challengeTypes } = this.props
     const deleteMessage = isCheckChalengePermission
       ? 'Checking permissions...'
       : `Do you want to delete "${challenge.name}"?`
@@ -255,7 +255,7 @@ class ChallengeCard extends React.Component {
           <ChallengeTag type={challenge.type} challengeTypes={challengeTypes} />
         </div>
 
-        <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
+        <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`} onClick={() => setActiveProject(parseInt(challenge.projectId))}>
           <div className={styles.name}>
             <span className={styles.block}>{challenge.name}</span>
           </div>
@@ -294,13 +294,15 @@ class ChallengeCard extends React.Component {
 
 ChallengeCard.defaultPrps = {
   reloadChallengeList: () => { },
-  challengeTypes: []
+  challengeTypes: [],
+  setActiveProject: () => {}
 }
 
 ChallengeCard.propTypes = {
   challenge: PropTypes.object,
   reloadChallengeList: PropTypes.func,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
+  setActiveProject: PropTypes.func,
   deleteChallenge: PropTypes.func.isRequired,
   isBillingAccountExpired: PropTypes.bool,
   disableHover: PropTypes.bool,

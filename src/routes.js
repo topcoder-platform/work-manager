@@ -8,7 +8,7 @@ import _ from 'lodash'
 import { BETA_MODE_COOKIE_TAG } from './config/constants'
 import renderApp from './components/App'
 import TopBarContainer from './containers/TopbarContainer'
-import Sidebar from './containers/Sidebar'
+import Tab from './containers/Tab'
 import Challenges from './containers/Challenges'
 import ChallengeEditor from './containers/ChallengeEditor'
 import { getFreshToken, decodeToken } from 'tc-auth-lib'
@@ -155,7 +155,7 @@ class Routes extends React.Component {
             render={() => renderApp(
               <Challenges menu='NULL' warnMessage={'You are not authorized to use this application'} />,
               <TopBarContainer />,
-              <Sidebar />
+              <Tab />
             )()}
           />
           <Redirect to='/' />
@@ -163,23 +163,30 @@ class Routes extends React.Component {
         {isAllowed && <Switch>
           <Route exact path='/'
             render={() => renderApp(
-              <Challenges menu='NULL' />,
+              <Challenges dashboard key='dashboard' />,
               <TopBarContainer />,
-              <Sidebar />
+              <Tab />
+            )()}
+          />
+          <Route exact path='/projects'
+            render={() => renderApp(
+              <Challenges menu='NULL' key='projects' />,
+              <TopBarContainer />,
+              <Tab />
             )()}
           />
           <Route exact path='/self-service'
             render={() => renderApp(
               <Challenges selfService />,
               <TopBarContainer />,
-              <Sidebar selfService />
+              <Tab selfService />
             )()}
           />
           <Route exact path='/projects/:projectId/challenges/new'
             render={({ match }) => renderApp(
               <ChallengeEditor />,
               <TopBarContainer />,
-              <Sidebar projectId={match.params.projectId} menu={'New Challenge'} />
+              <Tab projectId={match.params.projectId} menu={'New Challenge'} />
             )()} />
           <Route exact path='/challenges/:challengeId' component={ConnectRedirectToChallenge} />
           <Route
@@ -187,13 +194,13 @@ class Routes extends React.Component {
             render={({ match }) => renderApp(
               <ChallengeEditor />,
               <TopBarContainer />,
-              <Sidebar projectId={match.params.projectId} menu={'New Challenge'} />
+              <Tab projectId={match.params.projectId} menu={'New Challenge'} />
             )()} />
           <Route exact path='/projects/:projectId/challenges'
             render={({ match }) => renderApp(
-              <Challenges projectId={match.params.projectId} />,
+              <Challenges projectId={match.params.projectId} key='challenges' />,
               <TopBarContainer projectId={match.params.projectId} />,
-              <Sidebar projectId={match.params.projectId} />
+              <Tab projectId={match.params.projectId} />
             )()} />
           {/* If path is not defined redirect to landing page */}
           <Redirect to='/' />

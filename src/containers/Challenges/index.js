@@ -10,9 +10,18 @@ import { DebounceInput } from 'react-debounce-input'
 import ChallengesComponent from '../../components/ChallengesComponent'
 import ProjectCard from '../../components/ProjectCard'
 import Loader from '../../components/Loader'
-import { loadChallengesByPage, partiallyUpdateChallengeDetails, deleteChallenge, loadChallengeTypes } from '../../actions/challenges'
+import {
+  loadChallengesByPage,
+  partiallyUpdateChallengeDetails,
+  deleteChallenge,
+  loadChallengeTypes
+} from '../../actions/challenges'
 import { loadProject } from '../../actions/projects'
-import { loadProjects, setActiveProject, resetSidebarActiveParams } from '../../actions/sidebar'
+import {
+  loadProjects,
+  setActiveProject,
+  resetSidebarActiveParams
+} from '../../actions/sidebar'
 import styles from './Challenges.module.scss'
 import { checkAdmin } from '../../util/tc'
 
@@ -28,12 +37,23 @@ class Challenges extends Component {
   }
 
   componentDidMount () {
-    const { activeProjectId, resetSidebarActiveParams, menu, projectId, selfService, loadChallengeTypes } = this.props
+    const {
+      dashboard,
+      activeProjectId,
+      resetSidebarActiveParams,
+      menu,
+      projectId,
+      selfService,
+      loadChallengeTypes
+    } = this.props
     loadChallengeTypes()
+    if (dashboard) {
+      this.reloadChallenges(this.props, true)
+    }
     if (menu === 'NULL' && activeProjectId !== -1) {
       resetSidebarActiveParams()
     } else if (projectId || selfService) {
-      if (projectId) {
+      if (projectId && projectId !== -1) {
         window.localStorage.setItem('projectLoading', 'true')
         this.props.loadProject(projectId)
       }
@@ -42,18 +62,40 @@ class Challenges extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    if (this.props.activeProjectId !== nextProps.activeProjectId) {
+    if (
+      (nextProps.dashboard && this.props.dashboard !== nextProps.dashboard) ||
+      this.props.activeProjectId !== nextProps.activeProjectId
+    ) {
       this.reloadChallenges(nextProps)
     }
   }
 
-  reloadChallenges (props) {
-    const { activeProjectId, projectDetail: reduxProjectInfo, projectId, challengeProjectId, loadProject, selfService } = props
-    if (activeProjectId !== challengeProjectId || selfService) {
+  reloadChallenges (props, forceLoad) {
+    const {
+      activeProjectId,
+      projectDetail: reduxProjectInfo,
+      projectId,
+      dashboard,
+      challengeProjectId,
+      loadProject,
+      selfService
+    } = props
+    if (activeProjectId !== challengeProjectId || selfService || forceLoad) {
       const isAdmin = checkAdmin(this.props.auth.token)
-      this.props.loadChallengesByPage(1, projectId ? parseInt(projectId) : -1, '', '', selfService, isAdmin ? null : this.props.auth.user.handle)
-      const projectLoading = window.localStorage.getItem('projectLoading') !== null
-      if (!selfService && (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId) && !projectLoading
+      this.props.loadChallengesByPage(
+        1,
+        projectId ? parseInt(projectId) : -1,
+        dashboard ? 'all' : '',
+        '',
+        selfService,
+        isAdmin ? null : this.props.auth.user.handle
+      )
+      const projectLoading =
+        window.localStorage.getItem('projectLoading') !== null
+      if (
+        !selfService &&
+        (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId) &&
+        !projectLoading
       ) {
         loadProject(projectId)
       } else {
@@ -69,7 +111,10 @@ class Challenges extends Component {
 
   toggleMyProjects (evt) {
     this.setState({ onlyMyProjects: evt.target.checked }, () => {
-      this.props.loadProjects(this.state.searchProjectName, this.state.onlyMyProjects)
+      this.props.loadProjects(
+        this.state.searchProjectName,
+        this.state.onlyMyProjects
+      )
     })
   }
 
@@ -83,6 +128,7 @@ class Challenges extends Component {
       filterDate,
       filterSortBy,
       filterSortOrder,
+      filterProjectOption,
       projects,
       activeProjectId,
       status,
@@ -99,6 +145,7 @@ class Challenges extends Component {
       billingEndDate,
       isBillingAccountLoadingFailed,
       isBillingAccountLoading,
+      dashboard,
       selfService,
       auth,
       metadata
@@ -106,82 +153,89 @@ class Challenges extends Component {
     const { searchProjectName, onlyMyProjects } = this.state
     const { challengeTypes = [] } = metadata
     const projectInfo = _.find(projects, { id: activeProjectId }) || {}
-    const projectComponents = projects.map(p => (
-      <li key={p.id}>
-        <ProjectCard
-          projectName={p.name}
-          projectId={p.id}
-          selected={activeProjectId === `${p.id}`}
-          setActiveProject={setActiveProject}
-        />
-      </li>
-    ))
+    const projectComponents =
+      !dashboard &&
+      projects.map(p => (
+        <li key={p.id}>
+          <ProjectCard
+            projectName={p.name}
+            projectId={p.id}
+            selected={activeProjectId === `${p.id}`}
+            setActiveProject={setActiveProject}
+          />
+        </li>
+      ))
     return (
       <Fragment>
         <div className={styles.projectSearch}>
-          {
-            !selfService && (
-              <div className={styles.projectSearchHeader}>
-                <label>Switch Project</label>
+          {!selfService && (
+            <div className={styles.projectSearchHeader}>
+              {!dashboard && <label>Switch Project</label>}
+              {!dashboard && (
                 <DebounceInput
                   minLength={2}
                   debounceTimeout={300}
                   placeholder='Search projects (Enter project id or project title in double quotes or any text from project)'
-                  onChange={(e) => this.updateProjectName(e.target.value)}
+                  onChange={e => this.updateProjectName(e.target.value)}
                   value={searchProjectName}
                 />
-                <input
-                  type='checkbox'
-                  label='My Projects'
-                  checked={onlyMyProjects}
-                  onChange={this.toggleMyProjects}
-                />
-                <label>My Projects</label>
-              </div>
-            )
-          }
-          {
-            activeProjectId === -1 && !selfService && <div>No project selected. Select one below</div>
-          }
-          {
-            isLoading ? <Loader /> : (
-              <ul>
-                {projectComponents}
-              </ul>
-            )
-          }
+              )}
+              <input
+                type='checkbox'
+                label='My Projects'
+                checked={onlyMyProjects}
+                onChange={this.toggleMyProjects}
+              />
+              <label>My Projects</label>
+            </div>
+          )}
+          {!dashboard && activeProjectId === -1 && !selfService && (
+            <div>No project selected. Select one below</div>
+          )}
+          {dashboard ? null : isLoading ? (
+            <Loader />
+          ) : (
+            <ul>{projectComponents}</ul>
+          )}
         </div>
-        {(activeProjectId !== -1 || selfService) && <ChallengesComponent
-          activeProject={({
-            ...projectInfo,
-            ...((reduxProjectInfo && reduxProjectInfo.id === activeProjectId) ? reduxProjectInfo : {})
-          })}
-          warnMessage={warnMessage}
-          challenges={challenges}
-          isLoading={isLoading}
-          filterChallengeName={filterChallengeName}
-          filterChallengeType={filterChallengeType}
-          filterDate={filterDate}
-          filterSortBy={filterSortBy}
-          filterSortOrder={filterSortOrder}
-          status={status}
-          activeProjectId={activeProjectId}
-          loadChallengesByPage={loadChallengesByPage}
-          page={page}
-          perPage={perPage}
-          totalChallenges={totalChallenges}
-          partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
-          deleteChallenge={deleteChallenge}
-          isBillingAccountExpired={isBillingAccountExpired}
-          billingStartDate={billingStartDate}
-          billingEndDate={billingEndDate}
-          isBillingAccountLoadingFailed={isBillingAccountLoadingFailed}
-          isBillingAccountLoading={isBillingAccountLoading}
-          selfService={selfService}
-          auth={auth}
-          challengeTypes={challengeTypes}
-        />
-        }
+        {(dashboard || activeProjectId !== -1 || selfService) && (
+          <ChallengesComponent
+            activeProject={{
+              ...projectInfo,
+              ...(reduxProjectInfo && reduxProjectInfo.id === activeProjectId
+                ? reduxProjectInfo
+                : {})
+            }}
+            warnMessage={warnMessage}
+            setActiveProject={setActiveProject}
+            dashboard={dashboard}
+            challenges={challenges}
+            isLoading={isLoading}
+            filterChallengeName={filterChallengeName}
+            projects={projects}
+            filterChallengeType={filterChallengeType}
+            filterDate={filterDate}
+            filterProjectOption={filterProjectOption}
+            filterSortBy={filterSortBy}
+            filterSortOrder={filterSortOrder}
+            status={status}
+            activeProjectId={activeProjectId}
+            loadChallengesByPage={loadChallengesByPage}
+            page={page}
+            perPage={perPage}
+            totalChallenges={totalChallenges}
+            partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
+            deleteChallenge={deleteChallenge}
+            isBillingAccountExpired={isBillingAccountExpired}
+            billingStartDate={billingStartDate}
+            billingEndDate={billingEndDate}
+            isBillingAccountLoadingFailed={isBillingAccountLoadingFailed}
+            isBillingAccountLoading={isBillingAccountLoading}
+            selfService={selfService}
+            auth={auth}
+            challengeTypes={challengeTypes}
+          />
+        )}
       </Fragment>
     )
   }
@@ -198,8 +252,9 @@ Challenges.propTypes = {
   projectId: PropTypes.string,
   activeProjectId: PropTypes.number,
   warnMessage: PropTypes.string,
-  filterChallengeName: PropTypes.string,
   filterChallengeType: PropTypes.shape(),
+  filterChallengeName: PropTypes.string,
+  filterProjectOption: PropTypes.shape(),
   filterDate: PropTypes.shape(),
   filterSortBy: PropTypes.string,
   filterSortOrder: PropTypes.string,
@@ -218,6 +273,7 @@ Challenges.propTypes = {
   isBillingAccountLoadingFailed: PropTypes.bool,
   isBillingAccountLoading: PropTypes.bool,
   selfService: PropTypes.bool,
+  dashboard: PropTypes.bool,
   auth: PropTypes.object.isRequired,
   loadChallengeTypes: PropTypes.func,
   metadata: PropTypes.shape({

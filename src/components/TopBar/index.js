@@ -9,6 +9,7 @@ import { faSignInAlt } from '@fortawesome/free-solid-svg-icons'
 import { get } from 'lodash'
 import styles from './Topbar.module.scss'
 import Handle from '../Handle'
+import TopcoderLogo from '../../assets/images/topcoder-logo.png'
 import { COMMUNITY_APP_URL } from '../../config/constants'
 
 const TopBar = ({ user, hideBottomLine }) => {
@@ -16,6 +17,7 @@ const TopBar = ({ user, hideBottomLine }) => {
     <div
       className={cn(styles.topbar, { [styles['hide-line']]: hideBottomLine })}
     >
+      <img src={TopcoderLogo} className={styles.logo} />
       {user && (
         <div className={styles.details}>
           Welcome,{' '}

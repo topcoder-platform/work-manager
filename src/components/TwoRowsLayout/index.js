@@ -6,9 +6,9 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
 
-import styles from './TwoColsLayout.module.scss'
+import styles from './TwoRowsLayout.module.scss'
 
-const TwoColsLayout = ({
+const TwoRowsLayout = ({
   children,
   scrollIndependent
 }) => (
@@ -17,40 +17,28 @@ const TwoColsLayout = ({
   </div>
 )
 
-TwoColsLayout.Sidebar = ({ children }) => (
-  <aside className={styles.sidebar} id='SidebarContainer'>{children}</aside>
-)
-
-TwoColsLayout.Sidebar.defaultProps = {
-  children: null
-}
-
-TwoColsLayout.Sidebar.propTypes = {
-  children: PropTypes.node
-}
-
-TwoColsLayout.Content = ({ children }) => (
+TwoRowsLayout.Content = ({ children }) => (
   <div className={styles.content}>
     {children}
   </div>
 )
 
-TwoColsLayout.Content.defaultProps = {
+TwoRowsLayout.Content.defaultProps = {
   children: null
 }
 
-TwoColsLayout.Content.propTypes = {
+TwoRowsLayout.Content.propTypes = {
   children: PropTypes.node
 }
 
-TwoColsLayout.defaultProps = {
+TwoRowsLayout.defaultProps = {
   children: null,
   scrollIndependent: false
 }
 
-TwoColsLayout.propTypes = {
+TwoRowsLayout.propTypes = {
   children: PropTypes.node,
   scrollIndependent: PropTypes.bool
 }
 
-export default TwoColsLayout
+export default TwoRowsLayout

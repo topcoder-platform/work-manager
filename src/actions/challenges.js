@@ -72,19 +72,35 @@ export function loadChallengesByPage (
   filterSortOrder = null
 ) {
   return (dispatch, getState) => {
-    dispatch({
-      type: LOAD_CHALLENGES_PENDING,
-      challenges: [],
-      projectId: projectId,
-      status,
-      filterChallengeName,
-      filterChallengeType,
-      filterDate,
-      filterSortBy,
-      filterSortOrder,
-      perPage: PAGE_SIZE,
-      page
-    })
+    if (_.isObject(projectId)) {
+      dispatch({
+        type: LOAD_CHALLENGES_PENDING,
+        challenges: [],
+        status,
+        filterProjectOption: projectId,
+        filterChallengeName,
+        filterChallengeType,
+        filterDate,
+        filterSortBy,
+        filterSortOrder,
+        perPage: PAGE_SIZE,
+        page
+      })
+    } else {
+      dispatch({
+        type: LOAD_CHALLENGES_PENDING,
+        challenges: [],
+        status,
+        projectId,
+        filterChallengeName,
+        filterChallengeType,
+        filterDate,
+        filterSortBy,
+        filterSortOrder,
+        perPage: PAGE_SIZE,
+        page
+      })
+    }
 
     const filters = {
       sortBy: 'startDate',
@@ -116,8 +132,13 @@ export function loadChallengesByPage (
     }
     if (_.isInteger(projectId) && projectId > 0) {
       filters['projectId'] = projectId
+    } else if (_.isObject(projectId) && projectId.value > 0) {
+      filters['projectId'] = projectId.value
     }
-    if (!_.isEmpty(status)) {
+
+    if (status === 'all') {
+      delete filters['status']
+    } else if (!_.isEmpty(status)) {
       filters['status'] = status === '' ? undefined : _.startCase(status.toLowerCase())
     } else if (!(_.isInteger(projectId) && projectId > 0)) {
       filters['status'] = 'Active'

@@ -88,6 +88,7 @@ export default function (state = initialState, action) {
         projectId: action.projectId,
         status: action.status,
         filterChallengeName: action.filterChallengeName,
+        filterProjectOption: action.filterProjectOption,
         filterChallengeType: action.filterChallengeType,
         filterDate: action.filterDate,
         filterSortBy: action.filterSortBy,

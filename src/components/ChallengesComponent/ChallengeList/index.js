@@ -21,9 +21,7 @@ import Message from '../Message'
 import SortIcon from '../../../assets/images/sort-icon.svg'
 import Select from '../../Select'
 
-import {
-  CHALLENGE_STATUS
-} from '../../../config/constants'
+import { CHALLENGE_STATUS } from '../../../config/constants'
 import { checkAdmin } from '../../../util/tc'
 
 require('bootstrap/scss/bootstrap.scss')
@@ -40,6 +38,7 @@ class ChallengeList extends Component {
       errorMessage: null,
       sortBy: this.props.filterSortBy || 'startDate',
       sortOrder: this.props.filterSortOrder || 'desc',
+      challengeProjectOption: this.props.filterProjectOption,
       challengeStatus: this.props.status,
       challengeType: this.props.filterChallengeType,
       challengeDate: this.props.filterDate
@@ -59,16 +58,54 @@ class ChallengeList extends Component {
    * @param {String} searchText search text
    * @param {String} projectStatus project status
    */
-  updateSearchParam (searchText, projectStatus, challengeType = {}, challengeDate = {}) {
-    const { status, filterChallengeName, filterChallengeType, filterDate, loadChallengesByPage, activeProjectId, selfService } = this.props
-    this.setState({ searchText, challengeStatus: projectStatus, challengeType, challengeDate }, () => {
-      if (status !== projectStatus ||
+  updateSearchParam (
+    searchText,
+    projectStatus,
+    challengeType = {},
+    challengeDate = {},
+    projectOption = {}
+  ) {
+    const {
+      dashboard,
+      status,
+      filterChallengeName,
+      filterChallengeType,
+      filterProjectOption,
+      filterDate,
+      loadChallengesByPage,
+      activeProjectId,
+      selfService
+    } = this.props
+    let projectId = dashboard ? projectOption : activeProjectId
+    this.setState(
+      {
+        searchText,
+        projectOption,
+        challengeStatus: projectStatus,
+        challengeType,
+        challengeDate
+      },
+      () => {
+        if (
+          status !== projectStatus ||
           searchText !== filterChallengeName ||
+          (projectOption || {}).value !== (filterProjectOption || {}).value ||
           (challengeType || {}).value !== (filterChallengeType || {}).value ||
-          !_.isEqual(filterDate, challengeDate)) {
-        loadChallengesByPage(1, activeProjectId, projectStatus, searchText, selfService, this.getHandle(), challengeType, challengeDate)
+          !_.isEqual(filterDate, challengeDate)
+        ) {
+          loadChallengesByPage(
+            1,
+            projectId,
+            !projectStatus ? 'all' : projectStatus,
+            searchText,
+            selfService,
+            this.getHandle(),
+            challengeType,
+            challengeDate
+          )
+        }
       }
-    })
+    )
   }
 
   /**
@@ -77,9 +114,30 @@ class ChallengeList extends Component {
    */
   handlePageChange (pageNumber) {
     const { searchText } = this.state
-    const { page, loadChallengesByPage, activeProjectId, status, selfService } = this.props
+    const {
+      page,
+      loadChallengesByPage,
+      activeProjectId,
+      dashboard,
+      filterProjectOption,
+      status,
+      selfService,
+      filterChallengeType,
+      filterDate
+    } = this.props
+
+    let projectId = dashboard ? filterProjectOption : activeProjectId
     if (page !== pageNumber) {
-      loadChallengesByPage(pageNumber, activeProjectId, status, searchText, selfService, this.getHandle())
+      loadChallengesByPage(
+        pageNumber,
+        projectId,
+        status,
+        searchText,
+        selfService,
+        this.getHandle(),
+        filterChallengeType,
+        filterDate
+      )
     }
   }
 
@@ -88,8 +146,21 @@ class ChallengeList extends Component {
    */
   reloadChallengeList () {
     const { searchText } = this.state
-    const { page, loadChallengesByPage, activeProjectId, status, selfService } = this.props
-    loadChallengesByPage(page, activeProjectId, status, searchText, selfService, this.getHandle())
+    const {
+      page,
+      loadChallengesByPage,
+      activeProjectId,
+      status,
+      selfService
+    } = this.props
+    loadChallengesByPage(
+      page,
+      activeProjectId,
+      status,
+      searchText,
+      selfService,
+      this.getHandle()
+    )
   }
 
   /**
@@ -109,7 +180,7 @@ class ChallengeList extends Component {
 
   getStatusTextFunc (selfService) {
     const draftText = selfService ? 'Waiting for approval' : 'Draft'
-    return (status) => {
+    return status => {
       switch (status) {
         case CHALLENGE_STATUS.DRAFT:
           return draftText
@@ -123,24 +194,41 @@ class ChallengeList extends Component {
     if (checkAdmin(this.props.auth.token)) {
       return null
     }
-    return this.props.auth && this.props.auth.user ? this.props.auth.user.handle : null
+    return this.props.auth && this.props.auth.user
+      ? this.props.auth.user.handle
+      : null
   }
 
   /**
    * Hide error message
    */
   updateSort (name) {
-    const { searchText, challengeType, sortBy, sortOrder, challengeDate } = this.state
-    const { page, activeProjectId, status, selfService, loadChallengesByPage } = this.props
+    const {
+      searchText,
+      challengeType,
+      sortBy,
+      sortOrder,
+      challengeDate
+    } = this.state
+    const {
+      page,
+      activeProjectId,
+      status,
+      dashboard,
+      filterProjectOption,
+      selfService,
+      loadChallengesByPage
+    } = this.props
     let order = sortOrder === 'asc' ? 'desc' : 'asc'
 
     if (sortBy !== name) {
       order = 'desc'
     }
 
+    let projectId = dashboard ? filterProjectOption : activeProjectId
     loadChallengesByPage(
       page,
-      activeProjectId,
+      projectId,
       status,
       searchText,
       selfService,
@@ -163,6 +251,7 @@ class ChallengeList extends Component {
       errorMessage,
       sortBy,
       sortOrder,
+      challengeProjectOption,
       challengeStatus,
       challengeType,
       challengeDate
@@ -174,11 +263,14 @@ class ChallengeList extends Component {
       challenges,
       status,
       page,
+      projects,
+      dashboard,
       perPage,
       totalChallenges,
       partiallyUpdateChallengeDetails,
       deleteChallenge,
       isBillingAccountExpired,
+      setActiveProject,
       billingStartDate,
       billingEndDate,
       isBillingAccountLoadingFailed,
@@ -190,19 +282,20 @@ class ChallengeList extends Component {
       return <Message warnMessage={warnMessage} />
     }
 
-    const statusOptions = _.map(CHALLENGE_STATUS, (item) => (
-      {
-        label: _.capitalize(item),
-        value: _.capitalize(item)
-      }
-    ))
+    const statusOptions = _.map(CHALLENGE_STATUS, item => ({
+      label: _.capitalize(item),
+      value: _.capitalize(item)
+    }))
 
     statusOptions.unshift({
       label: 'All Challenge Status',
       value: null
     })
 
-    const challengeTypesOptions = challengeTypes.map(item => ({ label: item.name, value: item.abbreviation }))
+    const challengeTypesOptions = challengeTypes.map(item => ({
+      label: item.name,
+      value: item.abbreviation
+    }))
     challengeTypesOptions.unshift({
       label: 'All Challenge Types',
       value: null
@@ -229,46 +322,118 @@ class ChallengeList extends Component {
 
     let warningModal = null
     if (errorMessage) {
-      warningModal = <Modal theme={theme} onCancel={this.hideError}>
-        <div className={cn(styles.contentContainer, styles.confirm)}>
-          <div className={styles.title}>Error</div>
-          {errorMessage}
-          <div className={styles.buttonGroup}>
-            <div className={styles.buttonSizeA}>
-              <PrimaryButton
-                text={'Close'}
-                type={'info'}
-                onClick={this.hideError}
-              />
+      warningModal = (
+        <Modal theme={theme} onCancel={this.hideError}>
+          <div className={cn(styles.contentContainer, styles.confirm)}>
+            <div className={styles.title}>Error</div>
+            {errorMessage}
+            <div className={styles.buttonGroup}>
+              <div className={styles.buttonSizeA}>
+                <PrimaryButton
+                  text={'Close'}
+                  type={'info'}
+                  onClick={this.hideError}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      </Modal>
+        </Modal>
+      )
+    }
+    let projectOptions
+    let projectOption
+    if (dashboard) {
+      projectOptions = projects.map(p => {
+        return {
+          label: p.name,
+          value: p.id
+        }
+      })
+      projectOptions.unshift({
+        label: 'All Projects',
+        value: -1
+      })
+
+      let projectId = (challengeProjectOption && challengeProjectOption.value) || -1
+      projectOption = projectOptions.find(p => p.value === projectId)
     }
 
     return (
       <div className={styles.list}>
-        <div className={styles.row}>
-          {!isBillingAccountLoading && !isBillingAccountLoadingFailed && !isBillingAccountExpired && (
+        {dashboard && <h2>Active Challenges</h2>}
+        <div className={cn(styles.row, { [styles.dashboardRow]: dashboard })}>
+          {!dashboard &&
+            !isBillingAccountLoading &&
+            !isBillingAccountLoadingFailed &&
+            !isBillingAccountExpired && (
             <div className={'col-9'}>
-              <span className={styles.title}>Billing Account: </span><span className={styles.active}>ACTIVE</span> &nbsp;  <span className={styles.title}>Start Date:</span> {billingStartDate} &nbsp;  <span className={styles.title}>End Date:</span> {billingEndDate}
+              <span className={styles.title}>Billing Account: </span>
+              <span className={styles.active}>ACTIVE</span> &nbsp;{' '}
+              <span className={styles.title}>Start Date:</span>{' '}
+              {billingStartDate} &nbsp;{' '}
+              <span className={styles.title}>End Date:</span> {billingEndDate}
             </div>
           )}
-          {!isBillingAccountLoading && !isBillingAccountLoadingFailed && isBillingAccountExpired && (
+          {!dashboard &&
+            !isBillingAccountLoading &&
+            !isBillingAccountLoadingFailed &&
+            isBillingAccountExpired && (
             <div className={'col-9'}>
-              <span className={styles.title}>Billing Account: </span><span className={styles.inactive}>INACTIVE</span> &nbsp;  <span className={styles.title}>Start Date:</span> {billingStartDate} &nbsp;  <span className={styles.title}>End Date:</span> {billingEndDate}
+              <span className={styles.title}>Billing Account: </span>
+              <span className={styles.inactive}>INACTIVE</span> &nbsp;{' '}
+              <span className={styles.title}>Start Date:</span>{' '}
+              {billingStartDate} &nbsp;{' '}
+              <span className={styles.title}>End Date:</span> {billingEndDate}
             </div>
           )}
-          {!isBillingAccountLoading && isBillingAccountLoadingFailed && (
-            <div className={'col-9'}><span className={styles.error}>Billing Account failed to load</span></div>
+          {!dashboard &&
+            !isBillingAccountLoading &&
+            isBillingAccountLoadingFailed && (
+            <div className={'col-9'}>
+              <span className={styles.error}>
+                  Billing Account failed to load
+              </span>
+            </div>
           )}
-          <div className={'col-3'}>
+          {dashboard && (
+            <div className={'col-6'}>
+              <div className={cn(styles.field, styles.input1)}>
+                <label htmlFor='project'>Project :</label>
+              </div>
+              <div className={cn(styles.field, styles.input2)}>
+                <Select
+                  name='project'
+                  options={projectOptions}
+                  placeholder='All Projects'
+                  value={projectOption}
+                  onChange={e =>
+                    this.updateSearchParam(
+                      searchText,
+                      status,
+                      challengeType,
+                      challengeDate,
+                      e
+                    )
+                  }
+                />
+              </div>
+            </div>
+          )}
+          <div className={dashboard ? 'col-6' : 'col-3'}>
             <DebounceInput
               className={styles.challengeInput}
               minLength={2}
               debounceTimeout={300}
               placeholder='Search Challenges'
-              onChange={(e) => this.updateSearchParam(e.target.value, status, challengeType, challengeDate)}
+              onChange={e =>
+                this.updateSearchParam(
+                  e.target.value,
+                  status,
+                  challengeType,
+                  challengeDate,
+                  projectOption
+                )
+              }
               value={searchText}
             />
           </div>
@@ -283,8 +448,20 @@ class ChallengeList extends Component {
                 name='challengeStatus'
                 options={statusOptions}
                 placeholder='All Challenge Status'
-                value={challengeStatus ? { label: challengeStatus, value: challengeStatus } : null}
-                onChange={(e) => this.updateSearchParam(searchText, e.value, challengeType, challengeDate)}
+                value={
+                  challengeStatus && challengeStatus !== 'all'
+                    ? { label: challengeStatus, value: challengeStatus }
+                    : null
+                }
+                onChange={e =>
+                  this.updateSearchParam(
+                    searchText,
+                    e.value,
+                    challengeType,
+                    challengeDate,
+                    projectOption
+                  )
+                }
               />
             </div>
           </div>
@@ -296,15 +473,43 @@ class ChallengeList extends Component {
               <DateTime
                 className={styles.dateTimeInput}
                 placeholder='Start Date From'
-                value={challengeDate.startDateStart ? challengeDate.startDateStart : null}
-                onChange={(e) => this.updateSearchParam(searchText, status, challengeType, { ...challengeDate, startDateStart: e })}
+                value={
+                  challengeDate.startDateStart
+                    ? challengeDate.startDateStart
+                    : null
+                }
+                onChange={e =>
+                  this.updateSearchParam(
+                    searchText,
+                    status,
+                    challengeType,
+                    {
+                      ...challengeDate,
+                      startDateStart: e
+                    },
+                    projectOption
+                  )
+                }
               />
               <label className={cn(styles.field, styles.to)}>To: </label>
               <DateTime
                 className={styles.dateTimeInput}
                 placeholder='Start Date To'
-                value={challengeDate.startDateEnd ? challengeDate.startDateEnd : null}
-                onChange={(e) => this.updateSearchParam(searchText, status, challengeType, { ...challengeDate, startDateEnd: e })}
+                value={
+                  challengeDate.startDateEnd ? challengeDate.startDateEnd : null
+                }
+                onChange={e =>
+                  this.updateSearchParam(
+                    searchText,
+                    status,
+                    challengeType,
+                    {
+                      ...challengeDate,
+                      startDateEnd: e
+                    },
+                    projectOption
+                  )
+                }
               />
             </div>
           </div>
@@ -320,7 +525,15 @@ class ChallengeList extends Component {
                 options={challengeTypesOptions}
                 placeholder='All Challenge Types'
                 value={_.isEmpty(challengeType) ? null : challengeType}
-                onChange={(e) => this.updateSearchParam(searchText, challengeStatus, e, challengeDate)}
+                onChange={e =>
+                  this.updateSearchParam(
+                    searchText,
+                    challengeStatus,
+                    e,
+                    challengeDate,
+                    projectOption
+                  )
+                }
               />
             </div>
           </div>
@@ -333,108 +546,149 @@ class ChallengeList extends Component {
               <DateTime
                 className={styles.dateTimeInput}
                 placeholder='End Date From'
-                value={challengeDate.endDateStart ? challengeDate.endDateStart : null}
-                onChange={(e) => this.updateSearchParam(searchText, status, challengeType, { ...challengeDate, endDateStart: e })}
+                value={
+                  challengeDate.endDateStart ? challengeDate.endDateStart : null
+                }
+                onChange={e =>
+                  this.updateSearchParam(
+                    searchText,
+                    status,
+                    challengeType,
+                    {
+                      ...challengeDate,
+                      endDateStart: e
+                    },
+                    projectOption
+                  )
+                }
               />
               <label className={cn(styles.field, styles.to)}>To: </label>
               <DateTime
                 className={styles.dateTimeInput}
                 placeholder='End Date To'
-                value={challengeDate.endDateEnd ? challengeDate.endDateEnd : null}
-                onChange={(e) => this.updateSearchParam(searchText, status, challengeType, { ...challengeDate, endDateEnd: e })}
+                value={
+                  challengeDate.endDateEnd ? challengeDate.endDateEnd : null
+                }
+                onChange={e =>
+                  this.updateSearchParam(
+                    searchText,
+                    status,
+                    challengeType,
+                    {
+                      ...challengeDate,
+                      endDateEnd: e
+                    },
+                    projectOption
+                  )
+                }
               />
             </div>
           </div>
         </div>
-        {
-          challenges.length === 0 && (
-            <NoChallenge
-              activeProject={activeProject}
-              selfService={selfService}
-            />
-          )
-        }
-        {
-          challenges.length > 0 && (
-            <div className={styles.header}>
-              <div className={cn(styles.col5, styles.sortable)}>
-                Challenge Type
-              </div>
-              <div className={cn(styles.col2, styles.sortable)} onClick={() => this.updateSort('name')}>
-                <span className={styles.filterItem}>
-                  Challenge Name
-                  {
-                    sortBy === 'name' && (
-                      <img className={cn(styles.sortIcon, sortOrder === 'asc' ? styles.asc : '')} src={SortIcon} />
-                    )
-                  }
-                </span>
-              </div>
-              <div className={cn(styles.col3, styles.sortable)} onClick={() => this.updateSort('startDate')}>
-                <span className={styles.filterItem}>
-                  Start Date
-                  {
-                    sortBy === 'startDate' && (
-                      <img className={cn(styles.sortIcon, sortOrder === 'asc' ? styles.asc : '')} src={SortIcon} />
-                    )
-                  }
-                </span>
-              </div>
-              <div className={cn(styles.col3, styles.sortable)} onClick={() => this.updateSort('endDate')}>
-                <span className={styles.filterItem}>
-                  End Date
-                  {
-                    sortBy === 'endDate' && (
-                      <img className={cn(styles.sortIcon, sortOrder === 'asc' ? styles.asc : '')} src={SortIcon} />
-                    )
-                  }
-                </span>
-              </div>
-              <div className={cn(styles.col4, styles.sortable)}>
-                <span className={styles.filterItem}>
-                  <FontAwesomeIcon icon={faUser} className={styles.faIcon} />
-                </span>
-              </div>
-              <div className={cn(styles.col4, styles.sortable)}>
-                <FontAwesomeIcon icon={faFile} className={styles.faIcon} />
-              </div>
-              <div className={cn(styles.col4, styles.sortable)}>
-                  Forums
-              </div>
-              <div className={cn(styles.col3, styles.sortable)}>
-                  Status
-              </div>
-              <div className={styles.col6}>Edit</div>
-              <div className={styles.col6}>OR</div>
-              <div className={styles.col6}>CA</div>
+        {challenges.length === 0 && (
+          <NoChallenge
+            activeProject={activeProject}
+            selfService={selfService}
+          />
+        )}
+        {challenges.length > 0 && (
+          <div className={styles.header}>
+            <div className={cn(styles.col5, styles.sortable)}>
+              Challenge Type
             </div>
-          )
-        }
-        {
-          challenges.length > 0 && (
-            <ul className={styles.challengeList}>
-              {
-                map(challenges, (c) => {
-                  return (
-                    <li className={styles.challengeItem} key={`challenge-card-${c.id}`}>
-                      <ChallengeCard
-                        shouldShowCurrentPhase={selectedTab === 0}
-                        challenge={c}
-                        reloadChallengeList={this.reloadChallengeList}
-                        partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
-                        deleteChallenge={deleteChallenge}
-                        isBillingAccountExpired={isBillingAccountExpired}
-                        disableHover
-                        getStatusText={this.getStatusTextFunc(selfService)}
-                        challengeTypes={challengeTypes}
-                      />
-                    </li>
-                  )
-                })
-              }
-            </ul>
-          )
-        }
+            <div
+              className={cn(styles.col2, styles.sortable)}
+              onClick={() => this.updateSort('name')}
+            >
+              <span className={styles.filterItem}>
+                Challenge Name
+                {sortBy === 'name' && (
+                  <img
+                    className={cn(
+                      styles.sortIcon,
+                      sortOrder === 'asc' ? styles.asc : ''
+                    )}
+                    src={SortIcon}
+                  />
+                )}
+              </span>
+            </div>
+            <div
+              className={cn(styles.col3, styles.sortable)}
+              onClick={() => this.updateSort('startDate')}
+            >
+              <span className={styles.filterItem}>
+                Start Date
+                {sortBy === 'startDate' && (
+                  <img
+                    className={cn(
+                      styles.sortIcon,
+                      sortOrder === 'asc' ? styles.asc : ''
+                    )}
+                    src={SortIcon}
+                  />
+                )}
+              </span>
+            </div>
+            <div
+              className={cn(styles.col3, styles.sortable)}
+              onClick={() => this.updateSort('endDate')}
+            >
+              <span className={styles.filterItem}>
+                End Date
+                {sortBy === 'endDate' && (
+                  <img
+                    className={cn(
+                      styles.sortIcon,
+                      sortOrder === 'asc' ? styles.asc : ''
+                    )}
+                    src={SortIcon}
+                  />
+                )}
+              </span>
+            </div>
+            <div className={cn(styles.col4, styles.sortable)}>
+              <span className={styles.filterItem}>
+                <FontAwesomeIcon icon={faUser} className={styles.faIcon} />
+              </span>
+            </div>
+            <div className={cn(styles.col4, styles.sortable)}>
+              <FontAwesomeIcon icon={faFile} className={styles.faIcon} />
+            </div>
+            <div className={cn(styles.col4, styles.sortable)}>Forums</div>
+            <div className={cn(styles.col3, styles.sortable)}>Status</div>
+            <div className={styles.col6}>Edit</div>
+            <div className={styles.col6}>OR</div>
+            <div className={styles.col6}>CA</div>
+          </div>
+        )}
+        {challenges.length > 0 && (
+          <ul className={styles.challengeList}>
+            {map(challenges, c => {
+              return (
+                <li
+                  className={styles.challengeItem}
+                  key={`challenge-card-${c.id}`}
+                >
+                  <ChallengeCard
+                    shouldShowCurrentPhase={selectedTab === 0}
+                    challenge={c}
+                    setActiveProject={setActiveProject}
+                    reloadChallengeList={this.reloadChallengeList}
+                    partiallyUpdateChallengeDetails={
+                      partiallyUpdateChallengeDetails
+                    }
+                    deleteChallenge={deleteChallenge}
+                    isBillingAccountExpired={isBillingAccountExpired}
+                    disableHover
+                    getStatusText={this.getStatusTextFunc(selfService)}
+                    challengeTypes={challengeTypes}
+                  />
+                </li>
+              )
+            })}
+          </ul>
+        )}
         <div className={styles.paginationContainer}>
           <Pagination
             activePage={page}
@@ -452,11 +706,11 @@ class ChallengeList extends Component {
   }
 }
 
-ChallengeList.defaultProps = {
-}
+ChallengeList.defaultProps = {}
 
 ChallengeList.propTypes = {
   challenges: PropTypes.arrayOf(PropTypes.object),
+  projects: PropTypes.arrayOf(PropTypes.object),
   activeProject: PropTypes.shape({
     id: PropTypes.number,
     name: PropTypes.string
@@ -469,7 +723,9 @@ ChallengeList.propTypes = {
   filterSortOrder: PropTypes.string,
   status: PropTypes.string,
   activeProjectId: PropTypes.number,
+  filterProjectOption: PropTypes.shape(),
   loadChallengesByPage: PropTypes.func.isRequired,
+  setActiveProject: PropTypes.func.isRequired,
   page: PropTypes.number.isRequired,
   perPage: PropTypes.number.isRequired,
   totalChallenges: PropTypes.number.isRequired,
@@ -480,6 +736,7 @@ ChallengeList.propTypes = {
   billingEndDate: PropTypes.string,
   isBillingAccountLoadingFailed: PropTypes.bool,
   isBillingAccountLoading: PropTypes.bool,
+  dashboard: PropTypes.bool,
   selfService: PropTypes.bool,
   auth: PropTypes.object.isRequired,
   challengeTypes: PropTypes.arrayOf(PropTypes.shape()).isRequired
