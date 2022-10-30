@@ -360,7 +360,7 @@ class ChallengeList extends Component {
 
     return (
       <div className={styles.list}>
-        {dashboard && <h2>Active Challenges</h2>}
+        {dashboard && <h2>My Challenges</h2>}
         <div className={cn(styles.row, { [styles.dashboardRow]: dashboard })}>
           {!dashboard &&
             !isBillingAccountLoading &&
