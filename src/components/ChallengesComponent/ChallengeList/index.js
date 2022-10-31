@@ -245,12 +245,23 @@ class ChallengeList extends Component {
     })
   }
 
+  renderSortIcon (currentSortBy) {
+    const { sortBy, sortOrder } = this.state
+    return sortBy === currentSortBy ? (
+      <img
+        className={cn(
+          styles.sortIcon,
+          sortOrder === 'asc' ? styles.asc : ''
+        )}
+        src={SortIcon}
+      />
+    ) : null
+  }
+
   render () {
     const {
       searchText,
       errorMessage,
-      sortBy,
-      sortOrder,
       challengeProjectOption,
       challengeStatus,
       challengeType,
@@ -593,8 +604,14 @@ class ChallengeList extends Component {
         )}
         {challenges.length > 0 && (
           <div className={styles.header}>
-            <div className={cn(styles.col5, styles.sortable)}>
-              Type
+            <div
+              className={cn(styles.col5, styles.sortable)}
+              onClick={() => this.updateSort('type')}
+            >
+              <span className={styles.filterItem}>
+                Type
+                {this.renderSortIcon('type')}
+              </span>
             </div>
             <div
               className={cn(styles.col2, styles.sortable)}
@@ -602,15 +619,7 @@ class ChallengeList extends Component {
             >
               <span className={styles.filterItem}>
                 Challenge Name
-                {sortBy === 'name' && (
-                  <img
-                    className={cn(
-                      styles.sortIcon,
-                      sortOrder === 'asc' ? styles.asc : ''
-                    )}
-                    src={SortIcon}
-                  />
-                )}
+                {this.renderSortIcon('name')}
               </span>
             </div>
             <div
@@ -619,15 +628,7 @@ class ChallengeList extends Component {
             >
               <span className={styles.filterItem}>
                 Start Date
-                {sortBy === 'startDate' && (
-                  <img
-                    className={cn(
-                      styles.sortIcon,
-                      sortOrder === 'asc' ? styles.asc : ''
-                    )}
-                    src={SortIcon}
-                  />
-                )}
+                {this.renderSortIcon('startDate')}
               </span>
             </div>
             <div
@@ -636,28 +637,39 @@ class ChallengeList extends Component {
             >
               <span className={styles.filterItem}>
                 End Date
-                {sortBy === 'endDate' && (
-                  <img
-                    className={cn(
-                      styles.sortIcon,
-                      sortOrder === 'asc' ? styles.asc : ''
-                    )}
-                    src={SortIcon}
-                  />
-                )}
+                {this.renderSortIcon('endDate')}
               </span>
             </div>
-            <div className={cn(styles.col4, styles.sortable)}>
+            <div
+              className={cn(styles.col4, styles.sortable)}
+              onClick={() => this.updateSort('numOfRegistrants')}
+            >
               <span className={styles.filterItem}>
                 <FontAwesomeIcon icon={faUser} className={styles.faIcon} />
+                {this.renderSortIcon('numOfRegistrants')}
               </span>
             </div>
-            <div className={cn(styles.col4, styles.sortable)}>
-              <FontAwesomeIcon icon={faFile} className={styles.faIcon} />
+            <div
+              className={cn(styles.col4, styles.sortable)}
+              onClick={() => this.updateSort('numOfSubmissions')}
+            >
+              <span className={styles.filterItem}>
+                <FontAwesomeIcon icon={faFile} className={styles.faIcon} />
+                {this.renderSortIcon('numOfSubmissions')}
+              </span>
             </div>
-            <div className={cn(styles.col4, styles.sortable)}>Forums</div>
-            <div className={cn(styles.col3, styles.sortable)}>Status</div>
-            <div className={styles.col6} />
+            <div
+              className={cn(styles.col3, styles.sortable)}
+              onClick={() => this.updateSort('status')}
+            >
+              <span className={styles.filterItem}>
+                Status
+                {this.renderSortIcon('status')}
+              </span>
+            </div>
+            <div className={styles.col6}>&nbsp;</div>
+            <div className={styles.col6}>&nbsp;</div>
+            <div className={styles.col6}>&nbsp;</div>
             <div className={styles.col6} />
             <div className={styles.col6} />
           </div>

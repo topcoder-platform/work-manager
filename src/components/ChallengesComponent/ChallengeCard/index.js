@@ -272,9 +272,6 @@ class ChallengeCard extends React.Component {
         <div className={styles.col4}>
           <span>{challenge.numOfSubmissions}</span>
         </div>
-        <div className={styles.col4}>
-          0
-        </div>
         <Link className={styles.col3} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
           {renderStatus(challenge.status.toUpperCase(), getStatusText)}
         </Link>
