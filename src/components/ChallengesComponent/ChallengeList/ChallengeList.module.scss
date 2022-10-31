@@ -7,6 +7,16 @@
   justify-content: space-between;
 }
 
+.col-6 {
+  flex: 0 0 50%;
+  max-width: 50%;
+}
+
+.col-9 {
+  flex: 0 0 75%;
+  max-width: 75%;
+}
+
 .dashboardRow {
   align-items: flex-end;
 }
@@ -151,7 +161,6 @@
 
 .challengeInput {
   width: 94% !important;
-  margin-left: -6px;
 }
 
 @-moz-document url-prefix() {

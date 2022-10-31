@@ -366,7 +366,7 @@ class ChallengeList extends Component {
             !isBillingAccountLoading &&
             !isBillingAccountLoadingFailed &&
             !isBillingAccountExpired && (
-            <div className={'col-9'}>
+            <div className={styles['col-6']}>
               <span className={styles.title}>Billing Account: </span>
               <span className={styles.active}>ACTIVE</span> &nbsp;{' '}
               <span className={styles.title}>Start Date:</span>{' '}
@@ -378,7 +378,7 @@ class ChallengeList extends Component {
             !isBillingAccountLoading &&
             !isBillingAccountLoadingFailed &&
             isBillingAccountExpired && (
-            <div className={'col-9'}>
+            <div className={styles['col-6']}>
               <span className={styles.title}>Billing Account: </span>
               <span className={styles.inactive}>INACTIVE</span> &nbsp;{' '}
               <span className={styles.title}>Start Date:</span>{' '}
@@ -389,14 +389,14 @@ class ChallengeList extends Component {
           {!dashboard &&
             !isBillingAccountLoading &&
             isBillingAccountLoadingFailed && (
-            <div className={'col-9'}>
+            <div className={styles['col-6']}>
               <span className={styles.error}>
                   Billing Account failed to load
               </span>
             </div>
           )}
           {dashboard && (
-            <div className={'col-6'}>
+            <div className={styles['col-6']}>
               <div className={cn(styles.field, styles.input1)}>
                 <label htmlFor='project'>Project :</label>
               </div>
@@ -419,7 +419,7 @@ class ChallengeList extends Component {
               </div>
             </div>
           )}
-          <div className={dashboard ? 'col-6' : 'col-3'}>
+          <div className={styles['col-6']}>
             <DebounceInput
               className={styles.challengeInput}
               minLength={2}
@@ -439,7 +439,7 @@ class ChallengeList extends Component {
           </div>
         </div>
         <div className={styles.row}>
-          <div className={'col-6'}>
+          <div className={styles['col-6']}>
             <div className={cn(styles.field, styles.input1)}>
               <label htmlFor='status'>Challenge Status :</label>
             </div>
@@ -465,7 +465,7 @@ class ChallengeList extends Component {
               />
             </div>
           </div>
-          <div className={'col-6'}>
+          <div className={styles['col-6']}>
             <div className={cn(styles.field, styles.input1)}>
               <label htmlFor='startDate'>Start Date :</label>
             </div>
@@ -515,7 +515,7 @@ class ChallengeList extends Component {
           </div>
         </div>
         <div className={styles.row}>
-          <div className={'col-6'}>
+          <div className={styles['col-6']}>
             <div className={cn(styles.field, styles.input1)}>
               <label htmlFor='type'>Challenge Type :</label>
             </div>
@@ -538,7 +538,7 @@ class ChallengeList extends Component {
             </div>
           </div>
 
-          <div className={'col-6'}>
+          <div className={styles['col-6']}>
             <div className={cn(styles.field, styles.input1)}>
               <label htmlFor='endDate'>End Date :</label>
             </div>
