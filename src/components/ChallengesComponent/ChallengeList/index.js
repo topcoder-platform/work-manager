@@ -670,8 +670,6 @@ class ChallengeList extends Component {
             <div className={styles.col6}>&nbsp;</div>
             <div className={styles.col6}>&nbsp;</div>
             <div className={styles.col6}>&nbsp;</div>
-            <div className={styles.col6} />
-            <div className={styles.col6} />
           </div>
         )}
         {challenges.length > 0 && (
