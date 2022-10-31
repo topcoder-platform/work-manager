@@ -150,7 +150,7 @@ class Challenges extends Component {
       auth,
       metadata
     } = this.props
-    const { searchProjectName, onlyMyProjects } = this.state
+    const { searchProjectName } = this.state
     const { challengeTypes = [] } = metadata
     const projectInfo = _.find(projects, { id: activeProjectId }) || {}
     const projectComponents =
@@ -167,7 +167,7 @@ class Challenges extends Component {
       ))
     return (
       <Fragment>
-        <div className={styles.projectSearch}>
+        <div className={!dashboard && styles.projectSearch}>
           {!selfService && (
             <div className={styles.projectSearchHeader}>
               {!dashboard && <label>Switch Project</label>}
@@ -180,13 +180,6 @@ class Challenges extends Component {
                   value={searchProjectName}
                 />
               )}
-              <input
-                type='checkbox'
-                label='My Projects'
-                checked={onlyMyProjects}
-                onChange={this.toggleMyProjects}
-              />
-              <label>My Projects</label>
             </div>
           )}
           {!dashboard && activeProjectId === -1 && !selfService && (

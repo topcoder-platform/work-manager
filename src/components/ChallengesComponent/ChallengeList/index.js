@@ -657,9 +657,9 @@ class ChallengeList extends Component {
             </div>
             <div className={cn(styles.col4, styles.sortable)}>Forums</div>
             <div className={cn(styles.col3, styles.sortable)}>Status</div>
-            <div className={styles.col6}></div>
-            <div className={styles.col6}></div>
-            <div className={styles.col6}></div>
+            <div className={styles.col6} />
+            <div className={styles.col6} />
+            <div className={styles.col6} />
           </div>
         )}
         {challenges.length > 0 && (
