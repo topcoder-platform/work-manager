@@ -7,6 +7,7 @@ import PropTypes from 'prop-types'
 import { DebounceInput } from 'react-debounce-input'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFile, faUser } from '@fortawesome/free-solid-svg-icons'
+import isAfter from 'date-fns/isAfter'
 import DateTime from '@nateradebaugh/react-datetime'
 import Pagination from 'react-js-pagination'
 import cn from 'classnames'
@@ -298,19 +299,10 @@ class ChallengeList extends Component {
       value: _.capitalize(item)
     }))
 
-    statusOptions.unshift({
-      label: 'All Challenge Status',
-      value: null
-    })
-
     const challengeTypesOptions = challengeTypes.map(item => ({
       label: item.name,
       value: item.abbreviation
     }))
-    challengeTypesOptions.unshift({
-      label: 'All Challenge Types',
-      value: null
-    })
 
     let selectedTab = 0
     switch (status) {
@@ -467,12 +459,13 @@ class ChallengeList extends Component {
                 onChange={e =>
                   this.updateSearchParam(
                     searchText,
-                    e.value,
+                    e ? e.value : null,
                     challengeType,
                     challengeDate,
                     projectOption
                   )
                 }
+                isClearable
               />
             </div>
           </div>
@@ -509,6 +502,9 @@ class ChallengeList extends Component {
                 value={
                   challengeDate.startDateEnd ? challengeDate.startDateEnd : null
                 }
+                isValidDate={(current) => {
+                  return isAfter(current, challengeDate.startDateStart)
+                }}
                 onChange={e =>
                   this.updateSearchParam(
                     searchText,
@@ -545,6 +541,7 @@ class ChallengeList extends Component {
                     projectOption
                   )
                 }
+                isClearable
               />
             </div>
           </div>
@@ -580,6 +577,9 @@ class ChallengeList extends Component {
                 value={
                   challengeDate.endDateEnd ? challengeDate.endDateEnd : null
                 }
+                isValidDate={(current) => {
+                  return isAfter(current, challengeDate.endDateStart)
+                }}
                 onChange={e =>
                   this.updateSearchParam(
                     searchText,

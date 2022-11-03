@@ -15,7 +15,8 @@ const statuses = {
   [CHALLENGE_STATUS.APPROVED]: styles.yellow,
   [CHALLENGE_STATUS.NEW]: styles.yellow,
   [CHALLENGE_STATUS.DRAFT]: styles.gray,
-  [CHALLENGE_STATUS.COMPLETED]: styles.blue
+  [CHALLENGE_STATUS.COMPLETED]: styles.blue,
+  [CHALLENGE_STATUS.CANCELLED]: styles.red
 }
 
 const ChallengeStatus = ({ status, statusText }) => {

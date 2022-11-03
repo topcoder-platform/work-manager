@@ -95,16 +95,18 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
 }
 
 const renderStatus = (status, getStatusText) => {
-  switch (status) {
+  const statusMessage = status.split(' ')[0]
+  switch (statusMessage) {
     case CHALLENGE_STATUS.ACTIVE:
     case CHALLENGE_STATUS.APPROVED:
     case CHALLENGE_STATUS.NEW:
     case CHALLENGE_STATUS.DRAFT:
     case CHALLENGE_STATUS.COMPLETED:
-      const statusText = getStatusText ? getStatusText(status) : status
-      return (<ChallengeStatus status={status} statusText={statusText} />)
+    case CHALLENGE_STATUS.CANCELLED:
+      const statusText = getStatusText ? getStatusText(statusMessage) : statusMessage
+      return (<ChallengeStatus status={statusMessage} statusText={statusText} />)
     default:
-      return (<span className={styles.statusText}>{statusText}</span>)
+      return (<span className={styles.statusText}>{status}</span>)
   }
 }
 
@@ -204,7 +206,7 @@ class ChallengeCard extends React.Component {
     const deleteMessage = isCheckChalengePermission
       ? 'Checking permissions...'
       : `Do you want to delete "${challenge.name}"?`
-    const directUrl = `${DIRECT_PROJECT_URL}/contest/detail?projectId=${challenge.legacyId}`
+    const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
     const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.id}`
 
     return (
@@ -279,7 +281,7 @@ class ChallengeCard extends React.Component {
           {(disableHover ? <Link className={styles.link} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`}>Edit</Link> : hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch))}
         </div>
         <div className={styles.col6}>
-          <a className={styles.link} href={directUrl} target='_blank'>OR</a>
+          <a className={styles.link} href={orUrl} target='_blank'>OR</a>
         </div>
         <div className={styles.col6}>
           <a className={styles.link} href={communityAppUrl} target='_blank'>CA</a>

@@ -57,7 +57,7 @@ class Challenges extends Component {
         window.localStorage.setItem('projectLoading', 'true')
         this.props.loadProject(projectId)
       }
-      this.reloadChallenges(this.props)
+      this.reloadChallenges(this.props, true)
     }
   }
 

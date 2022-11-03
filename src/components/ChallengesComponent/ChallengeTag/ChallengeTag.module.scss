@@ -58,6 +58,10 @@ $corner-radius: 2px;
       background: $track-code-grey;
     }
 
+    &.MA {
+      background: $track-code-grey;
+    }
+
     &.withTco {
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;

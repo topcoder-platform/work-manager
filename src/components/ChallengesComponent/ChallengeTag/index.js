@@ -8,7 +8,7 @@ export default function ChallengeTag ({
   type, challengeTypes
 }) {
   let abbreviation = getChallengeTypeAbbr(type, challengeTypes)
-  if (['CH', 'F2F', 'TSK', 'MM', 'RDM', 'SKL', 'SRM', 'PC'].indexOf(abbreviation) < 0) {
+  if (['CH', 'F2F', 'TSK', 'MM', 'RDM', 'SKL', 'MA', 'SRM', 'PC'].indexOf(abbreviation) < 0) {
     abbreviation = ''
   }
   return (
