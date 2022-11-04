@@ -160,7 +160,16 @@
 }
 
 .challengeInput {
-  width: 94% !important;
+  width: 60% !important;
+  max-width: 230px !important;
+}
+
+.searchInputWrapper {
+  display: flex;
+}
+
+.resetFilter {
+  margin-left: 35px;
 }
 
 @-moz-document url-prefix() {
@@ -216,10 +225,19 @@
   }
 }
 
-.paginationContainer {
+.footer {
   display: flex;
   justify-content: flex-end;
   margin-top: 30px;
+}
+
+.perPageContainer {
+  margin-right: 20px;
+  max-width: 150px;
+}
+
+.paginationContainer {
+  display: flex;
 }
 
 .modalContainer {

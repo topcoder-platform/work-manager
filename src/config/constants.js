@@ -222,7 +222,7 @@ export const ADMIN_ROLES = [
 export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
   `${CHALLENGE_API_URL}/${challengeId}/attachments/${attachmentId}/download?token=${token}`
 
-export const PAGE_SIZE = 50
+export const PAGE_SIZE = 10
 
 /**
  * The minimal number of characters to enter before starting showing autocomplete suggestions
@@ -301,3 +301,10 @@ export const MULTI_ROUND_CHALLENGE_DESC_TEMPLATE = '\n\n### ROUND 1\n' +
 export const MAX_CHECKPOINT_PRIZE_COUNT = 8
 export const DEFAULT_CHECKPOINT_PRIZE = 50
 export const DEFAULT_CHECKPOINT_PRIZE_COUNT = 5
+
+export const PAGINATION_PER_PAGE_OPTIONS = [
+  { label: '5', value: '5' },
+  { label: '10', value: '10' },
+  { label: '25', value: '25' },
+  { label: '50', value: '50' }
+]

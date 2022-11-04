@@ -69,7 +69,8 @@ export function loadChallengesByPage (
   filterChallengeType = {},
   filterDate = {},
   filterSortBy = null,
-  filterSortOrder = null
+  filterSortOrder = null,
+  perPage = PAGE_SIZE
 ) {
   return (dispatch, getState) => {
     if (_.isObject(projectId)) {
@@ -83,7 +84,7 @@ export function loadChallengesByPage (
         filterDate,
         filterSortBy,
         filterSortOrder,
-        perPage: PAGE_SIZE,
+        perPage,
         page
       })
     } else {
@@ -97,7 +98,7 @@ export function loadChallengesByPage (
         filterDate,
         filterSortBy,
         filterSortOrder,
-        perPage: PAGE_SIZE,
+        perPage,
         page
       })
     }
@@ -152,7 +153,7 @@ export function loadChallengesByPage (
 
     return fetchChallenges(filters, {
       page,
-      perPage: PAGE_SIZE
+      perPage
       // memberId: getState().auth.user ? getState().auth.user.userId : null
     }).then((res) => {
       dispatch({

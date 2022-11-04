@@ -12,7 +12,7 @@ import DateTime from '@nateradebaugh/react-datetime'
 import Pagination from 'react-js-pagination'
 import cn from 'classnames'
 
-import { PrimaryButton } from '../../Buttons'
+import { OutlineButton, PrimaryButton } from '../../Buttons'
 import Modal from '../../Modal'
 import 'react-tabs/style/react-tabs.css'
 import styles from './ChallengeList.module.scss'
@@ -22,7 +22,7 @@ import Message from '../Message'
 import SortIcon from '../../../assets/images/sort-icon.svg'
 import Select from '../../Select'
 
-import { CHALLENGE_STATUS } from '../../../config/constants'
+import { CHALLENGE_STATUS, PAGE_SIZE, PAGINATION_PER_PAGE_OPTIONS } from '../../../config/constants'
 import { checkAdmin } from '../../../util/tc'
 
 require('bootstrap/scss/bootstrap.scss')
@@ -46,12 +46,14 @@ class ChallengeList extends Component {
     }
     this.directUpdateSearchParam = this.updateSearchParam.bind(this) // update search param without debounce
     this.handlePageChange = this.handlePageChange.bind(this) // update search param without debounce
+    this.handlePerPageChange = this.handlePerPageChange.bind(this)
     this.showError = this.showError.bind(this)
     this.hideError = this.hideError.bind(this)
     this.reloadChallengeList = this.reloadChallengeList.bind(this)
     this.updateSearchParam = debounce(this.updateSearchParam.bind(this), 1000)
     this.updateSort = this.updateSort.bind(this)
     this.update = debounce(this.updateSearchParam.bind(this), 1000)
+    this.resetFilter = this.resetFilter.bind(this)
   }
 
   /**
@@ -111,7 +113,7 @@ class ChallengeList extends Component {
 
   /**
    * Update filter for getting project by pagination
-   * @param {Number} pageNumber page numer
+   * @param {Number} pageNumber page number
    */
   handlePageChange (pageNumber) {
     const { searchText } = this.state
@@ -138,6 +140,44 @@ class ChallengeList extends Component {
         this.getHandle(),
         filterChallengeType,
         filterDate
+      )
+    }
+  }
+
+  /**
+   * Update filter for getting project by pagination
+   * @param {Number} perPageNumber per page number
+   */
+  handlePerPageChange (option) {
+    const perPageNumber = option.value
+    const { searchText, sortBy, sortOrder } = this.state
+    const {
+      perPage,
+      page,
+      loadChallengesByPage,
+      activeProjectId,
+      dashboard,
+      filterProjectOption,
+      status,
+      selfService,
+      filterChallengeType,
+      filterDate
+    } = this.props
+
+    let projectId = dashboard ? filterProjectOption : activeProjectId
+    if (perPage !== perPageNumber) {
+      loadChallengesByPage(
+        page,
+        projectId,
+        status,
+        searchText,
+        selfService,
+        this.getHandle(),
+        filterChallengeType,
+        filterDate,
+        sortBy,
+        sortOrder,
+        perPageNumber
       )
     }
   }
@@ -257,6 +297,40 @@ class ChallengeList extends Component {
         src={SortIcon}
       />
     ) : null
+  }
+
+  resetFilter () {
+    const {
+      activeProjectId,
+      dashboard,
+      filterProjectOption,
+      selfService,
+      loadChallengesByPage
+    } = this.props
+
+    this.setState({
+      searchText: '',
+      challengeType: null,
+      sortBy: '',
+      sortOrder: 'asc',
+      challengeDate: {}
+    })
+
+    let projectId = dashboard ? filterProjectOption : activeProjectId
+
+    loadChallengesByPage(
+      1,
+      projectId,
+      null,
+      '',
+      selfService,
+      this.getHandle(),
+      null,
+      {},
+      null,
+      null,
+      PAGE_SIZE
+    )
   }
 
   render () {
@@ -423,22 +497,30 @@ class ChallengeList extends Component {
             </div>
           )}
           <div className={styles['col-6']}>
-            <DebounceInput
-              className={styles.challengeInput}
-              minLength={2}
-              debounceTimeout={300}
-              placeholder='Search Challenges'
-              onChange={e =>
-                this.updateSearchParam(
-                  e.target.value,
-                  status,
-                  challengeType,
-                  challengeDate,
-                  projectOption
-                )
-              }
-              value={searchText}
-            />
+            <div className={cn(styles.field, styles.input1)}>
+              <label htmlFor='startDate'>Search :</label>
+            </div>
+            <div className={styles['searchInputWrapper']}>
+              <DebounceInput
+                className={styles.challengeInput}
+                minLength={2}
+                debounceTimeout={300}
+                placeholder='Search Challenges'
+                onChange={e =>
+                  this.updateSearchParam(
+                    e.target.value,
+                    status,
+                    challengeType,
+                    challengeDate,
+                    projectOption
+                  )
+                }
+                value={searchText}
+              />
+              <div className={styles['resetFilter']}>
+                <OutlineButton text='Reset Filters' type={'info'} onClick={this.resetFilter} />
+              </div>
+            </div>
           </div>
         </div>
         <div className={styles.row}>
@@ -699,16 +781,28 @@ class ChallengeList extends Component {
             })}
           </ul>
         )}
-        <div className={styles.paginationContainer}>
-          <Pagination
-            activePage={page}
-            itemsCountPerPage={perPage}
-            totalItemsCount={totalChallenges}
-            pageRangeDisplayed={5}
-            onChange={this.handlePageChange}
-            itemClass='page-item'
-            linkClass='page-link'
-          />
+        <div className={styles.footer}>
+          <div className={styles.perPageContainer}>
+            <Select
+              styles={styles}
+              name='perPage'
+              value={{ label: perPage, value: perPage }}
+              placeholder='Per page'
+              options={PAGINATION_PER_PAGE_OPTIONS}
+              onChange={this.handlePerPageChange}
+            />
+          </div>
+          <div className={styles.paginationContainer}>
+            <Pagination
+              activePage={page}
+              itemsCountPerPage={perPage}
+              totalItemsCount={totalChallenges}
+              pageRangeDisplayed={5}
+              onChange={this.handlePageChange}
+              itemClass='page-item'
+              linkClass='page-link'
+            />
+          </div>
         </div>
         {warningModal}
       </div>

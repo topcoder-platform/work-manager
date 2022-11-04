@@ -259,7 +259,7 @@ class ChallengeCard extends React.Component {
 
         <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`} onClick={() => setActiveProject(parseInt(challenge.projectId))}>
           <div className={styles.name}>
-            <span className={styles.block}>{challenge.name}</span>
+            <span className={styles.link}>{challenge.name}</span>
           </div>
         </Link>
         <div className={styles.col3}>
@@ -274,9 +274,9 @@ class ChallengeCard extends React.Component {
         <div className={styles.col4}>
           <span>{challenge.numOfSubmissions}</span>
         </div>
-        <Link className={styles.col3} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
+        <div className={styles.col3}>
           {renderStatus(challenge.status.toUpperCase(), getStatusText)}
-        </Link>
+        </div>
         <div className={styles.col6}>
           {(disableHover ? <Link className={styles.link} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`}>Edit</Link> : hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch))}
         </div>
