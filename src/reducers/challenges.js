@@ -251,7 +251,7 @@ export default function (state = initialState, action) {
         }
       }
     case LOAD_CHALLENGE_MEMBERS_SUCCESS: {
-      return { ...state, metadata: { ...state.metadata, members: action.members } }
+      return { ...state, metadata: { ...state.metadata, members: action.payload } }
     }
     case CREATE_ATTACHMENT_PENDING: {
       const attachments = [

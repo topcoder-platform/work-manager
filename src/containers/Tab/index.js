@@ -39,6 +39,8 @@ class TabContainer extends Component {
       this.setState({ currentTab: 1 })
     } else if (nextProps.history.location.pathname === '/projects') {
       this.setState({ currentTab: 2 })
+    } else if (nextProps.history.location.pathname === '/users') {
+      this.setState({ currentTab: 3 })
     } else {
       this.setState({ currentTab: 0 })
     }
@@ -80,6 +82,9 @@ class TabContainer extends Component {
     } else if (tab === 2) {
       history.push('/projects')
       this.setState({ currentTab: 2 })
+    } else if (tab === 3) {
+      history.push('/users')
+      this.setState({ currentTab: 3 })
     }
 
     resetSidebarActiveParams()

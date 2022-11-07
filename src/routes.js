@@ -20,6 +20,7 @@ import { setCookie, removeCookie, isBetaMode } from './util/cookie'
 import IdleTimer from 'react-idle-timer'
 import modalStyles from './styles/modal.module.scss'
 import ConfirmationModal from './components/Modal/ConfirmationModal'
+import Users from './containers/Users'
 
 const { ACCOUNTS_APP_LOGIN_URL, IDLE_TIMEOUT_MINUTES, IDLE_TIMEOUT_GRACE_MINUTES, COMMUNITY_APP_URL } = process.env
 
@@ -171,6 +172,13 @@ class Routes extends React.Component {
           <Route exact path='/projects'
             render={() => renderApp(
               <Challenges menu='NULL' key='projects' />,
+              <TopBarContainer />,
+              <Tab />
+            )()}
+          />
+          <Route exact path='/users'
+            render={() => renderApp(
+              <Users />,
               <TopBarContainer />,
               <Tab />
             )()}

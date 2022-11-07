@@ -58,6 +58,46 @@ export async function fetchProjectPhases (id) {
 }
 
 /**
+ * updates the role for the member for the given project id
+ * @param projectId project id
+ * @param memberRecordId the id for the member record to update
+ * @param newRole the new role
+ * @returns {Promise<*>}
+ */
+export async function updateProjectMemberRole (projectId, memberRecordId, newRole) {
+  const response = await axiosInstance.patch(`${PROJECT_API_URL}/${projectId}/members/${memberRecordId}`, {
+    role: newRole
+  })
+  return _.get(response, 'data')
+}
+
+/**
+ * adds the given user to the given project with the specified role
+ * @param projectId project id
+ * @param userId user id
+ * @param role
+ * @returns {Promise<*>}
+ */
+export async function addUserToProject (projectId, userId, role) {
+  const response = await axiosInstance.post(`${PROJECT_API_URL}/${projectId}/members`, {
+    userId,
+    role
+  })
+  return _.get(response, 'data')
+}
+
+/**
+ * removes the given member record from the project
+ * @param projectId project id
+ * @param memberRecordId member record id
+ * @returns {Promise<*>}
+ */
+export async function removeUserFromProject (projectId, memberRecordId) {
+  const response = await axiosInstance.delete(`${PROJECT_API_URL}/${projectId}/members/${memberRecordId}`)
+  return response
+}
+
+/**
  * Save challengeId as Phase product detail
  * @param projectId Project id
  * @param phaseId phase id

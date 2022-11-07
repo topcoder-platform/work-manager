@@ -21,6 +21,13 @@ const Tab = ({
     selectTab(2)
   }
 
+  const onUsersClick = () => {
+    if (currentTab === 3) {
+      return
+    }
+    selectTab(3)
+  }
+
   const tabComponent = (
     <ul className={styles.challengeTab}>
       <li
@@ -50,6 +57,20 @@ const Tab = ({
         role='presentation'
       >
        Projects
+      </li>
+      <li
+        key='tab-item-users'
+        className={cn(styles.item, { [styles.active]: currentTab === 3 })}
+        onClick={onUsersClick}
+        onKeyDown={e => {
+          if (e.key !== 'Enter') {
+            return
+          }
+          onUsersClick()
+        }}
+        role='presentation'
+      >
+          Users
       </li>
     </ul>
   )

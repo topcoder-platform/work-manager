@@ -1,0 +1,212 @@
+@import "../../styles/includes";
+
+.item {
+  display: flex;
+  font-size: 14px;
+  gap: 30px;
+  height: 30px;
+  padding: 0 20px;
+
+  .col5 {
+    display: flex;
+    width: 150px;
+    flex-direction: column;
+    justify-content: center;
+  }
+}
+
+.tcRadioButton {
+  .tc-radioButton-label {
+    @include roboto-light();
+
+    line-height: 17px;
+    font-weight: 300;
+    margin-left: 21px;
+    user-select: none;
+    cursor: pointer;
+    width: 195px;
+    font-size: 14px;
+    color: #3d3d3d;
+  }
+
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  vertical-align: bottom;
+  position: relative;
+  display: inline-block;
+
+  input[type=radio] {
+    display: none;
+  }
+
+  label {
+    @include roboto-light();
+
+    line-height: 17px;
+    font-weight: 300;
+    cursor: pointer;
+    position: absolute;
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 8px;
+    top: 0;
+    left: 0;
+    border: none;
+    box-shadow: none;
+    background: $tc-gray-30;
+    transition: all 0.15s ease-in-out;
+
+    &::after {
+      opacity: 0;
+      content: '';
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: transparent;
+      top: 4px;
+      left: 4px;
+      border: 4px solid $tc-blue-20;
+      border-radius: 4px;
+      transition: all 0.15s ease-in-out;
+    }
+
+    &:hover::after {
+      opacity: 0.3;
+    }
+
+    div {
+      margin-left: 24px;
+      width: 150px;
+    }
+  }
+
+  input[type=radio]:checked ~ label {
+    background: $tc-blue-20;
+  }
+
+  input[type=radio]:checked + label::after {
+    opacity: 1;
+    border-color: $white;
+  }
+}
+
+.modalContainer {
+  padding: 0;
+  position: fixed;
+  overflow: auto;
+  z-index: 10000;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: auto;
+  max-width: none;
+  transform: none;
+  background: transparent;
+  color: $text-color;
+  opacity: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  :global {
+    button.close {
+      margin-right: 5px;
+      margin-top: 5px;
+    }
+  }
+
+  .contentContainer {
+    box-sizing: border-box;
+    background: $white;
+    opacity: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 6px;
+    margin: 0 auto;
+    width: 852px;
+    padding: 30px;
+
+    .content {
+      padding: 30px;
+      width: 100%;
+      height: 100%;
+    }
+
+    .title {
+      @include roboto-bold();
+
+      font-size: 30px;
+      line-height: 36px;
+      margin-bottom: 30px;
+      margin-top: 0;
+    }
+
+    span {
+      @include roboto;
+
+      font-size: 22px;
+      font-weight: 400;
+      line-height: 26px;
+    }
+
+    &.confirm {
+      width: 999px;
+
+      .buttonGroup {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 30px;
+
+        .buttonSizeA {
+          width: 193px;
+          height: 40px;
+          margin-right: 33px;
+
+          span {
+            font-size: 18px;
+            font-weight: 500;
+          }
+        }
+
+        .buttonSizeB {
+          width: 160px;
+          height: 40px;
+
+          span {
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 22px;
+          }
+        }
+      }
+    }
+
+    .buttonGroup {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+
+      .button {
+        width: 135px;
+        height: 40px;
+        margin-right: 66px;
+
+        span {
+          font-size: 18px;
+          font-weight: 500;
+        }
+      }
+
+      .button:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+}
