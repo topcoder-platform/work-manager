@@ -21,6 +21,7 @@ import ChallengeCard from '../ChallengeCard'
 import Message from '../Message'
 import SortIcon from '../../../assets/images/sort-icon.svg'
 import Select from '../../Select'
+import Loader from '../../Loader'
 
 import { CHALLENGE_STATUS, PAGE_SIZE, PAGINATION_PER_PAGE_OPTIONS } from '../../../config/constants'
 import { checkAdmin } from '../../../util/tc'
@@ -352,6 +353,7 @@ class ChallengeList extends Component {
       projects,
       dashboard,
       perPage,
+      isLoading,
       totalChallenges,
       partiallyUpdateChallengeDetails,
       deleteChallenge,
@@ -678,109 +680,112 @@ class ChallengeList extends Component {
             </div>
           </div>
         </div>
-        {challenges.length === 0 && (
-          <NoChallenge
-            activeProject={activeProject}
-            selfService={selfService}
-          />
-        )}
-        {challenges.length > 0 && (
-          <div className={styles.header}>
-            <div
-              className={cn(styles.col5, styles.sortable)}
-              onClick={() => this.updateSort('type')}
-            >
-              <span className={styles.filterItem}>
-                Type
-                {this.renderSortIcon('type')}
-              </span>
-            </div>
-            <div
-              className={cn(styles.col2, styles.sortable)}
-              onClick={() => this.updateSort('name')}
-            >
-              <span className={styles.filterItem}>
-                Challenge Name
-                {this.renderSortIcon('name')}
-              </span>
-            </div>
-            <div
-              className={cn(styles.col3, styles.sortable)}
-              onClick={() => this.updateSort('startDate')}
-            >
-              <span className={styles.filterItem}>
-                Start Date
-                {this.renderSortIcon('startDate')}
-              </span>
-            </div>
-            <div
-              className={cn(styles.col3, styles.sortable)}
-              onClick={() => this.updateSort('endDate')}
-            >
-              <span className={styles.filterItem}>
-                End Date
-                {this.renderSortIcon('endDate')}
-              </span>
-            </div>
-            <div
-              className={cn(styles.col4, styles.sortable)}
-              onClick={() => this.updateSort('numOfRegistrants')}
-            >
-              <span className={styles.filterItem}>
-                <FontAwesomeIcon icon={faUser} className={styles.faIcon} />
-                {this.renderSortIcon('numOfRegistrants')}
-              </span>
-            </div>
-            <div
-              className={cn(styles.col4, styles.sortable)}
-              onClick={() => this.updateSort('numOfSubmissions')}
-            >
-              <span className={styles.filterItem}>
-                <FontAwesomeIcon icon={faFile} className={styles.faIcon} />
-                {this.renderSortIcon('numOfSubmissions')}
-              </span>
-            </div>
-            <div
-              className={cn(styles.col3, styles.sortable)}
-              onClick={() => this.updateSort('status')}
-            >
-              <span className={styles.filterItem}>
-                Status
-                {this.renderSortIcon('status')}
-              </span>
-            </div>
-            <div className={styles.col6}>&nbsp;</div>
-            <div className={styles.col6}>&nbsp;</div>
-            <div className={styles.col6}>&nbsp;</div>
+        <div className={styles.header}>
+          <div
+            className={cn(styles.col5, styles.sortable)}
+            onClick={() => this.updateSort('type')}
+          >
+            <span className={styles.filterItem}>
+                      Type
+              {this.renderSortIcon('type')}
+            </span>
           </div>
-        )}
-        {challenges.length > 0 && (
-          <ul className={styles.challengeList}>
-            {map(challenges, c => {
-              return (
-                <li
-                  className={styles.challengeItem}
-                  key={`challenge-card-${c.id}`}
-                >
-                  <ChallengeCard
-                    shouldShowCurrentPhase={selectedTab === 0}
-                    challenge={c}
-                    setActiveProject={setActiveProject}
-                    reloadChallengeList={this.reloadChallengeList}
-                    partiallyUpdateChallengeDetails={
-                      partiallyUpdateChallengeDetails
-                    }
-                    deleteChallenge={deleteChallenge}
-                    isBillingAccountExpired={isBillingAccountExpired}
-                    disableHover
-                    getStatusText={this.getStatusTextFunc(selfService)}
-                    challengeTypes={challengeTypes}
-                  />
-                </li>
+          <div
+            className={cn(styles.col2, styles.sortable)}
+            onClick={() => this.updateSort('name')}
+          >
+            <span className={styles.filterItem}>
+                      Challenge Name
+              {this.renderSortIcon('name')}
+            </span>
+          </div>
+          <div
+            className={cn(styles.col3, styles.sortable)}
+            onClick={() => this.updateSort('startDate')}
+          >
+            <span className={styles.filterItem}>
+                      Start Date
+              {this.renderSortIcon('startDate')}
+            </span>
+          </div>
+          <div
+            className={cn(styles.col3, styles.sortable)}
+            onClick={() => this.updateSort('endDate')}
+          >
+            <span className={styles.filterItem}>
+                      End Date
+              {this.renderSortIcon('endDate')}
+            </span>
+          </div>
+          <div
+            className={cn(styles.col4, styles.sortable)}
+            onClick={() => this.updateSort('numOfRegistrants')}
+          >
+            <span className={styles.filterItem}>
+              <FontAwesomeIcon icon={faUser} className={styles.faIcon} />
+              {this.renderSortIcon('numOfRegistrants')}
+            </span>
+          </div>
+          <div
+            className={cn(styles.col4, styles.sortable)}
+            onClick={() => this.updateSort('numOfSubmissions')}
+          >
+            <span className={styles.filterItem}>
+              <FontAwesomeIcon icon={faFile} className={styles.faIcon} />
+              {this.renderSortIcon('numOfSubmissions')}
+            </span>
+          </div>
+          <div
+            className={cn(styles.col3, styles.sortable)}
+            onClick={() => this.updateSort('status')}
+          >
+            <span className={styles.filterItem}>
+                      Status
+              {this.renderSortIcon('status')}
+            </span>
+          </div>
+          <div className={styles.col6}>&nbsp;</div>
+          <div className={styles.col6}>&nbsp;</div>
+          <div className={styles.col6}>&nbsp;</div>
+        </div>
+
+        {isLoading
+          ? <Loader />
+          : <>
+            {challenges.length > 0
+              ? <>
+                <ul className={styles.challengeList}>
+                  {map(challenges, c => {
+                    return (
+                      <li
+                        className={styles.challengeItem}
+                        key={`challenge-card-${c.id}`}
+                      >
+                        <ChallengeCard
+                          shouldShowCurrentPhase={selectedTab === 0}
+                          challenge={c}
+                          setActiveProject={setActiveProject}
+                          reloadChallengeList={this.reloadChallengeList}
+                          partiallyUpdateChallengeDetails={
+                            partiallyUpdateChallengeDetails
+                          }
+                          deleteChallenge={deleteChallenge}
+                          isBillingAccountExpired={isBillingAccountExpired}
+                          disableHover
+                          getStatusText={this.getStatusTextFunc(selfService)}
+                          challengeTypes={challengeTypes}
+                        />
+                      </li>
+                    )
+                  })}
+                </ul>
+              </> : (
+                <NoChallenge activeProject={activeProject} selfService={selfService} />
               )
-            })}
-          </ul>
-        )}
+            }
+        </>
+        }
+
         <div className={styles.footer}>
           <div className={styles.perPageContainer}>
             <Select
@@ -837,6 +842,7 @@ ChallengeList.propTypes = {
   deleteChallenge: PropTypes.func.isRequired,
   isBillingAccountExpired: PropTypes.bool,
   billingStartDate: PropTypes.string,
+  isLoading: PropTypes.bool,
   billingEndDate: PropTypes.string,
   isBillingAccountLoadingFailed: PropTypes.bool,
   isBillingAccountLoading: PropTypes.bool,

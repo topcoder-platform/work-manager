@@ -27,7 +27,8 @@ import {
   MILESTONE_STATUS,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
   QA_TRACK_ID, DESIGN_CHALLENGE_TYPES, ROUND_TYPES,
-  MULTI_ROUND_CHALLENGE_TEMPLATE_ID, DS_TRACK_ID
+  MULTI_ROUND_CHALLENGE_TEMPLATE_ID, DS_TRACK_ID,
+  CHALLENGE_STATUS
 } from '../../config/constants'
 import { getDomainTypes, getResourceRoleByName } from '../../util/tc'
 import { PrimaryButton, OutlineButton } from '../Buttons'
@@ -1493,7 +1494,7 @@ class ChallengeEditor extends Component {
         />
       )
     }
-
+    const statusMessage = challenge.status && challenge.status.split(' ')[0].toUpperCase()
     const errorContainer = <div className={styles.errorContainer}><div className={styles.errorMessage}>{error}</div></div>
 
     const actionButtons = <React.Fragment>
@@ -1534,9 +1535,11 @@ class ChallengeEditor extends Component {
                   )}
                 </div>
               )}
-              <div className={styles.button}>
-                <CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} />
-              </div>
+              {statusMessage !== CHALLENGE_STATUS.CANCELLED &&
+                <div className={styles.button}>
+                  <CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} />
+                </div>
+              }
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
               <div className={styles.button}>

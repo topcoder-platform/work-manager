@@ -9,7 +9,7 @@ import { connect } from 'react-redux'
 import { DebounceInput } from 'react-debounce-input'
 import ChallengesComponent from '../../components/ChallengesComponent'
 import ProjectCard from '../../components/ProjectCard'
-import Loader from '../../components/Loader'
+// import Loader from '../../components/Loader'
 import {
   loadChallengesByPage,
   partiallyUpdateChallengeDetails,
@@ -185,11 +185,10 @@ class Challenges extends Component {
           {!dashboard && activeProjectId === -1 && !selfService && (
             <div>No project selected. Select one below</div>
           )}
-          {dashboard ? null : isLoading ? (
-            <Loader />
-          ) : (
-            <ul>{projectComponents}</ul>
-          )}
+          {dashboard ? null
+            : (
+              <ul>{projectComponents}</ul>
+            )}
         </div>
         {(dashboard || activeProjectId !== -1 || selfService) && (
           <ChallengesComponent

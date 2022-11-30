@@ -9,7 +9,6 @@ import { CONNECT_APP_URL } from '../../config/constants'
 import { PrimaryButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
-import Loader from '../Loader'
 import xss from 'xss'
 
 const ChallengesComponent = ({
@@ -80,40 +79,37 @@ const ChallengesComponent = ({
         )}
       </div>}
       <div className={styles.challenges}>
-        {isLoading ? (
-          <Loader />
-        ) : (
-          <ChallengeList
-            challenges={challenges}
-            projects={projects}
-            warnMessage={warnMessage}
-            activeProject={activeProject}
-            setActiveProject={setActiveProject}
-            filterChallengeName={filterChallengeName}
-            filterChallengeType={filterChallengeType}
-            filterProjectOption={filterProjectOption}
-            filterDate={filterDate}
-            filterSortBy={filterSortBy}
-            filterSortOrder={filterSortOrder}
-            dashboard={dashboard}
-            status={status}
-            loadChallengesByPage={loadChallengesByPage}
-            activeProjectId={activeProjectId}
-            page={page}
-            perPage={perPage}
-            totalChallenges={totalChallenges}
-            partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
-            deleteChallenge={deleteChallenge}
-            isBillingAccountExpired={isBillingAccountExpired}
-            billingStartDate={billingStartDate}
-            billingEndDate={billingEndDate}
-            isBillingAccountLoadingFailed={isBillingAccountLoadingFailed}
-            isBillingAccountLoading={isBillingAccountLoading}
-            selfService={selfService}
-            auth={auth}
-            challengeTypes={challengeTypes}
-          />
-        )}
+        <ChallengeList
+          challenges={challenges}
+          projects={projects}
+          warnMessage={warnMessage}
+          isLoading={isLoading}
+          activeProject={activeProject}
+          setActiveProject={setActiveProject}
+          filterChallengeName={filterChallengeName}
+          filterChallengeType={filterChallengeType}
+          filterProjectOption={filterProjectOption}
+          filterDate={filterDate}
+          filterSortBy={filterSortBy}
+          filterSortOrder={filterSortOrder}
+          dashboard={dashboard}
+          status={status}
+          loadChallengesByPage={loadChallengesByPage}
+          activeProjectId={activeProjectId}
+          page={page}
+          perPage={perPage}
+          totalChallenges={totalChallenges}
+          partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
+          deleteChallenge={deleteChallenge}
+          isBillingAccountExpired={isBillingAccountExpired}
+          billingStartDate={billingStartDate}
+          billingEndDate={billingEndDate}
+          isBillingAccountLoadingFailed={isBillingAccountLoadingFailed}
+          isBillingAccountLoading={isBillingAccountLoading}
+          selfService={selfService}
+          auth={auth}
+          challengeTypes={challengeTypes}
+        />
       </div>
     </div>
   )
