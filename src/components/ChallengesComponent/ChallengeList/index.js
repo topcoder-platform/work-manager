@@ -154,7 +154,6 @@ class ChallengeList extends Component {
     const { searchText, sortBy, sortOrder } = this.state
     const {
       perPage,
-      page,
       loadChallengesByPage,
       activeProjectId,
       dashboard,
@@ -168,7 +167,7 @@ class ChallengeList extends Component {
     let projectId = dashboard ? filterProjectOption : activeProjectId
     if (perPage !== perPageNumber) {
       loadChallengesByPage(
-        page,
+        1,
         projectId,
         status,
         searchText,
