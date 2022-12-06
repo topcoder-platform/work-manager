@@ -63,7 +63,7 @@
     "postcss-preset-env": "6.3.1",
     "postcss-safe-parser": "4.0.1",
     "prop-types": "^15.6.2",
-    "qs": "^6.7.0",
+    "qs": "^6.9.7",
     "query-string": "^6.12.1",
     "rc-dropdown": "^3.2.0",
     "rc-time-picker": "^3.6.4",
