@@ -24,9 +24,11 @@ import {
   REVIEW_TYPES,
   CONNECT_APP_URL,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
+  MULTI_ROUND_CHALLENGE_TEMPLATE_ID,
   DS_TRACK_ID
 } from '../../../config/constants'
 import PhaseInput from '../../PhaseInput'
+import CheckpointPrizesField from '../CheckpointPrizes-Field'
 
 const ChallengeView = ({
   projectDetail,
@@ -96,6 +98,7 @@ const ChallengeView = ({
   const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
   const isTask = _.get(challenge, 'task.isTask', false)
   const phases = _.get(challenge, 'phases', [])
+  const showCheckpointPrizes = _.get(challenge, 'timelineTemplateId') === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
   const isDataScience = challenge.trackId === DS_TRACK_ID
   const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
   const useDashboard = useDashboardData ? useDashboardData.value : true
@@ -125,7 +128,7 @@ const ChallengeView = ({
                 </div>
               }
               <div className={styles.col}>
-                <span className={styles.fieldTitle}>Track:</span>
+                <span className={styles.fieldTitle}>Domain:</span>
                 <Track disabled type={challengeTrack} isActive key={challenge.trackId} onUpdateOthers={() => { }} />
               </div>
               <div className={styles.col}>
@@ -239,6 +242,11 @@ const ChallengeView = ({
               readOnly
             />}
             <ChallengePrizesField challenge={challenge} readOnly />
+            {
+              showCheckpointPrizes && (
+                <CheckpointPrizesField challenge={challenge} readOnly />
+              )
+            }
             <CopilotFeeField challenge={challenge} readOnly />
             <ChallengeTotalField challenge={challenge} />
           </div>

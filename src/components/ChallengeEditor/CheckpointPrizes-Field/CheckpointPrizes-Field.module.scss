@@ -50,7 +50,7 @@
         width: 271px;
       }
       input:last-of-type {
-        width: 187px;
+        width: 70px;
         margin-right: 10px;
       }
     }
@@ -60,4 +60,46 @@
 .icon {
   color: $tc-red;
   cursor: pointer;
+}
+
+.dollarIcon {
+  color: $tc-black;
+  cursor: pointer;
+}
+
+.checkpointPrizeContainer {
+  margin: 0 0 0 60px;
+}
+
+.checkpointLabel {
+  font-weight: 500 !important;
+  padding-left: 0 !important;
+}
+
+.checkpointPrizeContainer > div {
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.checkpointPrizeInputContainer {
+  box-sizing: border-box;
+  display: flex;
+  height: 40px;
+}
+
+.checkpointPrizeAmountContainer {
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: $tc-prize-bg;
+  border: 1px solid $tc-gray-40;
+  max-width: 50px;
+  min-width: 50px;
+  width: 50px;
+  border-right-width: 0;
+}
+
+.checkpointSelect {
+  max-width: 85px;
 }

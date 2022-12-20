@@ -16,7 +16,7 @@ const TrackField = ({ challenge, tracks, onUpdateOthers, disabled }) => {
     <>
       <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)}>
-          <label htmlFor='track'>Work Type <span>*</span> :</label>
+          <label htmlFor='track'>Domain <span>*</span> :</label>
         </div>
         <div className={cn(styles.field, styles.col2)}>
           {
@@ -27,7 +27,7 @@ const TrackField = ({ challenge, tracks, onUpdateOthers, disabled }) => {
       { challenge.submitTriggered && !challenge.trackId && <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)} />
         <div className={cn(styles.field, styles.col2, styles.error)}>
-          Work Type is required field
+          Domain is a required field
         </div>
       </div> }
     </>

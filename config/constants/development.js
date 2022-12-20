@@ -33,6 +33,7 @@ module.exports = {
   DES_TRACK_ID: '5fa04185-041f-49a6-bfd1-fe82533cd6c8',
   DS_TRACK_ID: 'c0f5d461-8219-4c14-878a-c3a3f356466d',
   QA_TRACK_ID: '36e6a8d0-7e1e-4608-a673-64279d99c115',
+  CP_TRACK_ID: '9d6e0de8-df14-4c76-ba0a-a9a8cb03a4ea',
   CHALLENGE_TYPE_ID: '927abff4-7af9-4145-8ba1-577c16e64e2e',
   MARATHON_TYPE_ID: '929bc408-9cf2-4b3e-ba71-adfbf693046c',
   SEGMENT_API_KEY: 'QBtLgV8vCiuRX1lDikbMjcoe9aCHkF6n',
@@ -44,5 +45,6 @@ module.exports = {
   // if idle for this many minutes, show user a prompt saying they'll be logged out
   IDLE_TIMEOUT_MINUTES: 10,
   // duration to show the prompt saying user will be logged out, before actually logging out the user
-  IDLE_TIMEOUT_GRACE_MINUTES: 5
+  IDLE_TIMEOUT_GRACE_MINUTES: 5,
+  MULTI_ROUND_CHALLENGE_TEMPLATE_ID: 'd4201ca4-8437-4d63-9957-3f7708184b07'
 }

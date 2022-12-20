@@ -5,6 +5,7 @@ import SimpleMDE from 'simplemde'
 import marked from 'marked'
 import cn from 'classnames'
 import _ from 'lodash'
+import { MULTI_ROUND_CHALLENGE_DESC_TEMPLATE, MULTI_ROUND_CHALLENGE_TEMPLATE_ID } from '../../../config/constants'
 
 class DescriptionField extends Component {
   constructor (props) {
@@ -15,6 +16,7 @@ class DescriptionField extends Component {
     }
     this.blurTheField = this.blurTheField.bind(this)
     this.updateDescriptionThrottled = _.throttle(this.updateDescription.bind(this), 10000) // 10s
+    this.onChange = this.onChange.bind(this)
   }
 
   blurTheField () {
@@ -27,13 +29,29 @@ class DescriptionField extends Component {
     onUpdateDescription(this.simplemde.value(), type)
   }
 
+  onChange (type) {
+    this.setState({ isChanged: true })
+    this.updateDescriptionThrottled(this.simplemde.value(), type)
+  }
+
   componentDidMount () {
     const { challenge, type, readOnly } = this.props
+
     if (!readOnly) {
-      this.simplemde = new SimpleMDE({ element: this.ref.current, initialValue: challenge[type] })
+      let initialValue = challenge[type]
+      const updateInitialValue = challenge.timelineTemplateId === MULTI_ROUND_CHALLENGE_TEMPLATE_ID && (
+        !initialValue || initialValue.length === 0
+      )
+      if (updateInitialValue) {
+        initialValue = MULTI_ROUND_CHALLENGE_DESC_TEMPLATE
+      }
+
+      this.simplemde = new SimpleMDE({ element: this.ref.current, initialValue })
+      if (updateInitialValue) {
+        this.onChange(type)
+      }
       this.simplemde.codemirror.on('change', () => {
-        this.setState({ isChanged: true })
-        this.updateDescriptionThrottled(this.simplemde.value(), type)
+        this.onChange(type)
       })
       this.simplemde.codemirror.on('blur', () => {
         if (this.state.isChanged) {

@@ -122,6 +122,27 @@ export function fixedTrack (track, subTrack) {
 }
 
 /**
+ * Given challenge domain (track), returns its corresponding challenge types
+ * @param {String} trackId challenge trackId
+ */
+export const getDomainTypes = (trackId) => {
+  switch (trackId) {
+    case CHALLENGE_TRACKS.DEVELOP:
+      return ['CH', 'F2F', 'TSK', 'SKL', 'PC']
+    case CHALLENGE_TRACKS.DATA_SCIENCE:
+      return ['CH', 'F2F', 'TSK', 'SKL', 'PC', 'MA']
+    case CHALLENGE_TRACKS.QA:
+      return ['CH', 'F2F', 'TSK', 'SKL', 'PC']
+    case CHALLENGE_TRACKS.DESIGN:
+      return ['CH', 'F2F', 'TSK', 'SKL', 'PC']
+    case CHALLENGE_TRACKS.COMPETITIVE_PROGRAMMING:
+      return ['CH', 'F2F', 'SKL', 'PC', 'MM', 'RDM']
+    default:
+      return []
+  }
+}
+
+/**
  * Checks if role is present in allowed roles
  * @param  roles
  */

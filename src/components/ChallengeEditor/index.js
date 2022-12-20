@@ -26,12 +26,15 @@ import {
   REVIEW_TYPES,
   MILESTONE_STATUS,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
-  QA_TRACK_ID,
-  DS_TRACK_ID
+  QA_TRACK_ID, DESIGN_CHALLENGE_TYPES, ROUND_TYPES,
+  MULTI_ROUND_CHALLENGE_TEMPLATE_ID, DS_TRACK_ID
 } from '../../config/constants'
+import { getDomainTypes, getResourceRoleByName } from '../../util/tc'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
 import TypeField from './Type-Field'
+import RoundTypeField from './RoundType-Field'
+import ChallengeTypeField from './ChallengeType-Field'
 import ChallengeNameField from './ChallengeName-Field'
 import CopilotField from './Copilot-Field'
 import ReviewTypeField from './ReviewType-Field'
@@ -58,10 +61,11 @@ import AssignedMemberField from './AssignedMember-Field'
 import Tooltip from '../Tooltip'
 import CancelDropDown from './Cancel-Dropdown'
 import UseSchedulingAPIField from './UseSchedulingAPIField'
-import { getResourceRoleByName } from '../../util/tc'
+
 import { isBetaMode } from '../../util/cookie'
 import MilestoneField from './Milestone-Field'
 import DiscussionField from './Discussion-Field'
+import CheckpointPrizesField from './CheckpointPrizes-Field'
 
 const theme = {
   container: styles.modalContainer
@@ -950,7 +954,7 @@ class ChallengeEditor extends Component {
   async createNewChallenge () {
     if (!this.props.isNew) return
     const { metadata, createChallenge, projectDetail } = this.props
-    const { challenge: { name, trackId, typeId, milestoneId, challengeType, metadata: challengeMetadata } } = this.state
+    const { challenge: { name, trackId, typeId, milestoneId, roundType, challengeType, metadata: challengeMetadata } } = this.state
     const { timelineTemplates } = metadata
     const isDesignChallenge = trackId === DES_TRACK_ID
     const isDataScience = trackId === DS_TRACK_ID
@@ -973,6 +977,9 @@ class ChallengeEditor extends Component {
       tags.push(challengeType)
     }
     let timelineTemplateId = defaultTemplate.id
+    if (roundType === ROUND_TYPES.TWO_ROUNDS) {
+      timelineTemplateId = MULTI_ROUND_CHALLENGE_TEMPLATE_ID
+    }
 
     const newChallenge = {
       status: 'New',
@@ -1560,19 +1567,32 @@ class ChallengeEditor extends Component {
     const currentChallengeId = this.getCurrentChallengeId()
     const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
     const copilotResources = metadata.members || challengeResources
+    const isDesignChallenge = challenge.trackId === DES_TRACK_ID
     const isDevChallenge = challenge.trackId === DEV_TRACK_ID
     const isMM = challenge.typeId === MARATHON_TYPE_ID
     const isChallengeType = challenge.typeId === CHALLENGE_TYPE_ID
+    const showRoundType = isDesignChallenge && isChallengeType
+    const showCheckpointPrizes = challenge.timelineTemplateId === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
     const showDashBoard = (challenge.trackId === DS_TRACK_ID && isChallengeType) || (isDevChallenge && isMM)
     const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
     const useDashboard = useDashboardData ? useDashboardData.value : true
+    const workTypes = getDomainTypes(challenge.trackId)
+    const filteredTypes = metadata.challengeTypes.filter(type => workTypes.includes(type.abbreviation))
 
     const challengeForm = isNew
       ? (
         <form name='challenge-new-form' noValidate autoComplete='off' onSubmit={this.createChallengeHandler}>
           <div className={styles.newFormContainer}>
             <TrackField tracks={metadata.challengeTracks} challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
-            <TypeField types={metadata.challengeTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
+            <TypeField types={filteredTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
+            {
+              showRoundType && (
+                <>
+                  <RoundTypeField roundType={challenge.roundType} onUpdateOthers={this.onUpdateOthers} />
+                  <ChallengeTypeField types={DESIGN_CHALLENGE_TYPES} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
+                </>
+              )
+            }
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             {
               showDashBoard && (
@@ -1613,7 +1633,7 @@ class ChallengeEditor extends Component {
                 </span>
               </div>
               <div className={styles.col}>
-                <span className={styles.fieldTitle}>Track:</span>
+                <span className={styles.fieldTitle}>Domain:</span>
                 <Track disabled type={challengeTrack} isActive key={challenge.trackId} onUpdateOthers={() => { }} />
               </div>
               <div className={styles.col}>
@@ -1766,6 +1786,11 @@ class ChallengeEditor extends Component {
               removeAttachment={removeAttachment}
             />}
             <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
+            {
+              showCheckpointPrizes && (
+                <CheckpointPrizesField onUpdateOthers={this.onUpdateOthers} challenge={challenge} />
+              )
+            }
             <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <ChallengeTotalField challenge={challenge} />
           </div>
