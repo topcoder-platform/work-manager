@@ -221,7 +221,12 @@ export const ALLOWED_USER_ROLES = [
   'administrator',
   'connect admin',
   'connect manager',
-  'connect copilot'
+  'connect copilot',
+  'topcoder user'
+]
+
+export const READ_ONLY_ROLES = [
+  'topcoder user'
 ]
 
 export const ADMIN_ROLES = [

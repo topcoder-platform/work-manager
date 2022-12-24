@@ -771,6 +771,7 @@ class ChallengeList extends Component {
                           disableHover
                           getStatusText={this.getStatusTextFunc(selfService)}
                           challengeTypes={challengeTypes}
+                          auth={this.props.auth}
                         />
                       </li>
                     )

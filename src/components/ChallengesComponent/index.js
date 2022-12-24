@@ -10,6 +10,7 @@ import { PrimaryButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
 import xss from 'xss'
+import { checkReadOnlyRoles } from '../../util/tc'
 
 const ChallengesComponent = ({
   challenges,
@@ -42,6 +43,8 @@ const ChallengesComponent = ({
   auth,
   challengeTypes
 }) => {
+  const isReadOnly = checkReadOnlyRoles(auth.token)
+
   return (
     <div>
       <Helmet title={activeProject ? activeProject.name : ''} />
@@ -67,7 +70,7 @@ const ChallengesComponent = ({
             </span>
           )}
         </div>
-        {activeProject && activeProject.id ? (
+        {activeProject && activeProject.id && !isReadOnly ? (
           <Link
             className={styles.buttonLaunchNew}
             to={`/projects/${activeProject.id}/challenges/new`}

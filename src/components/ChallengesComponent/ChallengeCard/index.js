@@ -14,7 +14,7 @@ import styles from './ChallengeCard.module.scss'
 import { formatDate } from '../../../util/date'
 import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, MESSAGE, ONLINE_REVIEW_URL } from '../../../config/constants'
 import ConfirmationModal from '../../Modal/ConfirmationModal'
-import { checkChallengeEditPermission } from '../../../util/tc'
+import { checkChallengeEditPermission, checkReadOnlyRoles } from '../../../util/tc'
 import AlertModal from '../../Modal/AlertModal'
 import Tooltip from '../../Tooltip'
 
@@ -208,6 +208,7 @@ class ChallengeCard extends React.Component {
       : `Do you want to delete "${challenge.name}"?`
     const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
     const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.id}`
+    const isReadOnly = checkReadOnlyRoles(this.props.auth.token)
 
     return (
       <div className={styles.item}>
@@ -277,9 +278,13 @@ class ChallengeCard extends React.Component {
         <div className={styles.col3}>
           {renderStatus(challenge.status.toUpperCase(), getStatusText)}
         </div>
-        <div className={styles.col6}>
-          {(disableHover ? <Link className={styles.link} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`}>Edit</Link> : hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch))}
-        </div>
+        {
+          !isReadOnly && (
+            <div className={styles.col6}>
+              {(disableHover ? <Link className={styles.link} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`}>Edit</Link> : hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch))}
+            </div>
+          )
+        }
         <div className={styles.col6}>
           <a className={styles.link} href={orUrl} target='_blank'>OR</a>
         </div>
@@ -306,7 +311,8 @@ ChallengeCard.propTypes = {
   isBillingAccountExpired: PropTypes.bool,
   disableHover: PropTypes.bool,
   getStatusText: PropTypes.func,
-  challengeTypes: PropTypes.arrayOf(PropTypes.shape())
+  challengeTypes: PropTypes.arrayOf(PropTypes.shape()),
+  auth: PropTypes.object.isRequired
 }
 
 export default withRouter(ChallengeCard)
