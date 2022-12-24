@@ -233,6 +233,10 @@ class Challenges extends Component {
   }
 }
 
+Challenges.defaultProps = {
+  isLoading: false
+}
+
 Challenges.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.shape()),
   menu: PropTypes.string,

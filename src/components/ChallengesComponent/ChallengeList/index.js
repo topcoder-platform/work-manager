@@ -813,7 +813,9 @@ class ChallengeList extends Component {
   }
 }
 
-ChallengeList.defaultProps = {}
+ChallengeList.defaultProps = {
+  isLoading: false
+}
 
 ChallengeList.propTypes = {
   challenges: PropTypes.arrayOf(PropTypes.object),
