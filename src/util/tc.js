@@ -156,6 +156,9 @@ export const checkAllowedRoles = roles =>
  */
 export const checkReadOnlyRoles = token => {
   const roles = _.get(decodeToken(token), 'roles')
+  if (checkAllowedRoles(roles)) {
+    return false
+  }
   return roles.some(val => READ_ONLY_ROLES.indexOf(val.toLowerCase()) > -1)
 }
 
