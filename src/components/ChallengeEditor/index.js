@@ -103,7 +103,8 @@ class ChallengeEditor extends Component {
       // NOTE that we have to keep `assignedMemberDetails` in the local state, rather than just get it from the props
       // because we can update it locally when we choose another assigned user, so we don't have to wait for user details
       // to be loaded from Member Service as we already know it in such case
-      assignedMemberDetails: this.props.assignedMemberDetails
+      assignedMemberDetails: this.props.assignedMemberDetails,
+      isPhaseChange: false
     }
     this.onUpdateInput = this.onUpdateInput.bind(this)
     this.onUpdateSelect = this.onUpdateSelect.bind(this)
@@ -865,8 +866,8 @@ class ChallengeEditor extends Component {
           .format('MM/DD/YYYY HH:mm')
     } else {
       newChallenge.phases[index]['duration'] = phase.duration
-      newChallenge.phases[index]['scheduledStartDate'] = phase.startDate
-      newChallenge.phases[index]['scheduledEndDate'] = phase.endDate
+      newChallenge.phases[index]['scheduledStartDate'] = moment(phase.startDate).toISOString()
+      newChallenge.phases[index]['scheduledEndDate'] = moment(phase.endDate).toISOString()
     }
 
     for (let phaseIndex = index + 1; phaseIndex < phases.length; ++phaseIndex) {
@@ -886,7 +887,9 @@ class ChallengeEditor extends Component {
           .add(newChallenge.phases[phaseIndex]['duration'], 'hours')
           .format('MM/DD/YYYY HH:mm')
     }
-
+    if (!_.isEqual(newChallenge.phases[index], phases[index])) {
+      this.setState({ isPhaseChange: true })
+    }
     this.setState({ challenge: newChallenge })
 
     setTimeout(() => {
@@ -895,6 +898,7 @@ class ChallengeEditor extends Component {
   }
 
   collectChallengeData (status) {
+    const { isPhaseChange } = this.state
     const { attachments, metadata } = this.props
     const challenge = pick([
       'phases',
@@ -942,6 +946,7 @@ class ChallengeEditor extends Component {
     if (challenge.terms && challenge.terms.length === 0) delete challenge.terms
     delete challenge.attachments
     delete challenge.reviewType
+    if (!isPhaseChange) delete challenge.phases
     return _.cloneDeep(challenge)
   }
 
