@@ -839,7 +839,11 @@ class ChallengeEditor extends Component {
       for (let index = 0; index < phases.length; ++index) {
         newChallenge.phases[index].isDurationActive =
           moment(newChallenge.phases[index]['scheduledEndDate']).isAfter()
-        newChallenge.phases[index].isStartTimeActive = index <= 0
+        if (newChallenge.phases[index].name === 'Submission') {
+          newChallenge.phases[index].isStartTimeActive = true
+        } else {
+          newChallenge.phases[index].isStartTimeActive = index <= 0
+        }
         newChallenge.phases[index].isOpen =
           newChallenge.phases[index].isDurationActive
       }
