@@ -37,12 +37,12 @@ Development configuration is in `config/constants/development.js`
 npm install
 ```
 
-1. copy the environment file in docs/dev.env to /.env
+2. copy the environment file in docs/dev.env to /.env
 
-1. If you are using local instances of the API's, change the DEV_API_HOSTNAME in configs/constants/development.js to match your local api endpoint.
+3. If you are using local instances of the API's, change the DEV_API_HOSTNAME in configs/constants/development.js to match your local api endpoint.
     - For example change it to 'http://localhost:3000/',
 
-1. Run the app in development mode
+4. Run the app in development mode
 
 ```bash
 npm run dev
