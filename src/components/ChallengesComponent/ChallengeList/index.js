@@ -84,7 +84,7 @@ class ChallengeList extends Component {
     this.setState(
       {
         searchText,
-        projectOption,
+        challengeProjectOption: projectOption,
         challengeStatus: projectStatus,
         challengeType,
         challengeDate
@@ -117,9 +117,10 @@ class ChallengeList extends Component {
    * @param {Number} pageNumber page number
    */
   handlePageChange (pageNumber) {
-    const { searchText } = this.state
+    const { searchText, sortBy, sortOrder } = this.state
     const {
       page,
+      perPage,
       loadChallengesByPage,
       activeProjectId,
       dashboard,
@@ -140,7 +141,10 @@ class ChallengeList extends Component {
         selfService,
         this.getHandle(),
         filterChallengeType,
-        filterDate
+        filterDate,
+        sortBy,
+        sortOrder,
+        perPage
       )
     }
   }
@@ -310,6 +314,8 @@ class ChallengeList extends Component {
 
     this.setState({
       searchText: '',
+      challengeProjectOption: null,
+      challengeStatus: '',
       challengeType: null,
       sortBy: '',
       sortOrder: 'asc',
