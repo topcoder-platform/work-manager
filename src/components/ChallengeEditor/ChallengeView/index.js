@@ -207,7 +207,7 @@ const ChallengeView = ({
               </>
             )}
             {
-              phases.map((phase, index) => (
+              _.sortBy(phases, ['scheduledEndDate']).map((phase, index) => (
                 <PhaseInput
                   phase={phase}
                   phaseIndex={index}
