@@ -106,7 +106,18 @@ export default function (state = initialState, action) {
     case LOAD_CHALLENGE_DETAILS_SUCCESS: {
       return {
         ...state,
-        challengeDetails: action.payload,
+        challengeDetails: { ...action.payload,
+          // change the phase order for the design challenge with multiple phases
+          phases: (action.payload.legacy.subTrack === 'WEB_DESIGNS' && action.payload.phases.length === 8) ? [
+            action.payload.phases.find(x => x.name === 'Registration'),
+            action.payload.phases.find(x => x.name === 'Checkpoint Submission'),
+            action.payload.phases.find(x => x.name === 'Checkpoint Screening'),
+            action.payload.phases.find(x => x.name === 'Checkpoint Review'),
+            action.payload.phases.find(x => x.name === 'Submission'),
+            action.payload.phases.find(x => x.name === 'Screening'),
+            action.payload.phases.find(x => x.name === 'Review'),
+            action.payload.phases.find(x => x.name === 'Approval')] : action.payload.phases
+        },
         isLoading: false,
         attachments: _.has(action.payload, 'attachments') ? action.payload.attachments : [],
         failedToLoad: false

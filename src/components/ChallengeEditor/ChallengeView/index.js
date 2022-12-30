@@ -207,7 +207,14 @@ const ChallengeView = ({
               </>
             )}
             {
-              _.sortBy(phases, ['scheduledEndDate']).map((phase, index) => (
+              challenge.legacy.subTrack === 'WEB_DESIGNS' && challenge.phases.length === 8 ? phases.map((phase, index) => (
+                <PhaseInput
+                  phase={phase}
+                  phaseIndex={index}
+                  key={index}
+                  readOnly
+                />
+              )) : _.sortBy(phases, ['scheduledEndDate']).map((phase, index) => (
                 <PhaseInput
                   phase={phase}
                   phaseIndex={index}
