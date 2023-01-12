@@ -8,6 +8,7 @@ import _ from 'lodash'
 import { BETA_MODE_COOKIE_TAG } from './config/constants'
 import renderApp from './components/App'
 import TopBarContainer from './containers/TopbarContainer'
+import FooterContainer from './containers/FooterContainer'
 import Tab from './containers/Tab'
 import Challenges from './containers/Challenges'
 import ChallengeEditor from './containers/ChallengeEditor'
@@ -160,7 +161,8 @@ class Routes extends React.Component {
             render={() => renderApp(
               <Challenges menu='NULL' warnMessage={'You are not authorized to use this application'} />,
               <TopBarContainer />,
-              <Tab />
+              <Tab />,
+              <FooterContainer />
             )()}
           />
           <Redirect to='/' />
@@ -170,14 +172,16 @@ class Routes extends React.Component {
             render={() => renderApp(
               <Challenges dashboard key='dashboard' />,
               <TopBarContainer />,
-              <Tab />
+              <Tab />,
+              <FooterContainer />
             )()}
           />
           <Route exact path='/projects'
             render={() => renderApp(
               <Challenges menu='NULL' key='projects' />,
               <TopBarContainer />,
-              <Tab />
+              <Tab />,
+              <FooterContainer />
             )()}
           />
           {
@@ -186,7 +190,8 @@ class Routes extends React.Component {
                 render={() => renderApp(
                   <Users />,
                   <TopBarContainer />,
-                  <Tab />
+                  <Tab />,
+                  <FooterContainer />
                 )()}
               />
             )
@@ -195,7 +200,8 @@ class Routes extends React.Component {
             render={() => renderApp(
               <Challenges selfService />,
               <TopBarContainer />,
-              <Tab selfService />
+              <Tab selfService />,
+              <FooterContainer />
             )()}
           />
           {
@@ -204,7 +210,8 @@ class Routes extends React.Component {
                 render={({ match }) => renderApp(
                   <ChallengeEditor />,
                   <TopBarContainer />,
-                  <Tab projectId={match.params.projectId} menu={'New Challenge'} />
+                  <Tab projectId={match.params.projectId} menu={'New Challenge'} />,
+                  <FooterContainer />
                 )()} />
             )
           }
@@ -214,13 +221,15 @@ class Routes extends React.Component {
             render={({ match }) => renderApp(
               <ChallengeEditor />,
               <TopBarContainer />,
-              <Tab projectId={match.params.projectId} menu={'New Challenge'} />
+              <Tab projectId={match.params.projectId} menu={'New Challenge'} />,
+              <FooterContainer />
             )()} />
           <Route exact path='/projects/:projectId/challenges'
             render={({ match }) => renderApp(
               <Challenges projectId={match.params.projectId} key='challenges' />,
               <TopBarContainer projectId={match.params.projectId} />,
-              <Tab projectId={match.params.projectId} />
+              <Tab projectId={match.params.projectId} />,
+              <FooterContainer />
             )()} />
           {/* If path is not defined redirect to landing page */}
           <Redirect to='/' />

@@ -4,13 +4,14 @@
 import React from 'react'
 import TwoRowsLayout from '../TwoRowsLayout'
 
-const App = (content, topbar, sidebar) => () => {
+const App = (content, topbar, sidebar, footer) => () => {
   return (
     <TwoRowsLayout scrollIndependent>
       <TwoRowsLayout.Content>
         {topbar || null}
         {sidebar}
         {content}
+        {footer || null}
       </TwoRowsLayout.Content>
     </TwoRowsLayout>
   )
