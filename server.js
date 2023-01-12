@@ -24,7 +24,7 @@ app.use((req, res, next) => {
   res.header('Cache-control', 'public, max-age=0');
   res.header('Pragma', 'no-cache');
   res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('Content-Security-Policy', "frame-ancestors 'none';");
+  res.setHeader('Content-Security-Policy', "frame-ancestors *.topcoder.com *.topcoder-dev.com 'none';");
 
   next();
 });
