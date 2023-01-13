@@ -24,7 +24,12 @@ app.use((req, res, next) => {
   res.header('Cache-control', 'public, max-age=0');
   res.header('Pragma', 'no-cache');
   res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('Content-Security-Policy', "frame-ancestors 'none'; *.topcoder-dev.com 'none'; *.topcoder.com 'none';");
+  res.setHeader('Content-Security-Policy',
+      "frame-ancestors 'none';" +
+      "script-src 'report-sample' 'self' 'unsafe-inline' 'unsafe-eval'" +
+        ' https://uni-nav.topcoder-dev.com' +
+        ' https://uni-nav.topcoder.com'
+  );
 
   next();
 });
