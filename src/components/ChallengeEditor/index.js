@@ -894,6 +894,8 @@ class ChallengeEditor extends Component {
     if (!_.isEqual(newChallenge.phases[index], phases[index])) {
       this.setState({ isPhaseChange: true })
     }
+    console.log('Setting new state', newChallenge)
+    console.log('isPhaseChange', this.state.isPhaseChange)
     this.setState({ challenge: newChallenge })
 
     setTimeout(() => {
@@ -941,12 +943,14 @@ class ChallengeEditor extends Component {
     if (this.state.challenge.id) {
       challenge.attachmentIds = _.map(attachments, item => item.id)
     }
+    console.log('Phase Data', challenge.phases)
     challenge.phases = challenge.phases.map((p) => pick([
       'duration',
       'phaseId',
       'scheduledStartDate',
       'scheduledEndDate'
     ], p))
+    console.log('Picked', challenge.phases)
     if (challenge.terms && challenge.terms.length === 0) delete challenge.terms
     delete challenge.attachments
     delete challenge.reviewType
