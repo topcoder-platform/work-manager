@@ -1351,6 +1351,7 @@ class ChallengeEditor extends Component {
     }
     const isTask = _.get(challenge, 'task.isTask', false)
     const { assignedMemberDetails, error } = this.state
+    const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.id}`
     let isActive = false
     let isDraft = false
     let isCompleted = false
@@ -1496,9 +1497,11 @@ class ChallengeEditor extends Component {
           }
           theme={theme}
           closeText='Close'
-          closeLink='/'
-          okText='View Challenge'
-          okLink='./view'
+          closeLink='./view'
+          okText='View Challenge on Community App'
+          onOk={() => {
+            window.open(communityAppUrl, '_blank')
+          }}
           onClose={this.resetModal}
         />
       )
