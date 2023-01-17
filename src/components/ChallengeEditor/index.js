@@ -950,12 +950,16 @@ class ChallengeEditor extends Component {
       'scheduledStartDate',
       'scheduledEndDate'
     ], p))
-    console.log('Picked', challenge.phases)
+
     if (challenge.terms && challenge.terms.length === 0) delete challenge.terms
     delete challenge.attachments
     delete challenge.reviewType
     if (!isPhaseChange) delete challenge.phases
-    return _.cloneDeep(challenge)
+
+    const cloned = _.cloneDeep(challenge)
+    console.log('CLONED', cloned)
+
+    return cloned
   }
 
   goToEdit (challengeID) {
