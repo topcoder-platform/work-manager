@@ -1498,7 +1498,7 @@ class ChallengeEditor extends Component {
           theme={theme}
           closeText='Close'
           closeLink='./view'
-          okText='View Challenge on Community App'
+          okText='Preview'
           onOk={() => {
             window.open(communityAppUrl, '_blank')
           }}
