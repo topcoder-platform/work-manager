@@ -52,7 +52,7 @@
     "lodash": "^4.17.11",
     "marked": "^1.0.0",
     "mini-css-extract-plugin": "0.4.3",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "moment-duration-format": "^2.2.2",
     "moment-timezone": "^0.5.34",
     "node-sass": "^4.14.0",
