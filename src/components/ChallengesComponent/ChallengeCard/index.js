@@ -12,7 +12,7 @@ import ChallengeStatus from '../ChallengeStatus'
 import ChallengeTag from '../ChallengeTag'
 import styles from './ChallengeCard.module.scss'
 import { formatDate } from '../../../util/date'
-import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, MESSAGE, ONLINE_REVIEW_URL } from '../../../config/constants'
+import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, MESSAGE, ONLINE_REVIEW_URL, PROJECT_ROLES } from '../../../config/constants'
 import ConfirmationModal from '../../Modal/ConfirmationModal'
 import { checkChallengeEditPermission, checkReadOnlyRoles } from '../../../util/tc'
 import AlertModal from '../../Modal/AlertModal'
@@ -119,7 +119,8 @@ class ChallengeCard extends React.Component {
       isDeleteLaunch: false,
       isSaving: false,
       isCheckChalengePermission: false,
-      hasEditChallengePermission: false
+      hasEditChallengePermission: false,
+      loginUserRoleInProject: ''
     }
     this.onUpdateConfirm = this.onUpdateConfirm.bind(this)
     this.onUpdateLaunch = this.onUpdateLaunch.bind(this)
@@ -202,13 +203,13 @@ class ChallengeCard extends React.Component {
 
   render () {
     const { isLaunch, isConfirm, isSaving, isDeleteLaunch, isCheckChalengePermission, hasEditChallengePermission } = this.state
-    const { setActiveProject, challenge, reloadChallengeList, isBillingAccountExpired, disableHover, getStatusText, challengeTypes } = this.props
+    const { setActiveProject, challenge, reloadChallengeList, isBillingAccountExpired, disableHover, getStatusText, challengeTypes, loginUserRoleInProject } = this.props
     const deleteMessage = isCheckChalengePermission
       ? 'Checking permissions...'
       : `Do you want to delete "${challenge.name}"?`
     const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
     const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.id}`
-    const isReadOnly = checkReadOnlyRoles(this.props.auth.token)
+    const isReadOnly = checkReadOnlyRoles(this.props.auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
 
     return (
       <div className={styles.item}>
@@ -299,7 +300,8 @@ class ChallengeCard extends React.Component {
 ChallengeCard.defaultPrps = {
   reloadChallengeList: () => { },
   challengeTypes: [],
-  setActiveProject: () => {}
+  setActiveProject: () => {},
+  loginUserRoleInProject: ''
 }
 
 ChallengeCard.propTypes = {
@@ -312,7 +314,8 @@ ChallengeCard.propTypes = {
   disableHover: PropTypes.bool,
   getStatusText: PropTypes.func,
   challengeTypes: PropTypes.arrayOf(PropTypes.shape()),
-  auth: PropTypes.object.isRequired
+  auth: PropTypes.object.isRequired,
+  loginUserRoleInProject: PropTypes.string
 }
 
 export default withRouter(ChallengeCard)
