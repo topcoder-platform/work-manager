@@ -96,9 +96,9 @@ const ChallengeViewTabs = ({
   // OR if this isn't a non-self-service draft, permit launching if:
   // a) the current user is either the self-service copilot or is an admin AND
   // b) the challenge is approved
-  const canLaunch = hasBillingAccount && !isReadOnly &&
+  const canLaunch = enableEdit && hasBillingAccount && !isReadOnly &&
     ((!isSelfService && isDraft) ||
-      ((isSelfServiceCopilot || enableEdit || isAdmin) &&
+      ((isSelfServiceCopilot || isAdmin) &&
         challenge.status.toUpperCase() === CHALLENGE_STATUS.APPROVED))
 
   return (

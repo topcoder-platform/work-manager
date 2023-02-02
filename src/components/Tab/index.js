@@ -77,8 +77,6 @@ const Tab = ({
 
   return (
     <div className={styles.tabs}>
-      <h1>Work Manager</h1>
-      <hr />
       {tabComponent}
     </div>
   )
