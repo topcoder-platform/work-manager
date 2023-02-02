@@ -116,7 +116,8 @@ export const updateChallengePhaseBeforeSendRequest = (challengeDetail) => {
     // challengeDetailTmp.submissionEndDate = moment(challengeDetail.phases[1].scheduledEndDate)
     challengeDetailTmp.phases = challengeDetailTmp.phases.map((p) => ({
       duration: p.duration * hourToSecond,
-      phaseId: p.phaseId
+      phaseId: p.phaseId,
+      scheduledStartDate: p.scheduledStartDate
     }))
     return challengeDetailTmp
   }

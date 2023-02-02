@@ -853,13 +853,16 @@ class ChallengeEditor extends Component {
   }
 
   onUpdatePhaseDate (phase, index) {
+    console.log('onUpdatePhase', phase, index)
     const { phases } = this.state.challenge
     let newChallenge = _.cloneDeep(this.state.challenge)
+
     if (phase.isBlur && newChallenge.phases[index]['name'] === 'Submission') {
       newChallenge.phases[index]['duration'] = _.max([
         newChallenge.phases[index - 1]['duration'],
         phase.duration
       ])
+      newChallenge.phases[index]['scheduledStartDate'] = moment(phase.startDate).toISOString()
       newChallenge.phases[index]['scheduledEndDate'] =
         moment(newChallenge.phases[index]['scheduledStartDate'])
           .add(newChallenge.phases[index]['duration'], 'hours')
@@ -872,8 +875,9 @@ class ChallengeEditor extends Component {
 
     for (let phaseIndex = index + 1; phaseIndex < phases.length; ++phaseIndex) {
       if (newChallenge.phases[phaseIndex]['name'] === 'Submission') {
-        newChallenge.phases[phaseIndex]['scheduledStartDate'] =
-          newChallenge.phases[phaseIndex - 1]['scheduledStartDate']
+        console.log('Setting submission phase scheduled start date', moment(phase.startDate).toISOString())
+        newChallenge.phases[index]['scheduledStartDate'] = moment(phase.startDate).toISOString()
+
         newChallenge.phases[phaseIndex]['duration'] = _.max([
           newChallenge.phases[phaseIndex - 1]['duration'],
           newChallenge.phases[phaseIndex]['duration']
@@ -890,6 +894,8 @@ class ChallengeEditor extends Component {
     if (!_.isEqual(newChallenge.phases[index], phases[index])) {
       this.setState({ isPhaseChange: true })
     }
+    console.log('Setting new state', newChallenge)
+    console.log('isPhaseChange', this.state.isPhaseChange)
     this.setState({ challenge: newChallenge })
 
     setTimeout(() => {
@@ -937,17 +943,23 @@ class ChallengeEditor extends Component {
     if (this.state.challenge.id) {
       challenge.attachmentIds = _.map(attachments, item => item.id)
     }
+    console.log('Phase Data', challenge.phases)
     challenge.phases = challenge.phases.map((p) => pick([
       'duration',
       'phaseId',
       'scheduledStartDate',
       'scheduledEndDate'
     ], p))
+
     if (challenge.terms && challenge.terms.length === 0) delete challenge.terms
     delete challenge.attachments
     delete challenge.reviewType
     if (!isPhaseChange) delete challenge.phases
-    return _.cloneDeep(challenge)
+
+    const cloned = _.cloneDeep(challenge)
+    console.log('CLONED', cloned)
+
+    return cloned
   }
 
   goToEdit (challengeID) {
