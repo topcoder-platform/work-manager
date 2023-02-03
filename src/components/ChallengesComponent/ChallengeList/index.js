@@ -43,8 +43,7 @@ class ChallengeList extends Component {
       challengeProjectOption: this.props.filterProjectOption,
       challengeStatus: this.props.status,
       challengeType: this.props.filterChallengeType,
-      challengeDate: this.props.filterDate,
-      loginUserRoleInProject: ''
+      challengeDate: this.props.filterDate
     }
     this.directUpdateSearchParam = this.updateSearchParam.bind(this) // update search param without debounce
     this.handlePageChange = this.handlePageChange.bind(this) // update search param without debounce
@@ -56,20 +55,6 @@ class ChallengeList extends Component {
     this.updateSort = this.updateSort.bind(this)
     this.update = debounce(this.updateSearchParam.bind(this), 1000)
     this.resetFilter = this.resetFilter.bind(this)
-  }
-
-  componentWillReceiveProps (nextProps) {
-    const { activeProject, auth } = nextProps
-    if (activeProject && auth && auth.user) {
-      const loggedInUser = auth.user
-      const projectMembers = activeProject.members
-      const loginUserProjectInfo = _.find(projectMembers, { userId: loggedInUser.userId })
-      if (loginUserProjectInfo && this.state.loginUserRoleInProject !== loginUserProjectInfo.role) {
-        this.setState({
-          loginUserRoleInProject: loginUserProjectInfo.role
-        })
-      }
-    }
   }
 
   /**
@@ -361,8 +346,7 @@ class ChallengeList extends Component {
       challengeProjectOption,
       challengeStatus,
       challengeType,
-      challengeDate,
-      loginUserRoleInProject
+      challengeDate
     } = this.state
 
     const {
@@ -385,7 +369,8 @@ class ChallengeList extends Component {
       isBillingAccountLoadingFailed,
       isBillingAccountLoading,
       selfService,
-      challengeTypes
+      challengeTypes,
+      loginUserRoleInProject
     } = this.props
     if (warnMessage) {
       return <Message warnMessage={warnMessage} />
@@ -837,7 +822,8 @@ class ChallengeList extends Component {
 }
 
 ChallengeList.defaultProps = {
-  isLoading: false
+  isLoading: false,
+  loginUserRoleInProject: ''
 }
 
 ChallengeList.propTypes = {
@@ -872,7 +858,8 @@ ChallengeList.propTypes = {
   dashboard: PropTypes.bool,
   selfService: PropTypes.bool,
   auth: PropTypes.object.isRequired,
-  challengeTypes: PropTypes.arrayOf(PropTypes.shape()).isRequired
+  challengeTypes: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+  loginUserRoleInProject: PropTypes.string
 }
 
 export default ChallengeList

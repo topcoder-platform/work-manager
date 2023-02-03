@@ -1,5 +1,6 @@
 /* global tcUniNav */
 import React, { useEffect, useRef, useState } from 'react'
+import styles from './styles.module.scss'
 
 let uniqueId = 0
 
@@ -25,5 +26,11 @@ export default function TopcoderFooter () {
     })
   }, [footerId])
 
-  return <div id={`footerNav-${footerId}`} ref={footerRef} />
+  return (
+    <div
+      id={`footerNav-${footerId}`}
+      className={styles.container}
+      ref={footerRef}
+    />
+  )
 }

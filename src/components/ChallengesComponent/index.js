@@ -1,11 +1,12 @@
 /**
  * Component to render Challenges page
  */
-import React from 'react'
+import React, { useState, useEffect } from 'react'
+import _ from 'lodash'
 import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import { Link } from 'react-router-dom'
-import { CONNECT_APP_URL } from '../../config/constants'
+import { CONNECT_APP_URL, PROJECT_ROLES } from '../../config/constants'
 import { PrimaryButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
@@ -43,7 +44,17 @@ const ChallengesComponent = ({
   auth,
   challengeTypes
 }) => {
-  const isReadOnly = checkReadOnlyRoles(auth.token)
+  const [loginUserRoleInProject, setLoginUserRoleInProject] = useState('')
+  const isReadOnly = checkReadOnlyRoles(auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
+
+  useEffect(() => {
+    const loggedInUser = auth.user
+    const projectMembers = activeProject.members
+    const loginUserProjectInfo = _.find(projectMembers, { userId: loggedInUser.userId })
+    if (loginUserProjectInfo && loginUserRoleInProject !== loginUserProjectInfo.role) {
+      setLoginUserRoleInProject(loginUserProjectInfo.role)
+    }
+  }, [activeProject, auth])
 
   return (
     <div>
@@ -112,6 +123,7 @@ const ChallengesComponent = ({
           selfService={selfService}
           auth={auth}
           challengeTypes={challengeTypes}
+          loginUserRoleInProject={loginUserRoleInProject}
         />
       </div>
     </div>
