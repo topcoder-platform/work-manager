@@ -874,7 +874,7 @@ class ChallengeEditor extends Component {
     }
 
     for (let phaseIndex = index + 1; phaseIndex < phases.length; ++phaseIndex) {
-      if (newChallenge.phases[phaseIndex]['name'] === 'Submission') {
+      if (newChallenge.phases[phaseIndex]['name'] === 'Submission' || newChallenge.phases[index].name === 'Checkpoint Submission') {
         console.log('Setting submission phase scheduled start date', moment(phase.startDate).toISOString())
         newChallenge.phases[index]['scheduledStartDate'] = moment(phase.startDate).toISOString()
 
