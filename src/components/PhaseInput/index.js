@@ -1,5 +1,5 @@
 import moment from 'moment'
-import React from 'react'
+import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 import styles from './PhaseInput.module.scss'
 import cn from 'classnames'
@@ -30,6 +30,18 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
       duration
     })
   }
+
+  useEffect(() => {
+    if (!startDate) {
+      let startDate = moment().format(dateFormat)
+      let endDate = getEndDate(startDate, duration)
+      onUpdatePhase({
+        startDate,
+        endDate,
+        duration
+      })
+    }
+  }, [startDate])
 
   const onDurationChange = (e, isBlur = false) => {
     if (e.length > MAX_LENGTH) return null
