@@ -16,17 +16,9 @@ const BASE = COMMUNITY_APP_URL
 const TopBar = ({ auth }) => {
   const uniNavInitialized = useRef(false)
   const toolNameRef = useRef('Work Manager')
-  const user = _.get(auth, 'user') || {}
-  const authToken = _.get(auth, 'token')
-  const isAuthenticated = !!authToken
   const authURLs = HEADER_AUTH_URLS
   const headerRef = useRef()
   const [headerId, setHeaderId] = useState(0)
-
-  const navigationUserInfo = {
-    ...user,
-    initials: getInitials(user.firstName, user.lastName)
-  }
 
   useEffect(() => {
     uniqueId += 1
@@ -46,7 +38,7 @@ const TopBar = ({ auth }) => {
       type: 'tool',
       toolName: toolNameRef.current,
       toolRoot: '/',
-      user: isAuthenticated ? navigationUserInfo : null,
+      user: 'auto',
       signOut: () => {
         window.location = `${BASE}/logout?ref=nav`
       },
