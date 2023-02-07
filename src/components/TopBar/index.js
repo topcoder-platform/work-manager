@@ -1,9 +1,7 @@
 /* global tcUniNav */
 import React, { useRef, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-import { getInitials } from '../../util/url'
 import { COMMUNITY_APP_URL, HEADER_AUTH_URLS_HREF, HEADER_AUTH_URLS_LOCATION } from '../../config/constants'
-import _ from 'lodash'
 
 let uniqueId = 0
 
