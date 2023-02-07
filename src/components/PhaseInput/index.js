@@ -32,7 +32,7 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
   }
 
   useEffect(() => {
-    if (!startDate) {
+    if (!startDate && onUpdatePhase) {
       let startDate = moment().format(dateFormat)
       let endDate = getEndDate(startDate, duration)
       onUpdatePhase({

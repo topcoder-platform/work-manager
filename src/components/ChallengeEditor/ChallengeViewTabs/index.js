@@ -128,7 +128,7 @@ const ChallengeViewTabs = ({
             styles.actionButtonsRight
           )}
         >
-          {(isDraft || challenge.status === 'New') && !isReadOnly && !isSelfService &&
+          {enableEdit && (isDraft || challenge.status === 'New') && !isReadOnly && !isSelfService &&
             (<div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>)}
           {canLaunch && (
             <div className={styles.button}>
