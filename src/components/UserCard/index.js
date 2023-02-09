@@ -60,7 +60,7 @@ class UserCard extends Component {
   }
 
   render () {
-    const { user, onRemoveClick } = this.props
+    const { user, onRemoveClick, isEditable } = this.props
     const showRadioButtons = _.includes(_.values(PROJECT_ROLES), user.role)
     return (
       <div>
@@ -103,7 +103,7 @@ class UserCard extends Component {
                 checked={user.role === PROJECT_ROLES.READ}
                 onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.READ)}
               />
-              <label htmlFor={`read-${user.id}`}>
+              <label className={cn({ [styles.isDisabled]: !isEditable })} htmlFor={`read-${user.id}`}>
                 <div>
                   Read
                 </div>
@@ -120,7 +120,7 @@ class UserCard extends Component {
                 checked={user.role === PROJECT_ROLES.WRITE}
                 onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.WRITE)}
               />
-              <label htmlFor={`write-${user.id}`}>
+              <label className={cn({ [styles.isDisabled]: !isEditable })} htmlFor={`write-${user.id}`}>
                 <div>
                   Write
                 </div>
@@ -137,7 +137,7 @@ class UserCard extends Component {
                 checked={user.role === PROJECT_ROLES.MANAGER}
                 onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.MANAGER)}
               />
-              <label htmlFor={`full-access-${user.id}`}>
+              <label className={cn({ [styles.isDisabled]: !isEditable })} htmlFor={`full-access-${user.id}`}>
                 <div>
                   Full Access
                 </div>
@@ -154,7 +154,7 @@ class UserCard extends Component {
                 checked={user.role === PROJECT_ROLES.COPILOT}
                 onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.COPILOT)}
               />
-              <label htmlFor={`copilot-${user.id}`}>
+              <label className={cn({ [styles.isDisabled]: !isEditable })} htmlFor={`copilot-${user.id}`}>
                 <div>
                   Copilot
                 </div>
@@ -162,12 +162,12 @@ class UserCard extends Component {
               </label>
             </div>)}
           </div>
-          <div className={cn(styles.col5)}>
+          {isEditable ? (<div className={cn(styles.col5)}>
             <PrimaryButton
               text={'Remove'}
               type={'danger'}
               onClick={() => { onRemoveClick(user) }} />
-          </div>
+          </div>) : null}
         </div>
       </div>
     )
@@ -177,7 +177,8 @@ class UserCard extends Component {
 UserCard.propTypes = {
   user: PropTypes.object,
   reloadProjectMembers: PropTypes.func.isRequired,
-  onRemoveClick: PropTypes.func.isRequired
+  onRemoveClick: PropTypes.func.isRequired,
+  isEditable: PropTypes.bool
 }
 
 export default UserCard

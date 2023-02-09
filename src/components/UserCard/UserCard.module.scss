@@ -40,6 +40,10 @@
     display: none;
   }
 
+  .isDisabled {
+    pointer-events: none;
+  }
+
   label {
     @include roboto-light();
 

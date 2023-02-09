@@ -196,7 +196,7 @@ class Users extends Component {
   }
 
   render () {
-    const { projects, projectMembers, reloadProjectMembers } = this.props
+    const { projects, projectMembers, reloadProjectMembers, isEditable } = this.props
     const projectOptions = projects.map(p => {
       return {
         label: p.name,
@@ -207,7 +207,7 @@ class Users extends Component {
     const membersExist = projectMembers && projectMembers.length > 0
     const isCopilotOrManager = this.checkIsCopilotOrManager(projectMembers, loggedInHandle)
     const isAdmin = checkAdmin(this.props.auth.token)
-    const showAddUser = this.state.projectOption && (isCopilotOrManager || isAdmin)
+    const showAddUser = isEditable && this.state.projectOption && (isCopilotOrManager || isAdmin)
 
     return (
       <div className={styles.contentContainer}>
@@ -402,7 +402,7 @@ class Users extends Component {
                   _.map(projectMembers, (member) => {
                     return (
                       <li className={styles.userItem} key={`user-card-${member.id}`}>
-                        <UserCard user={member} onRemoveClick={this.onRemoveClick} reloadProjectMembers={reloadProjectMembers} />
+                        <UserCard user={member} onRemoveClick={this.onRemoveClick} reloadProjectMembers={reloadProjectMembers} isEditable={isEditable} />
                       </li>
                     )
                   })
@@ -421,6 +421,7 @@ Users.propTypes = {
   loadProject: PropTypes.func.isRequired,
   reloadProjectMembers: PropTypes.func.isRequired,
   auth: PropTypes.object,
+  isEditable: PropTypes.bool,
   projects: PropTypes.arrayOf(PropTypes.object),
   projectMembers: PropTypes.arrayOf(PropTypes.object)
 }
