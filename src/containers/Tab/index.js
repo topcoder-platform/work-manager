@@ -33,7 +33,7 @@ class TabContainer extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    const { projectId, isLoading, selfService, projects } = nextProps
+    const { projectId, isLoading, selfService, projects, isLoadProjectsSuccess } = nextProps
 
     if (nextProps.history.location.pathname === '/') {
       this.setState({ currentTab: 1 })
@@ -61,7 +61,7 @@ class TabContainer extends Component {
 
     // if we already have projects in the list,
     // don't load the projects again
-    if (!!projects && !!projects.length) {
+    if ((!!projects && !!projects.length) || isLoadProjectsSuccess) {
       return
     }
 
@@ -100,6 +100,7 @@ class TabContainer extends Component {
 TabContainer.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.shape()),
   isLoading: PropTypes.bool,
+  isLoadProjectsSuccess: PropTypes.bool,
   loadProjects: PropTypes.func,
   unloadProjects: PropTypes.func,
   activeProjectId: PropTypes.number,

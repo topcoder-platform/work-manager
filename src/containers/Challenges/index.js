@@ -6,7 +6,6 @@ import React, { Component, Fragment } from 'react'
 // import { Redirect } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { DebounceInput } from 'react-debounce-input'
 import ChallengesComponent from '../../components/ChallengesComponent'
 import ProjectCard from '../../components/ProjectCard'
 // import Loader from '../../components/Loader'
@@ -29,11 +28,8 @@ class Challenges extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      searchProjectName: '',
       onlyMyProjects: true
     }
-    this.updateProjectName = this.updateProjectName.bind(this)
-    this.toggleMyProjects = this.toggleMyProjects.bind(this)
   }
 
   componentDidMount () {
@@ -104,20 +100,6 @@ class Challenges extends Component {
     }
   }
 
-  updateProjectName (val) {
-    this.setState({ searchProjectName: val })
-    this.props.loadProjects(val, this.state.onlyMyProjects)
-  }
-
-  toggleMyProjects (evt) {
-    this.setState({ onlyMyProjects: evt.target.checked }, () => {
-      this.props.loadProjects(
-        this.state.searchProjectName,
-        this.state.onlyMyProjects
-      )
-    })
-  }
-
   render () {
     const {
       challenges,
@@ -150,7 +132,6 @@ class Challenges extends Component {
       auth,
       metadata
     } = this.props
-    const { searchProjectName } = this.state
     const { challengeTypes = [] } = metadata
     const projectInfo = _.find(projects, { id: activeProjectId }) || {}
     const projectComponents =
@@ -167,29 +148,16 @@ class Challenges extends Component {
       ))
     return (
       <Fragment>
-        <div className={!dashboard && styles.projectSearch}>
-          {!selfService && (
-            <div className={styles.projectSearchHeader}>
-              {!dashboard && <label>Switch Project</label>}
-              {!dashboard && (
-                <DebounceInput
-                  minLength={2}
-                  debounceTimeout={300}
-                  placeholder='Search projects (Enter project id or project title in double quotes or any text from project)'
-                  onChange={e => this.updateProjectName(e.target.value)}
-                  value={searchProjectName}
-                />
+        {!dashboard &&
+        (!!projectComponents.length ||
+          (activeProjectId === -1 && !selfService)) ? (
+            <div className={!dashboard && styles.projectSearch}>
+              {activeProjectId === -1 && !selfService && (
+                <div>No project selected. Select one below</div>
               )}
-            </div>
-          )}
-          {!dashboard && activeProjectId === -1 && !selfService && (
-            <div>No project selected. Select one below</div>
-          )}
-          {dashboard ? null
-            : (
               <ul>{projectComponents}</ul>
-            )}
-        </div>
+            </div>
+          ) : null}
         {(dashboard || activeProjectId !== -1 || selfService) && (
           <ChallengesComponent
             activeProject={{
@@ -259,7 +227,6 @@ Challenges.propTypes = {
   page: PropTypes.number.isRequired,
   perPage: PropTypes.number.isRequired,
   totalChallenges: PropTypes.number.isRequired,
-  loadProjects: PropTypes.func.isRequired,
   setActiveProject: PropTypes.func.isRequired,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,

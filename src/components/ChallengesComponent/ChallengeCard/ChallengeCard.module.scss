@@ -26,6 +26,10 @@
     flex: 2;
     flex-direction: column;
     justify-content: center;
+
+    span {
+      word-break: break-all;
+    }
   }
 
   .col3 {

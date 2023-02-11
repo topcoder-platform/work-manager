@@ -23,10 +23,20 @@ import SortIcon from '../../../assets/images/sort-icon.svg'
 import Select from '../../Select'
 import Loader from '../../Loader'
 
-import { CHALLENGE_STATUS, PAGE_SIZE, PAGINATION_PER_PAGE_OPTIONS } from '../../../config/constants'
-import { checkAdmin } from '../../../util/tc'
+import { CHALLENGE_STATUS, PAGE_SIZE, PAGINATION_PER_PAGE_OPTIONS, PROJECT_ROLES } from '../../../config/constants'
+import { checkAdmin, checkReadOnlyRoles } from '../../../util/tc'
 
 require('bootstrap/scss/bootstrap.scss')
+
+const defaultSearchParam = {
+  searchText: '',
+  challengeProjectOption: null,
+  challengeStatus: '',
+  challengeType: null,
+  sortBy: 'startDate',
+  sortOrder: 'desc',
+  challengeDate: {}
+}
 
 const theme = {
   container: styles.modalContainer
@@ -35,15 +45,17 @@ const theme = {
 class ChallengeList extends Component {
   constructor (props) {
     super(props)
+
+    const defaultSearchParamClone = _.cloneDeep(defaultSearchParam)
     this.state = {
-      searchText: this.props.filterChallengeName,
+      searchText: this.props.filterChallengeName || defaultSearchParamClone.searchText,
       errorMessage: null,
-      sortBy: this.props.filterSortBy || 'startDate',
-      sortOrder: this.props.filterSortOrder || 'desc',
-      challengeProjectOption: this.props.filterProjectOption,
-      challengeStatus: this.props.status,
-      challengeType: this.props.filterChallengeType,
-      challengeDate: this.props.filterDate
+      sortBy: this.props.filterSortBy || defaultSearchParamClone.sortBy,
+      sortOrder: this.props.filterSortOrder || defaultSearchParamClone.sortOrder,
+      challengeProjectOption: this.props.filterProjectOption || defaultSearchParamClone.challengeProjectOption,
+      challengeStatus: this.props.status || defaultSearchParamClone.challengeStatus,
+      challengeType: this.props.filterChallengeType || defaultSearchParamClone.challengeType,
+      challengeDate: this.props.filterDate || defaultSearchParamClone.challengeDate
     }
     this.directUpdateSearchParam = this.updateSearchParam.bind(this) // update search param without debounce
     this.handlePageChange = this.handlePageChange.bind(this) // update search param without debounce
@@ -312,22 +324,14 @@ class ChallengeList extends Component {
       loadChallengesByPage
     } = this.props
 
-    this.setState({
-      searchText: '',
-      challengeProjectOption: null,
-      challengeStatus: '',
-      challengeType: null,
-      sortBy: '',
-      sortOrder: 'asc',
-      challengeDate: {}
-    })
+    this.setState(_.cloneDeep(defaultSearchParam))
 
     let projectId = dashboard ? filterProjectOption : activeProjectId
 
     loadChallengesByPage(
       1,
       projectId,
-      null,
+      'all',
       '',
       selfService,
       this.getHandle(),
@@ -372,6 +376,8 @@ class ChallengeList extends Component {
       challengeTypes,
       loginUserRoleInProject
     } = this.props
+    const isReadOnly = checkReadOnlyRoles(this.props.auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
+
     if (warnMessage) {
       return <Message warnMessage={warnMessage} />
     }
@@ -688,7 +694,8 @@ class ChallengeList extends Component {
         </div>
         <div className={styles.header}>
           <div
-            className={cn(styles.col5)}
+            className={cn(styles.col5, styles.sortable)}
+            onClick={() => this.updateSort('type')}
           >
             <span className={styles.filterItem}>
                       Type
@@ -741,14 +748,15 @@ class ChallengeList extends Component {
             </span>
           </div>
           <div
-            className={cn(styles.col3)}
+            className={cn(styles.col3, styles.sortable)}
+            onClick={() => this.updateSort('status')}
           >
             <span className={styles.filterItem}>
                       Status
               {this.renderSortIcon('status')}
             </span>
           </div>
-          <div className={styles.col6}>&nbsp;</div>
+          {!isReadOnly ? (<div className={styles.col6}>&nbsp;</div>) : null}
           <div className={styles.col6}>&nbsp;</div>
           <div className={styles.col6}>&nbsp;</div>
         </div>
