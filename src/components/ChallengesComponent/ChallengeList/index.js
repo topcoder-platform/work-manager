@@ -694,7 +694,7 @@ class ChallengeList extends Component {
         </div>
         <div className={styles.header}>
           <div
-           className={cn(styles.col5)}
+            className={cn(styles.col5)}
           >
             <span className={styles.filterItem}>
                       Type
