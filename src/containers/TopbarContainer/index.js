@@ -21,17 +21,13 @@ class TopbarContainer extends Component {
   }
 
   render () {
-    const { match } = this.props
-    const isChalengeViewPage = match.path === '/projects/:projectId/challenges/:challengeId'
-    const { user } = this.props.auth
-    return <TopBar user={user} hideBottomLine={isChalengeViewPage} />
+    return <TopBar auth={this.props.auth} />
   }
 }
 
 TopbarContainer.propTypes = {
   loadUser: PropTypes.func.isRequired,
   setActiveProject: PropTypes.func.isRequired,
-  match: PropTypes.any.isRequired,
   auth: PropTypes.object.isRequired,
   activeProjectId: PropTypes.number,
   projectId: PropTypes.string

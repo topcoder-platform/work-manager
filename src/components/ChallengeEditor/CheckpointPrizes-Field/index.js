@@ -77,7 +77,8 @@ const CheckpointPrizesField = ({ challenge, onUpdateOthers, readOnly }) => {
 }
 
 CheckpointPrizesField.defaultProps = {
-  readOnly: false
+  readOnly: false,
+  onUpdateOthers: () => {}
 }
 
 CheckpointPrizesField.propTypes = {

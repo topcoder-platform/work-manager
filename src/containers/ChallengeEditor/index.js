@@ -36,7 +36,7 @@ import { loadSubmissions } from '../../actions/challengeSubmissions'
 import { loadProject } from '../../actions/projects'
 
 import { connect } from 'react-redux'
-import { SUBMITTER_ROLE_UUID, MESSAGE } from '../../config/constants'
+import { SUBMITTER_ROLE_UUID, MESSAGE, PROJECT_ROLES } from '../../config/constants'
 import { patchChallenge } from '../../services/challenges'
 import ConfirmationModal from '../../components/Modal/ConfirmationModal'
 import AlertModal from '../../components/Modal/AlertModal'
@@ -59,7 +59,8 @@ class ChallengeEditor extends Component {
       showSuccessModal: false,
       showLaunchModal: false,
       showRejectModal: false,
-      cancelReason: null
+      cancelReason: null,
+      loginUserRoleInProject: ''
     }
 
     this.onLaunchChallenge = this.onLaunchChallenge.bind(this)
@@ -125,7 +126,7 @@ class ChallengeEditor extends Component {
 
   componentWillReceiveProps (nextProps) {
     const { match } = this.props
-    const { match: newMatch, loadChallengeDetails, loadResources, loadSubmissions } = nextProps
+    const { match: newMatch, loadChallengeDetails, loadResources, loadSubmissions, projectDetail, loggedInUser } = nextProps
     const projectId = _.get(newMatch.params, 'projectId', null)
     const challengeId = _.get(newMatch.params, 'challengeId', null)
     if (
@@ -135,6 +136,15 @@ class ChallengeEditor extends Component {
       this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources, loadSubmissions)
     } else {
       this.setState({ challengeDetails: nextProps.challengeDetails })
+    }
+    if (projectDetail && loggedInUser) {
+      const projectMembers = projectDetail.members
+      const loginUserProjectInfo = _.find(projectMembers, { userId: loggedInUser.userId })
+      if (loginUserProjectInfo && this.state.loginUserRoleInProject !== loginUserProjectInfo.role) {
+        this.setState({
+          loginUserRoleInProject: loginUserProjectInfo.role
+        })
+      }
     }
   }
 
@@ -174,6 +184,10 @@ class ChallengeEditor extends Component {
     const isAdmin = checkAdmin(token)
     if (isAdmin) {
       return true
+    }
+    const { loginUserRoleInProject } = this.state
+    if (loginUserRoleInProject === PROJECT_ROLES.READ) {
+      return false
     }
     const userRoles = _.filter(
       challengeResources,
@@ -532,6 +546,7 @@ class ChallengeEditor extends Component {
               rejectChallenge={this.rejectChallenge}
               showRejectChallengeModal={showRejectChallengeModal}
               loggedInUser={loggedInUser}
+              enableEdit={enableEdit}
             />
           )}
         />
@@ -571,6 +586,7 @@ class ChallengeEditor extends Component {
                 loggedInUser={loggedInUser}
                 projectPhases={projectPhases}
                 assignYourselfCopilot={this.assignYourselfCopilot}
+                enableEdit={enableEdit}
               />
             )}
           />

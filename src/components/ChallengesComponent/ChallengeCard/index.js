@@ -8,15 +8,13 @@ import cn from 'classnames'
 import { withRouter, Link } from 'react-router-dom'
 import moment from 'moment'
 import 'moment-duration-format'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faFile, faUser } from '@fortawesome/free-solid-svg-icons'
 import ChallengeStatus from '../ChallengeStatus'
 import ChallengeTag from '../ChallengeTag'
 import styles from './ChallengeCard.module.scss'
-import { getFormattedDuration, formatDate } from '../../../util/date'
-import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, MESSAGE, ONLINE_REVIEW_URL } from '../../../config/constants'
+import { formatDate } from '../../../util/date'
+import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, MESSAGE, ONLINE_REVIEW_URL, PROJECT_ROLES } from '../../../config/constants'
 import ConfirmationModal from '../../Modal/ConfirmationModal'
-import { checkChallengeEditPermission } from '../../../util/tc'
+import { checkChallengeEditPermission, checkReadOnlyRoles } from '../../../util/tc'
 import AlertModal from '../../Modal/AlertModal'
 import Tooltip from '../../Tooltip'
 
@@ -24,75 +22,8 @@ const theme = {
   container: styles.modalContainer
 }
 
-const STALLED_MSG = 'Stalled'
-const DRAFT_MSG = 'In Draft'
-const STALLED_TIME_LEFT_MSG = 'Challenge is currently on hold'
-const FF_TIME_LEFT_MSG = 'Winner is working on fixes'
-
 const PERMISSION_DELETE_MESSAGE_ERROR =
   "You don't have permission to delete this challenge"
-
-/**
- * Format the remaining time of a challenge phase
- * @param phase Challenge phase
- * @param status Challenge status
- * @returns {*}
- */
-const getTimeLeft = (phase, status) => {
-  if (!phase) return STALLED_TIME_LEFT_MSG
-  if (phase.phaseType === 'Final Fix') {
-    return FF_TIME_LEFT_MSG
-  }
-  let time = moment(phase.scheduledEndDate).diff()
-  const late = time < 0
-  if (late) time = -time
-
-  if (status !== CHALLENGE_STATUS.COMPLETED.toLowerCase()) {
-    const duration = getFormattedDuration(time)
-    return late ? `Late by ${duration}` : `${duration} to go`
-  }
-
-  return moment(phase.scheduledEndDate).format('DD/MM/YYYY')
-}
-
-/**
- * Find current phase and remaining time of it
- * @param c Challenge
- * @returns {{phaseMessage: string, endTime: {late, text}}}
- */
-const getPhaseInfo = (c) => {
-  const { currentPhaseNames, status, startDate, phases } = c
-  /* let checkPhases = (currentPhases && currentPhases.length > 0 ? currentPhases : allPhases)
-  if (_.isEmpty(checkPhases)) checkPhases = []
-  let statusPhase = checkPhases
-    .filter(p => p.phaseType !== 'Registration')
-    .sort((a, b) => moment(a.scheduledEndTime).diff(b.scheduledEndTime))[0]
-
-  if (!statusPhase && subTrack === 'FIRST_2_FINISH' && checkPhases.length) {
-    statusPhase = Object.clone(checkPhases[0])
-    statusPhase.phaseType = 'Submission'
-  } */
-  let phaseMessage = STALLED_MSG
-  // if (statusPhase) phaseMessage = statusPhase.phaseType
-  // else if (status === 'DRAFT') phaseMessage = DRAFT_MSG
-  var lowerStatus = status.toLowerCase()
-  if (lowerStatus === 'draft') {
-    phaseMessage = DRAFT_MSG
-  } else if (lowerStatus === 'active') {
-    if (!currentPhaseNames || currentPhaseNames.length === 0) {
-      var timeToStart = moment(startDate).diff()
-      if (timeToStart > 0) {
-        phaseMessage = `Scheduled in ${getFormattedDuration(timeToStart)}`
-      }
-    } else {
-      phaseMessage = currentPhaseNames.join('/')
-    }
-  }
-  const activePhases = phases.filter(p => !!p.isOpen)
-  const activePhase = activePhases.length > 0 ? activePhases[0] : null
-  const endTime = getTimeLeft(activePhase, lowerStatus)
-  return { phaseMessage, endTime }
-}
 
 /**
  * Render components when mouse hover
@@ -164,26 +95,19 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
 }
 
 const renderStatus = (status, getStatusText) => {
-  switch (status) {
+  const statusMessage = status.split(' ')[0]
+  switch (statusMessage) {
     case CHALLENGE_STATUS.ACTIVE:
     case CHALLENGE_STATUS.APPROVED:
     case CHALLENGE_STATUS.NEW:
     case CHALLENGE_STATUS.DRAFT:
     case CHALLENGE_STATUS.COMPLETED:
-      const statusText = getStatusText ? getStatusText(status) : status
-      return (<ChallengeStatus status={status} statusText={statusText} />)
+    case CHALLENGE_STATUS.CANCELLED:
+      const statusText = getStatusText ? getStatusText(statusMessage) : statusMessage
+      return (<ChallengeStatus status={statusMessage} statusText={statusText} />)
     default:
-      return (<span className={styles.statusText}>{statusText}</span>)
+      return (<span className={styles.statusText}>{status}</span>)
   }
-}
-
-const renderLastUpdated = (challenge) => {
-  return (
-    <Link className={cn(styles.col2, styles.lastUpdated)} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
-      <div className={styles.lastUpdatedAt}>{formatDate(challenge.updated)}</div>
-      <div className={styles.lastUpdatedBy}>{challenge.updatedBy}</div>
-    </Link>
-  )
 }
 
 class ChallengeCard extends React.Component {
@@ -195,7 +119,8 @@ class ChallengeCard extends React.Component {
       isDeleteLaunch: false,
       isSaving: false,
       isCheckChalengePermission: false,
-      hasEditChallengePermission: false
+      hasEditChallengePermission: false,
+      loginUserRoleInProject: ''
     }
     this.onUpdateConfirm = this.onUpdateConfirm.bind(this)
     this.onUpdateLaunch = this.onUpdateLaunch.bind(this)
@@ -278,11 +203,13 @@ class ChallengeCard extends React.Component {
 
   render () {
     const { isLaunch, isConfirm, isSaving, isDeleteLaunch, isCheckChalengePermission, hasEditChallengePermission } = this.state
-    const { challenge, shouldShowCurrentPhase, reloadChallengeList, isBillingAccountExpired, disableHover, getStatusText } = this.props
-    const { phaseMessage, endTime } = getPhaseInfo(challenge)
+    const { setActiveProject, challenge, reloadChallengeList, isBillingAccountExpired, disableHover, getStatusText, challengeTypes, loginUserRoleInProject } = this.props
     const deleteMessage = isCheckChalengePermission
       ? 'Checking permissions...'
       : `Do you want to delete "${challenge.name}"?`
+    const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
+    const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.id}`
+    const isReadOnly = checkReadOnlyRoles(this.props.auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
 
     return (
       <div className={styles.item}>
@@ -318,7 +245,7 @@ class ChallengeCard extends React.Component {
         {isLaunch && isConfirm && (
           <AlertModal
             title='Success'
-            message={`Challenge "${challenge.name}" is activated successfuly`}
+            message={`Challenge "${challenge.name}" is activated successfully`}
             theme={theme}
             onCancel={reloadChallengeList}
             closeText='Close'
@@ -328,33 +255,42 @@ class ChallengeCard extends React.Component {
           />
         )}
 
-        <Link className={styles.col1} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
-          <div className={styles.name}>
-            <span className={styles.block}>{challenge.name}</span>
-            <ChallengeTag track={challenge.trackId} challengeType={challenge.type} />
-            <span className={styles.createdAt}>{`Created by ${challenge.createdBy} at ${formatDate(challenge.created)}`}</span>
-          </div>
-        </Link>
-        {renderLastUpdated(challenge)}
-        <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
-          {renderStatus(challenge.status.toUpperCase(), getStatusText)}
-        </Link>
-        {shouldShowCurrentPhase && (<Link className={styles.col3} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>
-          <span className={styles.block}>{phaseMessage}</span>
-          <span className='block light-text'>{endTime}</span>
-        </Link>)}
-        <div className={cn(styles.col4, styles.editingContainer)}>
-          {(disableHover ? <Link className={styles.link} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`}>View Challenge</Link> : hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch))}
+        <div className={styles.col5}>
+          <ChallengeTag type={challenge.type} challengeTypes={challengeTypes} />
         </div>
-        <div className={cn(styles.col4, styles.iconsContainer)}>
-          <div className={styles.faIconContainer}>
-            <FontAwesomeIcon icon={faUser} className={styles.faIcon} />
-            <span>{challenge.numOfRegistrants || 0}</span>
+
+        <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`} onClick={() => setActiveProject(parseInt(challenge.projectId))}>
+          <div className={styles.name}>
+            <span className={styles.link}>{challenge.name}</span>
           </div>
-          <div className={styles.faIconContainer}>
-            <FontAwesomeIcon icon={faFile} className={styles.faIcon} />
-            <span>{challenge.numOfSubmissions || 0}</span>
-          </div>
+        </Link>
+        <div className={styles.col3}>
+          <span>{formatDate(challenge.startDate)}</span>
+        </div>
+        <div className={styles.col3}>
+          <span>{formatDate(challenge.endDate)}</span>
+        </div>
+        <div className={styles.col4}>
+          <span>{challenge.numOfRegistrants}</span>
+        </div>
+        <div className={styles.col4}>
+          <span>{challenge.numOfSubmissions}</span>
+        </div>
+        <div className={styles.col3}>
+          {renderStatus(challenge.status.toUpperCase(), getStatusText)}
+        </div>
+        {
+          !isReadOnly && (
+            <div className={styles.col6}>
+              {(disableHover ? <Link className={styles.link} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`}>Edit</Link> : hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch))}
+            </div>
+          )
+        }
+        <div className={styles.col6}>
+          <a className={styles.link} href={orUrl} target='_blank'>OR</a>
+        </div>
+        <div className={styles.col6}>
+          <a className={styles.link} href={communityAppUrl} target='_blank'>CA</a>
         </div>
       </div>
     )
@@ -362,19 +298,24 @@ class ChallengeCard extends React.Component {
 }
 
 ChallengeCard.defaultPrps = {
-  shouldShowCurrentPhase: true,
-  reloadChallengeList: () => { }
+  reloadChallengeList: () => { },
+  challengeTypes: [],
+  setActiveProject: () => {},
+  loginUserRoleInProject: ''
 }
 
 ChallengeCard.propTypes = {
   challenge: PropTypes.object,
-  shouldShowCurrentPhase: PropTypes.bool,
   reloadChallengeList: PropTypes.func,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
+  setActiveProject: PropTypes.func,
   deleteChallenge: PropTypes.func.isRequired,
   isBillingAccountExpired: PropTypes.bool,
   disableHover: PropTypes.bool,
-  getStatusText: PropTypes.func
+  getStatusText: PropTypes.func,
+  challengeTypes: PropTypes.arrayOf(PropTypes.shape()),
+  auth: PropTypes.object.isRequired,
+  loginUserRoleInProject: PropTypes.string
 }
 
 export default withRouter(ChallengeCard)

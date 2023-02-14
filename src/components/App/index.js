@@ -2,19 +2,18 @@
  * Component that sets the general structure of the app
  */
 import React from 'react'
-import TwoColsLayout from '../TwoColsLayout'
+import TwoRowsLayout from '../TwoRowsLayout'
 
-const App = (content, topbar, sidebar) => () => {
+const App = (content, topbar, sidebar, footer) => () => {
   return (
-    <TwoColsLayout scrollIndependent>
-      <TwoColsLayout.Sidebar>
-        {sidebar}
-      </TwoColsLayout.Sidebar>
-      <TwoColsLayout.Content>
+    <TwoRowsLayout scrollIndependent>
+      <TwoRowsLayout.Content>
         {topbar || null}
+        {sidebar}
         {content}
-      </TwoColsLayout.Content>
-    </TwoColsLayout>
+        {footer || null}
+      </TwoRowsLayout.Content>
+    </TwoRowsLayout>
   )
 }
 

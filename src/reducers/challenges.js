@@ -32,7 +32,8 @@ import {
   CREATE_CHALLENGE_RESOURCE_FAILURE,
   DELETE_CHALLENGE_SUCCESS,
   DELETE_CHALLENGE_FAILURE,
-  DELETE_CHALLENGE_PENDING
+  DELETE_CHALLENGE_PENDING,
+  MULTI_ROUND_CHALLENGE_TEMPLATE_ID
 } from '../config/constants'
 
 const initialState = {
@@ -47,6 +48,10 @@ const initialState = {
   attachments: [],
   challenge: null,
   filterChallengeName: '',
+  filterChallengeType: {},
+  filterDate: {},
+  filterSortBy: 'startDate',
+  filterSortOrder: 'desc',
   failedToDelete: false,
   status: '',
   perPage: 0,
@@ -84,6 +89,11 @@ export default function (state = initialState, action) {
         projectId: action.projectId,
         status: action.status,
         filterChallengeName: action.filterChallengeName,
+        filterProjectOption: action.filterProjectOption,
+        filterChallengeType: action.filterChallengeType,
+        filterDate: action.filterDate,
+        filterSortBy: action.filterSortBy,
+        filterSortOrder: action.filterSortOrder,
         perPage: action.perPage,
         page: action.page
       }
@@ -97,7 +107,18 @@ export default function (state = initialState, action) {
     case LOAD_CHALLENGE_DETAILS_SUCCESS: {
       return {
         ...state,
-        challengeDetails: action.payload,
+        challengeDetails: { ...action.payload,
+          // change the phase order for the design challenge with multiple phases
+          phases: (action.payload.timelineTemplateId === MULTI_ROUND_CHALLENGE_TEMPLATE_ID && action.payload.phases.length === 8) ? [
+            action.payload.phases.find(x => x.name === 'Registration'),
+            action.payload.phases.find(x => x.name === 'Checkpoint Submission'),
+            action.payload.phases.find(x => x.name === 'Checkpoint Screening'),
+            action.payload.phases.find(x => x.name === 'Checkpoint Review'),
+            action.payload.phases.find(x => x.name === 'Submission'),
+            action.payload.phases.find(x => x.name === 'Screening'),
+            action.payload.phases.find(x => x.name === 'Review'),
+            action.payload.phases.find(x => x.name === 'Approval')] : action.payload.phases
+        },
         isLoading: false,
         attachments: _.has(action.payload, 'attachments') ? action.payload.attachments : [],
         failedToLoad: false
@@ -141,7 +162,18 @@ export default function (state = initialState, action) {
       return {
         ...state,
         challenges: updatedChallenges,
-        challengeDetails: action.challengeDetails,
+        challengeDetails: { ...action.challengeDetails,
+          // change the phase order for the design challenge with multiple phases
+          phases: (action.challengeDetails.timelineTemplateId === MULTI_ROUND_CHALLENGE_TEMPLATE_ID && action.challengeDetails.phases.length === 8) ? [
+            action.challengeDetails.phases.find(x => x.name === 'Registration'),
+            action.challengeDetails.phases.find(x => x.name === 'Checkpoint Submission'),
+            action.challengeDetails.phases.find(x => x.name === 'Checkpoint Screening'),
+            action.challengeDetails.phases.find(x => x.name === 'Checkpoint Review'),
+            action.challengeDetails.phases.find(x => x.name === 'Submission'),
+            action.challengeDetails.phases.find(x => x.name === 'Screening'),
+            action.challengeDetails.phases.find(x => x.name === 'Review'),
+            action.challengeDetails.phases.find(x => x.name === 'Approval')] : action.challengeDetails.phases
+        },
         isLoading: false,
         attachments: _.has(action.challengeDetails, 'attachments') ? action.challengeDetails.attachments : [],
         failedToLoad: false
@@ -242,7 +274,7 @@ export default function (state = initialState, action) {
         }
       }
     case LOAD_CHALLENGE_MEMBERS_SUCCESS: {
-      return { ...state, metadata: { ...state.metadata, members: action.members } }
+      return { ...state, metadata: { ...state.metadata, members: action.payload } }
     }
     case CREATE_ATTACHMENT_PENDING: {
       const attachments = [

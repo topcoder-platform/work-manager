@@ -1,30 +1,33 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import cn from 'classnames'
+
 import styles from './ChallengeTag.module.scss'
+import { getChallengeTypeAbbr } from '../../../util/tc'
 
-import { CHALLENGE_TRACKS } from '../../../config/constants'
-
-const ChallengeTag = ({ track, challengeType }) => {
-  const className = cn(styles.tag, {
-    [styles.dataScience]: track === CHALLENGE_TRACKS.DATA_SCIENCE,
-    [styles.development]: track === CHALLENGE_TRACKS.DEVELOP,
-    [styles.design]: track === CHALLENGE_TRACKS.DESIGN,
-    [styles.qa]: track === CHALLENGE_TRACKS.QA
-  })
-
+export default function ChallengeTag ({
+  type, challengeTypes
+}) {
+  let abbreviation = getChallengeTypeAbbr(type, challengeTypes)
+  if (['CH', 'F2F', 'TSK', 'MM', 'RDM', 'SKL', 'MA', 'SRM', 'PC'].indexOf(abbreviation) < 0) {
+    abbreviation = ''
+  }
   return (
-    <div>
-      <div className={className}>
-        <span>{challengeType}</span>
+    <span className={styles.trackIcon}>
+      <div
+        className={`${styles[abbreviation]} ${styles.mainIcon}`}
+      >
+        {abbreviation === 'PC' ? 'P' : abbreviation}
       </div>
-    </div>
+    </span>
   )
 }
 
-ChallengeTag.propTypes = {
-  track: PropTypes.string,
-  challengeType: PropTypes.string
+ChallengeTag.defaultProps = {
+  type: 'Development',
+  challengeTypes: []
 }
 
-export default ChallengeTag
+ChallengeTag.propTypes = {
+  type: PropTypes.string,
+  challengeTypes: PropTypes.arrayOf(PropTypes.shape())
+}

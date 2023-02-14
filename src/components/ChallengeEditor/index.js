@@ -27,7 +27,8 @@ import {
   MILESTONE_STATUS,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
   QA_TRACK_ID, DESIGN_CHALLENGE_TYPES, ROUND_TYPES,
-  MULTI_ROUND_CHALLENGE_TEMPLATE_ID, DS_TRACK_ID
+  MULTI_ROUND_CHALLENGE_TEMPLATE_ID, DS_TRACK_ID,
+  CHALLENGE_STATUS
 } from '../../config/constants'
 import { getDomainTypes, getResourceRoleByName } from '../../util/tc'
 import { PrimaryButton, OutlineButton } from '../Buttons'
@@ -102,7 +103,8 @@ class ChallengeEditor extends Component {
       // NOTE that we have to keep `assignedMemberDetails` in the local state, rather than just get it from the props
       // because we can update it locally when we choose another assigned user, so we don't have to wait for user details
       // to be loaded from Member Service as we already know it in such case
-      assignedMemberDetails: this.props.assignedMemberDetails
+      assignedMemberDetails: this.props.assignedMemberDetails,
+      isPhaseChange: false
     }
     this.onUpdateInput = this.onUpdateInput.bind(this)
     this.onUpdateSelect = this.onUpdateSelect.bind(this)
@@ -838,7 +840,11 @@ class ChallengeEditor extends Component {
       for (let index = 0; index < phases.length; ++index) {
         newChallenge.phases[index].isDurationActive =
           moment(newChallenge.phases[index]['scheduledEndDate']).isAfter()
-        newChallenge.phases[index].isStartTimeActive = index <= 0
+        if (newChallenge.phases[index].name === 'Submission' || newChallenge.phases[index].name === 'Checkpoint Submission') {
+          newChallenge.phases[index].isStartTimeActive = true
+        } else {
+          newChallenge.phases[index].isStartTimeActive = index <= 0
+        }
         newChallenge.phases[index].isOpen =
           newChallenge.phases[index].isDurationActive
       }
@@ -847,27 +853,31 @@ class ChallengeEditor extends Component {
   }
 
   onUpdatePhaseDate (phase, index) {
+    console.log('onUpdatePhase', phase, index)
     const { phases } = this.state.challenge
     let newChallenge = _.cloneDeep(this.state.challenge)
+
     if (phase.isBlur && newChallenge.phases[index]['name'] === 'Submission') {
       newChallenge.phases[index]['duration'] = _.max([
         newChallenge.phases[index - 1]['duration'],
         phase.duration
       ])
+      newChallenge.phases[index]['scheduledStartDate'] = moment(phase.startDate).toISOString()
       newChallenge.phases[index]['scheduledEndDate'] =
         moment(newChallenge.phases[index]['scheduledStartDate'])
           .add(newChallenge.phases[index]['duration'], 'hours')
           .format('MM/DD/YYYY HH:mm')
     } else {
       newChallenge.phases[index]['duration'] = phase.duration
-      newChallenge.phases[index]['scheduledStartDate'] = phase.startDate
-      newChallenge.phases[index]['scheduledEndDate'] = phase.endDate
+      newChallenge.phases[index]['scheduledStartDate'] = moment(phase.startDate).toISOString()
+      newChallenge.phases[index]['scheduledEndDate'] = moment(phase.endDate).toISOString()
     }
 
     for (let phaseIndex = index + 1; phaseIndex < phases.length; ++phaseIndex) {
-      if (newChallenge.phases[phaseIndex]['name'] === 'Submission') {
-        newChallenge.phases[phaseIndex]['scheduledStartDate'] =
-          newChallenge.phases[phaseIndex - 1]['scheduledStartDate']
+      if (newChallenge.phases[phaseIndex]['name'] === 'Submission' || newChallenge.phases[index].name === 'Checkpoint Submission') {
+        console.log('Setting submission phase scheduled start date', moment(phase.startDate).toISOString())
+        newChallenge.phases[index]['scheduledStartDate'] = moment(phase.startDate).toISOString()
+
         newChallenge.phases[phaseIndex]['duration'] = _.max([
           newChallenge.phases[phaseIndex - 1]['duration'],
           newChallenge.phases[phaseIndex]['duration']
@@ -881,7 +891,11 @@ class ChallengeEditor extends Component {
           .add(newChallenge.phases[phaseIndex]['duration'], 'hours')
           .format('MM/DD/YYYY HH:mm')
     }
-
+    if (!_.isEqual(newChallenge.phases[index], phases[index])) {
+      this.setState({ isPhaseChange: true })
+    }
+    console.log('Setting new state', newChallenge)
+    console.log('isPhaseChange', this.state.isPhaseChange)
     this.setState({ challenge: newChallenge })
 
     setTimeout(() => {
@@ -890,6 +904,7 @@ class ChallengeEditor extends Component {
   }
 
   collectChallengeData (status) {
+    const { isPhaseChange } = this.state
     const { attachments, metadata } = this.props
     const challenge = pick([
       'phases',
@@ -928,16 +943,23 @@ class ChallengeEditor extends Component {
     if (this.state.challenge.id) {
       challenge.attachmentIds = _.map(attachments, item => item.id)
     }
+    console.log('Phase Data', challenge.phases)
     challenge.phases = challenge.phases.map((p) => pick([
       'duration',
       'phaseId',
       'scheduledStartDate',
       'scheduledEndDate'
     ], p))
+
     if (challenge.terms && challenge.terms.length === 0) delete challenge.terms
     delete challenge.attachments
     delete challenge.reviewType
-    return _.cloneDeep(challenge)
+    if (!isPhaseChange) delete challenge.phases
+
+    const cloned = _.cloneDeep(challenge)
+    console.log('CLONED', cloned)
+
+    return cloned
   }
 
   goToEdit (challengeID) {
@@ -1341,6 +1363,7 @@ class ChallengeEditor extends Component {
     }
     const isTask = _.get(challenge, 'task.isTask', false)
     const { assignedMemberDetails, error } = this.state
+    const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.id}`
     let isActive = false
     let isDraft = false
     let isCompleted = false
@@ -1486,14 +1509,16 @@ class ChallengeEditor extends Component {
           }
           theme={theme}
           closeText='Close'
-          closeLink='/'
-          okText='View Challenge'
-          okLink='./view'
+          closeLink='./view'
+          okText='Preview'
+          onOk={() => {
+            window.open(communityAppUrl, '_blank')
+          }}
           onClose={this.resetModal}
         />
       )
     }
-
+    const statusMessage = challenge.status && challenge.status.split(' ')[0].toUpperCase()
     const errorContainer = <div className={styles.errorContainer}><div className={styles.errorMessage}>{error}</div></div>
 
     const actionButtons = <React.Fragment>
@@ -1534,9 +1559,11 @@ class ChallengeEditor extends Component {
                   )}
                 </div>
               )}
-              <div className={styles.button}>
-                <CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} />
-              </div>
+              {statusMessage !== CHALLENGE_STATUS.CANCELLED &&
+                <div className={styles.button}>
+                  <CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} />
+                </div>
+              }
             </div>}
             {!isLoading && isActive && <div className={styles.buttonContainer}>
               <div className={styles.button}>

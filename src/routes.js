@@ -8,18 +8,20 @@ import _ from 'lodash'
 import { BETA_MODE_COOKIE_TAG } from './config/constants'
 import renderApp from './components/App'
 import TopBarContainer from './containers/TopbarContainer'
-import Sidebar from './containers/Sidebar'
+import FooterContainer from './containers/FooterContainer'
+import Tab from './containers/Tab'
 import Challenges from './containers/Challenges'
 import ChallengeEditor from './containers/ChallengeEditor'
 import { getFreshToken, decodeToken } from 'tc-auth-lib'
 import { saveToken } from './actions/auth'
 import { loadChallengeDetails } from './actions/challenges'
 import { connect } from 'react-redux'
-import { checkAllowedRoles } from './util/tc'
+import { checkAllowedRoles, checkReadOnlyRoles } from './util/tc'
 import { setCookie, removeCookie, isBetaMode } from './util/cookie'
 import IdleTimer from 'react-idle-timer'
 import modalStyles from './styles/modal.module.scss'
 import ConfirmationModal from './components/Modal/ConfirmationModal'
+import Users from './containers/Users'
 
 const { ACCOUNTS_APP_LOGIN_URL, IDLE_TIMEOUT_MINUTES, IDLE_TIMEOUT_GRACE_MINUTES, COMMUNITY_APP_URL } = process.env
 
@@ -35,9 +37,11 @@ class RedirectToChallenge extends React.Component {
   }
 
   componentWillReceiveProps (nextProps) {
+    const { token } = nextProps
+    const isReadOnly = checkReadOnlyRoles(token)
     const projectId = _.get(nextProps.challengeDetails, 'projectId')
     const challengeId = _.get(nextProps.challengeDetails, 'id')
-    if (projectId && challengeId) {
+    if (projectId && challengeId && isReadOnly) {
       console.log('Redircting to full URL')
       this.props.history.replace(`/projects/${projectId}/challenges/${challengeId}/view`)
     }
@@ -60,7 +64,8 @@ RedirectToChallenge.propTypes = {
   loadChallengeDetails: PropTypes.func,
   challengeDetails: PropTypes.object,
   match: PropTypes.object,
-  history: PropTypes.object
+  history: PropTypes.object,
+  token: PropTypes.string
 }
 
 const ConnectRedirectToChallenge = connect(mapStateToProps, mapDispatchToProps)(RedirectToChallenge)
@@ -127,6 +132,7 @@ class Routes extends React.Component {
     }
 
     const isAllowed = checkAllowedRoles(_.get(decodeToken(this.props.token), 'roles'))
+    const isReadOnly = checkReadOnlyRoles(this.props.token)
     const modal = (<ConfirmationModal
       theme={theme}
       title='Session Timeout'
@@ -155,7 +161,8 @@ class Routes extends React.Component {
             render={() => renderApp(
               <Challenges menu='NULL' warnMessage={'You are not authorized to use this application'} />,
               <TopBarContainer />,
-              <Sidebar />
+              <Tab />,
+              <FooterContainer />
             )()}
           />
           <Redirect to='/' />
@@ -163,37 +170,66 @@ class Routes extends React.Component {
         {isAllowed && <Switch>
           <Route exact path='/'
             render={() => renderApp(
-              <Challenges menu='NULL' />,
+              <Challenges dashboard key='dashboard' />,
               <TopBarContainer />,
-              <Sidebar />
+              <Tab />,
+              <FooterContainer />
             )()}
           />
+          <Route exact path='/projects'
+            render={() => renderApp(
+              <Challenges menu='NULL' key='projects' />,
+              <TopBarContainer />,
+              <Tab />,
+              <FooterContainer />
+            )()}
+          />
+          {
+            !isReadOnly && (
+              <Route exact path='/users'
+                render={() => renderApp(
+                  <Users />,
+                  <TopBarContainer />,
+                  <Tab />,
+                  <FooterContainer />
+                )()}
+              />
+            )
+          }
           <Route exact path='/self-service'
             render={() => renderApp(
               <Challenges selfService />,
               <TopBarContainer />,
-              <Sidebar selfService />
+              <Tab selfService />,
+              <FooterContainer />
             )()}
           />
-          <Route exact path='/projects/:projectId/challenges/new'
-            render={({ match }) => renderApp(
-              <ChallengeEditor />,
-              <TopBarContainer />,
-              <Sidebar projectId={match.params.projectId} menu={'New Challenge'} />
-            )()} />
+          {
+            !isReadOnly && (
+              <Route exact path='/projects/:projectId/challenges/new'
+                render={({ match }) => renderApp(
+                  <ChallengeEditor />,
+                  <TopBarContainer />,
+                  <Tab projectId={match.params.projectId} menu={'New Challenge'} />,
+                  <FooterContainer />
+                )()} />
+            )
+          }
           <Route exact path='/challenges/:challengeId' component={ConnectRedirectToChallenge} />
           <Route
             path='/projects/:projectId/challenges/:challengeId'
             render={({ match }) => renderApp(
               <ChallengeEditor />,
               <TopBarContainer />,
-              <Sidebar projectId={match.params.projectId} menu={'New Challenge'} />
+              <Tab projectId={match.params.projectId} menu={'New Challenge'} />,
+              <FooterContainer />
             )()} />
           <Route exact path='/projects/:projectId/challenges'
             render={({ match }) => renderApp(
-              <Challenges projectId={match.params.projectId} />,
+              <Challenges projectId={match.params.projectId} key='challenges' />,
               <TopBarContainer projectId={match.params.projectId} />,
-              <Sidebar projectId={match.params.projectId} />
+              <Tab projectId={match.params.projectId} />,
+              <FooterContainer />
             )()} />
           {/* If path is not defined redirect to landing page */}
           <Redirect to='/' />

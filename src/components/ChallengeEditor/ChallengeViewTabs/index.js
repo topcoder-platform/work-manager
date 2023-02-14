@@ -13,7 +13,7 @@ import LegacyLinks from '../../LegacyLinks'
 import ForumLink from '../../ForumLink'
 import Registrants from '../Registrants'
 import Submissions from '../Submissions'
-import { checkAdmin, getResourceRoleByName } from '../../../util/tc'
+import { checkAdmin, checkReadOnlyRoles, getResourceRoleByName } from '../../../util/tc'
 import { CHALLENGE_STATUS, MESSAGE } from '../../../config/constants'
 import Tooltip from '../../Tooltip'
 import CancelDropDown from '../Cancel-Dropdown'
@@ -88,6 +88,7 @@ const ChallengeViewTabs = ({
   const isDraft = challenge.status.toUpperCase() === CHALLENGE_STATUS.DRAFT
   const isSelfServiceCopilot = challenge.legacy.selfServiceCopilot === loggedInUser.handle
   const isAdmin = checkAdmin(token)
+  const isReadOnly = checkReadOnlyRoles(token)
   const canApprove = (isSelfServiceCopilot || enableEdit) && isDraft && isSelfService
   const hasBillingAccount = _.get(projectDetail, 'billingAccountId') !== null
   // only challenges that have a billing account can be launched AND
@@ -95,9 +96,9 @@ const ChallengeViewTabs = ({
   // OR if this isn't a non-self-service draft, permit launching if:
   // a) the current user is either the self-service copilot or is an admin AND
   // b) the challenge is approved
-  const canLaunch = hasBillingAccount &&
+  const canLaunch = enableEdit && hasBillingAccount && !isReadOnly &&
     ((!isSelfService && isDraft) ||
-      ((isSelfServiceCopilot || enableEdit || isAdmin) &&
+      ((isSelfServiceCopilot || isAdmin) &&
         challenge.status.toUpperCase() === CHALLENGE_STATUS.APPROVED))
 
   return (
@@ -127,7 +128,7 @@ const ChallengeViewTabs = ({
             styles.actionButtonsRight
           )}
         >
-          {(isDraft || challenge.status === 'New') && !isSelfService &&
+          {enableEdit && (isDraft || challenge.status === 'New') && !isReadOnly && !isSelfService &&
             (<div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>)}
           {canLaunch && (
             <div className={styles.button}>

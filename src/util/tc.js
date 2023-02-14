@@ -6,7 +6,8 @@ import {
   CHALLENGE_TRACKS,
   ALLOWED_USER_ROLES,
   ADMIN_ROLES,
-  SUBMITTER_ROLE_UUID
+  SUBMITTER_ROLE_UUID,
+  READ_ONLY_ROLES
 } from '../config/constants'
 import _ from 'lodash'
 import { decodeToken } from 'tc-auth-lib'
@@ -150,6 +151,18 @@ export const checkAllowedRoles = roles =>
   roles.some(val => ALLOWED_USER_ROLES.indexOf(val.toLowerCase()) > -1)
 
 /**
+ * Checks if read only role is present in allowed roles
+ * @param  token
+ */
+export const checkReadOnlyRoles = token => {
+  const roles = _.get(decodeToken(token), 'roles')
+  if (checkAllowedRoles(roles)) {
+    return false
+  }
+  return roles.some(val => READ_ONLY_ROLES.indexOf(val.toLowerCase()) > -1)
+}
+
+/**
  * Checks if token has any of the admin roles
  * @param  token
  */
@@ -243,4 +256,16 @@ export function getFinalScore (submission) {
     return 0
   }
   return finalScore
+}
+
+/**
+ * Get challenge type abbreviation
+ * @param {Object} challenge challenge info
+ */
+export function getChallengeTypeAbbr (track, challengeTypes) {
+  const type = _.find(challengeTypes, { name: track })
+  if (type) {
+    return type.abbreviation
+  }
+  return null
 }

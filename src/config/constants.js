@@ -20,7 +20,10 @@ export const {
   CHALLENGE_TYPE_ID,
   MARATHON_TYPE_ID,
   SEGMENT_API_KEY,
-  MULTI_ROUND_CHALLENGE_TEMPLATE_ID
+  MULTI_ROUND_CHALLENGE_TEMPLATE_ID,
+  UNIVERSAL_NAV_URL,
+  HEADER_AUTH_URLS_HREF,
+  HEADER_AUTH_URLS_LOCATION
 } = process.env
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
 
@@ -94,11 +97,14 @@ export const LOAD_PROJECT_DETAILS_SUCCESS = 'LOAD_PROJECT_DETAILS_SUCCESS'
 export const LOAD_PROJECT_DETAILS_PENDING = 'LOAD_PROJECT_DETAILS_PENDING'
 export const LOAD_PROJECT_DETAILS_FAILURE = 'LOAD_PROJECT_DETAILS_FAILURE'
 
+export const UPDATE_PROJECT_ROLE_FOR_MEMBER_SUCCESS = 'UPDATE_PROJECT_ROLE_FOR_MEMBER_SUCCESS'
+
 export const LOAD_CHALLENGE_SUBMISSIONS = 'LOAD_CHALLENGE_SUBMISSIONS'
 export const LOAD_CHALLENGE_SUBMISSIONS_SUCCESS = 'LOAD_CHALLENGE_SUBMISSIONS_SUCCESS'
 export const LOAD_CHALLENGE_SUBMISSIONS_PENDING = 'LOAD_CHALLENGE_SUBMISSIONS_PENDING'
 export const LOAD_CHALLENGE_SUBMISSIONS_FAILURE = 'LOAD_CHALLENGE_SUBMISSIONS_FAILURE'
 
+export const LOAD_CHALLENGE_MEMBERS = 'LOAD_CHALLENGE_MEMBERS'
 export const LOAD_CHALLENGE_MEMBERS_SUCCESS = 'LOAD_CHALLENGE_MEMBERS_SUCCESS'
 export const LOAD_CHALLENGE_METADATA_SUCCESS = 'LOAD_CHALLENGE_METADATA_SUCCESS'
 
@@ -180,6 +186,13 @@ export const MARATHON_MATCH_SUBTRACKS = [
   'DEVELOP_MARATHON_MATCH'
 ]
 
+export const PROJECT_ROLES = {
+  READ: 'observer',
+  WRITE: 'customer',
+  MANAGER: 'manager',
+  COPILOT: 'copilot'
+}
+
 export const CHALLENGE_STATUS = {
   ACTIVE: 'ACTIVE',
   NEW: 'NEW',
@@ -211,7 +224,12 @@ export const ALLOWED_USER_ROLES = [
   'administrator',
   'connect admin',
   'connect manager',
-  'connect copilot'
+  'connect copilot',
+  'topcoder user'
+]
+
+export const READ_ONLY_ROLES = [
+  'topcoder user'
 ]
 
 export const ADMIN_ROLES = [
@@ -222,7 +240,7 @@ export const ADMIN_ROLES = [
 export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
   `${CHALLENGE_API_URL}/${challengeId}/attachments/${attachmentId}/download?token=${token}`
 
-export const PAGE_SIZE = 50
+export const PAGE_SIZE = 10
 
 /**
  * The minimal number of characters to enter before starting showing autocomplete suggestions
@@ -301,3 +319,10 @@ export const MULTI_ROUND_CHALLENGE_DESC_TEMPLATE = '\n\n### ROUND 1\n' +
 export const MAX_CHECKPOINT_PRIZE_COUNT = 8
 export const DEFAULT_CHECKPOINT_PRIZE = 50
 export const DEFAULT_CHECKPOINT_PRIZE_COUNT = 5
+
+export const PAGINATION_PER_PAGE_OPTIONS = [
+  { label: '5', value: '5' },
+  { label: '10', value: '10' },
+  { label: '25', value: '25' },
+  { label: '50', value: '50' }
+]

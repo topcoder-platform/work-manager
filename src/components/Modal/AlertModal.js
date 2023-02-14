@@ -6,7 +6,7 @@ import styles from './ConfirmationModal.module.scss'
 import OutlineButton from '../Buttons/OutlineButton'
 import PrimaryButton from '../Buttons/PrimaryButton'
 
-const AlertModal = ({ title, message, theme, onClose, closeLink, okLink, closeText, okText }) => (
+const AlertModal = ({ title, message, theme, onClose, closeLink, okLink, closeText, okText, onOk }) => (
   <Modal theme={theme} onCancel={onClose}>
     <div className={cn(styles.contentContainer, styles.confirm)}>
       <div className={styles.title}>{title}</div>
@@ -28,6 +28,7 @@ const AlertModal = ({ title, message, theme, onClose, closeLink, okLink, closeTe
               text={okText}
               type={'success'}
               link={okLink}
+              onClick={okLink ? () => {} : onOk}
             />
           </div>
         )}
@@ -41,6 +42,7 @@ AlertModal.propTypes = {
   message: PropTypes.string,
   theme: PropTypes.shape(),
   onClose: PropTypes.func,
+  onOk: PropTypes.func,
   closeText: PropTypes.string,
   closeLink: PropTypes.string,
   okText: PropTypes.string,

@@ -59,29 +59,87 @@ import { removeChallengeFromPhaseProduct, saveChallengeAsPhaseProduct } from '..
 /**
  * Loads active challenges of project by page
  */
-export function loadChallengesByPage (page, projectId, status, filterChallengeName = null, selfService = false, userHandle = null) {
+export function loadChallengesByPage (
+  page,
+  projectId,
+  status,
+  filterChallengeName = null,
+  selfService = false,
+  userHandle = null,
+  filterChallengeType = {},
+  filterDate = {},
+  filterSortBy = null,
+  filterSortOrder = null,
+  perPage = PAGE_SIZE
+) {
   return (dispatch, getState) => {
-    dispatch({
-      type: LOAD_CHALLENGES_PENDING,
-      challenges: [],
-      projectId: projectId,
-      status,
-      filterChallengeName,
-      perPage: PAGE_SIZE,
-      page
-    })
+    if (_.isObject(projectId)) {
+      dispatch({
+        type: LOAD_CHALLENGES_PENDING,
+        challenges: [],
+        status,
+        filterProjectOption: projectId,
+        filterChallengeName,
+        filterChallengeType,
+        filterDate,
+        filterSortBy,
+        filterSortOrder,
+        perPage,
+        page
+      })
+    } else {
+      dispatch({
+        type: LOAD_CHALLENGES_PENDING,
+        challenges: [],
+        status,
+        projectId,
+        filterChallengeName,
+        filterChallengeType,
+        filterDate,
+        filterSortBy,
+        filterSortOrder,
+        perPage,
+        page
+      })
+    }
 
     const filters = {
-      sortBy: 'updated',
+      sortBy: 'startDate',
       sortOrder: 'desc'
+    }
+    if (_.isObject(filterChallengeType) && filterChallengeType.value) {
+      filters['type'] = filterChallengeType.value
+    }
+    if (_.isObject(filterDate) && filterDate.startDateStart) {
+      filters['startDateStart'] = filterDate.startDateStart
+    }
+    if (_.isObject(filterDate) && filterDate.startDateEnd) {
+      filters['startDateEnd'] = filterDate.startDateEnd
+    }
+    if (_.isObject(filterDate) && filterDate.endDateStart) {
+      filters['endDateStart'] = filterDate.endDateStart
+    }
+    if (_.isObject(filterDate) && filterDate.endDateEnd) {
+      filters['endDateEnd'] = filterDate.endDateEnd
+    }
+    if (filterSortBy) {
+      filters['sortBy'] = filterSortBy
+    }
+    if (filterSortOrder) {
+      filters['sortOrder'] = filterSortOrder
     }
     if (!_.isEmpty(filterChallengeName)) {
       filters['name'] = filterChallengeName
     }
     if (_.isInteger(projectId) && projectId > 0) {
       filters['projectId'] = projectId
+    } else if (_.isObject(projectId) && projectId.value > 0) {
+      filters['projectId'] = projectId.value
     }
-    if (!_.isEmpty(status)) {
+
+    if (status === 'all') {
+      delete filters['status']
+    } else if (!_.isEmpty(status)) {
       filters['status'] = status === '' ? undefined : _.startCase(status.toLowerCase())
     } else if (!(_.isInteger(projectId) && projectId > 0)) {
       filters['status'] = 'Active'
@@ -95,7 +153,7 @@ export function loadChallengesByPage (page, projectId, status, filterChallengeNa
 
     return fetchChallenges(filters, {
       page,
-      perPage: PAGE_SIZE
+      perPage
       // memberId: getState().auth.user ? getState().auth.user.userId : null
     }).then((res) => {
       dispatch({
@@ -113,14 +171,24 @@ export function loadChallengesByPage (page, projectId, status, filterChallengeNa
 /**
  * Loads active challenges of project
  */
-export function loadChallenges (projectId, status, filterChallengeName = null) {
+export function loadChallenges (
+  projectId,
+  status,
+  filterChallengeName = null,
+  filterChallengeType = null,
+  filterSortBy,
+  filterSortOrder
+) {
   return (dispatch, getState) => {
     dispatch({
       type: LOAD_CHALLENGES_PENDING,
       challenges: [],
       projectId: projectId ? `${projectId}` : '',
       status,
-      filterChallengeName
+      filterChallengeName,
+      filterChallengeType,
+      filterSortBy,
+      filterSortOrder
     })
 
     const filters = {}

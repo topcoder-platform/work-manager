@@ -44,5 +44,8 @@ module.exports = {
   FILE_PICKER_CNAME: 'fs.topcoder.com',
   IDLE_TIMEOUT_MINUTES: 10,
   IDLE_TIMEOUT_GRACE_MINUTES: 5,
-  MULTI_ROUND_CHALLENGE_TEMPLATE_ID: 'd4201ca4-8437-4d63-9957-3f7708184b07'
+  MULTI_ROUND_CHALLENGE_TEMPLATE_ID: 'd4201ca4-8437-4d63-9957-3f7708184b07',
+  UNIVERSAL_NAV_URL: '//uni-nav.topcoder.com/v1/tc-universal-nav.js',
+  HEADER_AUTH_URLS_HREF: `https://accounts-auth0.${DOMAIN}?utm_source=community-app-main`,
+  HEADER_AUTH_URLS_LOCATION: `https://accounts-auth0.${DOMAIN}?retUrl=%S&utm_source=community-app-main`
 }
