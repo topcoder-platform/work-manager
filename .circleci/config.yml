@@ -152,7 +152,7 @@ workflows:
           context : org-global
           filters: &filters-dev
             branches:
-              only: ['develop', 'PLAT-2111']
+              only: ['develop', 'multiround']
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.
