@@ -66,6 +66,7 @@ export function loadChallengesByPage (
   filterChallengeName = null,
   selfService = false,
   userHandle = null,
+  filterCreatedBy = null,
   filterChallengeType = {},
   filterDate = {},
   filterSortBy = null,
@@ -124,6 +125,9 @@ export function loadChallengesByPage (
     }
     if (filterSortBy) {
       filters['sortBy'] = filterSortBy
+    }
+    if (filterCreatedBy) {
+      filters['createdBy'] = filterCreatedBy
     }
     if (filterSortOrder) {
       filters['sortOrder'] = filterSortOrder
