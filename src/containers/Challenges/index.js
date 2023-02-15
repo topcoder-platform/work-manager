@@ -44,7 +44,7 @@ class Challenges extends Component {
     } = this.props
     loadChallengeTypes()
     if (dashboard) {
-      this.reloadChallenges(this.props, true)
+      this.reloadChallenges(this.props, true, true)
     }
     if (menu === 'NULL' && activeProjectId !== -1) {
       resetSidebarActiveParams()
@@ -62,11 +62,11 @@ class Challenges extends Component {
       (nextProps.dashboard && this.props.dashboard !== nextProps.dashboard) ||
       this.props.activeProjectId !== nextProps.activeProjectId
     ) {
-      this.reloadChallenges(nextProps)
+      this.reloadChallenges(nextProps, false, true)
     }
   }
 
-  reloadChallenges (props, forceLoad) {
+  reloadChallenges (props, forceLoad, loadMyChallenge) {
     const {
       activeProjectId,
       projectDetail: reduxProjectInfo,
@@ -84,7 +84,8 @@ class Challenges extends Component {
         dashboard ? 'all' : '',
         '',
         selfService,
-        isAdmin ? null : this.props.auth.user.handle
+        isAdmin ? null : this.props.auth.user.handle,
+        loadMyChallenge ? this.props.auth.user.handle : ''
       )
       const projectLoading =
         window.localStorage.getItem('projectLoading') !== null
