@@ -20,8 +20,47 @@ const clientObject = client.init(FILE_PICKER_API_KEY)
 const maxUploadSize = 40 * 1024 * 1024
 const maxCommentLength = 16000
 const imageExtensions = ['gif', 'png', 'jpeg', 'jpg', 'bmp', 'svg']
-const allowedImageExtensions = [...imageExtensions, ...imageExtensions.map(key => `image/${key}`)]
-const allowedOtherExtensions = []
+const allowedImageExtensions = [
+  ...imageExtensions,
+  ...imageExtensions.map(key => `image/${key}`)
+]
+const allowedOtherExtensions = [
+  'application/zip',
+  'zip',
+  'application/octet-stream',
+  'application/x-zip-compressed',
+  'multipart/x-zip',
+  'text/plain',
+  'txt',
+  'mov',
+  'video/mpeg',
+  'mp4',
+  'video/mp4',
+  'webm',
+  'video/webm',
+  'doc',
+  'docx',
+  'pdf',
+  'application/pdf',
+  'csv',
+  'text/csv',
+  'htm',
+  'html',
+  'text/html',
+  'js',
+  'json',
+  'application/json',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'xls',
+  'xlsx',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'ppt',
+  'application/vnd.ms-powerpoint',
+  'pptx',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+]
 const errorMessages = {
   noFileGiven: 'Select a file.',
   typeNotAllowed:
