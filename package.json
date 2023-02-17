@@ -52,7 +52,6 @@
     "jstimezonedetect": "^1.0.6",
     "jwt-decode": "^2.2.0",
     "lodash": "^4.17.11",
-    "marked": "^1.0.0",
     "mini-css-extract-plugin": "0.4.3",
     "moment": "^2.24.0",
     "moment-duration-format": "^2.2.2",
@@ -104,7 +103,16 @@
     "webpack": "^4.43.0",
     "webpack-dev-server": "^3.11.0",
     "webpack-manifest-plugin": "2.0.4",
-    "xss": "^1.0.6"
+    "xss": "^1.0.6",
+    "rehype-katex": "^5.0.0",
+    "rehype-raw": "^5.1.0",
+    "rehype-stringify": "^8.0.0",
+    "remark-breaks": "^2.0.2",
+    "remark-frontmatter": "^3.0.0",
+    "remark-gfm": "^1.0.0",
+    "remark-math": "^4.0.0",
+    "remark-parse": "^10.0.1",
+    "react-markdown": "^6.0.3"
   },
   "scripts": {
     "start": "node server.js",

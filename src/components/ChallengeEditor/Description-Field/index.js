@@ -2,7 +2,15 @@ import React, { Component } from 'react'
 import styles from './Description-Field.module.scss'
 import PropTypes from 'prop-types'
 import EasyMDE from 'easymde'
-import marked from 'marked'
+import ReactMarkdown from 'react-markdown'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import remarkGfm from 'remark-gfm'
+import remarkParse from 'remark-parse'
+import rehypeStringify from 'rehype-stringify'
+import remarkFrontmatter from 'remark-frontmatter'
+import rehypeRaw from 'rehype-raw'
+import remarkBreaks from 'remark-breaks'
 import cn from 'classnames'
 import _ from 'lodash'
 import $ from 'jquery'
@@ -75,7 +83,9 @@ const errorMessages = {
 class DescriptionField extends Component {
   constructor (props) {
     super(props)
-    this.ref = React.createRef()
+    this.state = {
+      readOnyDescription: ''
+    }
     this.element = React.createRef()
     this.isChanged = false
     this.currentValue = ''
@@ -403,11 +413,13 @@ class DescriptionField extends Component {
             '<span style="color:red">MISSING DATA FROM INTAKE FORM</span>'
           )
           : ''
-        this.ref.current.innerHTML = marked(newDescription)
+        this.setState({
+          readOnyDescription: newDescription
+        })
       } else {
-        this.ref.current.innerHTML = challenge[type]
-          ? marked(challenge[type])
-          : ''
+        this.setState({
+          readOnyDescription: challenge[type] ? challenge[type] : ''
+        })
       }
     }
   }
@@ -815,11 +827,25 @@ class DescriptionField extends Component {
 
   render () {
     const { isPrivate, readOnly } = this.props
+    const { readOnyDescription } = this.state
+    console.log('totest readOnyDescription', readOnyDescription)
 
     return (
       <div className={cn(styles.editor, { [styles.isPrivate]: isPrivate })}>
         {readOnly ? (
-          <div ref={this.ref} />
+          <ReactMarkdown
+            remarkPlugins={[
+              remarkMath,
+              remarkFrontmatter,
+              remarkParse,
+              [remarkGfm, { singleTilde: false }],
+              remarkBreaks
+            ]}
+            rehypePlugins={[rehypeKatex, rehypeStringify, rehypeRaw]}
+            className={styles.reviewContainer}
+          >
+            {readOnyDescription}
+          </ReactMarkdown>
         ) : (
           <textarea
             ref={this.element}
