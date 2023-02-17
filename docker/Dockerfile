@@ -1,5 +1,5 @@
 # Use the base image with Node.js
-FROM node:10
+FROM node:12
 ARG NODE_ENV
 ARG BABEL_ENV
 
