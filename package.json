@@ -41,7 +41,7 @@
     "moment": "^2.24.0",
     "moment-duration-format": "^2.2.2",
     "moment-timezone": "^0.5.34",
-    "node-sass": "^4.14.0",
+    "node-sass": "^7.0.0",
     "normalize-text": "^2.4.1",
     "optimize-css-assets-webpack-plugin": "5.0.1",
     "pnp-webpack-plugin": "1.1.0",
