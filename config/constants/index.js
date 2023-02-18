@@ -5,6 +5,8 @@ module.exports = (() => {
   if (env === 'production') {
     return require('./production')
   }
-
+  if (env === 'qa') {
+    return require('./qa')
+  }
   return require('./development')
 })()
