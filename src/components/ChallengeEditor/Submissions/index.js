@@ -16,6 +16,12 @@ import {
   getProvisionalScore,
   getFinalScore
 } from '../../../util/tc'
+import {
+  getTopcoderReactLib
+} from '../../../util/topcoder-react-lib'
+import {
+  compressFiles
+} from '../../../util/files'
 import styles from './Submissions.module.scss'
 const assets = require.context('../../../assets/images', false, /svg/)
 const ArrowDown = './arrow-down.svg'
@@ -31,7 +37,8 @@ class SubmissionsComponent extends React.Component {
       },
       isShowInformation: false,
       memberOfModal: '',
-      sortedSubmissions: []
+      sortedSubmissions: [],
+      downloadingAll: false
     }
     this.getSubmissionsSortParam = this.getSubmissionsSortParam.bind(this)
     this.updateSortedSubmissions = this.updateSortedSubmissions.bind(this)
@@ -196,13 +203,13 @@ class SubmissionsComponent extends React.Component {
   }
 
   render () {
-    const { challenge } = this.props
+    const { challenge, token } = this.props
     const { checkpoints, track, type, tags } = challenge
 
     const { field, sort } = this.getSubmissionsSortParam()
     const revertSort = sort === 'desc' ? 'asc' : 'desc'
 
-    const { sortedSubmissions } = this.state
+    const { sortedSubmissions, downloadingAll } = this.state
 
     const renderSubmission = s => (
       <div className={styles.submission} key={s.id}>
@@ -302,6 +309,51 @@ class SubmissionsComponent extends React.Component {
           <a href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}`} target='_blank'>
             Manage Submissions
           </a>
+          <button
+            className={styles.btnDownloadAll}
+            disabled={downloadingAll}
+            onClick={async () => {
+              const reactLib = getTopcoderReactLib()
+              const { getService } = reactLib.services.submissions
+              // download submission
+              this.setState({
+                downloadingAll: true
+              })
+              const submissionsService = getService(token)
+              const allFiles = []
+              let downloadedFile = 0
+              const checkToCompressFiles = () => {
+                if (downloadedFile === sortedSubmissions.length) {
+                  if (downloadedFile > 0) {
+                    compressFiles(allFiles, 'all-submissions.zip', () => {
+                      this.setState({
+                        downloadingAll: false
+                      })
+                    })
+                  } else {
+                    this.setState({
+                      downloadingAll: false
+                    })
+                  }
+                }
+              }
+              checkToCompressFiles()
+              _.forEach(sortedSubmissions, (submission) => {
+                const mmSubmissionId = submission.id
+                submissionsService.downloadSubmission(mmSubmissionId)
+                  .then((blob) => {
+                    const file = new window.File([blob], `submission-${mmSubmissionId}.zip`)
+                    allFiles.push(file)
+                    downloadedFile += 1
+                    checkToCompressFiles()
+                  }).catch(() => {
+                    downloadedFile += 1
+                    checkToCompressFiles()
+                  })
+              })
+            }}>
+            Download All
+          </button>
         </div>
         <div className={styles.head}>
           {!isF2F && !isBugHunt && (
@@ -444,7 +496,8 @@ class SubmissionsComponent extends React.Component {
 }
 
 SubmissionsComponent.defaultProps = {
-  submissions: []
+  submissions: [],
+  token: ''
 }
 
 SubmissionsComponent.propTypes = {
@@ -459,7 +512,8 @@ SubmissionsComponent.propTypes = {
     registrants: PT.any,
     phases: PT.any
   }).isRequired,
-  submissions: PT.arrayOf(PT.shape())
+  submissions: PT.arrayOf(PT.shape()),
+  token: PT.string
 }
 
 export default SubmissionsComponent

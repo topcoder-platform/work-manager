@@ -25,6 +25,9 @@ $base-unit: 5px;
   .top-title {
     margin-top: -50px;
     text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
   }
 
   div {
@@ -407,4 +410,29 @@ $base-unit: 5px;
 
 .level-5 {
   color: $member-red !important;
+}
+
+.btnDownloadAll {
+  text-decoration: none;
+  background-color: transparent;
+  padding: 0;
+  border: none;
+  font-size: 15px;
+  line-height: 16px;
+  color: #137d60;
+  background-color: transparent;
+
+  &:hover {
+    color: #0ab88a;
+  }
+
+  &:focus,
+  &:disabled {
+    background-color: transparent;
+    color: #137d60;
+  }
+
+  &:disabled {
+    pointer-events: none;
+  }
 }

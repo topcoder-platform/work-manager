@@ -80,6 +80,32 @@ const errorMessages = {
     'Uploading #image_name# was failed. Something went wrong when uploading the file.'
 }
 
+// A Pos instance represents a position within the text.
+function Pos (line, ch, sticky) {
+  if (sticky === void 0) sticky = null
+
+  if (!(this instanceof Pos)) { return new Pos(line, ch, sticky) }
+  this.line = line
+  this.ch = ch
+  this.sticky = sticky
+}
+
+// Find the line object corresponding to the given line number.
+function getLine (doc, n) {
+  n -= doc.first
+  if (n < 0 || n >= doc.size) { throw new Error('There is no line ' + (n + doc.first) + ' in the document.') }
+  var chunk = doc
+  while (!chunk.lines) {
+    for (var i = 0; ; ++i) {
+      var child = chunk.children[i]
+      var sz = child.chunkSize()
+      if (n < sz) { chunk = child; break }
+      n -= sz
+    }
+  }
+  return chunk.lines[n]
+}
+
 class DescriptionField extends Component {
   constructor (props) {
     super(props)
@@ -403,6 +429,24 @@ class DescriptionField extends Component {
         var currentCursorPosition = cm.getCursor()
         cm.replaceSelection(result, { line: currentCursorPosition.line + 2, ch: result.length })
         return false
+      })
+
+      const defaultConfigureMouse = this.easyMDE.codemirror.getOption('configureMouse')
+      this.easyMDE.codemirror.setOption('configureMouse', (cm, repeat, event) => {
+        if (repeat === 'triple') {
+          return {
+            unit: (cm, pos) => {
+              const line = getLine(cm.doc, pos.line).text
+              const result = {
+                from: Pos(pos.line, 0),
+                to: Pos(pos.line, line.length)
+              }
+              return result
+            },
+            ...defaultConfigureMouse(cm, repeat, event)
+          }
+        }
+        return defaultConfigureMouse(cm, repeat, event)
       })
     } else {
       if (challenge.legacy.selfService) {
@@ -828,7 +872,6 @@ class DescriptionField extends Component {
   render () {
     const { isPrivate, readOnly } = this.props
     const { readOnyDescription } = this.state
-    console.log('totest readOnyDescription', readOnyDescription)
 
     return (
       <div className={cn(styles.editor, { [styles.isPrivate]: isPrivate })}>

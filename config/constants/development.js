@@ -2,6 +2,10 @@ const DOMAIN = 'topcoder-dev.com'
 const DEV_API_HOSTNAME = `https://api.${DOMAIN}`
 
 module.exports = {
+  API_V2: `${DEV_API_HOSTNAME}/v2`,
+  API_V3: `${DEV_API_HOSTNAME}/v3`,
+  API_V4: `${DEV_API_HOSTNAME}/v4`,
+  API_V5: `${DEV_API_HOSTNAME}/v5`,
   ACCOUNTS_APP_CONNECTOR_URL: `https://accounts-auth0.${DOMAIN}`,
   ACCOUNTS_APP_LOGIN_URL: `https://accounts-auth0.${DOMAIN}`,
   COMMUNITY_APP_URL: `https://www.${DOMAIN}`,
