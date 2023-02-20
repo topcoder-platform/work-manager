@@ -120,7 +120,9 @@ class ChallengeCard extends React.Component {
       isSaving: false,
       isCheckChalengePermission: false,
       hasEditChallengePermission: false,
-      loginUserRoleInProject: ''
+      loginUserRoleInProject: '',
+      currentPhase: this.getCurrentPhase(props.challenge),
+      forumLink: this.getForumLink(props.challenge)
     }
     this.onUpdateConfirm = this.onUpdateConfirm.bind(this)
     this.onUpdateLaunch = this.onUpdateLaunch.bind(this)
@@ -128,6 +130,31 @@ class ChallengeCard extends React.Component {
     this.deleteModalLaunch = this.deleteModalLaunch.bind(this)
     this.resetModal = this.resetModal.bind(this)
     this.onLaunchChallenge = this.onLaunchChallenge.bind(this)
+  }
+
+  getCurrentPhase (challenge) {
+    return challenge.phases.filter((p) => p.isOpen).map((p) => p.name).join(' / ') || '-'
+  }
+
+  getForumLink (challenge) {
+    const discussionsHaveUrls = (challenge.discussions || []).filter((p) => !!p.url)
+    return discussionsHaveUrls.length ? discussionsHaveUrls[0].url : ''
+  }
+
+  componentDidUpdate (prevProps) {
+    const { challenge } = this.props
+    if (!_.isEqual(challenge.phases, prevProps.challenge.phases)) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({
+        currentPhase: this.getCurrentPhase(challenge)
+      })
+    }
+    if (!_.isEqual(challenge.discussions, prevProps.challenge.discussions)) {
+      // eslint-disable-next-line react/no-did-update-set-state
+      this.setState({
+        forumLink: this.getForumLink(challenge)
+      })
+    }
   }
 
   onUpdateConfirm (value) {
@@ -202,7 +229,7 @@ class ChallengeCard extends React.Component {
   }
 
   render () {
-    const { isLaunch, isConfirm, isSaving, isDeleteLaunch, isCheckChalengePermission, hasEditChallengePermission } = this.state
+    const { isLaunch, isConfirm, isSaving, isDeleteLaunch, isCheckChalengePermission, hasEditChallengePermission, currentPhase, forumLink } = this.state
     const { setActiveProject, challenge, reloadChallengeList, isBillingAccountExpired, disableHover, getStatusText, challengeTypes, loginUserRoleInProject } = this.props
     const deleteMessage = isCheckChalengePermission
       ? 'Checking permissions...'
@@ -279,6 +306,9 @@ class ChallengeCard extends React.Component {
         <div className={styles.col3}>
           {renderStatus(challenge.status.toUpperCase(), getStatusText)}
         </div>
+        <div className={styles.col3}>
+          {currentPhase}
+        </div>
         {
           !isReadOnly && (
             <div className={styles.col6}>
@@ -291,6 +321,10 @@ class ChallengeCard extends React.Component {
         </div>
         <div className={styles.col6}>
           <a className={styles.link} href={communityAppUrl} target='_blank'>CA</a>
+        </div>
+        <div className={styles.col6}>
+          {forumLink ? (<a className={styles.link} href={forumLink} target='_blank'>CA</a>)
+            : (<a className={styles.link} href='javascript:void(0)'>Forum</a>)}
         </div>
       </div>
     )

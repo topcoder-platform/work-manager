@@ -764,7 +764,15 @@ class ChallengeList extends Component {
               {this.renderSortIcon('status')}
             </span>
           </div>
+          <div
+            className={cn(styles.col3)}
+          >
+            <span className={styles.filterItem}>
+              Phase
+            </span>
+          </div>
           {!isReadOnly ? (<div className={styles.col6}>&nbsp;</div>) : null}
+          <div className={styles.col6}>&nbsp;</div>
           <div className={styles.col6}>&nbsp;</div>
           <div className={styles.col6}>&nbsp;</div>
         </div>

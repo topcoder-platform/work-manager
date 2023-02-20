@@ -23,11 +23,12 @@ $base-unit: 5px;
   margin-right: auto;
 
   .top-title {
-    margin-top: -50px;
+    margin-top: -30px;
+    margin-bottom: 20px;
     text-align: center;
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 40px;
   }
 
   div {
@@ -410,6 +411,10 @@ $base-unit: 5px;
 
 .level-5 {
   color: $member-red !important;
+}
+
+.btnManageSubmissions {
+  height: 40px;
 }
 
 .btnDownloadAll {

@@ -8,6 +8,7 @@ import PT from 'prop-types'
 import moment from 'moment'
 import _ from 'lodash'
 import { STUDIO_URL, SUBMISSION_REVIEW_APP_URL, getTCMemberURL } from '../../../config/constants'
+import { PrimaryButton } from '../../Buttons'
 import cn from 'classnames'
 import ReactSVG from 'react-svg'
 import {
@@ -306,54 +307,62 @@ class SubmissionsComponent extends React.Component {
     return (
       <div className={cn(styles.container, styles.dev, styles['non-mm'])}>
         <div className={styles['top-title']} >
-          <a href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}`} target='_blank'>
-            Manage Submissions
-          </a>
-          <button
-            className={styles.btnDownloadAll}
-            disabled={downloadingAll}
-            onClick={async () => {
-              const reactLib = getTopcoderReactLib()
-              const { getService } = reactLib.services.submissions
-              // download submission
-              this.setState({
-                downloadingAll: true
-              })
-              const submissionsService = getService(token)
-              const allFiles = []
-              let downloadedFile = 0
-              const checkToCompressFiles = () => {
-                if (downloadedFile === sortedSubmissions.length) {
-                  if (downloadedFile > 0) {
-                    compressFiles(allFiles, 'all-submissions.zip', () => {
+
+          <div className={styles.btnManageSubmissions} >
+            <PrimaryButton
+              text='Manage Submissions'
+              type='info'
+              href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}`}
+            />
+          </div>
+
+          <div className={styles.btnManageSubmissions} >
+            <PrimaryButton
+              text='Download All'
+              type='info'
+              disabled={downloadingAll}
+              onClick={async () => {
+                const reactLib = getTopcoderReactLib()
+                const { getService } = reactLib.services.submissions
+                // download submission
+                this.setState({
+                  downloadingAll: true
+                })
+                const submissionsService = getService(token)
+                const allFiles = []
+                let downloadedFile = 0
+                const checkToCompressFiles = () => {
+                  if (downloadedFile === sortedSubmissions.length) {
+                    if (downloadedFile > 0) {
+                      compressFiles(allFiles, 'all-submissions.zip', () => {
+                        this.setState({
+                          downloadingAll: false
+                        })
+                      })
+                    } else {
                       this.setState({
                         downloadingAll: false
                       })
-                    })
-                  } else {
-                    this.setState({
-                      downloadingAll: false
-                    })
+                    }
                   }
                 }
-              }
-              checkToCompressFiles()
-              _.forEach(sortedSubmissions, (submission) => {
-                const mmSubmissionId = submission.id
-                submissionsService.downloadSubmission(mmSubmissionId)
-                  .then((blob) => {
-                    const file = new window.File([blob], `submission-${mmSubmissionId}.zip`)
-                    allFiles.push(file)
-                    downloadedFile += 1
-                    checkToCompressFiles()
-                  }).catch(() => {
-                    downloadedFile += 1
-                    checkToCompressFiles()
-                  })
-              })
-            }}>
-            Download All
-          </button>
+                checkToCompressFiles()
+                _.forEach(sortedSubmissions, (submission) => {
+                  const mmSubmissionId = submission.id
+                  submissionsService.downloadSubmission(mmSubmissionId)
+                    .then((blob) => {
+                      const file = new window.File([blob], `submission-${mmSubmissionId}.zip`)
+                      allFiles.push(file)
+                      downloadedFile += 1
+                      checkToCompressFiles()
+                    }).catch(() => {
+                      downloadedFile += 1
+                      checkToCompressFiles()
+                    })
+                })
+              }}
+            />
+          </div>
         </div>
         <div className={styles.head}>
           {!isF2F && !isBugHunt && (
