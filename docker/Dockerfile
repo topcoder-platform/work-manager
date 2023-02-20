@@ -12,10 +12,10 @@ ENV FILE_PICKER_API_KEY=$FILE_PICKER_API_KEY
 ENV FORCE_DEV=$FORCE_DEV
 
 # Copy the current directory into the Docker image
-COPY . /challenge-engine-ui
+COPY . /work-manager
 
 # Set working directory for future use
-WORKDIR /challenge-engine-ui
+WORKDIR /work-manager
 
 # Install the dependencies from package.json
 RUN echo "NODE ENV in Docker: $NODE_ENV"
