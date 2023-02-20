@@ -123,7 +123,7 @@ jobs:
       DEPLOY_ENV: "QA"
       LOGICAL_ENV: "qa"
       NODE_ENV: "qa"
-      BABEL_ENV: "qa"
+      BABEL_ENV: "development"
       APPNAME: "work-manager"
     steps: *builddeploy_steps
 
