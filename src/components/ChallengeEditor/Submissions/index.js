@@ -306,8 +306,146 @@ class SubmissionsComponent extends React.Component {
 
     return (
       <div className={cn(styles.container, styles.dev, styles['non-mm'])}>
-        <div className={styles['top-title']} >
+        <div className={styles['empty-left']} />
+        <div className={styles.submissionsContainer}>
+          <div className={styles.head}>
+            {!isF2F && !isBugHunt && (
+              <button
+                type='button'
+                onClick={() => {
+                  this.onSortChange({
+                    field: 'Rating',
+                    sort: field === 'Rating' ? revertSort : 'desc'
+                  })
+                }}
+                className={cn(styles['col-2'], styles['header-sort'])}
+              >
+                <span>Rating</span>
+                <div
+                  className={cn(styles['col-arrow'], {
+                    [styles['col-arrow-sort-asc']]:
+                      field === 'Rating' && sort === 'asc',
+                    [styles['col-arrow-is-sorting']]: field === 'Rating'
+                  })}
+                >
+                  <ReactSVG path={assets(`${ArrowDown}`)} />
+                </div>
+              </button>
+            )}
+            <button
+              type='button'
+              onClick={() => {
+                this.onSortChange({
+                  field: 'Username',
+                  sort: field === 'Username' ? revertSort : 'desc'
+                })
+              }}
+              className={cn(styles['col-3'], styles['header-sort'])}
+            >
+              <span>Username</span>
+              <div
+                className={cn(styles['col-arrow'], {
+                  [styles['col-arrow-sort-asc']]: field === 'Username' && sort === 'asc',
+                  [styles['col-arrow-is-sorting']]: field === 'Username'
+                })}
+              >
+                <ReactSVG path={assets(`${ArrowDown}`)} />
+              </div>
+            </button>
+            <button
+              type='button'
+              onClick={() => {
+                this.onSortChange({
+                  field: 'Submission Date',
+                  sort: field === 'Submission Date' ? revertSort : 'desc'
+                })
+              }}
+              className={cn(styles['col-4'], styles['header-sort'])}
+            >
+              <span>Submission Date</span>
+              <div
+                className={cn(styles['col-arrow'], {
+                  [styles['col-arrow-sort-asc']]: field === 'Submission Date' && sort === 'asc',
+                  [styles['col-arrow-is-sorting']]: field === 'Submission Date'
+                })}
+              >
+                <ReactSVG path={assets(`${ArrowDown}`)} />
+              </div>
+            </button>
+            <button
+              type='button'
+              onClick={() => {
+                this.onSortChange({
+                  field: 'Initial / Final Score',
+                  sort: field === 'Initial / Final Score' ? revertSort : 'desc'
+                })
+              }}
+              className={cn(styles['col-5'], styles['header-sort'])}
+            >
+              <span>Initial / Final Score</span>
+              <div
+                className={cn('col-arrow', {
+                  'col-arrow-sort-asc':
+                    field === 'Initial / Final Score' && sort === 'asc',
+                  'col-arrow-is-sorting': field === 'Initial / Final Score'
+                })}
+              >
+                <ReactSVG path={assets(`${ArrowDown}`)} />
+              </div>
+            </button>
+          </div>
+          {sortedSubmissions.map(s => (
+            <div
+              key={_.get(s.registrant, 'memberHandle', '') + s.created}
+              className={styles.row}
+            >
+              {!isF2F && !isBugHunt && (
+                <div
+                  className={cn(styles['col-2'], styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`])}
+                >
+                  {s.registrant && !_.isNil(s.registrant.rating)
+                    ? s.registrant.rating
+                    : '-'}
+                </div>
+              )}
+              <div className={styles['col-3']}>
+                <a
+                  href={`${window.origin}/members/${_.get(
+                    s.registrant,
+                    'memberHandle',
+                    ''
+                  )}`}
+                  target={`${
+                    _.includes(window.origin, 'www') ? '_self' : '_blank'
+                  }`}
+                  rel='noopener noreferrer'
+                  className={cn(
+                    styles['handle'],
+                    styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`]
+                  )}
+                >
+                  {_.get(s.registrant, 'memberHandle', '')}
+                </a>
+              </div>
+              <div className={styles['col-4']}>
+                {moment(s.created).format('MMM DD, YYYY HH:mm')}
+              </div>
+              <div className={styles['col-5']}>
+                <a href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}/submissions/${s.id} `} target='_blank'>
+                  {!_.isEmpty(s.review) && s.review[0].score
+                    ? parseFloat(s.review[0].score).toFixed(2)
+                    : 'N/A'}
+                  &zwnj; &zwnj;/ &zwnj;
+                  {s.reviewSummation && s.reviewSummation[0].aggregateScore
+                    ? parseFloat(s.reviewSummation[0].aggregateScore).toFixed(2)
+                    : 'N/A'}
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
 
+        <div className={styles['top-title']} >
           <div className={styles.btnManageSubmissions} >
             <PrimaryButton
               text='Manage Submissions'
@@ -364,141 +502,6 @@ class SubmissionsComponent extends React.Component {
             />
           </div>
         </div>
-        <div className={styles.head}>
-          {!isF2F && !isBugHunt && (
-            <button
-              type='button'
-              onClick={() => {
-                this.onSortChange({
-                  field: 'Rating',
-                  sort: field === 'Rating' ? revertSort : 'desc'
-                })
-              }}
-              className={cn(styles['col-2'], styles['header-sort'])}
-            >
-              <span>Rating</span>
-              <div
-                className={cn(styles['col-arrow'], {
-                  [styles['col-arrow-sort-asc']]:
-                    field === 'Rating' && sort === 'asc',
-                  [styles['col-arrow-is-sorting']]: field === 'Rating'
-                })}
-              >
-                <ReactSVG path={assets(`${ArrowDown}`)} />
-              </div>
-            </button>
-          )}
-          <button
-            type='button'
-            onClick={() => {
-              this.onSortChange({
-                field: 'Username',
-                sort: field === 'Username' ? revertSort : 'desc'
-              })
-            }}
-            className={cn(styles['col-3'], styles['header-sort'])}
-          >
-            <span>Username</span>
-            <div
-              className={cn(styles['col-arrow'], {
-                [styles['col-arrow-sort-asc']]: field === 'Username' && sort === 'asc',
-                [styles['col-arrow-is-sorting']]: field === 'Username'
-              })}
-            >
-              <ReactSVG path={assets(`${ArrowDown}`)} />
-            </div>
-          </button>
-          <button
-            type='button'
-            onClick={() => {
-              this.onSortChange({
-                field: 'Submission Date',
-                sort: field === 'Submission Date' ? revertSort : 'desc'
-              })
-            }}
-            className={cn(styles['col-4'], styles['header-sort'])}
-          >
-            <span>Submission Date</span>
-            <div
-              className={cn(styles['col-arrow'], {
-                [styles['col-arrow-sort-asc']]: field === 'Submission Date' && sort === 'asc',
-                [styles['col-arrow-is-sorting']]: field === 'Submission Date'
-              })}
-            >
-              <ReactSVG path={assets(`${ArrowDown}`)} />
-            </div>
-          </button>
-          <button
-            type='button'
-            onClick={() => {
-              this.onSortChange({
-                field: 'Initial / Final Score',
-                sort: field === 'Initial / Final Score' ? revertSort : 'desc'
-              })
-            }}
-            className={cn(styles['col-5'], styles['header-sort'])}
-          >
-            <span>Initial / Final Score</span>
-            <div
-              className={cn('col-arrow', {
-                'col-arrow-sort-asc':
-                  field === 'Initial / Final Score' && sort === 'asc',
-                'col-arrow-is-sorting': field === 'Initial / Final Score'
-              })}
-            >
-              <ReactSVG path={assets(`${ArrowDown}`)} />
-            </div>
-          </button>
-        </div>
-        {sortedSubmissions.map(s => (
-          <div
-            key={_.get(s.registrant, 'memberHandle', '') + s.created}
-            className={styles.row}
-          >
-            {!isF2F && !isBugHunt && (
-              <div
-                className={cn(styles['col-2'], styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`])}
-              >
-                {s.registrant && !_.isNil(s.registrant.rating)
-                  ? s.registrant.rating
-                  : '-'}
-              </div>
-            )}
-            <div className={styles['col-3']}>
-              <a
-                href={`${window.origin}/members/${_.get(
-                  s.registrant,
-                  'memberHandle',
-                  ''
-                )}`}
-                target={`${
-                  _.includes(window.origin, 'www') ? '_self' : '_blank'
-                }`}
-                rel='noopener noreferrer'
-                className={cn(
-                  styles['handle'],
-                  styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`]
-                )}
-              >
-                {_.get(s.registrant, 'memberHandle', '')}
-              </a>
-            </div>
-            <div className={styles['col-4']}>
-              {moment(s.created).format('MMM DD, YYYY HH:mm')}
-            </div>
-            <div className={styles['col-5']}>
-              <a href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}/submissions/${s.id} `} target='_blank'>
-                {!_.isEmpty(s.review) && s.review[0].score
-                  ? parseFloat(s.review[0].score).toFixed(2)
-                  : 'N/A'}
-                &zwnj; &zwnj;/ &zwnj;
-                {s.reviewSummation && s.reviewSummation[0].aggregateScore
-                  ? parseFloat(s.reviewSummation[0].aggregateScore).toFixed(2)
-                  : 'N/A'}
-              </a>
-            </div>
-          </div>
-        ))}
       </div>
     )
   }

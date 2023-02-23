@@ -850,16 +850,21 @@ class DescriptionField extends Component {
       }
     } else {
       text = cm.getSelection()
+      let trimText = text.trim()
+      let lastSpaces = ''
+      for (let i = trimText.length; i < text.length; i++) {
+        lastSpaces += text[i]
+      }
       if (type === 'bold') {
-        text = text.split('**').join('')
+        trimText = trimText.split('**').join('')
         // text = text.split('__').join('');
       } else if (type === 'italic') {
-        text = text.split('*').join('')
+        trimText = trimText.split('*').join('')
         // text = text.split('_').join('');
       } else if (type === 'strikethrough') {
-        text = text.split('~~').join('')
+        trimText = trimText.split('~~').join('')
       }
-      cm.replaceSelection(start + text + end)
+      cm.replaceSelection(start + trimText + end + lastSpaces)
 
       startPoint.ch += startChars.length
       endPoint.ch = startPoint.ch + text.length

@@ -18,18 +18,12 @@ $base-unit: 5px;
 .container {
   @include roboto;
 
-  max-width: 966px;
   margin-left: auto;
   margin-right: auto;
-
-  .top-title {
-    margin-top: -30px;
-    margin-bottom: 20px;
-    text-align: center;
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-  }
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 40px;
 
   div {
     white-space: nowrap;
@@ -196,12 +190,32 @@ $base-unit: 5px;
   }
 }
 
+.empty-left {
+  flex: 1;
+
+  @media (max-width: 1420px) {
+    display: none;
+  }
+}
+
+.top-title {
+  text-align: center;
+  display: flex;
+  justify-content: flex-start;
+  gap: 40px;
+  flex: 1;
+
+  @media (max-width: 1420px) {
+    justify-content: center;
+  }
+}
+
 .container.dev {
   margin: 0;
   width: 100%;
   margin: 0 auto;
   padding-bottom: 30px;
-  margin-top: 50px;
+  margin-top: 20px;
   line-height: 50px;
   // text-align: center;
 
@@ -325,6 +339,12 @@ $base-unit: 5px;
       color: $tc-black;
     }
   }
+}
+
+.submissionsContainer {
+  display: flex;
+  flex-direction: column;
+  max-width: 966px;
 }
 
 .tooltip {
