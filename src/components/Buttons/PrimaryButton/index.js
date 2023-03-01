@@ -8,9 +8,26 @@ import styles from './PrimaryButton.module.scss'
 
 const PrimaryButton = React.forwardRef(
   (
-    { type, text, link, onClick, submit, disabled, onMouseEnter, onMouseLeave },
+    { type, text, link, onClick, submit, disabled, onMouseEnter, onMouseLeave, href },
     ref
   ) => {
+    if (!_.isEmpty(href)) {
+      return (
+        <a
+          type={submit ? 'submit' : 'button'}
+          className={cn(styles.container, styles[type])}
+          onClick={submit ? null : onClick}
+          disabled={disabled}
+          onMouseEnter={onMouseEnter}
+          onMouseLeave={onMouseLeave}
+          ref={ref}
+          href={href}
+          target='_blank'
+        >
+          <span>{text}</span>
+        </a>
+      )
+    }
     if (_.isEmpty(link)) {
       return (
         <button
@@ -44,6 +61,7 @@ PrimaryButton.propTypes = {
   type: PropTypes.string.isRequired,
   text: PropTypes.string.isRequired,
   link: PropTypes.string,
+  href: PropTypes.string,
   onClick: PropTypes.func,
   submit: PropTypes.bool,
   disabled: PropTypes.bool,

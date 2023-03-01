@@ -1,5 +1,5 @@
 # Use the base image with Node.js
-FROM node:10
+FROM node:12
 ARG NODE_ENV
 ARG BABEL_ENV
 
@@ -10,6 +10,7 @@ ENV NODE_ENV=$NODE_ENV
 ENV BABEL_ENV=$BABEL_ENV
 ENV FILE_PICKER_API_KEY=$FILE_PICKER_API_KEY
 ENV FORCE_DEV=$FORCE_DEV
+ENV NODE_OPTIONS="--max-old-space-size=6144"
 
 # Copy the current directory into the Docker image
 COPY . /challenge-engine-ui

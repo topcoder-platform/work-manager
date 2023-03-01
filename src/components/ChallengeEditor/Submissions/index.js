@@ -8,6 +8,7 @@ import PT from 'prop-types'
 import moment from 'moment'
 import _ from 'lodash'
 import { STUDIO_URL, SUBMISSION_REVIEW_APP_URL, getTCMemberURL } from '../../../config/constants'
+import { PrimaryButton } from '../../Buttons'
 import cn from 'classnames'
 import ReactSVG from 'react-svg'
 import {
@@ -16,6 +17,12 @@ import {
   getProvisionalScore,
   getFinalScore
 } from '../../../util/tc'
+import {
+  getTopcoderReactLib
+} from '../../../util/topcoder-react-lib'
+import {
+  compressFiles
+} from '../../../util/files'
 import styles from './Submissions.module.scss'
 const assets = require.context('../../../assets/images', false, /svg/)
 const ArrowDown = './arrow-down.svg'
@@ -31,7 +38,8 @@ class SubmissionsComponent extends React.Component {
       },
       isShowInformation: false,
       memberOfModal: '',
-      sortedSubmissions: []
+      sortedSubmissions: [],
+      downloadingAll: false
     }
     this.getSubmissionsSortParam = this.getSubmissionsSortParam.bind(this)
     this.updateSortedSubmissions = this.updateSortedSubmissions.bind(this)
@@ -196,13 +204,13 @@ class SubmissionsComponent extends React.Component {
   }
 
   render () {
-    const { challenge } = this.props
+    const { challenge, token } = this.props
     const { checkpoints, track, type, tags } = challenge
 
     const { field, sort } = this.getSubmissionsSortParam()
     const revertSort = sort === 'desc' ? 'asc' : 'desc'
 
-    const { sortedSubmissions } = this.state
+    const { sortedSubmissions, downloadingAll } = this.state
 
     const renderSubmission = s => (
       <div className={styles.submission} key={s.id}>
@@ -298,153 +306,210 @@ class SubmissionsComponent extends React.Component {
 
     return (
       <div className={cn(styles.container, styles.dev, styles['non-mm'])}>
-        <div className={styles['top-title']} >
-          <a href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}`} target='_blank'>
-            Manage Submissions
-          </a>
-        </div>
-        <div className={styles.head}>
-          {!isF2F && !isBugHunt && (
+        <div className={styles['empty-left']} />
+        <div className={styles.submissionsContainer}>
+          <div className={styles.head}>
+            {!isF2F && !isBugHunt && (
+              <button
+                type='button'
+                onClick={() => {
+                  this.onSortChange({
+                    field: 'Rating',
+                    sort: field === 'Rating' ? revertSort : 'desc'
+                  })
+                }}
+                className={cn(styles['col-2'], styles['header-sort'])}
+              >
+                <span>Rating</span>
+                <div
+                  className={cn(styles['col-arrow'], {
+                    [styles['col-arrow-sort-asc']]:
+                      field === 'Rating' && sort === 'asc',
+                    [styles['col-arrow-is-sorting']]: field === 'Rating'
+                  })}
+                >
+                  <ReactSVG path={assets(`${ArrowDown}`)} />
+                </div>
+              </button>
+            )}
             <button
               type='button'
               onClick={() => {
                 this.onSortChange({
-                  field: 'Rating',
-                  sort: field === 'Rating' ? revertSort : 'desc'
+                  field: 'Username',
+                  sort: field === 'Username' ? revertSort : 'desc'
                 })
               }}
-              className={cn(styles['col-2'], styles['header-sort'])}
+              className={cn(styles['col-3'], styles['header-sort'])}
             >
-              <span>Rating</span>
+              <span>Username</span>
               <div
                 className={cn(styles['col-arrow'], {
-                  [styles['col-arrow-sort-asc']]:
-                    field === 'Rating' && sort === 'asc',
-                  [styles['col-arrow-is-sorting']]: field === 'Rating'
+                  [styles['col-arrow-sort-asc']]: field === 'Username' && sort === 'asc',
+                  [styles['col-arrow-is-sorting']]: field === 'Username'
                 })}
               >
                 <ReactSVG path={assets(`${ArrowDown}`)} />
               </div>
             </button>
-          )}
-          <button
-            type='button'
-            onClick={() => {
-              this.onSortChange({
-                field: 'Username',
-                sort: field === 'Username' ? revertSort : 'desc'
-              })
-            }}
-            className={cn(styles['col-3'], styles['header-sort'])}
-          >
-            <span>Username</span>
-            <div
-              className={cn(styles['col-arrow'], {
-                [styles['col-arrow-sort-asc']]: field === 'Username' && sort === 'asc',
-                [styles['col-arrow-is-sorting']]: field === 'Username'
-              })}
+            <button
+              type='button'
+              onClick={() => {
+                this.onSortChange({
+                  field: 'Submission Date',
+                  sort: field === 'Submission Date' ? revertSort : 'desc'
+                })
+              }}
+              className={cn(styles['col-4'], styles['header-sort'])}
             >
-              <ReactSVG path={assets(`${ArrowDown}`)} />
-            </div>
-          </button>
-          <button
-            type='button'
-            onClick={() => {
-              this.onSortChange({
-                field: 'Submission Date',
-                sort: field === 'Submission Date' ? revertSort : 'desc'
-              })
-            }}
-            className={cn(styles['col-4'], styles['header-sort'])}
-          >
-            <span>Submission Date</span>
-            <div
-              className={cn(styles['col-arrow'], {
-                [styles['col-arrow-sort-asc']]: field === 'Submission Date' && sort === 'asc',
-                [styles['col-arrow-is-sorting']]: field === 'Submission Date'
-              })}
-            >
-              <ReactSVG path={assets(`${ArrowDown}`)} />
-            </div>
-          </button>
-          <button
-            type='button'
-            onClick={() => {
-              this.onSortChange({
-                field: 'Initial / Final Score',
-                sort: field === 'Initial / Final Score' ? revertSort : 'desc'
-              })
-            }}
-            className={cn(styles['col-5'], styles['header-sort'])}
-          >
-            <span>Initial / Final Score</span>
-            <div
-              className={cn('col-arrow', {
-                'col-arrow-sort-asc':
-                  field === 'Initial / Final Score' && sort === 'asc',
-                'col-arrow-is-sorting': field === 'Initial / Final Score'
-              })}
-            >
-              <ReactSVG path={assets(`${ArrowDown}`)} />
-            </div>
-          </button>
-        </div>
-        {sortedSubmissions.map(s => (
-          <div
-            key={_.get(s.registrant, 'memberHandle', '') + s.created}
-            className={styles.row}
-          >
-            {!isF2F && !isBugHunt && (
+              <span>Submission Date</span>
               <div
-                className={cn(styles['col-2'], styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`])}
+                className={cn(styles['col-arrow'], {
+                  [styles['col-arrow-sort-asc']]: field === 'Submission Date' && sort === 'asc',
+                  [styles['col-arrow-is-sorting']]: field === 'Submission Date'
+                })}
               >
-                {s.registrant && !_.isNil(s.registrant.rating)
-                  ? s.registrant.rating
-                  : '-'}
+                <ReactSVG path={assets(`${ArrowDown}`)} />
               </div>
-            )}
-            <div className={styles['col-3']}>
-              <a
-                href={`${window.origin}/members/${_.get(
-                  s.registrant,
-                  'memberHandle',
-                  ''
-                )}`}
-                target={`${
-                  _.includes(window.origin, 'www') ? '_self' : '_blank'
-                }`}
-                rel='noopener noreferrer'
-                className={cn(
-                  styles['handle'],
-                  styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`]
-                )}
+            </button>
+            <button
+              type='button'
+              onClick={() => {
+                this.onSortChange({
+                  field: 'Initial / Final Score',
+                  sort: field === 'Initial / Final Score' ? revertSort : 'desc'
+                })
+              }}
+              className={cn(styles['col-5'], styles['header-sort'])}
+            >
+              <span>Initial / Final Score</span>
+              <div
+                className={cn('col-arrow', {
+                  'col-arrow-sort-asc':
+                    field === 'Initial / Final Score' && sort === 'asc',
+                  'col-arrow-is-sorting': field === 'Initial / Final Score'
+                })}
               >
-                {_.get(s.registrant, 'memberHandle', '')}
-              </a>
-            </div>
-            <div className={styles['col-4']}>
-              {moment(s.created).format('MMM DD, YYYY HH:mm')}
-            </div>
-            <div className={styles['col-5']}>
-              <a href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}/submissions/${s.id} `} target='_blank'>
-                {!_.isEmpty(s.review) && s.review[0].score
-                  ? parseFloat(s.review[0].score).toFixed(2)
-                  : 'N/A'}
-                &zwnj; &zwnj;/ &zwnj;
-                {s.reviewSummation && s.reviewSummation[0].aggregateScore
-                  ? parseFloat(s.reviewSummation[0].aggregateScore).toFixed(2)
-                  : 'N/A'}
-              </a>
-            </div>
+                <ReactSVG path={assets(`${ArrowDown}`)} />
+              </div>
+            </button>
           </div>
-        ))}
+          {sortedSubmissions.map(s => (
+            <div
+              key={_.get(s.registrant, 'memberHandle', '') + s.created}
+              className={styles.row}
+            >
+              {!isF2F && !isBugHunt && (
+                <div
+                  className={cn(styles['col-2'], styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`])}
+                >
+                  {s.registrant && !_.isNil(s.registrant.rating)
+                    ? s.registrant.rating
+                    : '-'}
+                </div>
+              )}
+              <div className={styles['col-3']}>
+                <a
+                  href={`${window.origin}/members/${_.get(
+                    s.registrant,
+                    'memberHandle',
+                    ''
+                  )}`}
+                  target={`${
+                    _.includes(window.origin, 'www') ? '_self' : '_blank'
+                  }`}
+                  rel='noopener noreferrer'
+                  className={cn(
+                    styles['handle'],
+                    styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`]
+                  )}
+                >
+                  {_.get(s.registrant, 'memberHandle', '')}
+                </a>
+              </div>
+              <div className={styles['col-4']}>
+                {moment(s.created).format('MMM DD, YYYY HH:mm')}
+              </div>
+              <div className={styles['col-5']}>
+                <a href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}/submissions/${s.id} `} target='_blank'>
+                  {!_.isEmpty(s.review) && s.review[0].score
+                    ? parseFloat(s.review[0].score).toFixed(2)
+                    : 'N/A'}
+                  &zwnj; &zwnj;/ &zwnj;
+                  {s.reviewSummation && s.reviewSummation[0].aggregateScore
+                    ? parseFloat(s.reviewSummation[0].aggregateScore).toFixed(2)
+                    : 'N/A'}
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className={styles['top-title']} >
+          <div className={styles.btnManageSubmissions} >
+            <PrimaryButton
+              text='Manage Submissions'
+              type='info'
+              href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}`}
+            />
+          </div>
+
+          <div className={styles.btnManageSubmissions} >
+            <PrimaryButton
+              text='Download All'
+              type='info'
+              disabled={downloadingAll}
+              onClick={async () => {
+                const reactLib = getTopcoderReactLib()
+                const { getService } = reactLib.services.submissions
+                // download submission
+                this.setState({
+                  downloadingAll: true
+                })
+                const submissionsService = getService(token)
+                const allFiles = []
+                let downloadedFile = 0
+                const checkToCompressFiles = () => {
+                  if (downloadedFile === sortedSubmissions.length) {
+                    if (downloadedFile > 0) {
+                      compressFiles(allFiles, 'all-submissions.zip', () => {
+                        this.setState({
+                          downloadingAll: false
+                        })
+                      })
+                    } else {
+                      this.setState({
+                        downloadingAll: false
+                      })
+                    }
+                  }
+                }
+                checkToCompressFiles()
+                _.forEach(sortedSubmissions, (submission) => {
+                  const mmSubmissionId = submission.id
+                  submissionsService.downloadSubmission(mmSubmissionId)
+                    .then((blob) => {
+                      const file = new window.File([blob], `submission-${mmSubmissionId}.zip`)
+                      allFiles.push(file)
+                      downloadedFile += 1
+                      checkToCompressFiles()
+                    }).catch(() => {
+                      downloadedFile += 1
+                      checkToCompressFiles()
+                    })
+                })
+              }}
+            />
+          </div>
+        </div>
       </div>
     )
   }
 }
 
 SubmissionsComponent.defaultProps = {
-  submissions: []
+  submissions: [],
+  token: ''
 }
 
 SubmissionsComponent.propTypes = {
@@ -459,7 +524,8 @@ SubmissionsComponent.propTypes = {
     registrants: PT.any,
     phases: PT.any
   }).isRequired,
-  submissions: PT.arrayOf(PT.shape())
+  submissions: PT.arrayOf(PT.shape()),
+  token: PT.string
 }
 
 export default SubmissionsComponent

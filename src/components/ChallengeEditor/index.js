@@ -837,10 +837,15 @@ class ChallengeEditor extends Component {
     if (this.state && this.state) {
       const { phases } = this.state.challenge
       let newChallenge = _.cloneDeep(this.state.challenge)
+      const isDesignChallenge = newChallenge.trackId === DES_TRACK_ID
+      const is2RoundChallenge =
+        newChallenge.timelineTemplateId === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
+      const is2RoundDesignChallenge = isDesignChallenge && is2RoundChallenge
+
       for (let index = 0; index < phases.length; ++index) {
         newChallenge.phases[index].isDurationActive =
           moment(newChallenge.phases[index]['scheduledEndDate']).isAfter()
-        if (newChallenge.phases[index].name === 'Submission' || newChallenge.phases[index].name === 'Checkpoint Submission') {
+        if ((newChallenge.phases[index].name === 'Submission' && !is2RoundDesignChallenge) || newChallenge.phases[index].name === 'Checkpoint Submission') {
           newChallenge.phases[index].isStartTimeActive = true
         } else {
           newChallenge.phases[index].isStartTimeActive = index <= 0

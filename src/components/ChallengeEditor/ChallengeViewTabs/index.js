@@ -258,7 +258,7 @@ const ChallengeViewTabs = ({
         <Registrants challenge={challenge} registrants={registrants} />
       )}
       {selectedTab === 2 && (
-        <Submissions challenge={challenge} submissions={submissions} />
+        <Submissions challenge={challenge} submissions={submissions} token={token} />
       )}
     </div>
   )

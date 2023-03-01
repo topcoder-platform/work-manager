@@ -23,7 +23,11 @@ export const {
   MULTI_ROUND_CHALLENGE_TEMPLATE_ID,
   UNIVERSAL_NAV_URL,
   HEADER_AUTH_URLS_HREF,
-  HEADER_AUTH_URLS_LOCATION
+  HEADER_AUTH_URLS_LOCATION,
+  API_V2,
+  API_V3,
+  API_V4,
+  API_V5
 } = process.env
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
 

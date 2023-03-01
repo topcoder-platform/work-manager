@@ -687,27 +687,29 @@ const mapStateToProps = ({
     failedToLoad,
     errorMessage
   },
-  auth: { token, user },
+  auth,
   members: { members }
-}) => ({
-  challengeDetails,
-  hasProjectAccess: projects.hasProjectAccess,
-  projectDetail: projects.projectDetail,
-  projectPhases: projects.phases,
-  isProjectPhasesLoading: projects.isPhasesLoading,
-  challengeResources,
-  challengeSubmissions,
-  metadata,
-  isLoading,
-  isBillingAccountExpired: projects.isBillingAccountExpired,
-  isProjectLoading: projects.isLoading,
-  attachments,
-  token,
-  loggedInUser: user,
-  failedToLoad,
-  errorMessage
-  // members
-})
+}) => {
+  return ({
+    challengeDetails,
+    hasProjectAccess: projects.hasProjectAccess,
+    projectDetail: projects.projectDetail,
+    projectPhases: projects.phases,
+    isProjectPhasesLoading: projects.isPhasesLoading,
+    challengeResources,
+    challengeSubmissions,
+    metadata,
+    isLoading,
+    isBillingAccountExpired: projects.isBillingAccountExpired,
+    isProjectLoading: projects.isLoading,
+    attachments,
+    token: auth.token,
+    loggedInUser: auth.user,
+    failedToLoad,
+    errorMessage
+    // members
+  })
+}
 
 const mapDispatchToProps = {
   loadChallengeDetails,

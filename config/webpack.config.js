@@ -558,6 +558,11 @@ module.exports = function (webpackEnv) {
       tls: 'empty',
       child_process: 'empty'
     },
+    externals: {
+      /* NodeJS library for https://logentries.com. It is server-side only. Exclude it as null. */
+      le_node: 'null',
+      module: 'null'
+    },
     // Turn off performance processing because we utilize
     // our own hints via the FileSizeReporter
     performance: false
