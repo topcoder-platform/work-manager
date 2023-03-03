@@ -323,7 +323,7 @@ class ChallengeCard extends React.Component {
           <a className={styles.link} href={communityAppUrl} target='_blank'>CA</a>
         </div>
         <div className={styles.col6}>
-          {forumLink ? (<a className={styles.link} href={forumLink} target='_blank'>CA</a>)
+          {forumLink ? (<a className={styles.link} href={forumLink} target='_blank'>Forum</a>)
             : (<a className={styles.link} href='javascript:void(0)'>Forum</a>)}
         </div>
       </div>

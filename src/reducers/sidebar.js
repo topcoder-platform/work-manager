@@ -6,7 +6,8 @@ import {
   LOAD_PROJECTS_SUCCESS,
   LOAD_PROJECTS_PENDING,
   LOAD_PROJECTS_FAILURE,
-  RESET_SIDEBAR_ACTIVE_PARAMS
+  RESET_SIDEBAR_ACTIVE_PARAMS,
+  UNLOAD_PROJECTS_SUCCESS
 } from '../config/constants'
 
 const initialState = {
@@ -19,9 +20,11 @@ const initialState = {
 export default function (state = initialState, action) {
   switch (action.type) {
     case SET_ACTIVE_PROJECT:
-      return { ...state, activeProjectId: action.projectId, projects: [], isLoading: false }
+      return { ...state, activeProjectId: action.projectId, projects: [], isLoading: false, isLoadProjectsSuccess: false }
     case LOAD_PROJECTS_SUCCESS:
       return { ...state, projects: action.projects, isLoading: false, isLoggedIn: true, isLoadProjectsSuccess: true }
+    case UNLOAD_PROJECTS_SUCCESS:
+      return { ...state, projects: [], isLoading: false, isLoggedIn: true, isLoadProjectsSuccess: false }
     case LOAD_PROJECTS_PENDING:
       return { ...state, isLoading: true }
     case LOAD_PROJECTS_FAILURE:

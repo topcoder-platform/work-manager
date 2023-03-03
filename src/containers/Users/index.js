@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import _ from 'lodash'
 import PT from 'prop-types'
 import UsersComponent from '../../components/Users'
-import { loadProjects } from '../../actions/sidebar'
 import { loadProject, reloadProjectMembers } from '../../actions/projects'
 import { PROJECT_ROLES } from '../../config/constants'
 
@@ -17,7 +16,6 @@ class Users extends Component {
   }
 
   componentDidMount () {
-    this.props.loadProjects()
   }
 
   isEditable () {
@@ -76,13 +74,11 @@ const mapStateToProps = ({ sidebar, challenges, auth, projects }) => {
 
 const mapDispatchToProps = {
   loadProject,
-  loadProjects,
   reloadProjectMembers
 }
 
 Users.propTypes = {
   loadProject: PT.func.isRequired,
-  loadProjects: PT.func.isRequired,
   reloadProjectMembers: PT.func.isRequired,
   projects: PT.arrayOf(PT.object),
   projectMembers: PT.arrayOf(PT.object),
