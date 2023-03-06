@@ -1,5 +1,5 @@
 import { configureConnector, decodeToken } from 'tc-auth-lib'
-import { fetchProfile } from '../services/user'
+import { fetchProfileV5 } from '../services/user'
 import {
   LOAD_USER_SUCCESS,
   SAVE_AUTH_TOKEN
@@ -26,7 +26,7 @@ export function loadUser () {
     if (!getState().auth.user) {
       if (getState().auth.token) {
         const { handle } = decodeToken(getState().auth.token)
-        fetchProfile(handle).then(user => {
+        fetchProfileV5(handle).then(user => {
           dispatch({
             type: LOAD_USER_SUCCESS,
             user
