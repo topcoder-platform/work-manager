@@ -58,6 +58,19 @@ import { removeChallengeFromPhaseProduct, saveChallengeAsPhaseProduct } from '..
 
 /**
  * Loads active challenges of project by page
+ *
+ * @param {number} page
+ * @param {string} projectId
+ * @param {string} status
+ * @param {string} filterChallengeName
+ * @param {bool} selfService
+ * @param {string} userHandle this will be null for admin user(we will return all datas for admin user)
+ * @param {string} filterChallengeType
+ * @param {object} filterDate
+ * @param {string} filterSortBy
+ * @param {string} filterSortOrder
+ * @param {number} perPage
+ * @returns redux action
  */
 export function loadChallengesByPage (
   page,
@@ -66,7 +79,6 @@ export function loadChallengesByPage (
   filterChallengeName = null,
   selfService = false,
   userHandle = null,
-  filterCreatedBy = null,
   filterChallengeType = {},
   filterDate = {},
   filterSortBy = null,
@@ -126,8 +138,8 @@ export function loadChallengesByPage (
     if (filterSortBy) {
       filters['sortBy'] = filterSortBy
     }
-    if (filterCreatedBy) {
-      filters['createdBy'] = filterCreatedBy
+    if (userHandle) {
+      filters['createdBy'] = userHandle
     }
     if (filterSortOrder) {
       filters['sortOrder'] = filterSortOrder
