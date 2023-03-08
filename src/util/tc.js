@@ -269,3 +269,11 @@ export function getChallengeTypeAbbr (track, challengeTypes) {
   }
   return null
 }
+
+/**
+ * Check if challenge is 2 rounds challenge or not
+ * @param {Object} challenge challenge info
+ */
+export function is2RoundsChallenge (challenge) {
+  return !!_.find(challenge.phases, { name: 'Checkpoint Submission' })
+}
