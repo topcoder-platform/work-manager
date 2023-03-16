@@ -41,7 +41,7 @@ module.exports = {
   CHALLENGE_TYPE_ID: '927abff4-7af9-4145-8ba1-577c16e64e2e',
   MARATHON_TYPE_ID: '929bc408-9cf2-4b3e-ba71-adfbf693046c',
   SEGMENT_API_KEY: 'QSQAW5BWmZfLoKFNRgNKaqHvLDLJoGqF',
-  CREATE_FORUM_TYPE_IDS: ['927abff4-7af9-4145-8ba1-577c16e64e2e', 'dc876fa4-ef2d-4eee-b701-b555fcc6544c', 'ecd58c69-238f-43a4-a4bb-d172719b9f31'],
+  CREATE_FORUM_TYPE_IDS: ['927abff4-7af9-4145-8ba1-577c16e64e2e', 'dc876fa4-ef2d-4eee-b701-b555fcc6544c', 'ecd58c69-238f-43a4-a4bb-d172719b9f31', '78b37a69-92d5-4ad7-bf85-c79b65420c79', '929bc408-9cf2-4b3e-ba71-adfbf693046c'],
   FILE_PICKER_API_KEY: process.env.FILE_PICKER_API_KEY,
   FILE_PICKER_CONTAINER_NAME: 'tc-challenge-v5-prod',
   FILE_PICKER_REGION: 'us-east-1',

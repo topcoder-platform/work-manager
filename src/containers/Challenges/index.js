@@ -62,11 +62,11 @@ class Challenges extends Component {
       (nextProps.dashboard && this.props.dashboard !== nextProps.dashboard) ||
       this.props.activeProjectId !== nextProps.activeProjectId
     ) {
-      this.reloadChallenges(nextProps, false, true)
+      this.reloadChallenges(nextProps, false)
     }
   }
 
-  reloadChallenges (props, forceLoad, loadMyChallenge) {
+  reloadChallenges (props, forceLoad) {
     const {
       activeProjectId,
       projectDetail: reduxProjectInfo,
@@ -84,8 +84,7 @@ class Challenges extends Component {
         dashboard ? 'all' : '',
         '',
         selfService,
-        isAdmin ? null : this.props.auth.user.handle,
-        loadMyChallenge ? this.props.auth.user.handle : ''
+        isAdmin ? null : this.props.auth.user.handle
       )
       const projectLoading =
         window.localStorage.getItem('projectLoading') !== null

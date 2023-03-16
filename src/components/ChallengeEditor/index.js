@@ -30,7 +30,7 @@ import {
   MULTI_ROUND_CHALLENGE_TEMPLATE_ID, DS_TRACK_ID,
   CHALLENGE_STATUS
 } from '../../config/constants'
-import { getDomainTypes, getResourceRoleByName } from '../../util/tc'
+import { getDomainTypes, getResourceRoleByName, is2RoundsChallenge } from '../../util/tc'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
 import TypeField from './Type-Field'
@@ -838,8 +838,7 @@ class ChallengeEditor extends Component {
       const { phases } = this.state.challenge
       let newChallenge = _.cloneDeep(this.state.challenge)
       const isDesignChallenge = newChallenge.trackId === DES_TRACK_ID
-      const is2RoundChallenge =
-        newChallenge.timelineTemplateId === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
+      const is2RoundChallenge = is2RoundsChallenge(newChallenge)
       const is2RoundDesignChallenge = isDesignChallenge && is2RoundChallenge
 
       for (let index = 0; index < phases.length; ++index) {
