@@ -116,6 +116,7 @@ class ChallengeList extends Component {
             searchText,
             selfService,
             this.getHandle(),
+            this.getUserId(),
             challengeType,
             challengeDate
           )
@@ -152,6 +153,7 @@ class ChallengeList extends Component {
         searchText,
         selfService,
         this.getHandle(),
+        this.getUserId(),
         filterChallengeType,
         filterDate,
         sortBy,
@@ -189,6 +191,7 @@ class ChallengeList extends Component {
         searchText,
         selfService,
         this.getHandle(),
+        this.getUserId(),
         filterChallengeType,
         filterDate,
         sortBy,
@@ -216,7 +219,8 @@ class ChallengeList extends Component {
       status,
       searchText,
       selfService,
-      this.getHandle()
+      this.getHandle(),
+      this.getUserId()
     )
   }
 
@@ -254,9 +258,22 @@ class ChallengeList extends Component {
     return this.getLoginHandle()
   }
 
+  getUserId () {
+    if (checkAdmin(this.props.auth.token)) {
+      return null
+    }
+    return this.getLoginUserId()
+  }
+
   getLoginHandle () {
     return this.props.auth && this.props.auth.user
       ? this.props.auth.user.handle
+      : null
+  }
+
+  getLoginUserId () {
+    return this.props.auth && this.props.auth.user
+      ? this.props.auth.user.userId
       : null
   }
 
@@ -294,6 +311,7 @@ class ChallengeList extends Component {
       searchText,
       selfService,
       this.getHandle(),
+      this.getUserId(),
       challengeType,
       challengeDate,
       name,
@@ -339,6 +357,7 @@ class ChallengeList extends Component {
       '',
       selfService,
       this.getHandle(),
+      this.getUserId(),
       null,
       {},
       null,
