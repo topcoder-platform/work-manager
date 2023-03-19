@@ -85,7 +85,7 @@ class Challenges extends Component {
         '',
         selfService,
         isAdmin ? null : this.props.auth.user.handle,
-        isAdmin ? null : this.props.auth.user.userId
+        this.props.auth.user.userId
       )
       const projectLoading =
         window.localStorage.getItem('projectLoading') !== null
