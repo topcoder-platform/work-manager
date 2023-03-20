@@ -16,7 +16,7 @@ export async function fetchProfile (handle) {
  * @returns {Promise<*>}
  */
 export async function fetchProfileV5 (handle) {
-  const response = await axiosInstance.get(`${MEMBER_API_URL}?handle=${handle}`)
+  const response = await axiosInstance.get(`${MEMBER_API_URL}/${handle}`)
   const data = _.get(response, 'data')
   return data.length ? data[0] : undefined
 }
