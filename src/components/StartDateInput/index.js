@@ -11,6 +11,7 @@ import DateTime from '@nateradebaugh/react-datetime'
 import isAfter from 'date-fns/isAfter'
 import subDays from 'date-fns/subDays'
 import '@nateradebaugh/react-datetime/scss/styles.scss'
+import { getPhaseHoursMinutes, convertPhaseHoursMinutesToPhaseDuration } from '../../util/date'
 
 const dateFormat = 'MM/DD/YYYY HH:mm'
 // const tcTimeZone = 'America/New_York'
@@ -92,15 +93,49 @@ class StartDateInput extends Component {
                 </div>
               )
             } */}
-            {
-              withDuration && (
-                <div className={styles.durationPicker}>
-                  {readOnly ? (
-                    <span className={styles.readOnlyValue}>{phase.duration}</span>
-                  ) : (<input type='number' value={phase.duration} onChange={e => onUpdatePhase(e.target.value)} min={1} placeholder='Duration (hours)' />)}
-                </div>
-              )
-            }
+            {withDuration && (
+              <div className={styles.durationPicker}>
+                {readOnly ? (
+                  <span className={styles.readOnlyValue}>{`hours: ${
+                    getPhaseHoursMinutes(phase.duration).hours
+                  }, minutes: ${
+                    getPhaseHoursMinutes(phase.duration).minutes
+                  }`}</span>
+                ) : (
+                  <div>
+                    <input
+                      type='number'
+                      value={getPhaseHoursMinutes(phase.duration).hours}
+                      onChange={e =>
+                        onUpdatePhase(
+                          convertPhaseHoursMinutesToPhaseDuration({
+                            hours: parseInt(e.target.value),
+                            minutes: getPhaseHoursMinutes(phase.duration)
+                              .minutes
+                          })
+                        )
+                      }
+                      min={1}
+                      placeholder='Duration (hours)'
+                    />
+                    <input
+                      type='number'
+                      value={getPhaseHoursMinutes(phase.duration).minutes}
+                      onChange={e =>
+                        onUpdatePhase(
+                          convertPhaseHoursMinutesToPhaseDuration({
+                            hours: getPhaseHoursMinutes(phase.duration).hours,
+                            minutes: parseInt(e.target.value)
+                          })
+                        )
+                      }
+                      min={1}
+                      placeholder='Duration (minutes)'
+                    />
+                  </div>
+                )}
+              </div>
+            )}
             {
               !_.isEmpty(phase.scorecards) && (
                 <div className={styles.scorecards}>

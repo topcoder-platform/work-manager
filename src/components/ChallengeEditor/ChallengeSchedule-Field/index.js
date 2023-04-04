@@ -10,6 +10,7 @@ import StartDateInput from '../../StartDateInput'
 import Chart from 'react-google-charts'
 import Select from '../../Select'
 import { parseSVG } from '../../../util/svg'
+import { getPhaseDurationPercentage, getPhaseEndDateInDate } from '../../../util/date'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash } from '@fortawesome/free-solid-svg-icons'
 import PrimaryButton from '../../Buttons/PrimaryButton'
@@ -98,13 +99,13 @@ class ChallengeScheduleField extends Component {
     }
     if (!phase.predecessor) {
       phase.scheduledStartDate = startDate
-      phase.scheduledEndDate = moment(startDate).add(phase.duration || 0, 'hours').toDate()
+      phase.scheduledEndDate = getPhaseEndDateInDate(startDate, phase.duration)
       phase.actualStartDate = phase.scheduledStartDate
     } else {
       const preIndex = _.findIndex(phases, (p) => p.id === phase.predecessor)
       // `Invalid phase predecessor: ${phase.predecessor}`
       phase.scheduledStartDate = phases[preIndex].scheduledEndDate
-      phase.scheduledEndDate = moment(phase.scheduledStartDate).add(phase.duration || 0, 'hours').toDate()
+      phase.scheduledEndDate = getPhaseEndDateInDate(phase.scheduledStartDate, phase.duration)
       phase.actualStartDate = phase.scheduledStartDate
     }
   }
@@ -129,7 +130,6 @@ class ChallengeScheduleField extends Component {
       ]
     )
 
-    var hourToMilisecond = 60 * 60 * 1000 // = 1 hour
     let cStartDate = challenge.startDate
     _.map(allPhases, (p, index) => {
       const phase = this.getPhaseTemplate(p)
@@ -155,9 +155,9 @@ class ChallengeScheduleField extends Component {
         if (startDate.getTime() > currentTime) {
           percentage = 0
         } else if (endDate.getTime() > currentTime) {
-          percentage = Math.round(((currentTime - startDate.getTime()) / (hourToMilisecond * p.duration)) * 100)
+          percentage = getPhaseDurationPercentage(startDate.getTime(), currentTime, p.duration)
         } else {
-          percentage = Math.round(((endDate.getTime() - startDate.getTime()) / (hourToMilisecond * p.duration)) * 100)
+          percentage = getPhaseDurationPercentage(startDate.getTime(), endDate.getTime(), p.duration)
         }
         const predecessorPhase = phase.predecessor ? this.getPhaseTemplate(allPhases.filter(ph => ph.phaseId === phase.predecessor)[0]) : null
         timelines.push(
@@ -187,7 +187,7 @@ class ChallengeScheduleField extends Component {
             phase={this.getPhaseTemplate(p)}
             withDuration
             onUpdateSelect={onUpdateSelect}
-            onUpdatePhase={newValue => onUpdatePhase(parseInt(newValue), 'duration', index)}
+            onUpdatePhase={newValue => onUpdatePhase(newValue, 'duration', index)}
             endDate={moment(p.scheduledEndDate)}
             readOnly={readOnly}
           />
