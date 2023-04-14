@@ -84,7 +84,7 @@ export const getPhaseDurationPercentage = (startDateTime, endDateTime, duration)
  * @returns phase duration in minutes
  */
 export const convertPhaseHoursMinutesToPhaseDuration = (phaseHoursMinutes) => {
-  return phaseHoursMinutes.hours * 60 + phaseHoursMinutes.minutes
+  return (phaseHoursMinutes.hours || 0) * 60 + (phaseHoursMinutes.minutes || 0)
 }
 
 /**
