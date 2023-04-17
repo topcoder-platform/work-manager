@@ -65,6 +65,7 @@ import { removeChallengeFromPhaseProduct, saveChallengeAsPhaseProduct } from '..
  * @param {string} filterChallengeName
  * @param {bool} selfService
  * @param {string} userHandle this will be null for admin user(we will return all datas for admin user)
+ * @param {number} userId this will be null for admin user(we will return all datas for admin user)
  * @param {string} filterChallengeType
  * @param {object} filterDate
  * @param {string} filterSortBy
@@ -79,6 +80,7 @@ export function loadChallengesByPage (
   filterChallengeName = null,
   selfService = false,
   userHandle = null,
+  userId = 0,
   filterChallengeType = {},
   filterDate = {},
   filterSortBy = null,
@@ -138,8 +140,8 @@ export function loadChallengesByPage (
     if (filterSortBy) {
       filters['sortBy'] = filterSortBy
     }
-    if (userHandle) {
-      filters['createdBy'] = userHandle
+    if (userId) {
+      filters['memberId'] = userId
     }
     if (filterSortOrder) {
       filters['sortOrder'] = filterSortOrder
