@@ -893,8 +893,8 @@ class ChallengeEditor extends Component {
           newChallenge.phases[phaseIndex - 1]['scheduledEndDate']
       }
       newChallenge.phases[phaseIndex]['scheduledEndDate'] = getPhaseEndDate(
-        newChallenge.phases[index]['scheduledStartDate'],
-        newChallenge.phases[index]['duration']
+        newChallenge.phases[phaseIndex]['scheduledStartDate'],
+        newChallenge.phases[phaseIndex]['duration']
       )
     }
     if (!_.isEqual(newChallenge.phases[index], phases[index])) {
