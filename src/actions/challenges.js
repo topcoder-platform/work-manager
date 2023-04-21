@@ -140,9 +140,6 @@ export function loadChallengesByPage (
     if (filterSortBy) {
       filters['sortBy'] = filterSortBy
     }
-    if (userId) {
-      filters['memberId'] = userId
-    }
     if (filterSortOrder) {
       filters['sortOrder'] = filterSortOrder
     }
@@ -153,6 +150,10 @@ export function loadChallengesByPage (
       filters['projectId'] = projectId
     } else if (_.isObject(projectId) && projectId.value > 0) {
       filters['projectId'] = projectId.value
+    } else if (userId) {
+      // Note that we only add the memberId field if *no* project ID is given,
+      // so that the list of *all challenges shows only those that the member is on
+      filters['memberId'] = userId
     }
 
     if (status === 'all') {
