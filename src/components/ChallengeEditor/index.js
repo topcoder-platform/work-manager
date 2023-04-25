@@ -68,6 +68,7 @@ import { isBetaMode } from '../../util/cookie'
 import MilestoneField from './Milestone-Field'
 import DiscussionField from './Discussion-Field'
 import CheckpointPrizesField from './CheckpointPrizes-Field'
+import { canChangeDuration } from '../../util/phase'
 
 const theme = {
   container: styles.modalContainer
@@ -843,8 +844,7 @@ class ChallengeEditor extends Component {
       const is2RoundDesignChallenge = isDesignChallenge && is2RoundChallenge
 
       for (let index = 0; index < phases.length; ++index) {
-        newChallenge.phases[index].isDurationActive =
-          moment(newChallenge.phases[index]['scheduledEndDate']).isAfter()
+        newChallenge.phases[index].isDurationActive = canChangeDuration(newChallenge.phases[index])
         if ((newChallenge.phases[index].name === 'Submission' && !is2RoundDesignChallenge) || newChallenge.phases[index].name === 'Checkpoint Submission') {
           newChallenge.phases[index].isStartTimeActive = true
         } else {
