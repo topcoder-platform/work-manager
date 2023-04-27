@@ -4,7 +4,6 @@
 import moment from 'moment'
 import _ from 'lodash'
 import 'moment-duration-format'
-import { canChangeDuration } from './phase'
 
 const HOUR_MS = 60 * 60 * 1000
 const DAY_MS = 24 * HOUR_MS
@@ -121,12 +120,12 @@ export const getRoundFormattedDuration = (duration) => {
 export const convertChallengePhaseFromSecondsToHours = (phases) => {
   if (phases) {
     _.forEach(phases, (p) => {
-      if (canChangeDuration(p)) {
-        p.duration = Math.floor(p.duration / minuteToSecond)
+      if (p.scheduledStartDate && p.scheduledEndDate) {
+        const startDate = moment(p.scheduledStartDate).set({ second: 0, millisecond: 0 })
+        const endDate = moment(p.scheduledEndDate).set({ second: 0, millisecond: 0 })
+        p.duration = moment.duration(endDate.diff(startDate)).asMinutes()
       } else {
-        // use the same duration display as OR, as long as we aren't changing the fields that should be fine.
-        const duration = moment.duration(moment(p.scheduledEndDate).diff(moment(p.scheduledStartDate)))
-        p.duration = Math.ceil(duration.asMinutes())
+        p.duration = Math.floor(p.duration / minuteToSecond)
       }
     })
   }
