@@ -1,6 +1,16 @@
 @import "../../styles/includes";
 
+.container {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 300;
+  gap: 10px;
+}
+
 .durationInput {
+  flex-shrink: 0;
+
   &:disabled {
     cursor: not-allowed !important;
     background-color: $inactive !important;

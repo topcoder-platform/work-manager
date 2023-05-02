@@ -31,6 +31,7 @@ import {
   CHALLENGE_STATUS
 } from '../../config/constants'
 import { getDomainTypes, getResourceRoleByName, is2RoundsChallenge } from '../../util/tc'
+import { getPhaseEndDate } from '../../util/date'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
 import TypeField from './Type-Field'
@@ -67,6 +68,7 @@ import { isBetaMode } from '../../util/cookie'
 import MilestoneField from './Milestone-Field'
 import DiscussionField from './Discussion-Field'
 import CheckpointPrizesField from './CheckpointPrizes-Field'
+import { canChangeDuration } from '../../util/phase'
 
 const theme = {
   container: styles.modalContainer
@@ -842,8 +844,7 @@ class ChallengeEditor extends Component {
       const is2RoundDesignChallenge = isDesignChallenge && is2RoundChallenge
 
       for (let index = 0; index < phases.length; ++index) {
-        newChallenge.phases[index].isDurationActive =
-          moment(newChallenge.phases[index]['scheduledEndDate']).isAfter()
+        newChallenge.phases[index].isDurationActive = canChangeDuration(newChallenge.phases[index])
         if ((newChallenge.phases[index].name === 'Submission' && !is2RoundDesignChallenge) || newChallenge.phases[index].name === 'Checkpoint Submission') {
           newChallenge.phases[index].isStartTimeActive = true
         } else {
@@ -867,10 +868,11 @@ class ChallengeEditor extends Component {
         phase.duration
       ])
       newChallenge.phases[index]['scheduledStartDate'] = moment(phase.startDate).toISOString()
-      newChallenge.phases[index]['scheduledEndDate'] =
-        moment(newChallenge.phases[index]['scheduledStartDate'])
-          .add(newChallenge.phases[index]['duration'], 'hours')
-          .format('MM/DD/YYYY HH:mm')
+
+      newChallenge.phases[index]['scheduledEndDate'] = getPhaseEndDate(
+        newChallenge.phases[index]['scheduledStartDate'],
+        newChallenge.phases[index]['duration']
+      )
     } else {
       newChallenge.phases[index]['duration'] = phase.duration
       newChallenge.phases[index]['scheduledStartDate'] = moment(phase.startDate).toISOString()
@@ -890,10 +892,10 @@ class ChallengeEditor extends Component {
         newChallenge.phases[phaseIndex]['scheduledStartDate'] =
           newChallenge.phases[phaseIndex - 1]['scheduledEndDate']
       }
-      newChallenge.phases[phaseIndex]['scheduledEndDate'] =
-        moment(newChallenge.phases[phaseIndex]['scheduledStartDate'])
-          .add(newChallenge.phases[phaseIndex]['duration'], 'hours')
-          .format('MM/DD/YYYY HH:mm')
+      newChallenge.phases[phaseIndex]['scheduledEndDate'] = getPhaseEndDate(
+        newChallenge.phases[phaseIndex]['scheduledStartDate'],
+        newChallenge.phases[phaseIndex]['duration']
+      )
     }
     if (!_.isEqual(newChallenge.phases[index], phases[index])) {
       this.setState({ isPhaseChange: true })

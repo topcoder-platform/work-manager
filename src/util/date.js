@@ -7,6 +7,9 @@ import 'moment-duration-format'
 
 const HOUR_MS = 60 * 60 * 1000
 const DAY_MS = 24 * HOUR_MS
+const dateFormat = 'MM/DD/YYYY HH:mm'
+const minuteToSecond = 60
+const minuteToMilisecond = 60 * 1000 // = 1 minute
 
 /**
  * Find Max Date
@@ -24,6 +27,64 @@ export const getLastDate = (dates) => {
  */
 export const formatDate = (date) => {
   return moment(date).format('DD/MM/YYYY')
+}
+
+/**
+ * Get phase duration in hours and minutes
+ * @param {number} phaseDuration phase duration
+ * @returns Object phase duration in hours and minutes
+ */
+export const getPhaseHoursMinutes = (phaseDuration) => {
+  if (!phaseDuration) {
+    return {
+      hours: 0,
+      minutes: 0
+    }
+  }
+  return {
+    hours: Math.floor(phaseDuration / 60),
+    minutes: phaseDuration % 60
+  }
+}
+
+/**
+ * Get phase end date
+ * @param {Date} startDate phase start date
+ * @param {Number} duration phase duration in minutes
+ * @returns end date
+ */
+export const getPhaseEndDate = (startDate, duration) => {
+  return moment(startDate).add(duration, 'minutes').format(dateFormat)
+}
+
+/**
+ * Get phase end date in date
+ * @param {Date} startDate phase start date
+ * @param {Number} duration phase duration in minutes
+ * @returns end date
+ */
+export const getPhaseEndDateInDate = (startDate, duration) => {
+  return moment(startDate).add(duration || 0, 'minutes').toDate()
+}
+
+/**
+ * Get phase duration percentate
+ * @param {Number} startDateTime start date time
+ * @param {Number} endDateTime end date time
+ * @param {Number} duration phase duration in minutes
+ * @returns percentage number
+ */
+export const getPhaseDurationPercentage = (startDateTime, endDateTime, duration) => {
+  return Math.round(((endDateTime - startDateTime) / (minuteToMilisecond * duration)) * 100)
+}
+
+/**
+ * Get phase duration in minutes
+ * @param {Object} phaseHoursMinutes phase duration in hours minutes
+ * @returns phase duration in minutes
+ */
+export const convertPhaseHoursMinutesToPhaseDuration = (phaseHoursMinutes) => {
+  return (phaseHoursMinutes.hours || 0) * 60 + (phaseHoursMinutes.minutes || 0)
 }
 
 /**
@@ -58,9 +119,14 @@ export const getRoundFormattedDuration = (duration) => {
  */
 export const convertChallengePhaseFromSecondsToHours = (phases) => {
   if (phases) {
-    const hourToSecond = 60 * 60
     _.forEach(phases, (p) => {
-      p.duration = Math.round(p.duration / hourToSecond)
+      if (p.scheduledStartDate && p.scheduledEndDate) {
+        const startDate = moment(p.scheduledStartDate).set({ second: 0, millisecond: 0 })
+        const endDate = moment(p.scheduledEndDate).set({ second: 0, millisecond: 0 })
+        p.duration = moment.duration(endDate.diff(startDate)).asMinutes()
+      } else {
+        p.duration = Math.floor(p.duration / minuteToSecond)
+      }
     })
   }
 }
@@ -106,7 +172,6 @@ export const sortChallengePhases = (phases) => {
  * @param {Object} challengeDetail challenge detail
  */
 export const updateChallengePhaseBeforeSendRequest = (challengeDetail) => {
-  const hourToSecond = 60 * 60
   if (challengeDetail.phases) {
     const challengeDetailTmp = _.cloneDeep(challengeDetail)
     challengeDetailTmp.startDate = moment(challengeDetail.phases[0].scheduledStartDate)
@@ -115,7 +180,7 @@ export const updateChallengePhaseBeforeSendRequest = (challengeDetail) => {
     // challengeDetailTmp.submissionStartDate = moment(challengeDetail.phases[1].scheduledStartDate)
     // challengeDetailTmp.submissionEndDate = moment(challengeDetail.phases[1].scheduledEndDate)
     challengeDetailTmp.phases = challengeDetailTmp.phases.map((p) => ({
-      duration: p.duration * hourToSecond,
+      duration: p.duration * minuteToSecond,
       phaseId: p.phaseId,
       scheduledStartDate: p.scheduledStartDate
     }))

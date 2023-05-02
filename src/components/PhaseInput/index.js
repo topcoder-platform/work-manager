@@ -1,5 +1,5 @@
 import moment from 'moment'
-import React, { useEffect } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import styles from './PhaseInput.module.scss'
 import cn from 'classnames'
@@ -10,6 +10,7 @@ import isAfter from 'date-fns/isAfter'
 import subDays from 'date-fns/subDays'
 import '@nateradebaugh/react-datetime/scss/styles.scss'
 import DurationInput from '../DurationInput'
+import { getPhaseHoursMinutes, getPhaseEndDate } from '../../util/date'
 
 const dateFormat = 'MM/DD/YYYY HH:mm'
 const inputDateFormat = 'MM/dd/yyyy'
@@ -19,11 +20,11 @@ const MAX_LENGTH = 5
 const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
   const { scheduledStartDate: startDate, scheduledEndDate: endDate, duration, isStartTimeActive, isDurationActive } = phase
 
-  const getEndDate = (startDate, duration) => moment(startDate).add(duration, 'hours').format(dateFormat)
+  const durationHoursMinutes = useMemo(() => getPhaseHoursMinutes(duration), [duration])
 
   const onStartDateChange = (e) => {
     let startDate = moment(e).format(dateFormat)
-    let endDate = getEndDate(startDate, duration)
+    let endDate = getPhaseEndDate(startDate, duration)
     onUpdatePhase({
       startDate,
       endDate,
@@ -34,7 +35,7 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
   useEffect(() => {
     if (!startDate && onUpdatePhase) {
       let startDate = moment().format(dateFormat)
-      let endDate = getEndDate(startDate, duration)
+      let endDate = getPhaseEndDate(startDate, duration)
       onUpdatePhase({
         startDate,
         endDate,
@@ -44,10 +45,10 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
   }, [startDate])
 
   const onDurationChange = (e, isBlur = false) => {
-    if (e.length > MAX_LENGTH) return null
+    if (`${e}`.length > MAX_LENGTH) return null
 
-    let duration = parseInt(e || 0)
-    let endDate = getEndDate(startDate, duration)
+    let duration = e
+    let endDate = getPhaseEndDate(startDate, duration)
     onUpdatePhase({
       startDate,
       endDate,
@@ -90,10 +91,15 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
           </div>
         </div>
         <div className={cn(styles.field, styles.col2)}>
-          <span className={styles.title}>Duration:</span>
+          <span className={styles.title}>Duration</span>
           <div className={styles.inputField}>
             {readOnly ? (
-              <span className={styles.readOnlyValue}>{duration}</span>
+              <div className={styles.readOnlyDurationContainer}>
+                <span>Hours: </span>
+                <span className={styles.readOnlyValue}>{durationHoursMinutes.hours}</span>
+                <span>Minutes: </span>
+                <span className={styles.readOnlyValue}>{durationHoursMinutes.minutes}</span>
+              </div>
             ) : (
               <DurationInput
                 duration={duration}
