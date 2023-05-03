@@ -28,6 +28,7 @@ app.use((req, res, next) => {
     "frame-ancestors 'none';" +
       "script-src 'report-sample' 'self' 'unsafe-inline' 'unsafe-eval'" +
         ' https://uni-nav.topcoder-dev.com' +
+        ' https://uni-nav.topcoder-qa.com' +
         ' https://uni-nav.topcoder.com'
   )
 

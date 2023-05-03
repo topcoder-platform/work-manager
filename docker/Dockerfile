@@ -13,10 +13,10 @@ ENV FORCE_DEV=$FORCE_DEV
 ENV NODE_OPTIONS="--max-old-space-size=6144"
 
 # Copy the current directory into the Docker image
-COPY . /challenge-engine-ui
+COPY . /work-manager
 
 # Set working directory for future use
-WORKDIR /challenge-engine-ui
+WORKDIR /work-manager
 
 # Install the dependencies from package.json
 RUN echo "NODE ENV in Docker: $NODE_ENV"
