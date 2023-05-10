@@ -62,6 +62,7 @@ import { removeChallengeFromPhaseProduct, saveChallengeAsPhaseProduct } from '..
  * @param {number} page
  * @param {string} projectId
  * @param {string} status
+ * @param {boolean} dashboard is in dashboard or not
  * @param {string} filterChallengeName
  * @param {bool} selfService
  * @param {string} userHandle this will be null for admin user(we will return all datas for admin user)
@@ -77,6 +78,7 @@ export function loadChallengesByPage (
   page,
   projectId,
   status,
+  dashboard,
   filterChallengeName = null,
   selfService = false,
   userHandle = null,
@@ -156,16 +158,21 @@ export function loadChallengesByPage (
       filters['memberId'] = userId
     }
 
-    if (status === 'all') {
-      delete filters['status']
-    } else if (!_.isEmpty(status)) {
-      filters['status'] = status === '' ? undefined : _.startCase(status.toLowerCase())
-    } else if (!(_.isInteger(projectId) && projectId > 0)) {
+    if (status !== 'all') {
+      filters['status'] = !status ? undefined : _.startCase(status.toLowerCase())
+    }
+
+    if (!dashboard && !filters['status'] && !(_.isInteger(projectId) && projectId > 0)) {
       filters['status'] = 'Active'
     }
     if (selfService) {
       filters.selfService = true
-      if (userHandle && filters.status.toUpperCase() !== CHALLENGE_STATUS.DRAFT && filters.status.toUpperCase() !== CHALLENGE_STATUS.NEW) {
+      const filtersStatus = filters.status ? filters.status.toUpperCase() : filters.status
+      if (
+        userHandle &&
+        filtersStatus !== CHALLENGE_STATUS.DRAFT &&
+        filtersStatus !== CHALLENGE_STATUS.NEW
+      ) {
         filters.selfServiceCopilot = userHandle
       }
     }

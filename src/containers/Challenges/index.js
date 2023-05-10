@@ -81,7 +81,8 @@ class Challenges extends Component {
       this.props.loadChallengesByPage(
         1,
         projectId ? parseInt(projectId) : -1,
-        dashboard ? 'all' : '',
+        'all',
+        dashboard,
         '',
         selfService,
         isAdmin ? null : this.props.auth.user.handle,

@@ -31,7 +31,7 @@ require('bootstrap/scss/bootstrap.scss')
 const defaultSearchParam = {
   searchText: '',
   challengeProjectOption: null,
-  challengeStatus: '',
+  challengeStatus: 'all',
   challengeType: null,
   sortBy: 'startDate',
   sortOrder: 'desc',
@@ -112,7 +112,8 @@ class ChallengeList extends Component {
           loadChallengesByPage(
             1,
             projectId,
-            !projectStatus ? 'all' : projectStatus,
+            projectStatus,
+            dashboard,
             searchText,
             selfService,
             this.getHandle(),
@@ -150,6 +151,7 @@ class ChallengeList extends Component {
         pageNumber,
         projectId,
         status,
+        dashboard,
         searchText,
         selfService,
         this.getHandle(),
@@ -188,6 +190,7 @@ class ChallengeList extends Component {
         1,
         projectId,
         status,
+        dashboard,
         searchText,
         selfService,
         this.getHandle(),
@@ -211,12 +214,14 @@ class ChallengeList extends Component {
       loadChallengesByPage,
       activeProjectId,
       status,
-      selfService
+      selfService,
+      dashboard
     } = this.props
     loadChallengesByPage(
       page,
       activeProjectId,
       status,
+      dashboard,
       searchText,
       selfService,
       this.getHandle(),
@@ -301,6 +306,7 @@ class ChallengeList extends Component {
       page,
       projectId,
       status,
+      dashboard,
       searchText,
       selfService,
       this.getHandle(),
@@ -346,15 +352,16 @@ class ChallengeList extends Component {
     loadChallengesByPage(
       1,
       projectId,
-      'all',
-      '',
+      defaultSearchParam.challengeStatus,
+      dashboard,
+      defaultSearchParam.searchText,
       selfService,
       this.getHandle(),
       this.getLoginUserId(),
-      null,
-      {},
-      null,
-      null,
+      defaultSearchParam.challengeType,
+      defaultSearchParam.challengeDate,
+      defaultSearchParam.sortBy,
+      defaultSearchParam.sortOrder,
       PAGE_SIZE
     )
   }
