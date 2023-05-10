@@ -28,6 +28,13 @@ const Tab = ({
     selectTab(3)
   }
 
+  const onSelfServiceClick = () => {
+    if (currentTab === 4) {
+      return
+    }
+    selectTab(4)
+  }
+
   const tabComponent = (
     <ul className={styles.challengeTab}>
       <li
@@ -71,6 +78,20 @@ const Tab = ({
         role='presentation'
       >
           Users
+      </li>
+      <li
+        key='tab-item-self-service'
+        className={cn(styles.item, { [styles.active]: currentTab === 4 })}
+        onClick={onSelfServiceClick}
+        onKeyDown={e => {
+          if (e.key !== 'Enter') {
+            return
+          }
+          onSelfServiceClick()
+        }}
+        role='presentation'
+      >
+          Self-Service
       </li>
     </ul>
   )

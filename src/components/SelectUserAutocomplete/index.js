@@ -7,7 +7,7 @@
 import React, { useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import Select from '../Select'
-import { suggestProfilesV5, fetchProfileV5 } from '../../services/user'
+import { suggestProfiles, fetchProfile } from '../../services/user'
 import _ from 'lodash'
 import { AUTOCOMPLETE_MIN_LENGTH, AUTOCOMPLETE_DEBOUNCE_TIME_MS } from '../../config/constants'
 
@@ -27,7 +27,7 @@ export default function SelectUserAutocomplete (props) {
       return
     }
 
-    Promise.all([suggestProfilesV5(inputValue), fetchProfileV5(inputValue)]).then(
+    Promise.all([suggestProfiles(inputValue), fetchProfile(inputValue)]).then(
       ([suggestions, user]) => {
         const suggestedOptions = suggestions.map((u) => ({
           label: u.handle,
