@@ -27,6 +27,7 @@ import styles from './Submissions.module.scss'
 const assets = require.context('../../../assets/images', false, /svg/)
 const ArrowDown = './arrow-down.svg'
 const Lock = './lock.svg'
+const Download = './IconSquareDownload.svg'
 
 class SubmissionsComponent extends React.Component {
   constructor (props) {
@@ -211,6 +212,7 @@ class SubmissionsComponent extends React.Component {
     const revertSort = sort === 'desc' ? 'asc' : 'desc'
 
     const { sortedSubmissions, downloadingAll } = this.state
+    console.log('totest sortedSubmissions', sortedSubmissions)
 
     const renderSubmission = s => (
       <div className={styles.submission} key={s.id}>
@@ -393,6 +395,21 @@ class SubmissionsComponent extends React.Component {
                 <ReactSVG path={assets(`${ArrowDown}`)} />
               </div>
             </button>
+            <div
+              className={cn(styles['col-6'])}
+            >
+              <span>Submission ID (UUID)</span>
+            </div>
+            <div
+              className={cn(styles['col-7'])}
+            >
+              <span>Legacy submission ID</span>
+            </div>
+            <div
+              className={cn(styles['col-8'])}
+            >
+              <span>Actions</span>
+            </div>
           </div>
           {sortedSubmissions.map(s => (
             <div
@@ -441,19 +458,41 @@ class SubmissionsComponent extends React.Component {
                     : 'N/A'}
                 </a>
               </div>
+              <div className={styles['col-6']}>
+                {s.id}
+              </div>
+              <div className={styles['col-7']}>
+                {s.legacySubmissionId}
+              </div>
+              <div className={styles['col-8']}>
+                <button
+                  onClick={() => {
+                    // download submission
+                    console.log('totest download submission')
+                    const reactLib = getTopcoderReactLib()
+                    const { getService } = reactLib.services.submissions
+                    const submissionsService = getService(token)
+                    submissionsService.downloadSubmission(s.id)
+                      .then((blob) => {
+                        // eslint-disable-next-line no-undef
+                        const url = window.URL.createObjectURL(new Blob([blob]))
+                        const link = document.createElement('a')
+                        link.href = url
+                        link.setAttribute('download', `submission-${s.id}.zip`)
+                        document.body.appendChild(link)
+                        link.click()
+                        link.parentNode.removeChild(link)
+                      })
+                  }}
+                >
+                  <ReactSVG path={assets(`${Download}`)} />
+                </button>
+              </div>
             </div>
           ))}
         </div>
 
         <div className={styles['top-title']} >
-          <div className={styles.btnManageSubmissions} >
-            <PrimaryButton
-              text='Manage Submissions'
-              type='info'
-              href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}`}
-            />
-          </div>
-
           <div className={styles.btnManageSubmissions} >
             <PrimaryButton
               text='Download All'
