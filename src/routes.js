@@ -16,7 +16,7 @@ import { getFreshToken, decodeToken } from 'tc-auth-lib'
 import { saveToken } from './actions/auth'
 import { loadChallengeDetails } from './actions/challenges'
 import { connect } from 'react-redux'
-import { checkAllowedRoles, checkReadOnlyRoles } from './util/tc'
+import { checkAllowedRoles, checkOnlyReadOnlyRoles, checkReadOnlyRoles } from './util/tc'
 import { setCookie, removeCookie, isBetaMode } from './util/cookie'
 import IdleTimer from 'react-idle-timer'
 import modalStyles from './styles/modal.module.scss'
@@ -38,7 +38,7 @@ class RedirectToChallenge extends React.Component {
 
   componentWillReceiveProps (nextProps) {
     const { token } = nextProps
-    const isReadOnly = checkReadOnlyRoles(token)
+    const isReadOnly = checkOnlyReadOnlyRoles(token)
     const projectId = _.get(nextProps.challengeDetails, 'projectId')
     const challengeId = _.get(nextProps.challengeDetails, 'id')
     if (projectId && challengeId && isReadOnly) {
@@ -52,8 +52,9 @@ class RedirectToChallenge extends React.Component {
   }
 }
 
-let mapStateToProps = ({ challenges: { challengeDetails } }) => ({
-  challengeDetails
+let mapStateToProps = ({ challenges: { challengeDetails }, auth }) => ({
+  challengeDetails,
+  ...auth
 })
 
 let mapDispatchToProps = {

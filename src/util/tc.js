@@ -163,6 +163,15 @@ export const checkReadOnlyRoles = token => {
 }
 
 /**
+ * Checks if read only role is present in roles
+ * @param  token
+ */
+export const checkOnlyReadOnlyRoles = token => {
+  const roles = _.get(decodeToken(token), 'roles')
+  return roles.some(val => READ_ONLY_ROLES.indexOf(val.toLowerCase()) > -1)
+}
+
+/**
  * Checks if token has any of the admin roles
  * @param  token
  */
