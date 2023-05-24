@@ -478,7 +478,7 @@ class SubmissionsComponent extends React.Component {
                         const url = window.URL.createObjectURL(new Blob([blob]))
                         const link = document.createElement('a')
                         link.href = url
-                        link.setAttribute('download', `submission-${s.id}.zip`)
+                        link.setAttribute('download', `${s.legacySubmissionId}.zip`)
                         document.body.appendChild(link)
                         link.click()
                         link.parentNode.removeChild(link)
@@ -525,10 +525,9 @@ class SubmissionsComponent extends React.Component {
                 }
                 checkToCompressFiles()
                 _.forEach(sortedSubmissions, (submission) => {
-                  const mmSubmissionId = submission.id
-                  submissionsService.downloadSubmission(mmSubmissionId)
+                  submissionsService.downloadSubmission(submission.id)
                     .then((blob) => {
-                      const file = new window.File([blob], `submission-${mmSubmissionId}.zip`)
+                      const file = new window.File([blob], `${submission.legacySubmissionId}.zip`)
                       allFiles.push(file)
                       downloadedFile += 1
                       checkToCompressFiles()
