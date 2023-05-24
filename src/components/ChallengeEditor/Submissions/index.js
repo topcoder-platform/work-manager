@@ -15,7 +15,8 @@ import {
   getRatingLevel,
   sortList,
   getProvisionalScore,
-  getFinalScore
+  getFinalScore,
+  checkManageRoles
 } from '../../../util/tc'
 import {
   getTopcoderReactLib
@@ -207,12 +208,12 @@ class SubmissionsComponent extends React.Component {
   render () {
     const { challenge, token } = this.props
     const { checkpoints, track, type, tags } = challenge
+    const haveManagePermission = checkManageRoles(token)
 
     const { field, sort } = this.getSubmissionsSortParam()
     const revertSort = sort === 'desc' ? 'asc' : 'desc'
 
     const { sortedSubmissions, downloadingAll } = this.state
-    console.log('totest sortedSubmissions', sortedSubmissions)
 
     const renderSubmission = s => (
       <div className={styles.submission} key={s.id}>
@@ -308,7 +309,7 @@ class SubmissionsComponent extends React.Component {
 
     return (
       <div className={cn(styles.container, styles.dev, styles['non-mm'])}>
-        <div className={styles['empty-left']} />
+        {haveManagePermission ? (<div className={styles['empty-left']} />) : null}
         <div className={styles.submissionsContainer}>
           <div className={styles.head}>
             {!isF2F && !isBugHunt && (
@@ -405,11 +406,11 @@ class SubmissionsComponent extends React.Component {
             >
               <span>Legacy submission ID</span>
             </div>
-            <div
+            {haveManagePermission ? (<div
               className={cn(styles['col-8'])}
             >
               <span>Actions</span>
-            </div>
+            </div>) : null}
           </div>
           {sortedSubmissions.map(s => (
             <div
@@ -464,11 +465,10 @@ class SubmissionsComponent extends React.Component {
               <div className={styles['col-7']}>
                 {s.legacySubmissionId}
               </div>
-              <div className={styles['col-8']}>
+              {haveManagePermission ? (<div className={styles['col-8']}>
                 <button
                   onClick={() => {
                     // download submission
-                    console.log('totest download submission')
                     const reactLib = getTopcoderReactLib()
                     const { getService } = reactLib.services.submissions
                     const submissionsService = getService(token)
@@ -487,12 +487,12 @@ class SubmissionsComponent extends React.Component {
                 >
                   <ReactSVG path={assets(`${Download}`)} />
                 </button>
-              </div>
+              </div>) : null}
             </div>
           ))}
         </div>
 
-        <div className={styles['top-title']} >
+        {haveManagePermission ? (<div className={styles['top-title']} >
           <div className={styles.btnManageSubmissions} >
             <PrimaryButton
               text='Download All'
@@ -540,7 +540,7 @@ class SubmissionsComponent extends React.Component {
               }}
             />
           </div>
-        </div>
+        </div>) : null}
       </div>
     )
   }

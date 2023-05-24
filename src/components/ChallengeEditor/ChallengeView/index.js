@@ -49,6 +49,7 @@ const ChallengeView = ({
   showRejectChallengeModal,
   loggedInUser
 }) => {
+  const challengeBillingAccount = _.get(challenge, 'billing.billingAccountId')
   const selectedType = _.find(metadata.challengeTypes, { id: challenge.typeId })
   const challengeTrack = _.find(metadata.challengeTracks, { id: challenge.trackId })
   const selectedMilestone = challenge.milestoneId
@@ -196,7 +197,7 @@ const ChallengeView = ({
                   <div className={styles.col}>
                     <span>
                       <span className={styles.fieldTitle}>Billing Account Id:</span>
-                      {projectDetail.billingAccountId}
+                      {challengeBillingAccount}
                     </span>
                     {isBillingAccountExpired && <span className={styles.expiredMessage}>Expired</span>}
                   </div>
