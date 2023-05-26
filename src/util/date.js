@@ -58,6 +58,18 @@ export const getPhaseEndDate = (startDate, duration) => {
 }
 
 /**
+ * Get phase duration
+ * @param {Date} startDate phase start date
+ * @param {Date} endDate phase end date
+ * @returns duration
+ */
+export const getPhaseDuration = (startDate, endDate) => {
+  const startDateMoment = moment(startDate).set({ second: 0, millisecond: 0 })
+  const endDateMoment = moment(endDate).set({ second: 0, millisecond: 0 })
+  return moment.duration(endDateMoment.diff(startDateMoment)).asMinutes()
+}
+
+/**
  * Get phase end date in date
  * @param {Date} startDate phase start date
  * @param {Number} duration phase duration in minutes

@@ -15,7 +15,8 @@ import {
   getRatingLevel,
   sortList,
   getProvisionalScore,
-  getFinalScore
+  getFinalScore,
+  checkManageRoles
 } from '../../../util/tc'
 import {
   getTopcoderReactLib
@@ -27,6 +28,7 @@ import styles from './Submissions.module.scss'
 const assets = require.context('../../../assets/images', false, /svg/)
 const ArrowDown = './arrow-down.svg'
 const Lock = './lock.svg'
+const Download = './IconSquareDownload.svg'
 
 class SubmissionsComponent extends React.Component {
   constructor (props) {
@@ -206,6 +208,7 @@ class SubmissionsComponent extends React.Component {
   render () {
     const { challenge, token } = this.props
     const { checkpoints, track, type, tags } = challenge
+    const haveManagePermission = checkManageRoles(token)
 
     const { field, sort } = this.getSubmissionsSortParam()
     const revertSort = sort === 'desc' ? 'asc' : 'desc'
@@ -306,7 +309,7 @@ class SubmissionsComponent extends React.Component {
 
     return (
       <div className={cn(styles.container, styles.dev, styles['non-mm'])}>
-        <div className={styles['empty-left']} />
+        {haveManagePermission ? (<div className={styles['empty-left']} />) : null}
         <div className={styles.submissionsContainer}>
           <div className={styles.head}>
             {!isF2F && !isBugHunt && (
@@ -393,6 +396,21 @@ class SubmissionsComponent extends React.Component {
                 <ReactSVG path={assets(`${ArrowDown}`)} />
               </div>
             </button>
+            <div
+              className={cn(styles['col-6'])}
+            >
+              <span>Submission ID (UUID)</span>
+            </div>
+            <div
+              className={cn(styles['col-7'])}
+            >
+              <span>Legacy submission ID</span>
+            </div>
+            {haveManagePermission ? (<div
+              className={cn(styles['col-8'])}
+            >
+              <span>Actions</span>
+            </div>) : null}
           </div>
           {sortedSubmissions.map(s => (
             <div
@@ -441,19 +459,40 @@ class SubmissionsComponent extends React.Component {
                     : 'N/A'}
                 </a>
               </div>
+              <div className={styles['col-6']}>
+                {s.id}
+              </div>
+              <div className={styles['col-7']}>
+                {s.legacySubmissionId}
+              </div>
+              {haveManagePermission ? (<div className={styles['col-8']}>
+                <button
+                  onClick={() => {
+                    // download submission
+                    const reactLib = getTopcoderReactLib()
+                    const { getService } = reactLib.services.submissions
+                    const submissionsService = getService(token)
+                    submissionsService.downloadSubmission(s.id)
+                      .then((blob) => {
+                        // eslint-disable-next-line no-undef
+                        const url = window.URL.createObjectURL(new Blob([blob]))
+                        const link = document.createElement('a')
+                        link.href = url
+                        link.setAttribute('download', `${s.legacySubmissionId}.zip`)
+                        document.body.appendChild(link)
+                        link.click()
+                        link.parentNode.removeChild(link)
+                      })
+                  }}
+                >
+                  <ReactSVG path={assets(`${Download}`)} />
+                </button>
+              </div>) : null}
             </div>
           ))}
         </div>
 
-        <div className={styles['top-title']} >
-          <div className={styles.btnManageSubmissions} >
-            <PrimaryButton
-              text='Manage Submissions'
-              type='info'
-              href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}`}
-            />
-          </div>
-
+        {haveManagePermission ? (<div className={styles['top-title']} >
           <div className={styles.btnManageSubmissions} >
             <PrimaryButton
               text='Download All'
@@ -486,10 +525,9 @@ class SubmissionsComponent extends React.Component {
                 }
                 checkToCompressFiles()
                 _.forEach(sortedSubmissions, (submission) => {
-                  const mmSubmissionId = submission.id
-                  submissionsService.downloadSubmission(mmSubmissionId)
+                  submissionsService.downloadSubmission(submission.id)
                     .then((blob) => {
-                      const file = new window.File([blob], `submission-${mmSubmissionId}.zip`)
+                      const file = new window.File([blob], `${submission.legacySubmissionId}.zip`)
                       allFiles.push(file)
                       downloadedFile += 1
                       checkToCompressFiles()
@@ -501,7 +539,7 @@ class SubmissionsComponent extends React.Component {
               }}
             />
           </div>
-        </div>
+        </div>) : null}
       </div>
     )
   }

@@ -1,16 +1,13 @@
 import moment from 'moment'
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import PropTypes from 'prop-types'
 import styles from './PhaseInput.module.scss'
 import cn from 'classnames'
-import 'react-day-picker/lib/style.css'
-import 'rc-time-picker/assets/index.css'
-import DateTime from '@nateradebaugh/react-datetime'
 import isAfter from 'date-fns/isAfter'
 import subDays from 'date-fns/subDays'
-import '@nateradebaugh/react-datetime/scss/styles.scss'
 import DurationInput from '../DurationInput'
-import { getPhaseHoursMinutes, getPhaseEndDate } from '../../util/date'
+import { getPhaseHoursMinutes, getPhaseEndDate, getPhaseDuration } from '../../util/date'
+import DateInput from '../DateInput'
 
 const dateFormat = 'MM/DD/YYYY HH:mm'
 const inputDateFormat = 'MM/dd/yyyy'
@@ -21,6 +18,7 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
   const { scheduledStartDate: startDate, scheduledEndDate: endDate, duration, isStartTimeActive, isDurationActive } = phase
 
   const durationHoursMinutes = useMemo(() => getPhaseHoursMinutes(duration), [duration])
+  const endDateInputRef = useRef()
 
   const onStartDateChange = (e) => {
     let startDate = moment(e).format(dateFormat)
@@ -30,6 +28,20 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
       endDate,
       duration
     })
+  }
+
+  const onEndDateChange = (e) => {
+    let endDate = moment(e).format(dateFormat)
+    let duration = getPhaseDuration(startDate, endDate)
+    if (duration > 0) {
+      onUpdatePhase({
+        startDate,
+        endDate,
+        duration
+      })
+    } else {
+      endDateInputRef.current.forceReset()
+    }
   }
 
   useEffect(() => {
@@ -71,9 +83,9 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
                 <span className={styles.readOnlyValue}>{moment(startDate).format(dateFormat)}</span>
               )
                 : (
-                  <DateTime
+                  <DateInput
                     className={styles.dateTimeInput}
-                    value={moment(startDate).format(dateFormat)}
+                    value={moment(startDate).toDate()}
                     onChange={onStartDateChange}
                     isValidDate={(current) => {
                       const yesterday = subDays(new Date(), 1)
@@ -87,7 +99,21 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
         <div className={cn(styles.field, styles.col2)}>
           <span className={styles.title}>End Date:</span>
           <div className={styles.dayPicker}>
-            <span className={styles.readOnlyValue}>{moment(endDate).format(dateFormat)}</span>
+            {(readOnly || !isDurationActive) ? (
+              <span className={styles.readOnlyValue}>{moment(endDate).format(dateFormat)}</span>
+            ) : (
+              <DateInput
+                ref={endDateInputRef}
+                className={styles.dateTimeInput}
+                value={moment(endDate).toDate()}
+                onChange={onEndDateChange}
+                isValidDate={(current) => {
+                  return isAfter(current, moment(startDate).toDate())
+                }}
+                dateFormat={inputDateFormat}
+                timeFormat={inputTimeFormat}
+              />
+            )}
           </div>
         </div>
         <div className={cn(styles.field, styles.col2)}>
