@@ -332,6 +332,12 @@ $base-unit: 5px;
       flex-shrink: 0;
     }
 
+    .col-9 {
+      display: flex;
+      width: 200px;
+      flex-shrink: 0;
+    }
+
     .col-4 {
       display: flex;
       width: 150px;
@@ -378,7 +384,7 @@ $base-unit: 5px;
 .submissionsContainer {
   display: flex;
   flex-direction: column;
-  max-width: 1100px;
+  max-width: 1300px;
   width: 100%;
   overflow: auto;
 }

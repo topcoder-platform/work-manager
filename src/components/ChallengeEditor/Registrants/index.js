@@ -229,6 +229,12 @@ export default class Registrants extends React.Component {
           valueIsString = true
           break
         }
+        case 'Email': {
+          valueA = `${a.email}`.toLowerCase()
+          valueB = `${b.email}`.toLowerCase()
+          valueIsString = true
+          break
+        }
         case 'Registration Date': {
           valueA = new Date(a.created)
           valueB = new Date(b.created)
@@ -334,6 +340,27 @@ export default class Registrants extends React.Component {
                 [styles['col-arrow-sort-asc']]:
                   field === 'Username' && sort === 'asc',
                 [styles['col-arrow-is-sorting']]: field === 'Username'
+              })}
+            >
+              <ReactSVG path={assets(`${ArrowDown}`)} />
+            </div>
+          </button>
+          <button
+            onClick={() => {
+              this.onSortChange({
+                field: 'Email',
+                sort: field === 'Email' ? revertSort : 'desc'
+              })
+            }}
+            type='button'
+            className={cn(styles['col-7'], styles['table-header'])}
+          >
+            <span role='columnheader'>Email</span>
+            <div
+              className={cn(styles['col-arrow'], {
+                [styles['col-arrow-sort-asc']]:
+                  field === 'Email' && sort === 'asc',
+                [styles['col-arrow-is-sorting']]: field === 'Email'
               })}
             >
               <ReactSVG path={assets(`${ArrowDown}`)} />
@@ -452,6 +479,12 @@ export default class Registrants extends React.Component {
                       {r.memberHandle}
                     </a>
                   </span>
+                </div>
+                <div className={styles['col-7']}>
+                  <div className={cn(styles['sm-only'], styles['title'])}>
+                    Email
+                  </div>
+                  <span role='cell'>{r.email}</span>
                 </div>
                 <div className={styles['col-4']}>
                   <div className={cn(styles['sm-only'], styles['title'])}>

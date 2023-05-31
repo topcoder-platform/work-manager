@@ -36,6 +36,7 @@ $member-red:  #ea1900;
   color: $tc-gray-50;
   display: flex;
   border-bottom: 1px solid $tc-gray-10;
+  gap: 20px;
 
   @include xs-to-sm {
     display: none;
@@ -52,6 +53,7 @@ $member-red:  #ea1900;
 
 .row {
   display: flex;
+  gap: 20px;
   line-height: 50px;
   color: $tc-gray-70;
   font-size: 15px;
@@ -85,7 +87,8 @@ $member-red:  #ea1900;
 .col-3,
 .col-4,
 .col-5,
-.col-6 {
+.col-6,
+.col-7 {
   display: flex;
   align-items: center;
   border: none;
@@ -155,7 +158,8 @@ $member-red:  #ea1900;
 }
 
 .col-2 {
-  width: 150px;
+  width: 100px;
+  flex-shrink: 0;
   margin-left: 20px;
 
   @include xs-to-sm {
@@ -167,7 +171,8 @@ $member-red:  #ea1900;
 }
 
 .col-3 {
-  width: 298px;
+  width: 100px;
+  flex-shrink: 0;
 
   @include xs-to-sm {
     font-size: 15px;
@@ -185,8 +190,28 @@ $member-red:  #ea1900;
   }
 }
 
+.col-7 {
+  width: 200px;
+  margin-left: 20px;
+  flex-shrink: 0;
+
+  span {
+    max-width: 100%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+
+  @include xs-to-sm {
+    padding-left: 0;
+    margin-bottom: 10px;
+    line-height: 20px;
+    width: auto;
+  }
+}
+
 .col-4 {
-  width: 317px;
+  width: 200px;
+  flex-shrink: 0;
 
   @include xs-to-sm {
     margin-bottom: 15px;
@@ -211,7 +236,8 @@ $member-red:  #ea1900;
 .col-6 {
   display: flex;
   align-items: center;
-  width: 351px;
+  width: 200px;
+  flex-shrink: 0;
 
   @include xs-to-sm {
     line-height: 20px;

@@ -24,7 +24,7 @@ export async function searchProfiles (fields, queryObject = {}, limit) {
       page: 1
     }
   })
-  return _.get(response, 'data.result.content')
+  return _.get(response, 'data', [])
 }
 
 /**
