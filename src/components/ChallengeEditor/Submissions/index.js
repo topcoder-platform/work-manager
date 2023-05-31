@@ -301,7 +301,7 @@ class SubmissionsComponent extends React.Component {
           </div>
         )
       } else if (!haveManagePermission) {
-        checkpointsUI = (
+        return (
           <div className={cn(styles['container'], styles['no-view'])}>
             <ReactSVG className={styles['lock']} path={assets(`${Lock}`)} />
             <div className={styles['title']}>Private Challenge</div>
