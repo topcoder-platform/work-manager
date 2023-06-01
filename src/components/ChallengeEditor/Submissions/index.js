@@ -212,9 +212,9 @@ class SubmissionsComponent extends React.Component {
   }
 
   render () {
-    const { challenge, token } = this.props
+    const { challenge, token, isLoggedInUserHaveChallengeAccess } = this.props
     const { checkpoints, track, type, tags } = challenge
-    const haveManagePermission = checkManageRoles(token)
+    const haveManagePermission = checkManageRoles(token) && isLoggedInUserHaveChallengeAccess
 
     const { field, sort } = this.getSubmissionsSortParam()
     const revertSort = sort === 'desc' ? 'asc' : 'desc'
@@ -595,7 +595,8 @@ class SubmissionsComponent extends React.Component {
 
 SubmissionsComponent.defaultProps = {
   submissions: [],
-  token: ''
+  token: '',
+  isLoggedInUserHaveChallengeAccess: false
 }
 
 SubmissionsComponent.propTypes = {
@@ -611,7 +612,8 @@ SubmissionsComponent.propTypes = {
     phases: PT.any
   }).isRequired,
   submissions: PT.arrayOf(PT.shape()),
-  token: PT.string
+  token: PT.string,
+  isLoggedInUserHaveChallengeAccess: PT.bool
 }
 
 export default SubmissionsComponent
