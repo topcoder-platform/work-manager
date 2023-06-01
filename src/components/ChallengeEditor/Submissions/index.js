@@ -515,7 +515,12 @@ class SubmissionsComponent extends React.Component {
                           const url = window.URL.createObjectURL(new Blob([blob]))
                           const link = document.createElement('a')
                           link.href = url
-                          link.setAttribute('download', `${s.legacySubmissionId}.zip`)
+                          let fileName = s.legacySubmissionId
+                          if (!fileName) {
+                            fileName = s.id
+                          }
+                          fileName = fileName + '.zip'
+                          link.setAttribute('download', `${fileName}`)
                           document.body.appendChild(link)
                           link.click()
                           link.parentNode.removeChild(link)
