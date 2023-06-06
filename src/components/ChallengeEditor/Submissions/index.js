@@ -16,7 +16,7 @@ import {
   sortList,
   getProvisionalScore,
   getFinalScore,
-  checkManageRoles
+  checkDownloadSubmissionRoles
 } from '../../../util/tc'
 import {
   getTopcoderReactLib
@@ -214,7 +214,7 @@ class SubmissionsComponent extends React.Component {
   render () {
     const { challenge, token, isLoggedInUserHaveChallengeAccess } = this.props
     const { checkpoints, track, type, tags } = challenge
-    const haveManagePermission = checkManageRoles(token) && isLoggedInUserHaveChallengeAccess
+    const haveManagePermission = checkDownloadSubmissionRoles(token) && isLoggedInUserHaveChallengeAccess
 
     const { field, sort } = this.getSubmissionsSortParam()
     const revertSort = sort === 'desc' ? 'asc' : 'desc'

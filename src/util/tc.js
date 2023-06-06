@@ -8,7 +8,7 @@ import {
   ADMIN_ROLES,
   SUBMITTER_ROLE_UUID,
   READ_ONLY_ROLES,
-  ALLOWED_MANAGE_ROLES
+  ALLOWED_DOWNLOAD_SUBMISSIONS_ROLES
 } from '../config/constants'
 import _ from 'lodash'
 import { decodeToken } from 'tc-auth-lib'
@@ -173,12 +173,12 @@ export const checkOnlyReadOnlyRoles = token => {
 }
 
 /**
- * Checks if this role can have manage permission
+ * Checks if this role can download submission
  * @param  token
  */
-export const checkManageRoles = token => {
+export const checkDownloadSubmissionRoles = token => {
   const roles = _.get(decodeToken(token), 'roles')
-  return roles.some(val => ALLOWED_MANAGE_ROLES.indexOf(val.toLowerCase()) > -1)
+  return roles.some(val => ALLOWED_DOWNLOAD_SUBMISSIONS_ROLES.indexOf(val.toLowerCase()) > -1)
 }
 
 /**
