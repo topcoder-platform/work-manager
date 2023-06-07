@@ -16,7 +16,8 @@ import {
   sortList,
   getProvisionalScore,
   getFinalScore,
-  checkDownloadSubmissionRoles
+  checkDownloadSubmissionRoles,
+  checkAdmin
 } from '../../../util/tc'
 import {
   getTopcoderReactLib
@@ -214,7 +215,10 @@ class SubmissionsComponent extends React.Component {
   render () {
     const { challenge, token, isLoggedInUserHaveChallengeAccess } = this.props
     const { checkpoints, track, type, tags } = challenge
-    const haveManagePermission = checkDownloadSubmissionRoles(token) && isLoggedInUserHaveChallengeAccess
+    const canDownloadSubmission =
+      (checkDownloadSubmissionRoles(token) &&
+        isLoggedInUserHaveChallengeAccess) ||
+      checkAdmin(token)
 
     const { field, sort } = this.getSubmissionsSortParam()
     const revertSort = sort === 'desc' ? 'asc' : 'desc'
@@ -300,7 +304,7 @@ class SubmissionsComponent extends React.Component {
             )}
           </div>
         )
-      } else if (!haveManagePermission) {
+      } else if (!canDownloadSubmission) {
         return (
           <div className={cn(styles['container'], styles['no-view'])}>
             <ReactSVG className={styles['lock']} path={assets(`${Lock}`)} />
@@ -323,7 +327,7 @@ class SubmissionsComponent extends React.Component {
         {checkpointsUI}
 
         <div className={cn(styles.container, styles.dev, styles['non-mm'])}>
-          {haveManagePermission ? (<div className={styles['empty-left']} />) : null}
+          {canDownloadSubmission ? (<div className={styles['empty-left']} />) : null}
           <div className={styles.submissionsContainer}>
             <div className={styles.head}>
               {!isF2F && !isBugHunt && (
@@ -440,7 +444,7 @@ class SubmissionsComponent extends React.Component {
               >
                 <span>Legacy submission ID</span>
               </div>
-              {haveManagePermission ? (<div
+              {canDownloadSubmission ? (<div
                 className={cn(styles['col-8'])}
               >
                 <span>Actions</span>
@@ -502,7 +506,7 @@ class SubmissionsComponent extends React.Component {
                 <div className={styles['col-7']}>
                   {s.legacySubmissionId}
                 </div>
-                {haveManagePermission ? (<div className={styles['col-8']}>
+                {canDownloadSubmission ? (<div className={styles['col-8']}>
                   <button
                     onClick={() => {
                       // download submission
@@ -534,7 +538,7 @@ class SubmissionsComponent extends React.Component {
             ))}
           </div>
 
-          {haveManagePermission ? (<div className={styles['top-title']} >
+          {canDownloadSubmission ? (<div className={styles['top-title']} >
             <div className={styles.btnManageSubmissions} >
               <PrimaryButton
                 text='Download All'
