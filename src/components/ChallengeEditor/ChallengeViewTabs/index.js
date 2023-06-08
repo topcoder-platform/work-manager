@@ -55,14 +55,19 @@ const ChallengeViewTabs = ({
       if (!loggedInUser) {
         return null
       }
-      const loggedInUserResourceTmp = _.find(challengeResources, { memberId: `${loggedInUser.userId}` })
-      if (loggedInUserResourceTmp) {
+      const loggedInUserResourceTmps = _.filter(challengeResources, { memberId: `${loggedInUser.userId}` })
+      let loggedInUserResourceTmp = null
+      if (loggedInUserResourceTmps.length > 0) {
+        loggedInUserResourceTmp = loggedInUserResourceTmps[0]
+        loggedInUserResourceTmp.resources = loggedInUserResourceTmps
         const { resourceRoles } = metadata
         if (resourceRoles) {
-          const roleInfo = _.find(resourceRoles, { id: loggedInUserResourceTmp.roleId })
-          if (roleInfo) {
-            loggedInUserResourceTmp.role = roleInfo.name
-          }
+          let roles = []
+          _.forEach(loggedInUserResourceTmps, resource => {
+            const roleNames = _.filter(resourceRoles, { id: resource.roleId }).map(ri => ri.name)
+            roles = [...roles, ...roleNames]
+          })
+          loggedInUserResourceTmp.roles = roles
         }
       }
       return loggedInUserResourceTmp

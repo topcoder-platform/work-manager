@@ -216,7 +216,7 @@ class SubmissionsComponent extends React.Component {
     const { challenge, token, loggedInUserResource } = this.props
     const { checkpoints, track, type, tags } = challenge
     const canDownloadSubmission =
-      (loggedInUserResource && checkDownloadSubmissionRoles(loggedInUserResource.role)) ||
+      (loggedInUserResource && checkDownloadSubmissionRoles(loggedInUserResource.roles)) ||
       checkAdmin(token)
 
     const { field, sort } = this.getSubmissionsSortParam()
