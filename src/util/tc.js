@@ -176,9 +176,8 @@ export const checkOnlyReadOnlyRoles = token => {
  * Checks if this role can download submission
  * @param  token
  */
-export const checkDownloadSubmissionRoles = token => {
-  const roles = _.get(decodeToken(token), 'roles')
-  return roles.some(val => ALLOWED_DOWNLOAD_SUBMISSIONS_ROLES.indexOf(val.toLowerCase()) > -1)
+export const checkDownloadSubmissionRoles = resourceRole => {
+  return ALLOWED_DOWNLOAD_SUBMISSIONS_ROLES.indexOf(`${resourceRole}`.toLowerCase()) > -1
 }
 
 /**

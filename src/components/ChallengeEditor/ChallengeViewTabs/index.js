@@ -50,11 +50,24 @@ const ChallengeViewTabs = ({
   onApproveChallenge
 }) => {
   const [selectedTab, setSelectedTab] = useState(0)
-  const isLoggedInUserHaveChallengeAccess = useMemo(
-    () =>
-      loggedInUser &&
-      !!_.find(challengeResources, { memberId: `${loggedInUser.userId}` }),
-    [loggedInUser, challengeResources]
+  const loggedInUserResource = useMemo(
+    () => {
+      if (!loggedInUser) {
+        return null
+      }
+      const loggedInUserResourceTmp = _.find(challengeResources, { memberId: `${loggedInUser.userId}` })
+      if (loggedInUserResourceTmp) {
+        const { resourceRoles } = metadata
+        if (resourceRoles) {
+          const roleInfo = _.find(resourceRoles, { id: loggedInUserResourceTmp.roleId })
+          if (roleInfo) {
+            loggedInUserResourceTmp.role = roleInfo.name
+          }
+        }
+      }
+      return loggedInUserResourceTmp
+    },
+    [loggedInUser, challengeResources, metadata]
   )
 
   const registrants = useMemo(() => {
@@ -268,7 +281,7 @@ const ChallengeViewTabs = ({
           challenge={challenge}
           submissions={submissions}
           token={token}
-          isLoggedInUserHaveChallengeAccess={isLoggedInUserHaveChallengeAccess}
+          loggedInUserResource={loggedInUserResource}
         />
       )}
     </div>

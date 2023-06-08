@@ -213,11 +213,10 @@ class SubmissionsComponent extends React.Component {
   }
 
   render () {
-    const { challenge, token, isLoggedInUserHaveChallengeAccess } = this.props
+    const { challenge, token, loggedInUserResource } = this.props
     const { checkpoints, track, type, tags } = challenge
     const canDownloadSubmission =
-      (checkDownloadSubmissionRoles(token) &&
-        isLoggedInUserHaveChallengeAccess) ||
+      (loggedInUserResource && checkDownloadSubmissionRoles(loggedInUserResource.role)) ||
       checkAdmin(token)
 
     const { field, sort } = this.getSubmissionsSortParam()
@@ -617,7 +616,7 @@ class SubmissionsComponent extends React.Component {
 SubmissionsComponent.defaultProps = {
   submissions: [],
   token: '',
-  isLoggedInUserHaveChallengeAccess: false
+  loggedInUserResource: null
 }
 
 SubmissionsComponent.propTypes = {
@@ -634,7 +633,7 @@ SubmissionsComponent.propTypes = {
   }).isRequired,
   submissions: PT.arrayOf(PT.shape()),
   token: PT.string,
-  isLoggedInUserHaveChallengeAccess: PT.bool
+  loggedInUserResource: PT.any
 }
 
 export default SubmissionsComponent
