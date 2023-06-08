@@ -202,9 +202,7 @@ export const ALLOWED_DOWNLOAD_SUBMISSIONS_ROLES = [
   'administrator',
   PROJECT_ROLES.MANAGER,
   PROJECT_ROLES.COPILOT,
-  PROJECT_ROLES.WRITE,
-  'connect manager',
-  'connect copilot'
+  PROJECT_ROLES.WRITE
 ]
 
 export const CHALLENGE_STATUS = {
