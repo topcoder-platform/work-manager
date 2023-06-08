@@ -450,92 +450,109 @@ class SubmissionsComponent extends React.Component {
                 <span>Actions</span>
               </div>) : null}
             </div>
-            {sortedSubmissions.map(s => (
-              <div
-                key={_.get(s.registrant, 'memberHandle', '') + s.created}
-                className={styles.row}
-              >
-                {!isF2F && !isBugHunt && (
-                  <div
-                    className={cn(styles['col-2'], styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`])}
-                  >
-                    {s.registrant && !_.isNil(s.registrant.rating)
-                      ? s.registrant.rating
-                      : '-'}
+            {sortedSubmissions.map(s => {
+              const rating = s.registrant && !_.isNil(s.registrant.rating)
+                ? s.registrant.rating
+                : '-'
+              const memberHandle = _.get(s.registrant, 'memberHandle', '')
+              const email = _.get(s.registrant, 'email', '')
+              const submissionDate = moment(s.created).format('MMM DD, YYYY HH:mm')
+              return (
+                <div
+                  key={_.get(s.registrant, 'memberHandle', '') + s.created}
+                  className={styles.row}
+                >
+                  {!isF2F && !isBugHunt && (
+                    <div
+                      className={cn(styles['col-2'], styles['col-body'], styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`])}
+                    >
+                      <span title={rating}>
+                        {rating}
+                      </span>
+                    </div>
+                  )}
+                  <div className={cn(styles['col-3'], styles['col-body'])}>
+                    <a
+                      title={memberHandle}
+                      href={`${window.origin}/members/${_.get(
+                        s.registrant,
+                        'memberHandle',
+                        ''
+                      )}`}
+                      target={`${
+                        _.includes(window.origin, 'www') ? '_self' : '_blank'
+                      }`}
+                      rel='noopener noreferrer'
+                      className={cn(
+                        styles['handle'],
+                        styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`]
+                      )}
+                    >
+                      {memberHandle}
+                    </a>
                   </div>
-                )}
-                <div className={styles['col-3']}>
-                  <a
-                    href={`${window.origin}/members/${_.get(
-                      s.registrant,
-                      'memberHandle',
-                      ''
-                    )}`}
-                    target={`${
-                      _.includes(window.origin, 'www') ? '_self' : '_blank'
-                    }`}
-                    rel='noopener noreferrer'
-                    className={cn(
-                      styles['handle'],
-                      styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`]
-                    )}
-                  >
-                    {_.get(s.registrant, 'memberHandle', '')}
-                  </a>
+                  <div className={cn(styles['col-9'], styles['col-body'])}>
+                    <span title={email}>
+                      {email}
+                    </span>
+                  </div>
+                  <div className={cn(styles['col-4'], styles['col-body'])}>
+                    <span title={submissionDate}>
+                      {submissionDate}
+                    </span>
+                  </div>
+                  <div className={cn(styles['col-5'], styles['col-body'])}>
+                    <a href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}/submissions/${s.id} `} target='_blank'>
+                      {!_.isEmpty(s.review) && s.review[0].score
+                        ? parseFloat(s.review[0].score).toFixed(2)
+                        : 'N/A'}
+                      &zwnj; &zwnj;/ &zwnj;
+                      {s.reviewSummation && s.reviewSummation[0].aggregateScore
+                        ? parseFloat(s.reviewSummation[0].aggregateScore).toFixed(2)
+                        : 'N/A'}
+                    </a>
+                  </div>
+                  <div className={cn(styles['col-6'], styles['col-body'])}>
+                    <span title={s.id}>
+                      {s.id}
+                    </span>
+                  </div>
+                  <div className={cn(styles['col-7'], styles['col-body'])}>
+                    <span title={s.legacySubmissionId}>
+                      {s.legacySubmissionId}
+                    </span>
+                  </div>
+                  {canDownloadSubmission ? (<div className={cn(styles['col-8'], styles['col-body'])}>
+                    <button
+                      onClick={() => {
+                        // download submission
+                        const reactLib = getTopcoderReactLib()
+                        const { getService } = reactLib.services.submissions
+                        const submissionsService = getService(token)
+                        submissionsService.downloadSubmission(s.id)
+                          .then((blob) => {
+                            // eslint-disable-next-line no-undef
+                            const url = window.URL.createObjectURL(new Blob([blob]))
+                            const link = document.createElement('a')
+                            link.href = url
+                            let fileName = s.legacySubmissionId
+                            if (!fileName) {
+                              fileName = s.id
+                            }
+                            fileName = fileName + '.zip'
+                            link.setAttribute('download', `${fileName}`)
+                            document.body.appendChild(link)
+                            link.click()
+                            link.parentNode.removeChild(link)
+                          })
+                      }}
+                    >
+                      <ReactSVG path={assets(`${Download}`)} />
+                    </button>
+                  </div>) : null}
                 </div>
-                <div className={styles['col-9']}>
-                  {_.get(s.registrant, 'email', '')}
-                </div>
-                <div className={styles['col-4']}>
-                  {moment(s.created).format('MMM DD, YYYY HH:mm')}
-                </div>
-                <div className={styles['col-5']}>
-                  <a href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}/submissions/${s.id} `} target='_blank'>
-                    {!_.isEmpty(s.review) && s.review[0].score
-                      ? parseFloat(s.review[0].score).toFixed(2)
-                      : 'N/A'}
-                    &zwnj; &zwnj;/ &zwnj;
-                    {s.reviewSummation && s.reviewSummation[0].aggregateScore
-                      ? parseFloat(s.reviewSummation[0].aggregateScore).toFixed(2)
-                      : 'N/A'}
-                  </a>
-                </div>
-                <div className={styles['col-6']}>
-                  {s.id}
-                </div>
-                <div className={styles['col-7']}>
-                  {s.legacySubmissionId}
-                </div>
-                {canDownloadSubmission ? (<div className={styles['col-8']}>
-                  <button
-                    onClick={() => {
-                      // download submission
-                      const reactLib = getTopcoderReactLib()
-                      const { getService } = reactLib.services.submissions
-                      const submissionsService = getService(token)
-                      submissionsService.downloadSubmission(s.id)
-                        .then((blob) => {
-                          // eslint-disable-next-line no-undef
-                          const url = window.URL.createObjectURL(new Blob([blob]))
-                          const link = document.createElement('a')
-                          link.href = url
-                          let fileName = s.legacySubmissionId
-                          if (!fileName) {
-                            fileName = s.id
-                          }
-                          fileName = fileName + '.zip'
-                          link.setAttribute('download', `${fileName}`)
-                          document.body.appendChild(link)
-                          link.click()
-                          link.parentNode.removeChild(link)
-                        })
-                    }}
-                  >
-                    <ReactSVG path={assets(`${Download}`)} />
-                  </button>
-                </div>) : null}
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           {canDownloadSubmission ? (<div className={styles['top-title']} >

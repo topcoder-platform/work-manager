@@ -329,13 +329,13 @@ $base-unit: 5px;
 
     .col-3 {
       display: flex;
-      width: 100px;
+      width: 120px;
       flex-shrink: 0;
     }
 
     .col-9 {
       display: flex;
-      width: 200px;
+      width: 256px;
       flex-shrink: 0;
     }
 
@@ -353,7 +353,7 @@ $base-unit: 5px;
 
     .col-6 {
       display: flex;
-      width: 280px;
+      width: 300px;
       flex-shrink: 0;
     }
 
@@ -502,5 +502,15 @@ $base-unit: 5px;
 
   &:disabled {
     pointer-events: none;
+  }
+}
+
+.col-body {
+  a,
+  button,
+  span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
