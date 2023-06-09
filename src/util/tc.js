@@ -130,9 +130,9 @@ export function fixedTrack (track, subTrack) {
 export const getDomainTypes = (trackId) => {
   switch (trackId) {
     case CHALLENGE_TRACKS.DEVELOP:
-      return ['CH', 'F2F', 'TSK', 'SKL', 'PC']
+      return ['CH', 'F2F', 'TSK', 'SKL', 'PC', 'MM']
     case CHALLENGE_TRACKS.DATA_SCIENCE:
-      return ['CH', 'F2F', 'TSK', 'SKL', 'PC', 'MA']
+      return ['CH', 'F2F', 'TSK', 'SKL', 'PC', 'MA', 'MM']
     case CHALLENGE_TRACKS.QA:
       return ['CH', 'F2F', 'TSK', 'SKL', 'PC']
     case CHALLENGE_TRACKS.DESIGN:
