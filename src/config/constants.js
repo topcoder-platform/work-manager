@@ -198,6 +198,13 @@ export const PROJECT_ROLES = {
   COPILOT: 'copilot'
 }
 
+export const ALLOWED_DOWNLOAD_SUBMISSIONS_ROLES = [
+  'administrator',
+  PROJECT_ROLES.MANAGER,
+  PROJECT_ROLES.COPILOT,
+  PROJECT_ROLES.WRITE
+]
+
 export const CHALLENGE_STATUS = {
   ACTIVE: 'ACTIVE',
   NEW: 'NEW',
@@ -231,14 +238,6 @@ export const ALLOWED_USER_ROLES = [
   'connect manager',
   'connect copilot',
   'topcoder user'
-]
-
-export const ALLOWED_MANAGE_ROLES = [
-  'copilot',
-  'administrator',
-  'connect admin',
-  'connect manager',
-  'connect copilot'
 ]
 
 export const READ_ONLY_ROLES = [

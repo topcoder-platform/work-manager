@@ -50,11 +50,29 @@ const ChallengeViewTabs = ({
   onApproveChallenge
 }) => {
   const [selectedTab, setSelectedTab] = useState(0)
-  const isLoggedInUserHaveChallengeAccess = useMemo(
-    () =>
-      loggedInUser &&
-      !!_.find(challengeResources, { memberId: `${loggedInUser.userId}` }),
-    [loggedInUser, challengeResources]
+  const loggedInUserResource = useMemo(
+    () => {
+      if (!loggedInUser) {
+        return null
+      }
+      const loggedInUserResourceTmps = _.filter(challengeResources, { memberId: `${loggedInUser.userId}` })
+      let loggedInUserResourceTmp = null
+      if (loggedInUserResourceTmps.length > 0) {
+        loggedInUserResourceTmp = loggedInUserResourceTmps[0]
+        loggedInUserResourceTmp.resources = loggedInUserResourceTmps
+        const { resourceRoles } = metadata
+        if (resourceRoles) {
+          let roles = []
+          _.forEach(loggedInUserResourceTmps, resource => {
+            const roleNames = _.filter(resourceRoles, { id: resource.roleId }).map(ri => ri.name)
+            roles = [...roles, ...roleNames]
+          })
+          loggedInUserResourceTmp.roles = roles
+        }
+      }
+      return loggedInUserResourceTmp
+    },
+    [loggedInUser, challengeResources, metadata]
   )
 
   const registrants = useMemo(() => {
@@ -268,7 +286,7 @@ const ChallengeViewTabs = ({
           challenge={challenge}
           submissions={submissions}
           token={token}
-          isLoggedInUserHaveChallengeAccess={isLoggedInUserHaveChallengeAccess}
+          loggedInUserResource={loggedInUserResource}
         />
       )}
     </div>

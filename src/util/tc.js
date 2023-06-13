@@ -8,7 +8,7 @@ import {
   ADMIN_ROLES,
   SUBMITTER_ROLE_UUID,
   READ_ONLY_ROLES,
-  ALLOWED_MANAGE_ROLES
+  ALLOWED_DOWNLOAD_SUBMISSIONS_ROLES
 } from '../config/constants'
 import _ from 'lodash'
 import { decodeToken } from 'tc-auth-lib'
@@ -130,9 +130,9 @@ export function fixedTrack (track, subTrack) {
 export const getDomainTypes = (trackId) => {
   switch (trackId) {
     case CHALLENGE_TRACKS.DEVELOP:
-      return ['CH', 'F2F', 'TSK', 'SKL', 'PC']
+      return ['CH', 'F2F', 'TSK', 'SKL', 'PC', 'MM']
     case CHALLENGE_TRACKS.DATA_SCIENCE:
-      return ['CH', 'F2F', 'TSK', 'SKL', 'PC', 'MA']
+      return ['CH', 'F2F', 'TSK', 'SKL', 'PC', 'MA', 'MM']
     case CHALLENGE_TRACKS.QA:
       return ['CH', 'F2F', 'TSK', 'SKL', 'PC']
     case CHALLENGE_TRACKS.DESIGN:
@@ -173,12 +173,11 @@ export const checkOnlyReadOnlyRoles = token => {
 }
 
 /**
- * Checks if this role can have manage permission
- * @param  token
+ * Checks if this role can download submission
+ * @param  resourceRoles
  */
-export const checkManageRoles = token => {
-  const roles = _.get(decodeToken(token), 'roles')
-  return roles.some(val => ALLOWED_MANAGE_ROLES.indexOf(val.toLowerCase()) > -1)
+export const checkDownloadSubmissionRoles = resourceRoles => {
+  return resourceRoles.some(val => ALLOWED_DOWNLOAD_SUBMISSIONS_ROLES.indexOf(val.toLowerCase()) > -1)
 }
 
 /**

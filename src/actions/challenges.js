@@ -22,6 +22,7 @@ import {
   createResource as createResourceAPI,
   deleteResource as deleteResourceAPI
 } from '../services/challenges'
+import { searchProfilesByUserIds } from '../services/user'
 import {
   LOAD_CHALLENGE_DETAILS,
   LOAD_CHALLENGE_METADATA_SUCCESS,
@@ -46,8 +47,10 @@ import {
   DELETE_CHALLENGE_PENDING,
   DELETE_CHALLENGE_SUCCESS,
   DELETE_CHALLENGE_FAILURE,
-  LOAD_CHALLENGE_RESOURCES,
-  CHALLENGE_STATUS
+  CHALLENGE_STATUS,
+  LOAD_CHALLENGE_RESOURCES_SUCCESS,
+  LOAD_CHALLENGE_RESOURCES_PENDING,
+  LOAD_CHALLENGE_RESOURCES_FAILURE
 } from '../config/constants'
 import { loadProject } from './projects'
 import { removeChallengeFromPhaseProduct, saveChallengeAsPhaseProduct } from '../services/projects'
@@ -595,12 +598,29 @@ export function loadChallengeTerms () {
 }
 
 export function loadResources (challengeId) {
-  return (dispatch, getState) => {
+  return async (dispatch, getState) => {
     if (challengeId) {
-      return dispatch({
-        type: LOAD_CHALLENGE_RESOURCES,
-        payload: fetchResources(challengeId)
-      })
+      let challengeResources = []
+      try {
+        dispatch({
+          type: LOAD_CHALLENGE_RESOURCES_PENDING
+        })
+        challengeResources = await fetchResources(challengeId)
+        const memberIds = challengeResources.map(resource => resource.memberId)
+        const memberInfos = await searchProfilesByUserIds(memberIds)
+        _.forEach(challengeResources, (cr) => {
+          const memerInfo = _.find(memberInfos, { userId: parseInt(cr.memberId) })
+          cr.email = memerInfo ? memerInfo.email : ''
+        })
+        dispatch({
+          type: LOAD_CHALLENGE_RESOURCES_SUCCESS,
+          payload: challengeResources
+        })
+      } catch (error) {
+        dispatch({
+          type: LOAD_CHALLENGE_RESOURCES_FAILURE
+        })
+      }
     }
   }
 }
