@@ -555,6 +555,7 @@ class SubmissionsComponent extends React.Component {
           </div>
 
           {canDownloadSubmission ? (<div className={styles['top-title']} >
+
             <div className={styles.btnManageSubmissions} >
               <PrimaryButton
                 text='Download All'
