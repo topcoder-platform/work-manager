@@ -327,231 +327,247 @@ class SubmissionsComponent extends React.Component {
 
         <div className={cn(styles.container, styles.dev, styles['non-mm'])}>
           {canDownloadSubmission ? (<div className={styles['empty-left']} />) : null}
-          <div className={styles.submissionsContainer}>
-            <div className={styles.head}>
-              {!isF2F && !isBugHunt && (
-                <button
-                  type='button'
-                  onClick={() => {
-                    this.onSortChange({
-                      field: 'Rating',
-                      sort: field === 'Rating' ? revertSort : 'desc'
-                    })
-                  }}
-                  className={cn(styles['col-2'], styles['header-sort'])}
-                >
-                  <span>Rating</span>
-                  <div
-                    className={cn(styles['col-arrow'], {
-                      [styles['col-arrow-sort-asc']]:
-                        field === 'Rating' && sort === 'asc',
-                      [styles['col-arrow-is-sorting']]: field === 'Rating'
-                    })}
-                  >
-                    <ReactSVG path={assets(`${ArrowDown}`)} />
-                  </div>
-                </button>
-              )}
-              <button
-                type='button'
-                onClick={() => {
-                  this.onSortChange({
-                    field: 'Username',
-                    sort: field === 'Username' ? revertSort : 'desc'
-                  })
-                }}
-                className={cn(styles['col-3'], styles['header-sort'])}
-              >
-                <span>Username</span>
-                <div
-                  className={cn(styles['col-arrow'], {
-                    [styles['col-arrow-sort-asc']]: field === 'Username' && sort === 'asc',
-                    [styles['col-arrow-is-sorting']]: field === 'Username'
-                  })}
-                >
-                  <ReactSVG path={assets(`${ArrowDown}`)} />
-                </div>
-              </button>
-              <button
-                type='button'
-                onClick={() => {
-                  this.onSortChange({
-                    field: 'Email',
-                    sort: field === 'Email' ? revertSort : 'desc'
-                  })
-                }}
-                className={cn(styles['col-9'], styles['header-sort'])}
-              >
-                <span>Email</span>
-                <div
-                  className={cn(styles['col-arrow'], {
-                    [styles['col-arrow-sort-asc']]: field === 'Email' && sort === 'asc',
-                    [styles['col-arrow-is-sorting']]: field === 'Email'
-                  })}
-                >
-                  <ReactSVG path={assets(`${ArrowDown}`)} />
-                </div>
-              </button>
-              <button
-                type='button'
-                onClick={() => {
-                  this.onSortChange({
-                    field: 'Submission Date',
-                    sort: field === 'Submission Date' ? revertSort : 'desc'
-                  })
-                }}
-                className={cn(styles['col-4'], styles['header-sort'])}
-              >
-                <span>Submission Date</span>
-                <div
-                  className={cn(styles['col-arrow'], {
-                    [styles['col-arrow-sort-asc']]: field === 'Submission Date' && sort === 'asc',
-                    [styles['col-arrow-is-sorting']]: field === 'Submission Date'
-                  })}
-                >
-                  <ReactSVG path={assets(`${ArrowDown}`)} />
-                </div>
-              </button>
-              <button
-                type='button'
-                onClick={() => {
-                  this.onSortChange({
-                    field: 'Initial / Final Score',
-                    sort: field === 'Initial / Final Score' ? revertSort : 'desc'
-                  })
-                }}
-                className={cn(styles['col-5'], styles['header-sort'])}
-              >
-                <span>Initial / Final Score</span>
-                <div
-                  className={cn('col-arrow', {
-                    'col-arrow-sort-asc':
-                      field === 'Initial / Final Score' && sort === 'asc',
-                    'col-arrow-is-sorting': field === 'Initial / Final Score'
-                  })}
-                >
-                  <ReactSVG path={assets(`${ArrowDown}`)} />
-                </div>
-              </button>
-              <div
-                className={cn(styles['col-6'])}
-              >
-                <span>Submission ID (UUID)</span>
-              </div>
-              <div
-                className={cn(styles['col-7'])}
-              >
-                <span>Legacy submission ID</span>
-              </div>
-              {canDownloadSubmission ? (<div
-                className={cn(styles['col-8'])}
-              >
-                <span>Actions</span>
-              </div>) : null}
-            </div>
-            {sortedSubmissions.map(s => {
-              const rating = s.registrant && !_.isNil(s.registrant.rating)
-                ? s.registrant.rating
-                : '-'
-              const memberHandle = _.get(s.registrant, 'memberHandle', '')
-              const email = _.get(s.registrant, 'email', '')
-              const submissionDate = moment(s.created).format('MMM DD, YYYY HH:mm')
-              return (
-                <div
-                  key={_.get(s.registrant, 'memberHandle', '') + s.created}
-                  className={styles.row}
-                >
+          <div className={styles.submissionsContainerTable}>
+            <table>
+              <thead className={styles.headTable}>
+                <tr>
                   {!isF2F && !isBugHunt && (
-                    <div
-                      className={cn(styles['col-2'], styles['col-body'], styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`])}
-                    >
-                      <span title={rating}>
-                        {rating}
-                      </span>
-                    </div>
-                  )}
-                  <div className={cn(styles['col-3'], styles['col-body'])}>
-                    <a
-                      title={memberHandle}
-                      href={`${window.origin}/members/${_.get(
-                        s.registrant,
-                        'memberHandle',
-                        ''
-                      )}`}
-                      target={`${
-                        _.includes(window.origin, 'www') ? '_self' : '_blank'
-                      }`}
-                      rel='noopener noreferrer'
-                      className={cn(
-                        styles['handle'],
-                        styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`]
-                      )}
-                    >
-                      {memberHandle}
-                    </a>
-                  </div>
-                  <div className={cn(styles['col-9'], styles['col-body'])}>
-                    <span title={email}>
-                      {email}
-                    </span>
-                  </div>
-                  <div className={cn(styles['col-4'], styles['col-body'])}>
-                    <span title={submissionDate}>
-                      {submissionDate}
-                    </span>
-                  </div>
-                  <div className={cn(styles['col-5'], styles['col-body'])}>
-                    <a href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}/submissions/${s.id} `} target='_blank'>
-                      {!_.isEmpty(s.review) && s.review[0].score
-                        ? parseFloat(s.review[0].score).toFixed(2)
-                        : 'N/A'}
-                      &zwnj; &zwnj;/ &zwnj;
-                      {s.reviewSummation && s.reviewSummation[0].aggregateScore
-                        ? parseFloat(s.reviewSummation[0].aggregateScore).toFixed(2)
-                        : 'N/A'}
-                    </a>
-                  </div>
-                  <div className={cn(styles['col-6'], styles['col-body'])}>
-                    <span title={s.id}>
-                      {s.id}
-                    </span>
-                  </div>
-                  <div className={cn(styles['col-7'], styles['col-body'])}>
-                    <span title={s.legacySubmissionId}>
-                      {s.legacySubmissionId}
-                    </span>
-                  </div>
-                  {canDownloadSubmission ? (<div className={cn(styles['col-8'], styles['col-body'])}>
-                    <button
-                      onClick={() => {
-                        // download submission
-                        const reactLib = getTopcoderReactLib()
-                        const { getService } = reactLib.services.submissions
-                        const submissionsService = getService(token)
-                        submissionsService.downloadSubmission(s.id)
-                          .then((blob) => {
-                            // eslint-disable-next-line no-undef
-                            const url = window.URL.createObjectURL(new Blob([blob]))
-                            const link = document.createElement('a')
-                            link.href = url
-                            let fileName = s.legacySubmissionId
-                            if (!fileName) {
-                              fileName = s.id
-                            }
-                            fileName = fileName + '.zip'
-                            link.setAttribute('download', `${fileName}`)
-                            document.body.appendChild(link)
-                            link.click()
-                            link.parentNode.removeChild(link)
+                    <th>
+                      <button
+                        type='button'
+                        onClick={() => {
+                          this.onSortChange({
+                            field: 'Rating',
+                            sort: field === 'Rating' ? revertSort : 'desc'
                           })
+                        }}
+                        className={cn(styles['col-2Table'], styles['header-sort'])}
+                      >
+                        <span>Rating</span>
+                        <div
+                          className={cn(styles['col-arrow'], {
+                            [styles['col-arrow-sort-asc']]:
+                              field === 'Rating' && sort === 'asc',
+                            [styles['col-arrow-is-sorting']]: field === 'Rating'
+                          })}
+                        >
+                          <ReactSVG path={assets(`${ArrowDown}`)} />
+                        </div>
+                      </button>
+                    </th>
+                  )}
+                  <th>
+                    <button
+                      type='button'
+                      onClick={() => {
+                        this.onSortChange({
+                          field: 'Username',
+                          sort: field === 'Username' ? revertSort : 'desc'
+                        })
                       }}
+                      className={cn(styles['col-3Table'], styles['header-sort'])}
                     >
-                      <ReactSVG path={assets(`${Download}`)} />
+                      <span>Username</span>
+                      <div
+                        className={cn(styles['col-arrow'], {
+                          [styles['col-arrow-sort-asc']]: field === 'Username' && sort === 'asc',
+                          [styles['col-arrow-is-sorting']]: field === 'Username'
+                        })}
+                      >
+                        <ReactSVG path={assets(`${ArrowDown}`)} />
+                      </div>
                     </button>
-                  </div>) : null}
-                </div>
-              )
-            })}
+                  </th>
+                  <th>
+                    <button
+                      type='button'
+                      onClick={() => {
+                        this.onSortChange({
+                          field: 'Email',
+                          sort: field === 'Email' ? revertSort : 'desc'
+                        })
+                      }}
+                      className={cn(styles['col-9Table'], styles['header-sort'])}
+                    >
+                      <span>Email</span>
+                      <div
+                        className={cn(styles['col-arrow'], {
+                          [styles['col-arrow-sort-asc']]: field === 'Email' && sort === 'asc',
+                          [styles['col-arrow-is-sorting']]: field === 'Email'
+                        })}
+                      >
+                        <ReactSVG path={assets(`${ArrowDown}`)} />
+                      </div>
+                    </button>
+                  </th>
+                  <th>
+                    <button
+                      type='button'
+                      onClick={() => {
+                        this.onSortChange({
+                          field: 'Submission Date',
+                          sort: field === 'Submission Date' ? revertSort : 'desc'
+                        })
+                      }}
+                      className={cn(styles['col-4Table'], styles['header-sort'])}
+                    >
+                      <span>Submission Date</span>
+                      <div
+                        className={cn(styles['col-arrow'], {
+                          [styles['col-arrow-sort-asc']]: field === 'Submission Date' && sort === 'asc',
+                          [styles['col-arrow-is-sorting']]: field === 'Submission Date'
+                        })}
+                      >
+                        <ReactSVG path={assets(`${ArrowDown}`)} />
+                      </div>
+                    </button>
+                  </th>
+                  <th>
+                    <button
+                      type='button'
+                      onClick={() => {
+                        this.onSortChange({
+                          field: 'Initial / Final Score',
+                          sort: field === 'Initial / Final Score' ? revertSort : 'desc'
+                        })
+                      }}
+                      className={cn(styles['col-5Table'], styles['header-sort'])}
+                    >
+                      <span>Initial / Final Score</span>
+                      <div
+                        className={cn('col-arrow', {
+                          'col-arrow-sort-asc':
+                            field === 'Initial / Final Score' && sort === 'asc',
+                          'col-arrow-is-sorting': field === 'Initial / Final Score'
+                        })}
+                      >
+                        <ReactSVG path={assets(`${ArrowDown}`)} />
+                      </div>
+                    </button>
+                  </th>
+                  <th
+                    className={cn(styles['col-6Table'])}
+                  >
+                    <span>Submission ID (UUID)</span>
+                  </th>
+                  <th
+                    className={cn(styles['col-7Table'])}
+                  >
+                    <span>Legacy submission ID</span>
+                  </th>
+                  {canDownloadSubmission ? (<th
+                    className={cn(styles['col-8Table'])}
+                  >
+                    <span>Actions</span>
+                  </th>) : null}
+                </tr>
+              </thead>
+              <tbody>
+                {sortedSubmissions.map(s => {
+                  const rating = s.registrant && !_.isNil(s.registrant.rating)
+                    ? s.registrant.rating
+                    : '-'
+                  const memberHandle = _.get(s.registrant, 'memberHandle', '')
+                  const email = _.get(s.registrant, 'email', '')
+                  const submissionDate = moment(s.created).format('MMM DD, YYYY HH:mm')
+                  return (
+                    <tr
+                      key={_.get(s.registrant, 'memberHandle', '') + s.created}
+                      className={styles.rowTable}
+                    >
+                      {!isF2F && !isBugHunt && (
+                        <td
+                          className={cn(styles['col-2Table'], styles['col-bodyTable'], styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`])}
+                        >
+                          <span title={rating}>
+                            {rating}
+                          </span>
+                        </td>
+                      )}
+                      <td className={cn(styles['col-3Table'], styles['col-bodyTable'])}>
+                        <a
+                          title={memberHandle}
+                          href={`${window.origin}/members/${_.get(
+                            s.registrant,
+                            'memberHandle',
+                            ''
+                          )}`}
+                          target={`${
+                            _.includes(window.origin, 'www') ? '_self' : '_blank'
+                          }`}
+                          rel='noopener noreferrer'
+                          className={cn(
+                            styles['handle'],
+                            styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`]
+                          )}
+                        >
+                          {memberHandle}
+                        </a>
+                      </td>
+                      <td className={cn(styles['col-9Table'], styles['col-bodyTable'])}>
+                        <span title={email}>
+                          {email}
+                        </span>
+                      </td>
+                      <td className={cn(styles['col-4Table'], styles['col-bodyTable'])}>
+                        <span title={submissionDate}>
+                          {submissionDate}
+                        </span>
+                      </td>
+                      <td className={cn(styles['col-5Table'], styles['col-bodyTable'])}>
+                        <a href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}/submissions/${s.id} `} target='_blank'>
+                          {!_.isEmpty(s.review) && s.review[0].score
+                            ? parseFloat(s.review[0].score).toFixed(2)
+                            : 'N/A'}
+                          &zwnj; &zwnj;/ &zwnj;
+                          {s.reviewSummation && s.reviewSummation[0].aggregateScore
+                            ? parseFloat(s.reviewSummation[0].aggregateScore).toFixed(2)
+                            : 'N/A'}
+                        </a>
+                      </td>
+                      <td className={cn(styles['col-6Table'], styles['col-bodyTable'])}>
+                        <span title={s.id}>
+                          {s.id}
+                        </span>
+                      </td>
+                      <td className={cn(styles['col-7Table'], styles['col-bodyTable'])}>
+                        <span title={s.legacySubmissionId}>
+                          {s.legacySubmissionId}
+                        </span>
+                      </td>
+                      {canDownloadSubmission ? (<td className={cn(styles['col-8Table'], styles['col-bodyTable'])}>
+                        <button
+                          onClick={() => {
+                            // download submission
+                            const reactLib = getTopcoderReactLib()
+                            const { getService } = reactLib.services.submissions
+                            const submissionsService = getService(token)
+                            submissionsService.downloadSubmission(s.id)
+                              .then((blob) => {
+                                // eslint-disable-next-line no-undef
+                                const url = window.URL.createObjectURL(new Blob([blob]))
+                                const link = document.createElement('a')
+                                link.href = url
+                                let fileName = s.legacySubmissionId
+                                if (!fileName) {
+                                  fileName = s.id
+                                }
+                                fileName = fileName + '.zip'
+                                link.setAttribute('download', `${fileName}`)
+                                document.body.appendChild(link)
+                                link.click()
+                                link.parentNode.removeChild(link)
+                              })
+                          }}
+                        >
+                          <ReactSVG path={assets(`${Download}`)} />
+                        </button>
+                      </td>) : null}
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
 
           {canDownloadSubmission ? (<div className={styles['top-title']} >

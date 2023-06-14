@@ -227,8 +227,16 @@ export async function createResource (resource) {
  * @returns {Promise<*>}
  */
 export async function fetchResources (challengeId) {
-  const response = await axiosInstance.get(`${RESOURCES_API_URL}?challengeId=${challengeId}`)
-  return _.get(response, 'data', [])
+  let page = 0
+  let totalPage = 1
+  let resouces = []
+  while (page < totalPage) {
+    page += 1
+    const response = await axiosInstance.get(`${RESOURCES_API_URL}?challengeId=${challengeId}&page=${page}&perPage=5000`)
+    resouces = [...resouces, ..._.get(response, 'data', [])]
+    totalPage = parseInt(response.headers['x-total-pages'])
+  }
+  return resouces
 }
 
 /**
