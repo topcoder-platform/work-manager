@@ -13,7 +13,7 @@ import LegacyLinks from '../../LegacyLinks'
 import ForumLink from '../../ForumLink'
 import ResourcesTab from '../Resources'
 import Submissions from '../Submissions'
-import { checkAdmin, checkReadOnlyRoles, getResourceRoleByName } from '../../../util/tc'
+import { checkAdmin, checkReadOnlyRoles } from '../../../util/tc'
 import { CHALLENGE_STATUS, MESSAGE } from '../../../config/constants'
 import Tooltip from '../../Tooltip'
 import CancelDropDown from '../Cancel-Dropdown'
@@ -75,28 +75,6 @@ const ChallengeViewTabs = ({
     [loggedInUser, challengeResources, metadata]
   )
 
-  const registrants = useMemo(() => {
-    const { resourceRoles } = metadata
-    const role = getResourceRoleByName(resourceRoles, 'Submitter')
-    if (role && challengeResources) {
-      const registrantList = challengeResources.filter(
-        resource => resource.roleId === role.id
-      )
-      // Add submission date to registrants
-      registrantList.forEach((r, i) => {
-        const submission = (challengeSubmissions || []).find(s => {
-          return '' + s.memberId === '' + r.memberId
-        })
-        if (submission) {
-          registrantList[i].submissionDate = submission.created
-        }
-      })
-      return registrantList
-    } else {
-      return []
-    }
-  }, [metadata, challengeResources, challengeSubmissions])
-
   const allResources = useMemo(() => {
     const { resourceRoles } = metadata
     return challengeResources.map(rs => {
@@ -108,12 +86,12 @@ const ChallengeViewTabs = ({
 
   const submissions = useMemo(() => {
     return _.map(challengeSubmissions, s => {
-      s.registrant = _.find(registrants, r => {
+      s.registrant = _.find(allResources, r => {
         return +r.memberId === s.memberId
       })
       return s
     })
-  }, [challengeSubmissions, registrants])
+  }, [challengeSubmissions, allResources])
 
   const isTask = _.get(challenge, 'task.isTask', false)
 

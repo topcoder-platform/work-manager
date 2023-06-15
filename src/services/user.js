@@ -32,10 +32,11 @@ export async function searchProfiles (fields, queryObject = {}, limit) {
  * @returns {Promise<*>}
  */
 export async function searchProfilesByUserIds (userIds, fields = 'userId,handle,firstName,lastName,email', limit) {
-  const chunkSize = 100
+  const chunkSize = 50
   let userInfos = []
-  for (let i = 0; i < userIds.length; i += chunkSize) {
-    const chunkUserIds = userIds.slice(i, i + chunkSize)
+  const uniqueUserIds = _.uniq(userIds)
+  for (let i = 0; i < uniqueUserIds.length; i += chunkSize) {
+    const chunkUserIds = uniqueUserIds.slice(i, i + chunkSize)
     const userInfosTmp = await searchProfiles(
       fields,
       {
