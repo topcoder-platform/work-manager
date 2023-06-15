@@ -11,7 +11,7 @@ import ChallengeViewComponent from '../ChallengeView'
 import { PrimaryButton } from '../../Buttons'
 import LegacyLinks from '../../LegacyLinks'
 import ForumLink from '../../ForumLink'
-import Registrants from '../Registrants'
+import ResourcesTab from '../Resources'
 import Submissions from '../Submissions'
 import { checkAdmin, checkReadOnlyRoles, getResourceRoleByName } from '../../../util/tc'
 import { CHALLENGE_STATUS, MESSAGE } from '../../../config/constants'
@@ -55,7 +55,7 @@ const ChallengeViewTabs = ({
       if (!loggedInUser) {
         return null
       }
-      const loggedInUserResourceTmps = _.filter(challengeResources, { memberId: `${loggedInUser.userId}` })
+      const loggedInUserResourceTmps = _.filter(_.cloneDeep(challengeResources), { memberId: `${loggedInUser.userId}` })
       let loggedInUserResourceTmp = null
       if (loggedInUserResourceTmps.length > 0) {
         loggedInUserResourceTmp = loggedInUserResourceTmps[0]
@@ -96,6 +96,15 @@ const ChallengeViewTabs = ({
       return []
     }
   }, [metadata, challengeResources, challengeSubmissions])
+
+  const allResources = useMemo(() => {
+    const { resourceRoles } = metadata
+    return challengeResources.map(rs => {
+      const roleInfo = _.find(resourceRoles, { id: rs.roleId })
+      rs.role = roleInfo ? roleInfo.name : ''
+      return rs
+    })
+  }, [metadata, challengeResources])
 
   const submissions = useMemo(() => {
     return _.map(challengeSubmissions, s => {
@@ -223,22 +232,20 @@ const ChallengeViewTabs = ({
         >
           DETAILS
         </a>
-        {registrants.length ? (
-          <a
-            tabIndex='1'
-            role='tab'
-            aria-selected={selectedTab === 1}
-            onClick={e => {
-              setSelectedTab(1)
-            }}
-            onKeyPress={e => {
-              setSelectedTab(1)
-            }}
-            className={getSelectorStyle(selectedTab, 1)}
-          >
-            REGISTRANTS ({registrants.length})
-          </a>
-        ) : null}
+        <a
+          tabIndex='1'
+          role='tab'
+          aria-selected={selectedTab === 1}
+          onClick={e => {
+            setSelectedTab(1)
+          }}
+          onKeyPress={e => {
+            setSelectedTab(1)
+          }}
+          className={getSelectorStyle(selectedTab, 1)}
+        >
+          RESOURCES
+        </a>
         {challengeSubmissions.length ? (
           <a
             tabIndex='2'
@@ -279,7 +286,7 @@ const ChallengeViewTabs = ({
         />
       )}
       {selectedTab === 1 && (
-        <Registrants challenge={challenge} registrants={registrants} />
+        <ResourcesTab challenge={challenge} resources={allResources} />
       )}
       {selectedTab === 2 && (
         <Submissions

@@ -1,0 +1,386 @@
+/* eslint jsx-a11y/no-static-element-interactions:0 */
+/**
+ * Resources tab component.
+ */
+
+import React from 'react'
+import PT from 'prop-types'
+import moment from 'moment'
+import _ from 'lodash'
+import cn from 'classnames'
+import { getTCMemberURL } from '../../../config/constants'
+import ReactSVG from 'react-svg'
+import { getRatingLevel, sortList } from '../../../util/tc'
+import styles from './styles.module.scss'
+
+const assets = require.context('../../../assets/images', false, /svg/)
+const ArrowDown = './arrow-down.svg'
+
+function getSelectorStyle (selectedView, currentView) {
+  return cn(styles['challenge-selector-common'], {
+    [styles['challenge-selected-view']]: selectedView === currentView,
+    [styles['challenge-unselected-view']]: selectedView !== currentView
+  })
+}
+
+function formatDate (date) {
+  if (!date) return '-'
+  return moment(date)
+    .local()
+    .format('MMM DD, YYYY HH:mm')
+}
+
+const tabs = [
+  {
+    name: 'All',
+    roles: null
+  },
+  {
+    name: 'Submitters',
+    roles: ['submitter']
+  },
+  {
+    name: 'Reviewers',
+    roles: ['reviewer']
+  },
+  {
+    name: 'Managers, Copilots & Observers',
+    roles: ['manager', 'copilot', 'observer']
+  }
+]
+
+export default class Resources extends React.Component {
+  constructor (props, context) {
+    super(props, context)
+
+    this.state = {
+      sortedResources: [],
+      resourcesSort: {
+        field: '',
+        sort: ''
+      },
+      selectedTab: 0
+    }
+
+    this.sortResources = this.sortResources.bind(this)
+    this.getResourcesSortParam = this.getResourcesSortParam.bind(this)
+    this.updateSortedResources = this.updateSortedResources.bind(this)
+    this.onSortChange = this.onSortChange.bind(this)
+    this.setSelectedTab = this.setSelectedTab.bind(this)
+  }
+
+  componentDidMount () {
+    this.updateSortedResources()
+  }
+
+  componentDidUpdate (prevProps) {
+    const { resources, resourcesSort } = this.props
+    if (
+      !_.isEqual(prevProps.resources, resources) ||
+      !_.isEqual(prevProps.resourcesSort, resourcesSort)
+    ) {
+      this.updateSortedResources()
+    }
+  }
+  onSortChange (sort) {
+    this.setState({
+      resourcesSort: sort
+    })
+    this.updateSortedResources()
+  }
+
+  /**
+   * Get registrans sort parameter
+   */
+  getResourcesSortParam () {
+    const { resourcesSort } = this.state
+    let { field, sort } = resourcesSort
+    if (!field) {
+      field = 'Registration Date' // default field for registrans sorting
+    }
+    if (!sort) {
+      sort = 'asc' // default order for registrans sorting
+    }
+
+    return {
+      field,
+      sort
+    }
+  }
+
+  /**
+   * Update sorted registrant array
+   */
+  updateSortedResources () {
+    const { resources } = this.props
+    const { selectedTab } = this.state
+    const roles = tabs[selectedTab].roles
+    const sortedResources = _.cloneDeep(_.filter(resources, (rs) => {
+      if (!roles) {
+        return true
+      }
+      const matchRoles = _.filter(roles, role => `${rs.role}`.toLowerCase().indexOf(role) >= 0)
+      return matchRoles.length > 0
+    }))
+    this.sortResources(sortedResources)
+    this.setState({ sortedResources })
+  }
+
+  /**
+   * Sort array of registrant
+   * @param {Array} resources array of registrant
+   */
+  sortResources (resources) {
+    const { field, sort } = this.getResourcesSortParam()
+    return sortList(resources, field, sort, (a, b) => {
+      let valueA = 0
+      let valueB = 0
+      let valueIsString = false
+      switch (field) {
+        case 'Role': {
+          valueA = a.role
+          valueB = b.role
+          break
+        }
+        case 'Handle': {
+          valueA = `${a.memberHandle}`.toLowerCase()
+          valueB = `${b.memberHandle}`.toLowerCase()
+          valueIsString = true
+          break
+        }
+        case 'Email': {
+          valueA = `${a.email}`.toLowerCase()
+          valueB = `${b.email}`.toLowerCase()
+          valueIsString = true
+          break
+        }
+        case 'Registration Date': {
+          valueA = new Date(a.created)
+          valueB = new Date(b.created)
+          break
+        }
+        default:
+      }
+
+      return {
+        valueA,
+        valueB,
+        valueIsString
+      }
+    })
+  }
+
+  setSelectedTab (selectedTab) {
+    const { resourcesSort } = this.state
+    this.setState({ selectedTab })
+
+    setTimeout(() => {
+      this.onSortChange(resourcesSort)
+    })
+  }
+
+  render () {
+    const { challenge } = this.props
+    const { track } = challenge
+
+    const { sortedResources, selectedTab } = this.state
+
+    const { field, sort } = this.getResourcesSortParam()
+    const revertSort = sort === 'desc' ? 'asc' : 'desc'
+    const isDesign = track.toLowerCase() === 'design'
+
+    return (
+      <div>
+        <div className={styles['challenge-view-selector']}>
+          {tabs.map((t, index) => (<a
+            tabIndex={index}
+            role='tab'
+            aria-selected={selectedTab === index}
+            onClick={e => {
+              this.setSelectedTab(index)
+            }}
+            onKeyPress={e => {
+              this.setSelectedTab(index)
+            }}
+            className={getSelectorStyle(selectedTab, index)}
+          >
+            {t.name}
+          </a>))}
+        </div>
+        <div
+          className={cn(styles.containerTable)}
+        >
+          <table
+            aria-label='Resources'
+          >
+            <thead className={styles.headTable} role='row'>
+              <tr>
+                {!isDesign && (
+                  <th>
+                    <button
+                      type='button'
+                      onClick={() => {
+                        this.onSortChange({
+                          field: 'Role',
+                          sort: field === 'Role' ? revertSort : 'desc'
+                        })
+                      }}
+                      className={cn(styles['col-2Table'], styles['table-header'])}
+                    >
+                      <span role='columnheader'>Role</span>
+                      <div
+                        className={cn(styles['col-arrow'], {
+                          [styles['col-arrow-sort-asc']]:
+                            field === 'Role' && sort === 'asc',
+                          [styles['col-arrow-is-sorting']]: field === 'Role'
+                        })}
+                        type='button'
+                      >
+                        <ReactSVG
+                          path={assets(`${ArrowDown}`)}
+                        />
+                      </div>
+                    </button>
+                  </th>
+                )}
+                <th>
+                  <button
+                    onClick={() => {
+                      this.onSortChange({
+                        field: 'Handle',
+                        sort: field === 'Handle' ? revertSort : 'desc'
+                      })
+                    }}
+                    type='button'
+                    className={cn(styles['col-3Table'], styles['table-header'])}
+                  >
+                    <span role='columnheader'>Handle</span>
+                    <div
+                      className={cn(styles['col-arrow'], {
+                        [styles['col-arrow-sort-asc']]:
+                          field === 'Handle' && sort === 'asc',
+                        [styles['col-arrow-is-sorting']]: field === 'Handle'
+                      })}
+                    >
+                      <ReactSVG path={assets(`${ArrowDown}`)} />
+                    </div>
+                  </button>
+                </th>
+                <th>
+                  <button
+                    onClick={() => {
+                      this.onSortChange({
+                        field: 'Email',
+                        sort: field === 'Email' ? revertSort : 'desc'
+                      })
+                    }}
+                    type='button'
+                    className={cn(styles['col-7Table'], styles['table-header'])}
+                  >
+                    <span role='columnheader'>Email</span>
+                    <div
+                      className={cn(styles['col-arrow'], {
+                        [styles['col-arrow-sort-asc']]:
+                          field === 'Email' && sort === 'asc',
+                        [styles['col-arrow-is-sorting']]: field === 'Email'
+                      })}
+                    >
+                      <ReactSVG path={assets(`${ArrowDown}`)} />
+                    </div>
+                  </button>
+                </th>
+                <th>
+                  <button
+                    className={cn(styles['col-4Table'], styles['table-header'])}
+                    onClick={() => {
+                      this.onSortChange({
+                        field: 'Registration Date',
+                        sort: field === 'Registration Date' ? revertSort : 'desc'
+                      })
+                    }}
+                    type='button'
+                  >
+                    <span role='columnheader'>Registration Date</span>
+                    <div
+                      className={cn(styles['col-arrow'], {
+                        [styles['col-arrow-sort-asc']]:
+                          field === 'Registration Date' && sort === 'asc',
+                        [styles['col-arrow-is-sorting']]: field === 'Registration Date'
+                      })}
+                    >
+                      <ReactSVG path={assets(`${ArrowDown}`)} />
+                    </div>
+                  </button>
+                </th>
+              </tr>
+            </thead>
+            <tbody role='rowgroup'>
+              {sortedResources.map(r => {
+                return (
+                  <tr className={styles.rowTable} key={r.id} role='row'>
+                    <td className={styles['col-2Table']}>
+                      <span role='cell'>{r.role}</span>
+                    </td>
+                    <td className={styles['col-3Table']}>
+                      <span role='cell'>
+                        <a
+                          href={getTCMemberURL(r.memberHandle)}
+
+                          className={cn({
+                            [styles[`level-${getRatingLevel(_.get(r, 'rating', 0))}`]]: !isDesign
+                          })}
+                          target={`${
+                            _.includes(window.origin, 'www') ? '_self' : '_blank'
+                          }`}
+                        >
+                          {r.memberHandle}
+                        </a>
+                      </span>
+                    </td>
+                    <td className={styles['col-7Table']}>
+                      <span role='cell'>{r.email}</span>
+                    </td>
+                    <td className={styles['col-4']}>
+                      <span role='cell'>{formatDate(r.created)}</span>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    )
+  }
+}
+
+Resources.defaultProps = {
+  results: [],
+  checkpointResults: {},
+  resourcesSort: {}
+}
+
+Resources.propTypes = {
+  challenge: PT.shape({
+    phases: PT.arrayOf(
+      PT.shape({
+        actualEndDate: PT.string,
+        name: PT.string.isRequired,
+        scheduledEndDate: PT.string
+      })
+    ).isRequired,
+    checkpoints: PT.arrayOf(PT.shape()),
+    subTrack: PT.any,
+    prizeSets: PT.arrayOf(PT.shape()).isRequired,
+    resources: PT.arrayOf(PT.shape()).isRequired,
+    round1Introduction: PT.string,
+    round2Introduction: PT.string,
+    type: PT.string,
+    track: PT.string
+  }).isRequired,
+  resources: PT.arrayOf(PT.shape()),
+  resourcesSort: PT.shape({
+    field: PT.string,
+    sort: PT.string
+  })
+}
