@@ -240,8 +240,6 @@ export default function (state = initialState, action) {
       }
     }
     case CREATE_CHALLENGE_RESOURCE_FAILURE: {
-      const resource = action.payload
-      console.log(resource)
       return { ...state, isLoading: false, failedToCreate: true }
     }
     case DELETE_CHALLENGE_RESOURCE_SUCCESS: {

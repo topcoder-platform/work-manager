@@ -12,9 +12,11 @@ import { getTCMemberURL } from '../../../config/constants'
 import ReactSVG from 'react-svg'
 import { getRatingLevel, sortList } from '../../../util/tc'
 import styles from './styles.module.scss'
+import ResourcesDeleteModal from '../ResourcesDeleteModal'
 
 const assets = require.context('../../../assets/images', false, /svg/)
 const ArrowDown = './arrow-down.svg'
+const Trash = './ico-trash.svg'
 
 function getSelectorStyle (selectedView, currentView) {
   return cn(styles['challenge-selector-common'], {
@@ -59,7 +61,8 @@ export default class Resources extends React.Component {
         field: '',
         sort: ''
       },
-      selectedTab: 0
+      selectedTab: 0,
+      showDeleteResourceModal: null
     }
 
     this.sortResources = this.sortResources.bind(this)
@@ -180,10 +183,10 @@ export default class Resources extends React.Component {
   }
 
   render () {
-    const { challenge } = this.props
+    const { challenge, canEditResource, deleteResource } = this.props
     const { track } = challenge
 
-    const { sortedResources, selectedTab } = this.state
+    const { sortedResources, selectedTab, showDeleteResourceModal } = this.state
 
     const { field, sort } = this.getResourcesSortParam()
     const revertSort = sort === 'desc' ? 'asc' : 'desc'
@@ -312,6 +315,12 @@ export default class Resources extends React.Component {
                     </div>
                   </button>
                 </th>
+
+                {canEditResource ? (<th
+                  className={cn(styles['col-8Table'])}
+                >
+                  <span>Actions</span>
+                </th>) : null}
               </tr>
             </thead>
             <tbody role='rowgroup'>
@@ -343,12 +352,29 @@ export default class Resources extends React.Component {
                     <td className={styles['col-4']}>
                       <span role='cell'>{formatDate(r.created)}</span>
                     </td>
+
+                    {canEditResource ? (<td className={cn(styles['col-8Table'], styles['col-bodyTable'])}>
+                      <button
+                        onClick={() => {
+                          this.setState({
+                            showDeleteResourceModal: r
+                          })
+                        }}
+                      >
+                        <ReactSVG path={assets(`${Trash}`)} />
+                      </button>
+                    </td>) : null}
                   </tr>
                 )
               })}
             </tbody>
           </table>
         </div>
+        {showDeleteResourceModal ? (<ResourcesDeleteModal
+          onClose={() => this.setState({ showDeleteResourceModal: null })}
+          resource={showDeleteResourceModal}
+          deleteResource={deleteResource}
+        />) : null}
       </div>
     )
   }
@@ -382,5 +408,7 @@ Resources.propTypes = {
   resourcesSort: PT.shape({
     field: PT.string,
     sort: PT.string
-  })
+  }),
+  canEditResource: PT.bool.isRequired,
+  deleteResource: PT.func.isRequired
 }

@@ -8,7 +8,8 @@ import {
   ADMIN_ROLES,
   SUBMITTER_ROLE_UUID,
   READ_ONLY_ROLES,
-  ALLOWED_DOWNLOAD_SUBMISSIONS_ROLES
+  ALLOWED_DOWNLOAD_SUBMISSIONS_ROLES,
+  ALLOWED_EDIT_RESOURCE_ROLES
 } from '../config/constants'
 import _ from 'lodash'
 import { decodeToken } from 'tc-auth-lib'
@@ -178,6 +179,14 @@ export const checkOnlyReadOnlyRoles = token => {
  */
 export const checkDownloadSubmissionRoles = resourceRoles => {
   return resourceRoles.some(val => ALLOWED_DOWNLOAD_SUBMISSIONS_ROLES.indexOf(val.toLowerCase()) > -1)
+}
+
+/**
+ * Checks if this role can edit resources
+ * @param  resourceRoles
+ */
+export const checkEditResourceRoles = resourceRoles => {
+  return resourceRoles.some(val => _.filter(ALLOWED_EDIT_RESOURCE_ROLES, (r) => val.toLowerCase().indexOf(r) > -1).length > 0)
 }
 
 /**

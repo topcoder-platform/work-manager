@@ -1,0 +1,72 @@
+@import '../../../styles/includes';
+
+
+
+.modalContainer {
+  padding: 0;
+  position: fixed;
+  overflow: auto;
+  z-index: 10000;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: auto;
+  max-width: none;
+  transform: none;
+  background: transparent;
+  color: $text-color;
+  opacity: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.contentContainer {
+  box-sizing: border-box;
+  background: $white;
+  opacity: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  border-radius: 6px;
+  margin: 0 auto;
+  width: 700px !important;
+  padding: 30px;
+
+  &.confirm {
+    width: 999px;
+
+    .buttonGroup {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+
+      .buttonSizeA {
+        width: 193px;
+        height: 40px;
+        margin-right: 33px;
+
+        span {
+          font-size: 16px;
+          line-height: 1;
+          font-weight: 500;
+        }
+      }
+
+      .buttonSizeB {
+        width: 160px;
+        height: 40px;
+
+        span {
+          font-size: 18px;
+          font-weight: 500;
+          line-height: 22px;
+        }
+      }
+    }
+  }
+}

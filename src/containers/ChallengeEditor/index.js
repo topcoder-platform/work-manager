@@ -28,7 +28,9 @@ import {
   partiallyUpdateChallengeDetails,
   deleteChallenge,
   createChallenge,
-  replaceResourceInRole
+  replaceResourceInRole,
+  createResource,
+  deleteResource
 } from '../../actions/challenges'
 
 import { loadSubmissions } from '../../actions/challengeSubmissions'
@@ -420,7 +422,9 @@ class ChallengeEditor extends Component {
       loggedInUser,
       projectPhases,
       isProjectPhasesLoading,
-      showRejectChallengeModal
+      showRejectChallengeModal,
+      createResource,
+      deleteResource
       // members
     } = this.props
     const {
@@ -616,6 +620,8 @@ class ChallengeEditor extends Component {
               showRejectChallengeModal={this.showRejectChallengeModal}
               loggedInUser={loggedInUser}
               onApproveChallenge={this.onApproveChallenge}
+              createResource={createResource}
+              deleteResource={deleteResource}
             />
           )}
         />
@@ -667,6 +673,8 @@ ChallengeEditor.propTypes = {
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   createChallenge: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
+  createResource: PropTypes.func.isRequired,
+  deleteResource: PropTypes.func.isRequired,
   replaceResourceInRole: PropTypes.func,
   loadProject: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
@@ -731,7 +739,9 @@ const mapDispatchToProps = {
   deleteChallenge,
   createChallenge,
   replaceResourceInRole,
-  loadProject
+  loadProject,
+  createResource,
+  deleteResource
 }
 
 export default withRouter(

@@ -13,12 +13,13 @@ import LegacyLinks from '../../LegacyLinks'
 import ForumLink from '../../ForumLink'
 import ResourcesTab from '../Resources'
 import Submissions from '../Submissions'
-import { checkAdmin, checkReadOnlyRoles } from '../../../util/tc'
+import { checkAdmin, checkEditResourceRoles, checkReadOnlyRoles } from '../../../util/tc'
 import { CHALLENGE_STATUS, MESSAGE } from '../../../config/constants'
 import Tooltip from '../../Tooltip'
 import CancelDropDown from '../Cancel-Dropdown'
 import 'react-tabs/style/react-tabs.css'
 import styles from './ChallengeViewTabs.module.scss'
+import ResourcesAdd from '../ResourcesAdd'
 
 function getSelectorStyle (selectedView, currentView) {
   return cn(styles['challenge-selector-common'], {
@@ -47,9 +48,13 @@ const ChallengeViewTabs = ({
   assignYourselfCopilot,
   showRejectChallengeModal,
   loggedInUser,
-  onApproveChallenge
+  onApproveChallenge,
+  createResource,
+  deleteResource
 }) => {
   const [selectedTab, setSelectedTab] = useState(0)
+  const [showAddResourceModal, setShowAddResourceModal] = useState(false)
+  const { resourceRoles } = metadata
   const loggedInUserResource = useMemo(
     () => {
       if (!loggedInUser) {
@@ -60,7 +65,6 @@ const ChallengeViewTabs = ({
       if (loggedInUserResourceTmps.length > 0) {
         loggedInUserResourceTmp = loggedInUserResourceTmps[0]
         loggedInUserResourceTmp.resources = loggedInUserResourceTmps
-        const { resourceRoles } = metadata
         if (resourceRoles) {
           let roles = []
           _.forEach(loggedInUserResourceTmps, resource => {
@@ -74,12 +78,21 @@ const ChallengeViewTabs = ({
     },
     [loggedInUser, challengeResources, metadata]
   )
+  const canEditResource = useMemo(
+    () =>
+      ((loggedInUserResource &&
+        checkEditResourceRoles(loggedInUserResource.roles)) ||
+        checkAdmin(token)) &&
+      selectedTab === 1,
+    [loggedInUserResource, token, selectedTab]
+  )
 
   const allResources = useMemo(() => {
-    const { resourceRoles } = metadata
     return challengeResources.map(rs => {
-      const roleInfo = _.find(resourceRoles, { id: rs.roleId })
-      rs.role = roleInfo ? roleInfo.name : ''
+      if (!rs.role) {
+        const roleInfo = _.find(resourceRoles, { id: rs.roleId })
+        rs.role = roleInfo ? roleInfo.name : ''
+      }
       return rs
     })
   }, [metadata, challengeResources])
@@ -180,8 +193,13 @@ const ChallengeViewTabs = ({
               )}
             </div>
           )}
-          {enableEdit && (
+          {enableEdit && !canEditResource && (
             <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} />
+          )}
+          {canEditResource && (
+            <PrimaryButton text={'Add'} type={'info'} onClick={() => {
+              setShowAddResourceModal(true)
+            }} />
           )}
           {isSelfService && isDraft && (isAdmin || isSelfServiceCopilot || enableEdit) && (
             <div className={styles.button}>
@@ -192,7 +210,7 @@ const ChallengeViewTabs = ({
               />
             </div>
           )}
-          <PrimaryButton text={'Back'} type={'info'} submit link={`..`} />
+          {!canEditResource ? (<PrimaryButton text={'Back'} type={'info'} submit link={`..`} />) : null}
         </div>
       </div>
       <div className={styles['challenge-view-selector']}>
@@ -264,7 +282,12 @@ const ChallengeViewTabs = ({
         />
       )}
       {selectedTab === 1 && (
-        <ResourcesTab challenge={challenge} resources={allResources} />
+        <ResourcesTab
+          challenge={challenge}
+          resources={allResources}
+          canEditResource={canEditResource}
+          deleteResource={deleteResource}
+        />
       )}
       {selectedTab === 2 && (
         <Submissions
@@ -274,6 +297,13 @@ const ChallengeViewTabs = ({
           loggedInUserResource={loggedInUserResource}
         />
       )}
+      {showAddResourceModal ? (<ResourcesAdd
+        onClose={() => setShowAddResourceModal(false)}
+        challenge={challenge}
+        loggedInUser={loggedInUser}
+        resourceRoles={resourceRoles}
+        createResource={createResource}
+      />) : null}
     </div>
   )
 }
@@ -304,6 +334,8 @@ ChallengeViewTabs.propTypes = {
   onCloseTask: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
   assignYourselfCopilot: PropTypes.func.isRequired,
+  createResource: PropTypes.func.isRequired,
+  deleteResource: PropTypes.func.isRequired,
   showRejectChallengeModal: PropTypes.func.isRequired,
   loggedInUser: PropTypes.object.isRequired,
   onApproveChallenge: PropTypes.func

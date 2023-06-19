@@ -66,6 +66,13 @@ $tc-white: #FFFFFF;
       white-space: nowrap;
       overflow: hidden;
     }
+
+    button {
+      padding: 0;
+      border: none;
+      background-color: transparent;
+      outline: none;
+    }
   }
 }
 
