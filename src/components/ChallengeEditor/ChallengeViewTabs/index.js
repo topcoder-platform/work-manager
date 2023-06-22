@@ -287,6 +287,7 @@ const ChallengeViewTabs = ({
           resources={allResources}
           canEditResource={canEditResource}
           deleteResource={deleteResource}
+          submissions={submissions}
         />
       )}
       {selectedTab === 2 && (

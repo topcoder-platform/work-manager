@@ -62,27 +62,36 @@ export default class Resources extends React.Component {
         sort: ''
       },
       selectedTab: 0,
-      showDeleteResourceModal: null
+      showDeleteResourceModal: null,
+      exceptionHandlesDeleteList: {}
     }
 
     this.sortResources = this.sortResources.bind(this)
     this.getResourcesSortParam = this.getResourcesSortParam.bind(this)
     this.updateSortedResources = this.updateSortedResources.bind(this)
+    this.updateExceptionHandlesDelete = this.updateExceptionHandlesDelete.bind(this)
     this.onSortChange = this.onSortChange.bind(this)
     this.setSelectedTab = this.setSelectedTab.bind(this)
   }
 
   componentDidMount () {
     this.updateSortedResources()
+    this.updateExceptionHandlesDelete()
   }
 
   componentDidUpdate (prevProps) {
-    const { resources, resourcesSort } = this.props
+    const { resources, resourcesSort, submissions, challenge } = this.props
     if (
       !_.isEqual(prevProps.resources, resources) ||
       !_.isEqual(prevProps.resourcesSort, resourcesSort)
     ) {
       this.updateSortedResources()
+    }
+    if (
+      !_.isEqual(prevProps.submissions, submissions) ||
+      !_.isEqual(prevProps.challenge, challenge)
+    ) {
+      this.updateExceptionHandlesDelete()
     }
   }
   onSortChange (sort) {
@@ -127,6 +136,20 @@ export default class Resources extends React.Component {
     }))
     this.sortResources(sortedResources)
     this.setState({ sortedResources })
+  }
+
+  /**
+   * Update exception handles delete
+   * Don't allow deletion of submitters who submitted, or creator of challenge
+   */
+  updateExceptionHandlesDelete () {
+    const { submissions, challenge } = this.props
+    const exceptionHandlesDeleteList = {}
+    exceptionHandlesDeleteList[challenge.createdBy] = true
+    _.forEach(submissions, (s) => {
+      exceptionHandlesDeleteList[s.createdBy] = true
+    })
+    this.setState({ exceptionHandlesDeleteList })
   }
 
   /**
@@ -186,7 +209,7 @@ export default class Resources extends React.Component {
     const { challenge, canEditResource, deleteResource } = this.props
     const { track } = challenge
 
-    const { sortedResources, selectedTab, showDeleteResourceModal } = this.state
+    const { sortedResources, selectedTab, showDeleteResourceModal, exceptionHandlesDeleteList } = this.state
 
     const { field, sort } = this.getResourcesSortParam()
     const revertSort = sort === 'desc' ? 'asc' : 'desc'
@@ -353,17 +376,18 @@ export default class Resources extends React.Component {
                       <span role='cell'>{formatDate(r.created)}</span>
                     </td>
 
-                    {canEditResource ? (<td className={cn(styles['col-8Table'], styles['col-bodyTable'])}>
-                      <button
-                        onClick={() => {
-                          this.setState({
-                            showDeleteResourceModal: r
-                          })
-                        }}
-                      >
-                        <ReactSVG path={assets(`${Trash}`)} />
-                      </button>
-                    </td>) : null}
+                    {(canEditResource && !exceptionHandlesDeleteList[r.memberHandle]) ? (
+                      <td className={cn(styles['col-8Table'], styles['col-bodyTable'])}>
+                        <button
+                          onClick={() => {
+                            this.setState({
+                              showDeleteResourceModal: r
+                            })
+                          }}
+                        >
+                          <ReactSVG path={assets(`${Trash}`)} />
+                        </button>
+                      </td>) : null}
                   </tr>
                 )
               })}
@@ -383,7 +407,8 @@ export default class Resources extends React.Component {
 Resources.defaultProps = {
   results: [],
   checkpointResults: {},
-  resourcesSort: {}
+  resourcesSort: {},
+  submissions: []
 }
 
 Resources.propTypes = {
@@ -404,6 +429,7 @@ Resources.propTypes = {
     type: PT.string,
     track: PT.string
   }).isRequired,
+  submissions: PT.arrayOf(PT.shape()),
   resources: PT.arrayOf(PT.shape()),
   resourcesSort: PT.shape({
     field: PT.string,
