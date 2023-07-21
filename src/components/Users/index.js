@@ -92,7 +92,7 @@ class Users extends Component {
   async onAddUserConfirmClick () {
     console.log('in onAddUserConfirmClick')
     console.log('in onAddUserConfirmClick this.state.userToAdd', this.state.userToAdd)
-    const { reloadProjectMembers } = this.props
+    const { loadProject } = this.props
     if (this.state.isAdding) { return }
 
     this.setState({
@@ -116,7 +116,7 @@ class Users extends Component {
       await addUserToProject(this.state.projectOption.value, this.state.userToAdd.userId, this.state.userPermissionToAdd)
       // wait for a second so that project's members are updated
       await wait(1000)
-      if (this.state.projectOption.value) { reloadProjectMembers(this.state.projectOption.value) }
+      if (this.state.projectOption.value) { loadProject(this.state.projectOption.value) }
       this.resetAddUserState()
     } catch (e) {
       const error = _.get(
@@ -167,13 +167,13 @@ class Users extends Component {
   async onRemoveConfirmClick () {
     if (this.state.isRemoving) { return }
 
-    const { reloadProjectMembers } = this.props
+    const { loadProject } = this.props
     const userToRemove = this.state.userToRemove
     try {
       this.setState({ isRemoving: true })
       await removeUserFromProject(userToRemove.projectId, userToRemove.id)
       await wait(1000)
-      if (this.state.projectOption.value) { reloadProjectMembers(this.state.projectOption.value) }
+      if (this.state.projectOption.value) { loadProject(this.state.projectOption.value) }
 
       this.resetRemoveUserState()
     } catch (e) {
@@ -196,7 +196,7 @@ class Users extends Component {
   }
 
   render () {
-    const { projects, projectMembers, reloadProjectMembers, isEditable } = this.props
+    const { projects, projectMembers, loadProject, isEditable } = this.props
     const projectOptions = projects.map(p => {
       return {
         label: p.name,
@@ -402,7 +402,11 @@ class Users extends Component {
                   _.map(projectMembers, (member) => {
                     return (
                       <li className={styles.userItem} key={`user-card-${member.id}`}>
-                        <UserCard user={member} onRemoveClick={this.onRemoveClick} reloadProjectMembers={reloadProjectMembers} isEditable={isEditable} />
+                        <UserCard
+                          user={member}
+                          onRemoveClick={this.onRemoveClick}
+                          reloadProjectMembers={() => loadProject(this.state.projectOption.value)}
+                          isEditable={isEditable} />
                       </li>
                     )
                   })
@@ -419,7 +423,6 @@ class Users extends Component {
 
 Users.propTypes = {
   loadProject: PropTypes.func.isRequired,
-  reloadProjectMembers: PropTypes.func.isRequired,
   auth: PropTypes.object,
   isEditable: PropTypes.bool,
   projects: PropTypes.arrayOf(PropTypes.object),

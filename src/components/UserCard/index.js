@@ -47,7 +47,7 @@ class UserCard extends Component {
     try {
       await updateProjectMemberRole(user.projectId, user.id, newRole)
       await wait(1000)
-      reloadProjectMembers(user.projectId)
+      reloadProjectMembers()
       this.setState({ showSuccessModal: true })
     } catch (e) {
       const error = _.get(
