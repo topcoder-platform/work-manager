@@ -677,27 +677,33 @@ export function createResource (challengeId, roleId, memberHandle, email, userId
       type: CREATE_CHALLENGE_RESOURCE_PENDING
     })
 
+    let newResource
     try {
-      const newResource = await createResourceAPI(resource)
-      let userEmail = email
-      if (!userEmail) {
-        const memberInfos = await searchProfilesByUserIds([userId])
-        if (memberInfos.length > 0) {
-          userEmail = memberInfos[0].email
-        }
-      }
-      dispatch({
-        type: CREATE_CHALLENGE_RESOURCE_SUCCESS,
-        payload: {
-          ...newResource,
-          email: userEmail
-        }
-      })
+      newResource = await createResourceAPI(resource)
     } catch (error) {
       dispatch({
         type: CREATE_CHALLENGE_RESOURCE_FAILURE
       })
+      return
     }
+
+    let userEmail = email
+    if (!userEmail && userId) {
+      try {
+        const memberInfos = await searchProfilesByUserIds([userId])
+        if (memberInfos.length > 0) {
+          userEmail = memberInfos[0].email
+        }
+      } catch (error) {
+      }
+    }
+    dispatch({
+      type: CREATE_CHALLENGE_RESOURCE_SUCCESS,
+      payload: {
+        ...newResource,
+        email: userEmail
+      }
+    })
   }
 }
 
