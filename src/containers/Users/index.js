@@ -15,6 +15,9 @@ class Users extends Component {
       projectMembers: null
     }
     this.loadProject = this.loadProject.bind(this)
+    this.updateProjectNember = this.updateProjectNember.bind(this)
+    this.removeProjectNember = this.removeProjectNember.bind(this)
+    this.addNewProjectMember = this.addNewProjectMember.bind(this)
   }
 
   componentDidMount () {
@@ -56,6 +59,42 @@ class Users extends Component {
     })
   }
 
+  updateProjectNember (newMemberInfo) {
+    const { projectMembers } = this.state
+    const newProjectMembers = projectMembers.map(pm => pm.id === newMemberInfo.id ? ({
+      ...pm,
+      ...newMemberInfo
+    }) : pm)
+    const { loggedInUser } = this.props
+    this.setState({
+      projectMembers: newProjectMembers
+    })
+    this.updateLoginUserRoleInProject(newProjectMembers, loggedInUser)
+  }
+
+  removeProjectNember (projectMember) {
+    const { projectMembers } = this.state
+    const newProjectMembers = _.filter(projectMembers, pm => pm.id !== projectMember.id)
+    const { loggedInUser } = this.props
+    this.setState({
+      projectMembers: newProjectMembers
+    })
+    this.updateLoginUserRoleInProject(newProjectMembers, loggedInUser)
+  }
+
+  addNewProjectMember (projectMember) {
+    const { projectMembers } = this.state
+    const newProjectMembers = [
+      ...projectMembers,
+      projectMember
+    ]
+    const { loggedInUser } = this.props
+    this.setState({
+      projectMembers: newProjectMembers
+    })
+    this.updateLoginUserRoleInProject(newProjectMembers, loggedInUser)
+  }
+
   render () {
     const {
       projects,
@@ -68,6 +107,9 @@ class Users extends Component {
       <UsersComponent
         projects={projects}
         loadProject={this.loadProject}
+        updateProjectNember={this.updateProjectNember}
+        removeProjectNember={this.removeProjectNember}
+        addNewProjectMember={this.addNewProjectMember}
         projectMembers={projectMembers}
         auth={auth}
         isEditable={this.isEditable()}
