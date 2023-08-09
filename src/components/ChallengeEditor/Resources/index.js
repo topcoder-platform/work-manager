@@ -11,6 +11,7 @@ import cn from 'classnames'
 import { getTCMemberURL } from '../../../config/constants'
 import ReactSVG from 'react-svg'
 import { getRatingLevel, sortList } from '../../../util/tc'
+import { getCurrentPhase } from '../../../util/phase'
 import styles from './styles.module.scss'
 import ResourcesDeleteModal from '../ResourcesDeleteModal'
 
@@ -63,7 +64,7 @@ export default class Resources extends React.Component {
       },
       selectedTab: 0,
       showDeleteResourceModal: null,
-      exceptionHandlesDeleteList: {}
+      exceptionResourceIdDeleteList: {}
     }
 
     this.sortResources = this.sortResources.bind(this)
@@ -89,11 +90,13 @@ export default class Resources extends React.Component {
     }
     if (
       !_.isEqual(prevProps.submissions, submissions) ||
-      !_.isEqual(prevProps.challenge, challenge)
+      !_.isEqual(prevProps.challenge, challenge) ||
+      !_.isEqual(prevProps.resources, resources)
     ) {
       this.updateExceptionHandlesDelete()
     }
   }
+
   onSortChange (sort) {
     this.setState({
       resourcesSort: sort
@@ -143,13 +146,32 @@ export default class Resources extends React.Component {
    * Don't allow deletion of submitters who submitted, or creator of challenge
    */
   updateExceptionHandlesDelete () {
-    const { submissions, challenge } = this.props
+    const { submissions, challenge, resources } = this.props
+    const currentPhase = getCurrentPhase(challenge).toLowerCase()
+    const isCurrentPhasesNotSubmissionOrRegistration = _.every(['submission', 'registration'], (phase) => currentPhase.indexOf(phase) < 0)
     const exceptionHandlesDeleteList = {}
+    // do not allow to delete owner of challenge
     exceptionHandlesDeleteList[challenge.createdBy] = true
     _.forEach(submissions, (s) => {
+      // do not allow to delete member that submit submission
       exceptionHandlesDeleteList[s.createdBy] = true
     })
-    this.setState({ exceptionHandlesDeleteList })
+
+    const exceptionResourceIdDeleteList = {}
+    _.forEach(resources, (resourceItem) => {
+      if (
+        (
+          // If the current phase is not submission or registration
+          // then we will disable removing reviewers and copilots.
+          _.some(['reviewer', 'copilot'], (role) => `${resourceItem.role}`.toLowerCase().indexOf(role) >= 0) &&
+          isCurrentPhasesNotSubmissionOrRegistration
+        ) ||
+        exceptionHandlesDeleteList[resourceItem.memberHandle]
+      ) {
+        exceptionResourceIdDeleteList[resourceItem.id] = true
+      }
+    })
+    this.setState({ exceptionResourceIdDeleteList })
   }
 
   /**
@@ -209,7 +231,7 @@ export default class Resources extends React.Component {
     const { challenge, canEditResource, deleteResource } = this.props
     const { track } = challenge
 
-    const { sortedResources, selectedTab, showDeleteResourceModal, exceptionHandlesDeleteList } = this.state
+    const { sortedResources, selectedTab, showDeleteResourceModal, exceptionResourceIdDeleteList } = this.state
 
     const { field, sort } = this.getResourcesSortParam()
     const revertSort = sort === 'desc' ? 'asc' : 'desc'
@@ -376,7 +398,7 @@ export default class Resources extends React.Component {
                       <span role='cell'>{formatDate(r.created)}</span>
                     </td>
 
-                    {(canEditResource && !exceptionHandlesDeleteList[r.memberHandle]) ? (
+                    {(canEditResource && !exceptionResourceIdDeleteList[r.id]) ? (
                       <td className={cn(styles['col-8Table'], styles['col-bodyTable'])}>
                         <button
                           onClick={() => {
