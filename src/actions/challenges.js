@@ -681,10 +681,14 @@ export function createResource (challengeId, roleId, memberHandle, email, userId
     try {
       newResource = await createResourceAPI(resource)
     } catch (error) {
+      const errorMessage = _.get(error, 'response.data.message', 'Create resource fail.')
       dispatch({
         type: CREATE_CHALLENGE_RESOURCE_FAILURE
       })
-      return
+      return {
+        success: false,
+        errorMessage
+      }
     }
 
     let userEmail = email

@@ -36,6 +36,7 @@ const ResourcesAdd = ({
   const [assignedMemberDetails, setAssignedMemberDetails] = useState(null)
   const [isCreatingResource, setIsCreatingResource] = useState(false)
   const [selectedRole, setSelectedRole] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   const roleOptions = useMemo(
     () =>
@@ -88,6 +89,7 @@ const ResourcesAdd = ({
             </div>
           </div>
         </div>
+        {errorMessage ? (<span className={styles.errorMessage}>{errorMessage}</span>) : null}
         <div className={styles.buttonGroup}>
           <div className={styles.buttonSizeA}>
             <PrimaryButton
@@ -98,7 +100,7 @@ const ResourcesAdd = ({
               }
               onClick={async () => {
                 setIsCreatingResource(true)
-                await createResource(
+                const result = await createResource(
                   challenge.id,
                   selectedRole.value,
                   assignedMemberDetails.handle,
@@ -106,7 +108,11 @@ const ResourcesAdd = ({
                   assignedMemberDetails.userId
                 )
                 setIsCreatingResource(false)
-                onClose()
+                if (result && !result.success) {
+                  setErrorMessage(result.errorMessage)
+                } else {
+                  onClose()
+                }
               }}
             />
           </div>
