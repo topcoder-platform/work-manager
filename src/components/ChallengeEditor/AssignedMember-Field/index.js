@@ -7,7 +7,15 @@ import cn from 'classnames'
 import styles from './AssignedMember-Field.module.scss'
 import SelectUserAutocomplete from '../../SelectUserAutocomplete'
 
-const AssignedMemberField = ({ challenge, onAssignSelf, onChange, assignedMemberDetails, readOnly }) => {
+const AssignedMemberField = ({
+  challenge,
+  onAssignSelf,
+  onChange,
+  assignedMemberDetails,
+  readOnly,
+  showAssignToMe,
+  label
+}) => {
   const value = assignedMemberDetails ? {
     // if we know assigned member details, then show user `handle`, otherwise fallback to `userId`
     label: assignedMemberDetails.handle,
@@ -16,8 +24,14 @@ const AssignedMemberField = ({ challenge, onAssignSelf, onChange, assignedMember
 
   return (
     <div className={styles.row}>
-      <div className={cn(styles.field, styles.col1)}>
-        <label htmlFor='assignedMember'>Assigned Member :</label>
+      <div className={cn(
+        styles.field,
+        styles.col1,
+        {
+          [styles.showAssignToMe]: showAssignToMe
+        }
+      )}>
+        <label htmlFor='assignedMember'>{label} :</label>
       </div>
       <div className={cn(styles.field, styles.col2)}>
         {readOnly ? (
@@ -30,13 +44,13 @@ const AssignedMemberField = ({ challenge, onAssignSelf, onChange, assignedMember
         )}
       </div>
       {
-        !readOnly &&
-          <div className={styles.assignSelfField}>
+        (!readOnly && showAssignToMe)
+          ? (<div className={styles.assignSelfField}>
             <a href='#' onClick={(e) => {
               e.preventDefault()
               onAssignSelf()
             }}>Assign to me</a>
-          </div>
+          </div>) : null
       }
     </div>
   )
@@ -44,7 +58,9 @@ const AssignedMemberField = ({ challenge, onAssignSelf, onChange, assignedMember
 
 AssignedMemberField.defaultProps = {
   assignedMemberDetails: null,
-  readOnly: false
+  readOnly: false,
+  showAssignToMe: true,
+  label: 'Assigned Member'
 }
 
 AssignedMemberField.propTypes = {
@@ -52,7 +68,9 @@ AssignedMemberField.propTypes = {
   onChange: PropTypes.func,
   assignedMemberDetails: PropTypes.shape(),
   readOnly: PropTypes.bool,
-  onAssignSelf: PropTypes.func
+  showAssignToMe: PropTypes.bool,
+  onAssignSelf: PropTypes.func,
+  label: PropTypes.string
 }
 
 export default AssignedMemberField

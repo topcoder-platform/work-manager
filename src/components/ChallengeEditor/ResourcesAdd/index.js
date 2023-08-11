@@ -66,17 +66,8 @@ const ResourcesAdd = ({
                 setAssignedMemberDetails(null)
               }
             }}
-            onAssignSelf={rs => {
-              const assignedMemberDetails = {
-                handle: loggedInUser.handle,
-                userId: loggedInUser.userId,
-                email: loggedInUser.email
-              }
-
-              setAssignedMemberDetails({
-                assignedMemberDetails
-              })
-            }}
+            showAssignToMe={false}
+            label='Member'
           />
 
           <div className={styles.fieldContainer}>
