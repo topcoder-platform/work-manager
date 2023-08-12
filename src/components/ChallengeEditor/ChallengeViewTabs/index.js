@@ -60,7 +60,7 @@ const ChallengeViewTabs = ({
       if (!loggedInUser) {
         return null
       }
-      const loggedInUserResourceTmps = _.filter(_.cloneDeep(challengeResources), { memberId: `${loggedInUser.userId}` })
+      const loggedInUserResourceTmps = _.cloneDeep(_.filter(challengeResources, { memberId: `${loggedInUser.userId}` }))
       let loggedInUserResourceTmp = null
       if (loggedInUserResourceTmps.length > 0) {
         loggedInUserResourceTmp = loggedInUserResourceTmps[0]
@@ -79,11 +79,16 @@ const ChallengeViewTabs = ({
     [loggedInUser, challengeResources, metadata]
   )
   const canEditResource = useMemo(
-    () =>
-      ((loggedInUserResource &&
-        checkEditResourceRoles(loggedInUserResource.roles)) ||
-        checkAdmin(token)) &&
-      selectedTab === 1,
+    () => {
+      return selectedTab === 1 &&
+      (
+        (
+          loggedInUserResource &&
+          checkEditResourceRoles(loggedInUserResource.roles)
+        ) ||
+        checkAdmin(token)
+      )
+    },
     [loggedInUserResource, token, selectedTab]
   )
 
@@ -288,6 +293,7 @@ const ChallengeViewTabs = ({
           canEditResource={canEditResource}
           deleteResource={deleteResource}
           submissions={submissions}
+          loggedInUserResource={loggedInUserResource}
         />
       )}
       {selectedTab === 2 && (

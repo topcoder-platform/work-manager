@@ -8,7 +8,7 @@ import PT from 'prop-types'
 import moment from 'moment'
 import _ from 'lodash'
 import cn from 'classnames'
-import { getTCMemberURL } from '../../../config/constants'
+import { getTCMemberURL, CHALLENGE_STATUS } from '../../../config/constants'
 import ReactSVG from 'react-svg'
 import { getRatingLevel, sortList } from '../../../util/tc'
 import { getCurrentPhase } from '../../../util/phase'
@@ -81,7 +81,13 @@ export default class Resources extends React.Component {
   }
 
   componentDidUpdate (prevProps) {
-    const { resources, resourcesSort, submissions, challenge } = this.props
+    const {
+      resources,
+      resourcesSort,
+      submissions,
+      challenge,
+      loggedInUserResource
+    } = this.props
     if (
       !_.isEqual(prevProps.resources, resources) ||
       !_.isEqual(prevProps.resourcesSort, resourcesSort)
@@ -91,7 +97,8 @@ export default class Resources extends React.Component {
     if (
       !_.isEqual(prevProps.submissions, submissions) ||
       !_.isEqual(prevProps.challenge, challenge) ||
-      !_.isEqual(prevProps.resources, resources)
+      !_.isEqual(prevProps.resources, resources) ||
+      !_.isEqual(prevProps.loggedInUserResource, loggedInUserResource)
     ) {
       this.updateExceptionHandlesDelete()
     }
@@ -143,30 +150,50 @@ export default class Resources extends React.Component {
 
   /**
    * Update exception handles delete
-   * Don't allow deletion of submitters who submitted, or creator of challenge
    */
   updateExceptionHandlesDelete () {
-    const { submissions, challenge, resources } = this.props
+    const {
+      submissions,
+      challenge,
+      resources,
+      loggedInUserResource
+    } = this.props
     const currentPhase = getCurrentPhase(challenge).toLowerCase()
     const isCurrentPhasesNotSubmissionOrRegistration = _.every(['submission', 'registration'], (phase) => currentPhase.indexOf(phase) < 0)
     const exceptionHandlesDeleteList = {}
-    // do not allow to delete owner of challenge
+    // The creator of the challenge can't be deleted
     exceptionHandlesDeleteList[challenge.createdBy] = true
     _.forEach(submissions, (s) => {
-      // do not allow to delete member that submit submission
+      // do not allow to delete submitters who submitted
       exceptionHandlesDeleteList[s.createdBy] = true
     })
 
     const exceptionResourceIdDeleteList = {}
     _.forEach(resources, (resourceItem) => {
+      if (exceptionHandlesDeleteList[resourceItem.memberHandle]) {
+        exceptionResourceIdDeleteList[resourceItem.id] = true
+      }
       if (
-        (
-          // If the current phase is not submission or registration
-          // then we will disable removing reviewers and copilots.
-          _.some(['reviewer', 'copilot'], (role) => `${resourceItem.role}`.toLowerCase().indexOf(role) >= 0) &&
-          isCurrentPhasesNotSubmissionOrRegistration
-        ) ||
-        exceptionHandlesDeleteList[resourceItem.memberHandle]
+        // if the challenge is in New or Draft status
+        // we will allow removing reviewers and copilots
+        _.some([
+          CHALLENGE_STATUS.DRAFT,
+          CHALLENGE_STATUS.NEW
+        ], (status) => challenge.status.toUpperCase() === status)
+      ) {
+        if (
+          // Copilots can't delete themselves from the challenge
+          loggedInUserResource &&
+          _.some(loggedInUserResource.roles, (role) => `${role}`.toLowerCase().indexOf('copilot') >= 0) &&
+          loggedInUserResource.memberHandle === resourceItem.memberHandle
+        ) {
+          exceptionResourceIdDeleteList[resourceItem.id] = true
+        }
+      } else if (
+        // If the current phase is not submission or registration
+        // then we will disable removing reviewers and copilots.
+        _.some(['reviewer', 'copilot'], (role) => `${resourceItem.role}`.toLowerCase().indexOf(role) >= 0) &&
+        isCurrentPhasesNotSubmissionOrRegistration
       ) {
         exceptionResourceIdDeleteList[resourceItem.id] = true
       }
@@ -430,7 +457,8 @@ Resources.defaultProps = {
   results: [],
   checkpointResults: {},
   resourcesSort: {},
-  submissions: []
+  submissions: [],
+  loggedInUserResource: null
 }
 
 Resources.propTypes = {
@@ -458,5 +486,6 @@ Resources.propTypes = {
     sort: PT.string
   }),
   canEditResource: PT.bool.isRequired,
-  deleteResource: PT.func.isRequired
+  deleteResource: PT.func.isRequired,
+  loggedInUserResource: PT.any
 }
