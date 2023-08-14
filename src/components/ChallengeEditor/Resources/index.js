@@ -183,9 +183,11 @@ export default class Resources extends React.Component {
       ) {
         if (
           // Copilots can't delete themselves from the challenge
+          // where the copilot has multiple roles, we should allow the additional roles to be deleted, but not the copilot role
           loggedInUserResource &&
           _.some(loggedInUserResource.roles, (role) => `${role}`.toLowerCase().indexOf('copilot') >= 0) &&
-          loggedInUserResource.memberHandle === resourceItem.memberHandle
+          loggedInUserResource.memberHandle === resourceItem.memberHandle &&
+          `${resourceItem.role}`.toLowerCase().indexOf('copilot') >= 0
         ) {
           exceptionResourceIdDeleteList[resourceItem.id] = true
         }
