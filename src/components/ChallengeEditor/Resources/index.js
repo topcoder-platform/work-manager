@@ -161,8 +161,6 @@ export default class Resources extends React.Component {
     const currentPhase = getCurrentPhase(challenge).toLowerCase()
     const isCurrentPhasesNotSubmissionOrRegistration = _.every(['submission', 'registration'], (phase) => currentPhase.indexOf(phase) < 0)
     const exceptionHandlesDeleteList = {}
-    // The creator of the challenge can't be deleted
-    exceptionHandlesDeleteList[challenge.createdBy] = true
     _.forEach(submissions, (s) => {
       // do not allow to delete submitters who submitted
       exceptionHandlesDeleteList[s.createdBy] = true
@@ -182,15 +180,26 @@ export default class Resources extends React.Component {
         ], (status) => challenge.status.toUpperCase() === status)
       ) {
         if (
-          // Copilots can't delete themselves from the challenge
+          // The creator of the challenge can't be deleted
+          resourceItem.memberHandle === challenge.createdBy
+        ) {
           // where the copilot has multiple roles, we should allow the additional roles to be deleted, but not the copilot role
+          if (`${resourceItem.role}`.toLowerCase().indexOf('copilot') >= 0) {
+            exceptionResourceIdDeleteList[resourceItem.id] = true
+          }
+        } else if (
+          // Copilots can't delete themselves from the challenge
           loggedInUserResource &&
           _.some(loggedInUserResource.roles, (role) => `${role}`.toLowerCase().indexOf('copilot') >= 0) &&
-          loggedInUserResource.memberHandle === resourceItem.memberHandle &&
-          `${resourceItem.role}`.toLowerCase().indexOf('copilot') >= 0
+          loggedInUserResource.memberHandle === resourceItem.memberHandle
         ) {
           exceptionResourceIdDeleteList[resourceItem.id] = true
         }
+      } else if (
+        // The creator of the challenge can't be deleted
+        resourceItem.memberHandle === challenge.createdBy
+      ) {
+        exceptionResourceIdDeleteList[resourceItem.id] = true
       } else if (
         // If the current phase is not submission or registration
         // then we will disable removing reviewers and copilots.
