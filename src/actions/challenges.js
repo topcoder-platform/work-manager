@@ -35,7 +35,9 @@ import {
   REMOVE_ATTACHMENT_FAILURE,
   REMOVE_ATTACHMENT_PENDING,
   REMOVE_ATTACHMENT_SUCCESS,
-  CREATE_CHALLENGE_RESOURCE,
+  CREATE_CHALLENGE_RESOURCE_PENDING,
+  CREATE_CHALLENGE_RESOURCE_SUCCESS,
+  CREATE_CHALLENGE_RESOURCE_FAILURE,
   DELETE_CHALLENGE_RESOURCE,
   PAGE_SIZE,
   UPDATE_CHALLENGE_DETAILS_PENDING,
@@ -661,17 +663,50 @@ export function deleteResource (challengeId, roleId, memberHandle) {
  * @param {UUID} challengeId id of the challenge for which resource is to be created
  * @param {UUID} roleId id of the role, the resource should be in
  * @param {String} memberHandle handle of the resource
+ * @param {String} email email of member
+ * @param {String} userId id of member
  */
-export function createResource (challengeId, roleId, memberHandle) {
+export function createResource (challengeId, roleId, memberHandle, email, userId) {
   const resource = {
     challengeId,
     roleId,
     memberHandle
   }
-  return (dispatch, getState) => {
-    return dispatch({
-      type: CREATE_CHALLENGE_RESOURCE,
-      payload: createResourceAPI(resource)
+  return async (dispatch, getState) => {
+    dispatch({
+      type: CREATE_CHALLENGE_RESOURCE_PENDING
+    })
+
+    let newResource
+    try {
+      newResource = await createResourceAPI(resource)
+    } catch (error) {
+      const errorMessage = _.get(error, 'response.data.message', 'Create resource fail.')
+      dispatch({
+        type: CREATE_CHALLENGE_RESOURCE_FAILURE
+      })
+      return {
+        success: false,
+        errorMessage
+      }
+    }
+
+    let userEmail = email
+    if (!userEmail && userId) {
+      try {
+        const memberInfos = await searchProfilesByUserIds([userId])
+        if (memberInfos.length > 0) {
+          userEmail = memberInfos[0].email
+        }
+      } catch (error) {
+      }
+    }
+    dispatch({
+      type: CREATE_CHALLENGE_RESOURCE_SUCCESS,
+      payload: {
+        ...newResource,
+        email: userEmail
+      }
     })
   }
 }

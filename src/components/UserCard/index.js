@@ -6,7 +6,6 @@ import { PROJECT_ROLES } from '../../config/constants'
 import PrimaryButton from '../Buttons/PrimaryButton'
 import AlertModal from '../Modal/AlertModal'
 import { updateProjectMemberRole } from '../../services/projects'
-import { wait } from '../../util/helper'
 import _ from 'lodash'
 
 const theme = {
@@ -42,12 +41,11 @@ class UserCard extends Component {
       isUpdatingPermission: true
     })
 
-    const { user, reloadProjectMembers } = this.props
+    const { user, updateProjectNember } = this.props
 
     try {
-      await updateProjectMemberRole(user.projectId, user.id, newRole)
-      await wait(1000)
-      reloadProjectMembers(user.projectId)
+      const newUserInfoRole = await updateProjectMemberRole(user.projectId, user.id, newRole)
+      updateProjectNember(newUserInfoRole)
       this.setState({ showSuccessModal: true })
     } catch (e) {
       const error = _.get(
@@ -176,7 +174,7 @@ class UserCard extends Component {
 
 UserCard.propTypes = {
   user: PropTypes.object,
-  reloadProjectMembers: PropTypes.func.isRequired,
+  updateProjectNember: PropTypes.func.isRequired,
   onRemoveClick: PropTypes.func.isRequired,
   isEditable: PropTypes.bool
 }

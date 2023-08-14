@@ -15,6 +15,7 @@ import { formatDate } from '../../../util/date'
 import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, MESSAGE, ONLINE_REVIEW_URL, PROJECT_ROLES } from '../../../config/constants'
 import ConfirmationModal from '../../Modal/ConfirmationModal'
 import { checkChallengeEditPermission, checkReadOnlyRoles } from '../../../util/tc'
+import { getCurrentPhase } from '../../../util/phase'
 import AlertModal from '../../Modal/AlertModal'
 import Tooltip from '../../Tooltip'
 
@@ -121,7 +122,7 @@ class ChallengeCard extends React.Component {
       isCheckChalengePermission: false,
       hasEditChallengePermission: false,
       loginUserRoleInProject: '',
-      currentPhase: this.getCurrentPhase(props.challenge),
+      currentPhase: getCurrentPhase(props.challenge),
       forumLink: this.getForumLink(props.challenge)
     }
     this.onUpdateConfirm = this.onUpdateConfirm.bind(this)
@@ -130,10 +131,6 @@ class ChallengeCard extends React.Component {
     this.deleteModalLaunch = this.deleteModalLaunch.bind(this)
     this.resetModal = this.resetModal.bind(this)
     this.onLaunchChallenge = this.onLaunchChallenge.bind(this)
-  }
-
-  getCurrentPhase (challenge) {
-    return challenge.phases.filter((p) => p.isOpen).map((p) => p.name).join(' / ') || '-'
   }
 
   getForumLink (challenge) {
@@ -146,7 +143,7 @@ class ChallengeCard extends React.Component {
     if (!_.isEqual(challenge.phases, prevProps.challenge.phases)) {
       // eslint-disable-next-line react/no-did-update-set-state
       this.setState({
-        currentPhase: this.getCurrentPhase(challenge)
+        currentPhase: getCurrentPhase(challenge)
       })
     }
     if (!_.isEqual(challenge.discussions, prevProps.challenge.discussions)) {

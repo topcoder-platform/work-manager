@@ -3,16 +3,21 @@ import { connect } from 'react-redux'
 import _ from 'lodash'
 import PT from 'prop-types'
 import UsersComponent from '../../components/Users'
-import { loadProject, reloadProjectMembers } from '../../actions/projects'
 import { PROJECT_ROLES } from '../../config/constants'
+import { fetchProjectById } from '../../services/projects'
 
 class Users extends Component {
   constructor (props) {
     super(props)
 
     this.state = {
-      loginUserRoleInProject: ''
+      loginUserRoleInProject: '',
+      projectMembers: null
     }
+    this.loadProject = this.loadProject.bind(this)
+    this.updateProjectNember = this.updateProjectNember.bind(this)
+    this.removeProjectNember = this.removeProjectNember.bind(this)
+    this.addNewProjectMember = this.addNewProjectMember.bind(this)
   }
 
   componentDidMount () {
@@ -27,9 +32,13 @@ class Users extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    const { projectDetail, loggedInUser } = nextProps
-    if (projectDetail && loggedInUser) {
-      const projectMembers = projectDetail.members
+    const { loggedInUser } = nextProps
+    const { projectMembers } = this.state
+    this.updateLoginUserRoleInProject(projectMembers, loggedInUser)
+  }
+
+  updateLoginUserRoleInProject (projectMembers, loggedInUser) {
+    if (projectMembers && loggedInUser) {
       const loginUserProjectInfo = _.find(projectMembers, { userId: loggedInUser.userId })
       if (loginUserProjectInfo && this.state.loginUserRoleInProject !== loginUserProjectInfo.role) {
         this.setState({
@@ -39,52 +48,88 @@ class Users extends Component {
     }
   }
 
+  loadProject (projectId) {
+    fetchProjectById(projectId).then((project) => {
+      const projectMembers = _.get(project, 'members')
+      this.setState({
+        projectMembers
+      })
+      const { loggedInUser } = this.props
+      this.updateLoginUserRoleInProject(projectMembers, loggedInUser)
+    })
+  }
+
+  updateProjectNember (newMemberInfo) {
+    const { projectMembers } = this.state
+    const newProjectMembers = projectMembers.map(pm => pm.id === newMemberInfo.id ? ({
+      ...pm,
+      ...newMemberInfo
+    }) : pm)
+    const { loggedInUser } = this.props
+    this.setState({
+      projectMembers: newProjectMembers
+    })
+    this.updateLoginUserRoleInProject(newProjectMembers, loggedInUser)
+  }
+
+  removeProjectNember (projectMember) {
+    const { projectMembers } = this.state
+    const newProjectMembers = _.filter(projectMembers, pm => pm.id !== projectMember.id)
+    const { loggedInUser } = this.props
+    this.setState({
+      projectMembers: newProjectMembers
+    })
+    this.updateLoginUserRoleInProject(newProjectMembers, loggedInUser)
+  }
+
+  addNewProjectMember (projectMember) {
+    const { projectMembers } = this.state
+    const newProjectMembers = [
+      ...projectMembers,
+      projectMember
+    ]
+    const { loggedInUser } = this.props
+    this.setState({
+      projectMembers: newProjectMembers
+    })
+    this.updateLoginUserRoleInProject(newProjectMembers, loggedInUser)
+  }
+
   render () {
     const {
       projects,
-      loadProject,
-      projectMembers,
-      auth,
-      reloadProjectMembers,
-      projectDetail
+      auth
     } = this.props
+    const {
+      projectMembers
+    } = this.state
     return (
       <UsersComponent
-        projectDetail={projectDetail}
         projects={projects}
-        loadProject={loadProject}
+        loadProject={this.loadProject}
+        updateProjectNember={this.updateProjectNember}
+        removeProjectNember={this.removeProjectNember}
+        addNewProjectMember={this.addNewProjectMember}
         projectMembers={projectMembers}
         auth={auth}
-        reloadProjectMembers={reloadProjectMembers}
         isEditable={this.isEditable()}
       />
     )
   }
 }
 
-const mapStateToProps = ({ sidebar, challenges, auth, projects }) => {
+const mapStateToProps = ({ sidebar, auth }) => {
   return {
     projects: sidebar.projects,
-    projectMembers: _.get(challenges, 'metadata.members'),
-    projectDetail: projects.projectDetail,
     auth,
     loggedInUser: auth.user
   }
 }
 
-const mapDispatchToProps = {
-  loadProject,
-  reloadProjectMembers
-}
-
 Users.propTypes = {
-  loadProject: PT.func.isRequired,
-  reloadProjectMembers: PT.func.isRequired,
   projects: PT.arrayOf(PT.object),
-  projectMembers: PT.arrayOf(PT.object),
   auth: PT.object,
-  projectDetail: PT.object,
   loggedInUser: PT.object
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Users)
+export default connect(mapStateToProps)(Users)
