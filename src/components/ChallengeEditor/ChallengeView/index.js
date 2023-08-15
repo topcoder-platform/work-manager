@@ -207,6 +207,12 @@ const ChallengeView = ({
                 )}
               </>
             )}
+            <div className={styles.row}>
+              <div className={styles.col}>
+                <span className={styles.fieldTitle}>Timezone:</span>
+                {Intl.DateTimeFormat().resolvedOptions().timeZone}
+              </div>
+            </div>
             {
               challenge.legacy.subTrack === 'WEB_DESIGNS' && challenge.phases.length === 8 ? phases.map((phase, index) => (
                 <PhaseInput

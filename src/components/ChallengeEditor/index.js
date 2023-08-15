@@ -1749,6 +1749,12 @@ class ChallengeEditor extends Component {
             )}
             {!isTask && (
                 <>
+                  <div className={styles.row}>
+                    <div className={styles.col}>
+                      <span className={styles.fieldTitle}>Timezone:</span>
+                      {Intl.DateTimeFormat().resolvedOptions().timeZone}
+                    </div>
+                  </div>
                   {
                     phases.map((phase, index) => (
                       <PhaseInput
