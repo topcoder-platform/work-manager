@@ -17,13 +17,25 @@ class TabContainer extends Component {
       searchProjectName: '',
       currentTab: 1
     }
-    this.updateProjectName = this.updateProjectName.bind(this)
     this.onTabChange = this.onTabChange.bind(this)
   }
 
   componentDidMount () {
-    const { projectId, activeProjectId, isLoading, selfService } = this.props
-    if (!projectId && activeProjectId === -1 && !isLoading && !selfService) {
+    const {
+      projectId,
+      activeProjectId,
+      isLoading,
+      selfService,
+      history
+    } = this.props
+    if (
+      !projectId &&
+      activeProjectId === -1 &&
+      !isLoading &&
+      !selfService &&
+      // do not fetch projects for users page
+      history.location.pathname !== '/users'
+    ) {
       this.props.loadProjects()
     }
 
@@ -46,15 +58,22 @@ class TabContainer extends Component {
     } else {
       this.setState({ currentTab: 0 })
     }
+    if (
+      isLoading ||
+      // do not fetch projects for users page
+      nextProps.history.location.pathname === '/users'
+    ) {
+      return
+    }
     // if we're viewing a specific project,
     // or we're viewing the self serve page,
     // or if the project is already loading,
     // don't load the projects
-    if (!!projectId || selfService || isLoading) {
+    if (!!projectId || selfService) {
       // if we're not in the middle of loading,
       // and we have projects to unload,
       // unload them
-      if (!isLoading && !!projects && !!projects.length) {
+      if (!!projects && !!projects.length) {
         this.props.unloadProjects()
       }
 
@@ -69,11 +88,6 @@ class TabContainer extends Component {
 
     // now it's okay to load the projects
     this.props.loadProjects()
-  }
-
-  updateProjectName (val) {
-    this.setState({ searchProjectName: val })
-    this.props.loadProjects(val)
   }
 
   onTabChange (tab) {

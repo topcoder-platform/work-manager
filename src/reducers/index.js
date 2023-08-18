@@ -9,6 +9,7 @@ import projects from './projects'
 import challengeSubmissions from './challengeSubmissions'
 import sidebar from './sidebar'
 import members from './members'
+import users from './users'
 
 export default combineReducers({
   auth,
@@ -17,5 +18,6 @@ export default combineReducers({
   sidebar,
   toastr: toastrReducer,
   projects,
-  members
+  members,
+  users
 })

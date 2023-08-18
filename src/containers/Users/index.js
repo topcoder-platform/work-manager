@@ -5,6 +5,11 @@ import PT from 'prop-types'
 import UsersComponent from '../../components/Users'
 import { PROJECT_ROLES } from '../../config/constants'
 import { fetchProjectById } from '../../services/projects'
+import { checkAdmin } from '../../util/tc'
+
+import {
+  loadAllUserProjects
+} from '../../actions/users'
 
 class Users extends Component {
   constructor (props) {
@@ -21,6 +26,11 @@ class Users extends Component {
   }
 
   componentDidMount () {
+    const { token, isLoading, loadAllUserProjects } = this.props
+    if (!isLoading) {
+      const isAdmin = checkAdmin(token)
+      loadAllUserProjects(isAdmin)
+    }
   }
 
   isEditable () {
@@ -118,18 +128,27 @@ class Users extends Component {
   }
 }
 
-const mapStateToProps = ({ sidebar, auth }) => {
+const mapStateToProps = ({ users, auth }) => {
   return {
-    projects: sidebar.projects,
+    projects: users.allUserProjects,
+    isLoading: users.isLoadingAllUserProjects,
     auth,
-    loggedInUser: auth.user
+    loggedInUser: auth.user,
+    token: auth.token
   }
 }
 
 Users.propTypes = {
   projects: PT.arrayOf(PT.object),
   auth: PT.object,
-  loggedInUser: PT.object
+  loggedInUser: PT.object,
+  token: PT.string,
+  isLoading: PT.bool,
+  loadAllUserProjects: PT.func.isRequired
 }
 
-export default connect(mapStateToProps)(Users)
+const mapDispatchToProps = {
+  loadAllUserProjects
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Users)
