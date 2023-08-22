@@ -8,7 +8,8 @@ import { fetchProjectById } from '../../services/projects'
 import { checkAdmin } from '../../util/tc'
 
 import {
-  loadAllUserProjects
+  loadAllUserProjects,
+  searchUserProjects
 } from '../../actions/users'
 
 class Users extends Component {
@@ -17,7 +18,8 @@ class Users extends Component {
 
     this.state = {
       loginUserRoleInProject: '',
-      projectMembers: null
+      projectMembers: null,
+      isAdmin: false
     }
     this.loadProject = this.loadProject.bind(this)
     this.updateProjectNember = this.updateProjectNember.bind(this)
@@ -30,6 +32,9 @@ class Users extends Component {
     if (!isLoading) {
       const isAdmin = checkAdmin(token)
       loadAllUserProjects(isAdmin)
+      this.setState({
+        isAdmin
+      })
     }
   }
 
@@ -108,10 +113,14 @@ class Users extends Component {
   render () {
     const {
       projects,
-      auth
+      auth,
+      searchUserProjects,
+      resultSearchUserProjects,
+      isSearchingUserProjects
     } = this.props
     const {
-      projectMembers
+      projectMembers,
+      isAdmin
     } = this.state
     return (
       <UsersComponent
@@ -122,7 +131,13 @@ class Users extends Component {
         addNewProjectMember={this.addNewProjectMember}
         projectMembers={projectMembers}
         auth={auth}
+        isAdmin={isAdmin}
         isEditable={this.isEditable()}
+        resultSearchUserProjects={resultSearchUserProjects}
+        isSearchingUserProjects={isSearchingUserProjects}
+        searchUserProjects={(key) => {
+          searchUserProjects(isAdmin, key)
+        }}
       />
     )
   }
@@ -132,6 +147,8 @@ const mapStateToProps = ({ users, auth }) => {
   return {
     projects: users.allUserProjects,
     isLoading: users.isLoadingAllUserProjects,
+    resultSearchUserProjects: users.searchUserProjects,
+    isSearchingUserProjects: users.isSearchingUserProjects,
     auth,
     loggedInUser: auth.user,
     token: auth.token
@@ -140,15 +157,19 @@ const mapStateToProps = ({ users, auth }) => {
 
 Users.propTypes = {
   projects: PT.arrayOf(PT.object),
+  resultSearchUserProjects: PT.arrayOf(PT.object),
   auth: PT.object,
   loggedInUser: PT.object,
   token: PT.string,
   isLoading: PT.bool,
-  loadAllUserProjects: PT.func.isRequired
+  isSearchingUserProjects: PT.bool,
+  loadAllUserProjects: PT.func.isRequired,
+  searchUserProjects: PT.func.isRequired
 }
 
 const mapDispatchToProps = {
-  loadAllUserProjects
+  loadAllUserProjects,
+  searchUserProjects
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Users)
