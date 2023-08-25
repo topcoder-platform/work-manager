@@ -8,7 +8,7 @@ import UserCard from '../UserCard'
 import PrimaryButton from '../Buttons/PrimaryButton'
 import Modal from '../Modal'
 import SelectUserAutocomplete from '../SelectUserAutocomplete'
-import { PROJECT_ROLES } from '../../config/constants'
+import { PROJECT_ROLES, AUTOCOMPLETE_DEBOUNCE_TIME_MS } from '../../config/constants'
 import { checkAdmin } from '../../util/tc'
 import { addUserToProject, removeUserFromProject } from '../../services/projects'
 import ConfirmationModal from '../Modal/ConfirmationModal'
@@ -31,7 +31,8 @@ class Users extends Component {
       isRemoving: false,
       removeError: null,
       showRemoveConfirmationModal: false,
-      userToRemove: null
+      userToRemove: null,
+      searchKey: ''
     }
     this.setProjectOption = this.setProjectOption.bind(this)
     this.onAddUserClick = this.onAddUserClick.bind(this)
@@ -42,6 +43,9 @@ class Users extends Component {
     this.onRemoveClick = this.onRemoveClick.bind(this)
     this.resetRemoveUserState = this.resetRemoveUserState.bind(this)
     this.onRemoveConfirmClick = this.onRemoveConfirmClick.bind(this)
+    this.onInputChange = this.onInputChange.bind(this)
+
+    this.debouncedOnInputChange = _.debounce(this.onInputChange, AUTOCOMPLETE_DEBOUNCE_TIME_MS)
   }
 
   setProjectOption (projectOption) {
@@ -190,9 +194,31 @@ class Users extends Component {
     }
   }
 
+  /**
+   * Handler for the input which calls API for getting project suggestions
+   */
+  onInputChange (inputValue, a, b, c) {
+    const { searchUserProjects } = this.props
+    const preparedValue = inputValue.trim()
+    searchUserProjects(preparedValue)
+    this.setState({
+      searchKey: preparedValue
+    })
+  }
+
   render () {
-    const { projects, projectMembers, updateProjectNember, isEditable } = this.props
-    const projectOptions = projects.map(p => {
+    const {
+      projects,
+      projectMembers,
+      updateProjectNember,
+      isEditable,
+      isSearchingUserProjects,
+      resultSearchUserProjects
+    } = this.props
+    const {
+      searchKey
+    } = this.state
+    const projectOptions = ((searchKey ? resultSearchUserProjects : projects) || []).map(p => {
       return {
         label: p.name,
         value: p.id
@@ -218,6 +244,10 @@ class Users extends Component {
                 placeholder='Select a project'
                 value={this.state.projectOption}
                 onChange={(e) => { this.setProjectOption(e) }}
+                onInputChange={this.debouncedOnInputChange}
+                isLoading={isSearchingUserProjects}
+                filterOption={() => true}
+                noOptionsMessage={() => isSearchingUserProjects ? 'Searching...' : 'No options'}
               />
             </div>
           </div>
@@ -423,8 +453,11 @@ Users.propTypes = {
   addNewProjectMember: PropTypes.func.isRequired,
   auth: PropTypes.object,
   isEditable: PropTypes.bool,
+  isSearchingUserProjects: PropTypes.bool,
   projects: PropTypes.arrayOf(PropTypes.object),
-  projectMembers: PropTypes.arrayOf(PropTypes.object)
+  projectMembers: PropTypes.arrayOf(PropTypes.object),
+  searchUserProjects: PropTypes.func.isRequired,
+  resultSearchUserProjects: PropTypes.arrayOf(PropTypes.object)
 }
 
 export default Users
