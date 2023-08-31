@@ -9,6 +9,7 @@ import moment from 'moment'
 import _ from 'lodash'
 import { STUDIO_URL, SUBMISSION_REVIEW_APP_URL, getTCMemberURL } from '../../../config/constants'
 import { PrimaryButton } from '../../Buttons'
+import AlertModal from '../../Modal/AlertModal'
 import cn from 'classnames'
 import ReactSVG from 'react-svg'
 import {
@@ -20,16 +21,22 @@ import {
   checkAdmin
 } from '../../../util/tc'
 import {
-  getTopcoderReactLib
+  getTopcoderReactLib,
+  isValidDownloadFile
 } from '../../../util/topcoder-react-lib'
 import {
   compressFiles
 } from '../../../util/files'
 import styles from './Submissions.module.scss'
+import modalStyles from '../../../styles/modal.module.scss'
 const assets = require.context('../../../assets/images', false, /svg/)
 const ArrowDown = './arrow-down.svg'
 const Lock = './lock.svg'
 const Download = './IconSquareDownload.svg'
+
+const theme = {
+  container: modalStyles.modalContainer
+}
 
 class SubmissionsComponent extends React.Component {
   constructor (props) {
@@ -42,7 +49,8 @@ class SubmissionsComponent extends React.Component {
       isShowInformation: false,
       memberOfModal: '',
       sortedSubmissions: [],
-      downloadingAll: false
+      downloadingAll: false,
+      alertMessage: ''
     }
     this.getSubmissionsSortParam = this.getSubmissionsSortParam.bind(this)
     this.updateSortedSubmissions = this.updateSortedSubmissions.bind(this)
@@ -222,7 +230,7 @@ class SubmissionsComponent extends React.Component {
     const { field, sort } = this.getSubmissionsSortParam()
     const revertSort = sort === 'desc' ? 'asc' : 'desc'
 
-    const { sortedSubmissions, downloadingAll } = this.state
+    const { sortedSubmissions, downloadingAll, alertMessage } = this.state
 
     const renderSubmission = s => (
       <div className={styles.submission} key={s.id}>
@@ -544,19 +552,27 @@ class SubmissionsComponent extends React.Component {
                             const submissionsService = getService(token)
                             submissionsService.downloadSubmission(s.id)
                               .then((blob) => {
-                                // eslint-disable-next-line no-undef
-                                const url = window.URL.createObjectURL(new Blob([blob]))
-                                const link = document.createElement('a')
-                                link.href = url
-                                let fileName = s.legacySubmissionId
-                                if (!fileName) {
-                                  fileName = s.id
-                                }
-                                fileName = fileName + '.zip'
-                                link.setAttribute('download', `${fileName}`)
-                                document.body.appendChild(link)
-                                link.click()
-                                link.parentNode.removeChild(link)
+                                isValidDownloadFile(blob).then((isValidFile) => {
+                                  if (isValidFile.success) {
+                                    // eslint-disable-next-line no-undef
+                                    const url = window.URL.createObjectURL(new Blob([blob]))
+                                    const link = document.createElement('a')
+                                    link.href = url
+                                    let fileName = s.legacySubmissionId
+                                    if (!fileName) {
+                                      fileName = s.id
+                                    }
+                                    fileName = fileName + '.zip'
+                                    link.setAttribute('download', `${fileName}`)
+                                    document.body.appendChild(link)
+                                    link.click()
+                                    link.parentNode.removeChild(link)
+                                  } else {
+                                    this.setState({
+                                      alertMessage: isValidFile.message || 'Can not download this submission.'
+                                    })
+                                  }
+                                })
                               })
                           }}
                         >
@@ -611,10 +627,14 @@ class SubmissionsComponent extends React.Component {
                     fileName = fileName + '.zip'
                     submissionsService.downloadSubmission(submission.id)
                       .then((blob) => {
-                        const file = new window.File([blob], `${fileName}`)
-                        allFiles.push(file)
-                        downloadedFile += 1
-                        checkToCompressFiles()
+                        isValidDownloadFile(blob).then((isValidFile) => {
+                          if (isValidFile.success) {
+                            const file = new window.File([blob], `${fileName}`)
+                            allFiles.push(file)
+                          }
+                          downloadedFile += 1
+                          checkToCompressFiles()
+                        })
                       }).catch(() => {
                         downloadedFile += 1
                         checkToCompressFiles()
@@ -625,6 +645,20 @@ class SubmissionsComponent extends React.Component {
             </div>
           </div>) : null}
         </div>
+
+        {alertMessage ? (
+          <AlertModal
+            title=''
+            message={alertMessage}
+            theme={theme}
+            closeText='OK'
+            onClose={() => {
+              this.setState({
+                alertMessage: ''
+              })
+            }}
+          />
+        ) : null}
       </>
     )
   }

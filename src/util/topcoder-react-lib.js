@@ -14,3 +14,21 @@ export const getTopcoderReactLib = () => {
   const reactLib = require('topcoder-react-lib')
   return reactLib
 }
+
+export const isValidDownloadFile = async (blobFile) => {
+  if (!blobFile) {
+    return {
+      success: false
+    }
+  }
+  if (blobFile.type.indexOf('json') >= 0) {
+    const backendResonse = JSON.parse(await blobFile.text())
+    return {
+      success: false,
+      message: backendResonse.message || ''
+    }
+  }
+  return {
+    success: true
+  }
+}
