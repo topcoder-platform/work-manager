@@ -6,6 +6,7 @@ import {
   CHALLENGE_TRACKS,
   ALLOWED_USER_ROLES,
   ADMIN_ROLES,
+  COPILOT_ROLES,
   SUBMITTER_ROLE_UUID,
   READ_ONLY_ROLES,
   ALLOWED_DOWNLOAD_SUBMISSIONS_ROLES,
@@ -196,6 +197,15 @@ export const checkEditResourceRoles = resourceRoles => {
 export const checkAdmin = token => {
   const roles = _.get(decodeToken(token), 'roles')
   return roles.some(val => ADMIN_ROLES.indexOf(val.toLowerCase()) > -1)
+}
+
+/**
+ * Checks if token has any of the copilot roles
+ * @param  token
+ */
+export const checkCopilot = token => {
+  const roles = _.get(decodeToken(token), 'roles')
+  return roles.some(val => COPILOT_ROLES.indexOf(val.toLowerCase()) > -1)
 }
 
 /**
