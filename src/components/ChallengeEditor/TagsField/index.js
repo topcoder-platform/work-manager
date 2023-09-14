@@ -1,12 +1,30 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import Select from '../../Select'
 import cn from 'classnames'
-import styles from './Tags-Field.module.scss'
+import styles from './styles.module.scss'
+import { SPECIAL_CHALLENGE_TAGS } from '../../../config/constants'
+import _ from 'lodash'
 
-const TagsField = ({ challengeTags, challenge, onUpdateMultiSelect, readOnly }) => {
-  const mapOps = item => ({ label: item.name, value: item.id })
-  const existingTags = (challenge.tags && challenge.tags.length) ? challenge.tags.join(',') : ''
+const TagsField = ({ challenge, onUpdateMultiSelect, readOnly }) => {
+  const selectedTags = useMemo(() => {
+    return (challenge.tags || []).map(
+      tag => ({ label: tag, value: tag })
+    )
+  }, [challenge.tags])
+
+  const selectedValues = useMemo(() => {
+    return _.filter(selectedTags, (tag) => SPECIAL_CHALLENGE_TAGS.indexOf(tag.value) < 0)
+  }, [selectedTags])
+
+  const existingTags = useMemo(() => {
+    return selectedValues.length ? selectedValues.map(item => item.value).join(',') : ''
+  }, [selectedValues])
+
+  const selectedSpecialChallengeValues = useMemo(() => {
+    return _.filter(selectedTags, (tag) => SPECIAL_CHALLENGE_TAGS.indexOf(tag.value) >= 0)
+  }, [challenge.tags])
+
   return (
     <>
       <div className={styles.row}>
@@ -17,14 +35,19 @@ const TagsField = ({ challengeTags, challenge, onUpdateMultiSelect, readOnly }) 
           <input type='hidden' />
           {readOnly ? (
             <span>{existingTags}</span>
-          ) : (<Select
-            id='track-select'
-            isMulti
-            options={challengeTags.map(mapOps)}
-            simpleValue
-            value={challenge.tags && challenge.tags.map(tag => ({ label: tag, value: tag }))}
-            onChange={(value) => onUpdateMultiSelect(value, 'tags')}
-          />)}
+          ) : (
+            <Select
+              id='track-select'
+              isMulti
+              simpleValue
+              value={selectedValues}
+              onChange={(value) => onUpdateMultiSelect([
+                ...(value || []),
+                ...selectedSpecialChallengeValues
+              ], 'tags')}
+              isCreatable
+            />
+          )}
         </div>
       </div>
 
@@ -39,13 +62,11 @@ const TagsField = ({ challengeTags, challenge, onUpdateMultiSelect, readOnly }) 
 }
 
 TagsField.defaultProps = {
-  challengeTags: [],
   readOnly: false
 }
 
 TagsField.propTypes = {
   challenge: PropTypes.shape().isRequired,
-  challengeTags: PropTypes.arrayOf(PropTypes.object).isRequired,
   onUpdateMultiSelect: PropTypes.func.isRequired,
   readOnly: PropTypes.bool
 }

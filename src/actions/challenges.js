@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import {
   fetchChallengeTypes,
-  fetchChallengeTags,
   fetchGroups,
   fetchTimelineTemplates,
   fetchChallengePhases,
@@ -511,17 +510,6 @@ export function loadChallengeTimelines () {
       type: LOAD_CHALLENGE_METADATA_SUCCESS,
       metadataKey: 'challengeTimelines',
       metadataValue: challengeTimelines
-    })
-  }
-}
-
-export function loadChallengeTags () {
-  return async (dispatch) => {
-    const challengeTags = await fetchChallengeTags()
-    dispatch({
-      type: LOAD_CHALLENGE_METADATA_SUCCESS,
-      metadataKey: 'challengeTags',
-      metadataValue: challengeTags
     })
   }
 }

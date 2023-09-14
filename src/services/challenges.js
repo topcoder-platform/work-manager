@@ -12,8 +12,6 @@ const {
   CHALLENGE_TIMELINES_URL,
   SUBMISSIONS_API_URL,
   GROUPS_API_URL,
-  PLATFORMS_V4_API_URL,
-  TECHNOLOGIES_V4_API_URL,
   TERMS_API_URL,
   RESOURCES_API_URL,
   RESOURCE_ROLES_API_URL
@@ -35,19 +33,6 @@ export async function fetchChallengeTypes () {
 export async function fetchChallengeTracks () {
   const response = await axiosInstance.get(`${CHALLENGE_TRACKS_URL}`)
   return _.get(response, 'data', [])
-}
-
-/**
- * Api request for fetching challenge tags
- * @returns {Promise<*>}
- */
-export async function fetchChallengeTags () {
-  const platforms = await axiosInstance.get(PLATFORMS_V4_API_URL)
-  const technologies = await axiosInstance.get(TECHNOLOGIES_V4_API_URL)
-  return [
-    ..._.map(_.get(platforms, 'data.result.content', []), tag => _.pick(tag, 'name')),
-    ..._.map(_.get(technologies, 'data.result.content', []), tag => _.pick(tag, 'name'))
-  ]
 }
 
 /**

@@ -244,7 +244,6 @@ const ChallengeView = ({
           <div className={styles.group}>
             <div className={styles.title}>Public specification <span>*</span></div>
             <TextEditorField
-              challengeTags={metadata.challengeTags}
               challenge={challenge}
               readOnly
             />

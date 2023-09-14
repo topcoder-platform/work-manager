@@ -1,11 +1,31 @@
 import React from 'react'
 import _ from 'lodash'
 import ReactSelect from 'react-select'
+import CreatableSelect from 'react-select/creatable'
+import AsyncSelect from 'react-select/async'
 import PT from 'prop-types'
 import styles from './styles'
 
 export default function Select (props) {
-  const { selectRef } = props
+  const { selectRef, isCreatable, isAsync } = props
+
+  if (isAsync) {
+    return (<AsyncSelect
+      ref={selectRef}
+      {...props}
+      autosize={false}
+      styles={styles}
+    />)
+  }
+  if (isCreatable) {
+    return (<CreatableSelect
+      ref={selectRef}
+      {...props}
+      autosize={false}
+      styles={styles}
+    />)
+  }
+
   return (
     <ReactSelect
       ref={selectRef}
@@ -17,9 +37,13 @@ export default function Select (props) {
 }
 
 Select.defaultProps = {
-  selectRef: _.noop
+  selectRef: _.noop,
+  isCreatable: false,
+  isAsync: false
 }
 
 Select.propTypes = {
-  selectRef: PT.func
+  selectRef: PT.func,
+  isCreatable: PT.bool,
+  isAsync: PT.bool
 }

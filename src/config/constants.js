@@ -27,7 +27,8 @@ export const {
   API_V2,
   API_V3,
   API_V4,
-  API_V5
+  API_V5,
+  SKILLS_V5_API_URL
 } = process.env
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
 
@@ -355,4 +356,9 @@ export const PAGINATION_PER_PAGE_OPTIONS = [
   { label: '10', value: '10' },
   { label: '25', value: '25' },
   { label: '50', value: '50' }
+]
+
+export const SPECIAL_CHALLENGE_TAGS = [
+  'Marathon Match',
+  'Rapid Development Match'
 ]

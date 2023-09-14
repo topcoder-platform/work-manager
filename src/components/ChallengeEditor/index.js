@@ -1826,7 +1826,6 @@ class ChallengeEditor extends Component {
               <i>Access specification templates <a href='https://github.com/topcoder-platform-templates/specification-templates' target='_blank'>here</a></i>
             </div>
             <TextEditorField
-              challengeTags={metadata.challengeTags}
               challenge={challenge}
               onUpdateCheckbox={this.onUpdateCheckbox}
               addFileType={this.addFileType}
