@@ -13,7 +13,12 @@ import LegacyLinks from '../../LegacyLinks'
 import ForumLink from '../../ForumLink'
 import ResourcesTab from '../Resources'
 import Submissions from '../Submissions'
-import { checkAdmin, checkEditResourceRoles, checkReadOnlyRoles } from '../../../util/tc'
+import {
+  checkAdmin,
+  checkEditResourceRoles,
+  checkReadOnlyRoles,
+  checkCopilot
+} from '../../../util/tc'
 import { CHALLENGE_STATUS, MESSAGE } from '../../../config/constants'
 import Tooltip from '../../Tooltip'
 import CancelDropDown from '../Cancel-Dropdown'
@@ -117,6 +122,21 @@ const ChallengeViewTabs = ({
   const isDraft = challenge.status.toUpperCase() === CHALLENGE_STATUS.DRAFT
   const isSelfServiceCopilot = challenge.legacy.selfServiceCopilot === loggedInUser.handle
   const isAdmin = checkAdmin(token)
+
+  // Make sure that the Launch and Mark as completed buttons are hidden
+  // for tasks that are assigned to the current logged in user, if that user has the copilot role.
+  const preventCopilotFromActivatingTask = useMemo(() => {
+    return isTask &&
+      checkCopilot(token) &&
+      assignedMemberDetails &&
+      loggedInUser &&
+      `${loggedInUser.userId}` === `${assignedMemberDetails.userId}`
+  }, [
+    token,
+    assignedMemberDetails,
+    loggedInUser
+  ])
+
   const isReadOnly = checkReadOnlyRoles(token)
   const canApprove = (isSelfServiceCopilot || enableEdit) && isDraft && isSelfService
   const hasBillingAccount = _.get(projectDetail, 'billingAccountId') !== null
@@ -125,10 +145,35 @@ const ChallengeViewTabs = ({
   // OR if this isn't a non-self-service draft, permit launching if:
   // a) the current user is either the self-service copilot or is an admin AND
   // b) the challenge is approved
-  const canLaunch = enableEdit && hasBillingAccount && !isReadOnly &&
-    ((!isSelfService && isDraft) ||
-      ((isSelfServiceCopilot || isAdmin) &&
-        challenge.status.toUpperCase() === CHALLENGE_STATUS.APPROVED))
+  const canLaunch = useMemo(() => {
+    return enableEdit &&
+      hasBillingAccount &&
+      (!isReadOnly) &&
+      (!preventCopilotFromActivatingTask) &&
+      (
+        (
+          !isSelfService &&
+          isDraft
+        ) ||
+        (
+          (
+            isSelfServiceCopilot ||
+            isAdmin
+          ) &&
+          challenge.status.toUpperCase() === CHALLENGE_STATUS.APPROVED
+        )
+      )
+  }, [
+    enableEdit,
+    hasBillingAccount,
+    isReadOnly,
+    isSelfService,
+    isDraft,
+    isSelfServiceCopilot,
+    isAdmin,
+    challenge.status,
+    preventCopilotFromActivatingTask
+  ])
 
   return (
     <div className={styles.list}>
@@ -184,20 +229,26 @@ const ChallengeViewTabs = ({
               />
             </div>
           )}
-          {isTask && challenge.status === 'Active' && (
-            <div className={styles.button}>
-              {assignedMemberDetails ? (
-                <Tooltip content={MESSAGE.MARK_COMPLETE}>
-                  <PrimaryButton text={'Mark Complete'} type={'success'} onClick={onCloseTask} />
-                </Tooltip>
-              ) : (
-                <Tooltip content={MESSAGE.NO_TASK_ASSIGNEE}>
-                  {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
-                  <PrimaryButton text={'Mark Complete'} type={'disabled'} />
-                </Tooltip>
-              )}
-            </div>
-          )}
+          {
+            (
+              isTask &&
+              challenge.status === 'Active' &&
+              !preventCopilotFromActivatingTask
+            ) && (
+              <div className={styles.button}>
+                {assignedMemberDetails ? (
+                  <Tooltip content={MESSAGE.MARK_COMPLETE}>
+                    <PrimaryButton text={'Mark Complete'} type={'success'} onClick={onCloseTask} />
+                  </Tooltip>
+                ) : (
+                  <Tooltip content={MESSAGE.NO_TASK_ASSIGNEE}>
+                    {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
+                    <PrimaryButton text={'Mark Complete'} type={'disabled'} />
+                  </Tooltip>
+                )}
+              </div>
+            )
+          }
           {enableEdit && !canEditResource && (
             <PrimaryButton text={'Edit'} type={'info'} submit link={`./edit`} />
           )}

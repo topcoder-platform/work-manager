@@ -30,7 +30,12 @@ import {
   MULTI_ROUND_CHALLENGE_TEMPLATE_ID, DS_TRACK_ID,
   CHALLENGE_STATUS
 } from '../../config/constants'
-import { getDomainTypes, getResourceRoleByName, is2RoundsChallenge } from '../../util/tc'
+import {
+  getDomainTypes,
+  getResourceRoleByName,
+  is2RoundsChallenge,
+  checkCopilot
+} from '../../util/tc'
 import { getPhaseEndDate } from '../../util/date'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import TrackField from './Track-Field'
@@ -1527,6 +1532,14 @@ class ChallengeEditor extends Component {
     const statusMessage = challenge.status && challenge.status.split(' ')[0].toUpperCase()
     const errorContainer = <div className={styles.errorContainer}><div className={styles.errorMessage}>{error}</div></div>
 
+    // Make sure that the Launch and Mark as completed buttons are hidden
+    // for tasks that are assigned to the current logged in user, if that user has the copilot role.
+    const preventCopilotFromActivatingTask = isTask &&
+      checkCopilot(token) &&
+      assignedMemberDetails &&
+      loggedInUser &&
+      `${loggedInUser.userId}` === `${assignedMemberDetails.userId}`
+
     const actionButtons = <React.Fragment>
       {!isLoading && this.state.hasValidationErrors && <div className={styles.error}>Please fix the errors before saving</div>}
       {
@@ -1553,18 +1566,23 @@ class ChallengeEditor extends Component {
                   <PrimaryButton text={'Save Draft'} type={'disabled'} />
                 )}
               </div>
-              {isDraft && (
-                <div className={styles.button}>
-                  {(challenge.legacyId || isTask) && !this.state.hasValidationErrors ? (
-                    <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
-                  ) : (
-                    <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-                      {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
-                      <PrimaryButton text={'Launch as Active'} type={'disabled'} />
-                    </Tooltip>
-                  )}
-                </div>
-              )}
+              {
+                (
+                  isDraft &&
+                  !preventCopilotFromActivatingTask
+                ) && (
+                  <div className={styles.button}>
+                    {(challenge.legacyId || isTask) && !this.state.hasValidationErrors ? (
+                      <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
+                    ) : (
+                      <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
+                        {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
+                        <PrimaryButton text={'Launch as Active'} type={'disabled'} />
+                      </Tooltip>
+                    )}
+                  </div>
+                )
+              }
               {statusMessage !== CHALLENGE_STATUS.CANCELLED &&
                 <div className={styles.button}>
                   <CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} />
@@ -1575,7 +1593,10 @@ class ChallengeEditor extends Component {
               <div className={styles.button}>
                 <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
               </div>
-              {isTask && (
+              {(
+                isTask &&
+                !preventCopilotFromActivatingTask
+              ) && (
                 <div className={styles.button}>
                   <Tooltip content={MESSAGE.MARK_COMPLETE}>
                     <PrimaryButton text={'Mark Complete'} type={'success'} onClick={this.openCloseTaskConfirmation} />
