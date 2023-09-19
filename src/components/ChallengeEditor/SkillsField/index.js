@@ -12,11 +12,13 @@ const fetchSkills = _.debounce((inputValue, callback) => {
     (skills) => {
       const suggestedOptions = skills.map((skillItem) => ({
         label: skillItem.name,
-        value: skillItem.emsiId
+        value: skillItem.id
       }))
       return callback(suggestedOptions)
     })
-    .catch(() => callback(null))
+    .catch(() => {
+      return callback(null)
+    })
 }, AUTOCOMPLETE_DEBOUNCE_TIME_MS)
 
 const SkillsField = ({ readOnly }) => {
