@@ -8,7 +8,7 @@ import _ from 'lodash'
 
 const options = [
   {
-    label: 'Blank',
+    label: 'No',
     value: ''
   },
   ...SPECIAL_CHALLENGE_TAGS.map(tag => ({
