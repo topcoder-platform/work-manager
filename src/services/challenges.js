@@ -2,7 +2,7 @@ import _ from 'lodash'
 import qs from 'qs'
 import { axiosInstance } from './axiosWithAuth'
 import { updateChallengePhaseBeforeSendRequest, convertChallengePhaseFromSecondsToHours, normalizeChallengeDataFromAPI } from '../util/date'
-import { GROUPS_DROPDOWN_PER_PAGE } from '../config/constants'
+import { GROUPS_DROPDOWN_PER_PAGE, UPDATE_SKILLS_V5_API_URL } from '../config/constants'
 const {
   CHALLENGE_API_URL,
   CHALLENGE_TYPES_URL,
@@ -250,5 +250,15 @@ export async function fetchResourceRoles () {
  */
 export async function deleteResource (resource) {
   const resp = await axiosInstance.delete(RESOURCES_API_URL, { data: resource })
+  return _.get(resp, 'data', {})
+}
+
+/**
+ * Api request for updating challenge skill
+ * @param {Object} skills data
+ * @returns {Promise<*>}
+ */
+export async function updateChallengeSkillsApi (skills) {
+  const resp = await axiosInstance.post(UPDATE_SKILLS_V5_API_URL, skills)
   return _.get(resp, 'data', {})
 }

@@ -19,7 +19,8 @@ import {
   deleteChallenge as deleteChallengeAPI,
   createChallenge as createChallengeAPI,
   createResource as createResourceAPI,
-  deleteResource as deleteResourceAPI
+  deleteResource as deleteResourceAPI,
+  updateChallengeSkillsApi
 } from '../services/challenges'
 import { searchProfilesByUserIds } from '../services/user'
 import {
@@ -51,7 +52,9 @@ import {
   CHALLENGE_STATUS,
   LOAD_CHALLENGE_RESOURCES_SUCCESS,
   LOAD_CHALLENGE_RESOURCES_PENDING,
-  LOAD_CHALLENGE_RESOURCES_FAILURE
+  LOAD_CHALLENGE_RESOURCES_FAILURE,
+  WORK_TYPE_ID,
+  UPDATE_CHALLENGES_SKILLS_SUCCESS
 } from '../config/constants'
 import { loadProject } from './projects'
 import { removeChallengeFromPhaseProduct, saveChallengeAsPhaseProduct } from '../services/projects'
@@ -724,6 +727,32 @@ export function replaceResourceInRole (challengeId, roleId, newMember, oldMember
     }
     if (newMember) {
       await dispatch(createResource(challengeId, roleId, newMember))
+    }
+  }
+}
+
+/**
+ * Update Challenge skill
+ * @param {UUID} challengeId id of the challenge for which resource is to be  replaced
+ * @param {Array} skills array of skill
+ */
+export function updateChallengeSkills (challengeId, skills) {
+  return async (dispatch) => {
+    try {
+      if (!skills) {
+        return
+      }
+      await updateChallengeSkillsApi({
+        workId: challengeId,
+        workTypeId: WORK_TYPE_ID,
+        skillIds: skills.map(skill => skill.id)
+      })
+      dispatch({
+        type: UPDATE_CHALLENGES_SKILLS_SUCCESS,
+        payload: skills
+      })
+    } catch (error) {
+      return _.get(error, 'response.data.message', 'Can not save skill')
     }
   }
 }

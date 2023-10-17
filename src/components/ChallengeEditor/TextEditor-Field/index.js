@@ -32,6 +32,7 @@ class TextEditorField extends Component {
       addFileType,
       removeFileType,
       onUpdateDescription,
+      onUpdateSkills,
       onUpdateMultiSelect,
       shouldShowPrivateDescription,
       onUpdateMetadata,
@@ -89,6 +90,8 @@ class TextEditorField extends Component {
         />
         <SkillsField
           readOnly={readOnly}
+          challenge={challenge}
+          onUpdateSkills={onUpdateSkills}
         />
         {challenge.trackId === CHALLENGE_TRACKS.DESIGN && (
           <React.Fragment>
@@ -127,6 +130,7 @@ TextEditorField.defaultProps = {
   onUpdateCheckbox: () => {},
   addFileType: () => {},
   onUpdateDescription: () => {},
+  onUpdateSkills: () => {},
   onUpdateMultiSelect: () => {},
   readOnly: false
 }
@@ -138,6 +142,7 @@ TextEditorField.propTypes = {
   removeFileType: PropTypes.func,
   onUpdateMetadata: PropTypes.func,
   onUpdateDescription: PropTypes.func,
+  onUpdateSkills: PropTypes.func,
   onUpdateMultiSelect: PropTypes.func,
   shouldShowPrivateDescription: PropTypes.bool,
   readOnly: PropTypes.bool

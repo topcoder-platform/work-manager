@@ -53,5 +53,7 @@ module.exports = {
   UNIVERSAL_NAV_URL: '//uni-nav.topcoder-dev.com/v1/tc-universal-nav.js',
   HEADER_AUTH_URLS_HREF: `https://accounts-auth0.${DOMAIN}?utm_source=community-app-main`,
   HEADER_AUTH_URLS_LOCATION: `https://accounts-auth0.${DOMAIN}?retUrl=%S&utm_source=community-app-main`,
-  SKILLS_V5_API_URL: `${API_V5}/emsi-skills/skills/auto-complete`
+  SKILLS_V5_API_URL: `${API_V5}/standardized-skills/skills/autocomplete`,
+  UPDATE_SKILLS_V5_API_URL: `${API_V5}/standardized-skills/work-skills`,
+  WORK_TYPE_ID: '4d2bdbc8-eb3b-4156-8d20-98a46589cc5d'
 }

@@ -33,7 +33,8 @@ import {
   DELETE_CHALLENGE_SUCCESS,
   DELETE_CHALLENGE_FAILURE,
   DELETE_CHALLENGE_PENDING,
-  MULTI_ROUND_CHALLENGE_TEMPLATE_ID
+  MULTI_ROUND_CHALLENGE_TEMPLATE_ID,
+  UPDATE_CHALLENGES_SKILLS_SUCCESS
 } from '../config/constants'
 
 const initialState = {
@@ -340,6 +341,18 @@ export default function (state = initialState, action) {
     }
     case SET_FILTER_CHALLENGE_VALUE:
       return { ...state, filterChallengeName: action.value.name, status: action.value.status }
+    case UPDATE_CHALLENGES_SKILLS_SUCCESS: {
+      if (state.challengeDetails) {
+        return {
+          ...state,
+          challengeDetails: {
+            ...state.challengeDetails,
+            skills: action.payload
+          }
+        }
+      }
+      return state
+    }
     default:
       return state
   }

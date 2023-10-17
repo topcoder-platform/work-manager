@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import Select from '../../Select'
 import { searchSkills } from '../../../services/skills'
@@ -21,8 +21,11 @@ const fetchSkills = _.debounce((inputValue, callback) => {
     })
 }, AUTOCOMPLETE_DEBOUNCE_TIME_MS)
 
-const SkillsField = ({ readOnly }) => {
-  const [selectedSkills, setSelectedSkills] = useState([])
+const SkillsField = ({ readOnly, challenge, onUpdateSkills }) => {
+  const selectedSkills = useMemo(() => (challenge.skills || []).map(skill => ({
+    label: skill.name,
+    value: skill.id
+  })), [challenge.skills])
   const existingSkills = useMemo(() => selectedSkills.map(item => item.label).join(','), [selectedSkills])
 
   return (
@@ -41,7 +44,12 @@ const SkillsField = ({ readOnly }) => {
             simpleValue
             isAsync
             value={selectedSkills}
-            onChange={(value) => setSelectedSkills(value || [])}
+            onChange={(values) => {
+              onUpdateSkills((values || []).map(value => ({
+                name: value.label,
+                id: value.value
+              })))
+            }}
             cacheOptions
             loadOptions={fetchSkills}
           />
@@ -52,11 +60,14 @@ const SkillsField = ({ readOnly }) => {
 }
 
 SkillsField.defaultProps = {
-  readOnly: false
+  readOnly: false,
+  onUpdateSkills: () => { }
 }
 
 SkillsField.propTypes = {
-  readOnly: PropTypes.bool
+  readOnly: PropTypes.bool,
+  challenge: PropTypes.shape().isRequired,
+  onUpdateSkills: PropTypes.func
 }
 
 export default SkillsField
