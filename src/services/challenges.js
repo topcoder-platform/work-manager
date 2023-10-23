@@ -100,7 +100,7 @@ export async function fetchChallengePhases () {
 export async function fetchChallenge (challengeId) {
   const response = await axiosInstance.get(`${CHALLENGE_API_URL}/${challengeId}`, {
     headers: {
-      'challenge-api-version': CHALLENGE_API_VERSION
+      'app-version': CHALLENGE_API_VERSION
     }
   })
   return normalizeChallengeDataFromAPI(_.get(response, 'data'))
@@ -114,7 +114,7 @@ export async function fetchChallenge (challengeId) {
 export function createChallenge (challenge) {
   return axiosInstance.post(CHALLENGE_API_URL, updateChallengePhaseBeforeSendRequest(challenge), {
     headers: {
-      'challenge-api-version': CHALLENGE_API_VERSION
+      'app-version': CHALLENGE_API_VERSION
     }
   }).then(response => {
     return normalizeChallengeDataFromAPI(_.get(response, 'data'))
@@ -130,7 +130,7 @@ export function createChallenge (challenge) {
 export function updateChallenge (challengeId, challenge) {
   return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(challenge), {
     headers: {
-      'challenge-api-version': CHALLENGE_API_VERSION
+      'app-version': CHALLENGE_API_VERSION
     }
   }).then(response => {
     return normalizeChallengeDataFromAPI(_.get(response, 'data'))
@@ -148,7 +148,7 @@ export function updateChallenge (challengeId, challenge) {
 export function createAttachments (challengeId, attachments) {
   return axiosInstance.post(`${CHALLENGE_API_URL}/${challengeId}/attachments`, attachments, {
     headers: {
-      'challenge-api-version': CHALLENGE_API_VERSION
+      'app-version': CHALLENGE_API_VERSION
     }
   })
 }
@@ -164,7 +164,7 @@ export function createAttachments (challengeId, attachments) {
 export function removeAttachment (challengeId, attachmentId) {
   return axiosInstance.delete(`${CHALLENGE_API_URL}/${challengeId}/attachments/${attachmentId}`, {
     headers: {
-      'challenge-api-version': CHALLENGE_API_VERSION
+      'app-version': CHALLENGE_API_VERSION
     }
   })
 }
@@ -181,7 +181,7 @@ export function fetchChallenges (filters, params) {
   }
   return axiosInstance.get(`${CHALLENGE_API_URL}?${qs.stringify(query, { encode: false })}`, {
     headers: {
-      'challenge-api-version': CHALLENGE_API_VERSION
+      'app-version': CHALLENGE_API_VERSION
     }
   }).then(response => {
     // normalize challenge data in the list of challenges for consistency with data of a single challenge details page
@@ -198,7 +198,7 @@ export function fetchChallenges (filters, params) {
 export function patchChallenge (challengeId, params) {
   return axiosInstance.patch(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(params), {
     headers: {
-      'challenge-api-version': CHALLENGE_API_VERSION
+      'app-version': CHALLENGE_API_VERSION
     }
   }).then(rs => {
     return normalizeChallengeDataFromAPI(_.get(rs, 'data'))
@@ -212,7 +212,7 @@ export function patchChallenge (challengeId, params) {
 export function deleteChallenge (challengeId) {
   return axiosInstance.delete(`${CHALLENGE_API_URL}/${challengeId}`, {
     headers: {
-      'challenge-api-version': CHALLENGE_API_VERSION
+      'app-version': CHALLENGE_API_VERSION
     }
   })
 }
