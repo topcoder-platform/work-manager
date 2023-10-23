@@ -12,6 +12,7 @@ module.exports = {
   COMMUNITY_APP_URL: `https://www.${DOMAIN}`,
   MEMBER_API_URL: `${PROD_API_HOSTNAME}/v5/members`,
   CHALLENGE_API_URL: `${PROD_API_HOSTNAME}/v5/challenges`,
+  CHALLENGE_API_VERSION: '1.1.0',
   CHALLENGE_TIMELINE_TEMPLATES_URL: `${PROD_API_HOSTNAME}/v5/timeline-templates`,
   CHALLENGE_TYPES_URL: `${PROD_API_HOSTNAME}/v5/challenge-types`,
   CHALLENGE_TRACKS_URL: `${PROD_API_HOSTNAME}/v5/challenge-tracks`,
