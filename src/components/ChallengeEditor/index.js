@@ -794,7 +794,7 @@ class ChallengeEditor extends Component {
       'typeId',
       'name',
       'description',
-      'tags',
+      'skills',
       'prizeSets'
     ]
     let isRequiredMissing = false

@@ -26,38 +26,29 @@ const TagsField = ({ challenge, onUpdateMultiSelect, readOnly }) => {
   }, [challenge.tags])
 
   return (
-    <>
-      <div className={styles.row}>
-        <div className={cn(styles.field, styles.col1)}>
-          <label htmlFor='keywords'>Tags{!readOnly && (<span>*</span>)} :</label>
-        </div>
-        <div className={cn(styles.field, styles.col2)}>
-          <input type='hidden' />
-          {readOnly ? (
-            <span>{existingTags}</span>
-          ) : (
-            <Select
-              id='track-select'
-              isMulti
-              simpleValue
-              value={selectedValues}
-              onChange={(value) => onUpdateMultiSelect([
-                ...(value || []),
-                ...selectedSpecialChallengeValues
-              ], 'tags')}
-              isCreatable
-            />
-          )}
-        </div>
+    <div className={styles.row}>
+      <div className={cn(styles.field, styles.col1)}>
+        <label htmlFor='keywords'>Tags{!readOnly && (<span>*</span>)} :</label>
       </div>
-
-      { !readOnly && challenge.submitTriggered && (!challenge.tags || !challenge.tags.length) && <div className={styles.row}>
-        <div className={cn(styles.field, styles.col1)} />
-        <div className={cn(styles.field, styles.col2, styles.error)}>
-          Select at least one tag
-        </div>
-      </div> }
-    </>
+      <div className={cn(styles.field, styles.col2)}>
+        <input type='hidden' />
+        {readOnly ? (
+          <span>{existingTags}</span>
+        ) : (
+          <Select
+            id='track-select'
+            isMulti
+            simpleValue
+            value={selectedValues}
+            onChange={(value) => onUpdateMultiSelect([
+              ...(value || []),
+              ...selectedSpecialChallengeValues
+            ], 'tags')}
+            isCreatable
+          />
+        )}
+      </div>
+    </div>
   )
 }
 

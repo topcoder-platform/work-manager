@@ -29,33 +29,42 @@ const SkillsField = ({ readOnly, challenge, onUpdateSkills }) => {
   const existingSkills = useMemo(() => selectedSkills.map(item => item.label).join(','), [selectedSkills])
 
   return (
-    <div className={styles.row}>
-      <div className={cn(styles.field, styles.col1)}>
-        <label htmlFor='keywords'>Skills :</label>
+    <>
+      <div className={styles.row}>
+        <div className={cn(styles.field, styles.col1)}>
+          <label htmlFor='keywords'>Skills {!readOnly && (<span>*</span>)} :</label>
+        </div>
+        <div className={cn(styles.field, styles.col2)}>
+          <input type='hidden' />
+          {readOnly ? (
+            <span>{existingSkills}</span>
+          ) : (
+            <Select
+              id='skill-select'
+              isMulti
+              simpleValue
+              isAsync
+              value={selectedSkills}
+              onChange={(values) => {
+                onUpdateSkills((values || []).map(value => ({
+                  name: value.label,
+                  id: value.value
+                })))
+              }}
+              cacheOptions
+              loadOptions={fetchSkills}
+            />
+          )}
+        </div>
       </div>
-      <div className={cn(styles.field, styles.col2)}>
-        <input type='hidden' />
-        {readOnly ? (
-          <span>{existingSkills}</span>
-        ) : (
-          <Select
-            id='skill-select'
-            isMulti
-            simpleValue
-            isAsync
-            value={selectedSkills}
-            onChange={(values) => {
-              onUpdateSkills((values || []).map(value => ({
-                name: value.label,
-                id: value.value
-              })))
-            }}
-            cacheOptions
-            loadOptions={fetchSkills}
-          />
-        )}
-      </div>
-    </div>
+
+      { !readOnly && challenge.submitTriggered && (!selectedSkills || !selectedSkills.length) && <div className={styles.row}>
+        <div className={cn(styles.field, styles.col1)} />
+        <div className={cn(styles.field, styles.col2, styles.error)}>
+          Select at least one skill
+        </div>
+      </div> }
+    </>
   )
 }
 
