@@ -1576,9 +1576,6 @@ class ChallengeEditor extends Component {
           <div className={styles.bottomContainer}>
             {!isLoading && <LastSavedDisplay timeLastSaved={draftChallenge.data.updated} />}
             {!isLoading && (!isActive) && (!isCompleted) && <div className={styles.buttonContainer}>
-              {/* <div className={styles.button}>
-                <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
-              </div> */}
               <div className={styles.button}>
                 {!this.state.hasValidationErrors ? (
                   <PrimaryButton text={isSaving ? 'Saving...' : 'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
@@ -1609,14 +1606,11 @@ class ChallengeEditor extends Component {
                 </div>
               }
             </div>}
-            {!isLoading && isActive && <div className={styles.buttonContainer}>
+            {(!isLoading) && isActive && (!preventCopilotFromActivatingTask) && <div className={styles.buttonContainer}>
               <div className={styles.button}>
                 <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
               </div>
-              {(
-                isTask &&
-                !preventCopilotFromActivatingTask
-              ) && (
+              {isTask && (
                 <div className={styles.button}>
                   <Tooltip content={MESSAGE.MARK_COMPLETE}>
                     <PrimaryButton text={'Mark Complete'} type={'success'} onClick={this.openCloseTaskConfirmation} />
