@@ -28,7 +28,7 @@ const TagsField = ({ challenge, onUpdateMultiSelect, readOnly }) => {
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
-        <label htmlFor='keywords'>Tags{!readOnly && (<span>*</span>)} :</label>
+        <label htmlFor='keywords'>Tags:</label>
       </div>
       <div className={cn(styles.field, styles.col2)}>
         <input type='hidden' />
