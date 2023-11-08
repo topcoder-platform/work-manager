@@ -1612,7 +1612,10 @@ class ChallengeEditor extends Component {
               <div className={styles.button}>
                 <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
               </div>
-              {isTask && (
+              {(
+                isTask &&
+                !preventCopilotFromActivatingTask
+              ) && (
                 <div className={styles.button}>
                   <Tooltip content={MESSAGE.MARK_COMPLETE}>
                     <PrimaryButton text={'Mark Complete'} type={'success'} onClick={this.openCloseTaskConfirmation} />
