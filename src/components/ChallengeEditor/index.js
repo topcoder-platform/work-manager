@@ -133,6 +133,7 @@ class ChallengeEditor extends Component {
     this.onUpdatePhase = this.onUpdatePhase.bind(this)
     this.resetChallengeData = this.resetChallengeData.bind(this)
     this.onUpdateDescription = this.onUpdateDescription.bind(this)
+    this.onUpdateSkills = this.onUpdateSkills.bind(this)
     this.onActiveChallenge = this.onActiveChallenge.bind(this)
     this.resetModal = this.resetModal.bind(this)
     this.resetDesignChallengeWarningModal = this.resetDesignChallengeWarningModal.bind(this)
@@ -152,6 +153,7 @@ class ChallengeEditor extends Component {
     this.getAvailableTimelineTemplates = this.getAvailableTimelineTemplates.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.validateAndAutoUpdateChallenge.bind(this), 3000) // 3s
     this.updateResource = this.updateResource.bind(this)
+    this.updateSkills = this.updateSkills.bind(this)
     this.onDeleteChallenge = this.onDeleteChallenge.bind(this)
     this.deleteModalLaunch = this.deleteModalLaunch.bind(this)
     this.toggleForumOnCreate = this.toggleForumOnCreate.bind(this)
@@ -326,6 +328,14 @@ class ChallengeEditor extends Component {
     const newChallenge = { ...oldChallenge, [fieldName]: description }
     this.setState({ challenge: newChallenge }, () => {
       this.autoUpdateChallengeThrottled(fieldName)
+    })
+  }
+
+  onUpdateSkills (skills) {
+    const { challenge: oldChallenge } = this.state
+    const newChallenge = { ...oldChallenge, skills }
+    this.setState({ challenge: newChallenge }, () => {
+      this.autoUpdateChallengeThrottled('skills')
     })
   }
 
@@ -784,7 +794,7 @@ class ChallengeEditor extends Component {
       'typeId',
       'name',
       'description',
-      'tags',
+      'skills',
       'prizeSets'
     ]
     let isRequiredMissing = false
@@ -934,7 +944,8 @@ class ChallengeEditor extends Component {
       'winners',
       'milestoneId',
       'discussions',
-      'task'
+      'task',
+      'skills'
     ], this.state.challenge)
     const isTask = _.find(metadata.challengeTypes, { id: challenge.typeId, isTask: true })
     challenge.legacy = _.assign(this.state.challenge.legacy, {
@@ -1137,6 +1148,8 @@ class ChallengeEditor extends Component {
           break
         }
       }
+    } else if (changedField === 'skills') {
+      await this.updateSkills(challengeId, this.state.challenge.skills)
     } else {
       let patchObject = (changedField === 'reviewType')
         ? { legacy: { reviewType: this.state.challenge[changedField] } } // NOTE it assumes challenge API PATCH respects the changes in legacy JSON
@@ -1200,7 +1213,7 @@ class ChallengeEditor extends Component {
   }
 
   async updateAllChallengeInfo (status, cb = () => { }) {
-    const { updateChallengeDetails, assignedMemberDetails: oldAssignedMember, projectDetail } = this.props
+    const { updateChallengeDetails, assignedMemberDetails: oldAssignedMember, projectDetail, challengeDetails } = this.props
     if (this.state.isSaving) return
     this.setState({ isSaving: true }, async () => {
       const challenge = this.collectChallengeData(status)
@@ -1216,6 +1229,9 @@ class ChallengeEditor extends Component {
         // assigned member has been updated
         if (assignedMemberHandle !== oldMemberHandle) {
           await this.updateResource(challengeId, 'Submitter', assignedMemberHandle, oldMemberHandle)
+        }
+        if (!_.isEqual(challengeDetails.skills, newChallenge.skills)) {
+          await this.updateSkills(challengeId, newChallenge.skills)
         }
         const { copilot: previousCopilot, reviewer: previousReviewer } = this.state.draftChallenge.data
         if (copilot !== previousCopilot) await this.updateResource(challengeId, 'Copilot', copilot, previousCopilot)
@@ -1289,6 +1305,10 @@ class ChallengeEditor extends Component {
     const resourceRole = getResourceRoleByName(resourceRoles, name)
     const roleId = resourceRole.id
     await this.props.replaceResourceInRole(challengeId, roleId, value, prevValue)
+  }
+
+  async updateSkills (challengeId, skills) {
+    return this.props.updateChallengeSkills(challengeId, skills)
   }
 
   updateAttachmentlist (challenge, attachments) {
@@ -1556,16 +1576,15 @@ class ChallengeEditor extends Component {
           <div className={styles.bottomContainer}>
             {!isLoading && <LastSavedDisplay timeLastSaved={draftChallenge.data.updated} />}
             {!isLoading && (!isActive) && (!isCompleted) && <div className={styles.buttonContainer}>
-              {/* <div className={styles.button}>
-                <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
-              </div> */}
-              <div className={styles.button}>
-                {!this.state.hasValidationErrors ? (
-                  <PrimaryButton text={isSaving ? 'Saving...' : 'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
-                ) : (
-                  <PrimaryButton text={'Save Draft'} type={'disabled'} />
-                )}
-              </div>
+              {(!preventCopilotFromActivatingTask) && (
+                <div className={styles.button}>
+                  {!this.state.hasValidationErrors ? (
+                    <PrimaryButton text={isSaving ? 'Saving...' : 'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
+                  ) : (
+                    <PrimaryButton text={'Save Draft'} type={'disabled'} />
+                  )}
+                </div>
+              )}
               {
                 (
                   isDraft &&
@@ -1589,7 +1608,7 @@ class ChallengeEditor extends Component {
                 </div>
               }
             </div>}
-            {!isLoading && isActive && <div className={styles.buttonContainer}>
+            {(!isLoading) && isActive && (!preventCopilotFromActivatingTask) && <div className={styles.buttonContainer}>
               <div className={styles.button}>
                 <OutlineButton text={isSaving ? 'Saving...' : 'Save'} type={'success'} onClick={this.onSaveChallenge} />
               </div>
@@ -1826,13 +1845,13 @@ class ChallengeEditor extends Component {
               <i>Access specification templates <a href='https://github.com/topcoder-platform-templates/specification-templates' target='_blank'>here</a></i>
             </div>
             <TextEditorField
-              challengeTags={metadata.challengeTags}
               challenge={challenge}
               onUpdateCheckbox={this.onUpdateCheckbox}
               addFileType={this.addFileType}
               removeFileType={this.removeFileType}
               onUpdateInput={this.onUpdateInput}
               onUpdateDescription={this.onUpdateDescription}
+              onUpdateSkills={this.onUpdateSkills}
               onUpdateMultiSelect={this.onUpdateMultiSelect}
               onUpdateMetadata={this.onUpdateMetadata}
             />
@@ -1916,6 +1935,7 @@ ChallengeEditor.propTypes = {
   updateChallengeDetails: PropTypes.func.isRequired,
   createChallenge: PropTypes.func,
   replaceResourceInRole: PropTypes.func,
+  updateChallengeSkills: PropTypes.func,
   partiallyUpdateChallengeDetails: PropTypes.func.isRequired,
   deleteChallenge: PropTypes.func.isRequired,
   loggedInUser: PropTypes.shape().isRequired,

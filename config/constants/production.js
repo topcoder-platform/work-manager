@@ -1,16 +1,18 @@
 const DOMAIN = 'topcoder.com'
 const PROD_API_HOSTNAME = `https://api.${DOMAIN}`
+const API_V5 = `${PROD_API_HOSTNAME}/v5`
 
 module.exports = {
   API_V2: `${PROD_API_HOSTNAME}/v2`,
   API_V3: `${PROD_API_HOSTNAME}/v3`,
   API_V4: `${PROD_API_HOSTNAME}/v4`,
-  API_V5: `${PROD_API_HOSTNAME}/v5`,
+  API_V5,
   ACCOUNTS_APP_CONNECTOR_URL: process.env.ACCOUNTS_APP_CONNECTOR_URL || `https://accounts-auth0.${DOMAIN}`,
   ACCOUNTS_APP_LOGIN_URL: `https://accounts-auth0.${DOMAIN}`,
   COMMUNITY_APP_URL: `https://www.${DOMAIN}`,
   MEMBER_API_URL: `${PROD_API_HOSTNAME}/v5/members`,
   CHALLENGE_API_URL: `${PROD_API_HOSTNAME}/v5/challenges`,
+  CHALLENGE_API_VERSION: '1.1.0',
   CHALLENGE_TIMELINE_TEMPLATES_URL: `${PROD_API_HOSTNAME}/v5/timeline-templates`,
   CHALLENGE_TYPES_URL: `${PROD_API_HOSTNAME}/v5/challenge-types`,
   CHALLENGE_TRACKS_URL: `${PROD_API_HOSTNAME}/v5/challenge-tracks`,
@@ -22,8 +24,6 @@ module.exports = {
   RESOURCES_API_URL: `${PROD_API_HOSTNAME}/v5/resources`,
   RESOURCE_ROLES_API_URL: `${PROD_API_HOSTNAME}/v5/resource-roles`,
   SUBMISSIONS_API_URL: `${PROD_API_HOSTNAME}/v5/submissions`,
-  PLATFORMS_V4_API_URL: `${PROD_API_HOSTNAME}/v4/platforms`,
-  TECHNOLOGIES_V4_API_URL: `${PROD_API_HOSTNAME}/v4/technologies`,
   SUBMISSION_REVIEW_APP_URL: `https://submission-review.${DOMAIN}/challenges`,
   STUDIO_URL: `https://studio.${DOMAIN}`,
   CONNECT_APP_URL: `https://connect.${DOMAIN}`,
@@ -50,5 +50,8 @@ module.exports = {
   MULTI_ROUND_CHALLENGE_TEMPLATE_ID: 'd4201ca4-8437-4d63-9957-3f7708184b07',
   UNIVERSAL_NAV_URL: '//uni-nav.topcoder.com/v1/tc-universal-nav.js',
   HEADER_AUTH_URLS_HREF: `https://accounts-auth0.${DOMAIN}?utm_source=community-app-main`,
-  HEADER_AUTH_URLS_LOCATION: `https://accounts-auth0.${DOMAIN}?retUrl=%S&utm_source=community-app-main`
+  HEADER_AUTH_URLS_LOCATION: `https://accounts-auth0.${DOMAIN}?retUrl=%S&utm_source=community-app-main`,
+  SKILLS_V5_API_URL: `${API_V5}/standardized-skills/skills/autocomplete`,
+  UPDATE_SKILLS_V5_API_URL: `${API_V5}/standardized-skills/work-skills`,
+  WORK_TYPE_ID: '4d2bdbc8-eb3b-4156-8d20-98a46589cc5d'
 }

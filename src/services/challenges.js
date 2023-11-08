@@ -2,9 +2,10 @@ import _ from 'lodash'
 import qs from 'qs'
 import { axiosInstance } from './axiosWithAuth'
 import { updateChallengePhaseBeforeSendRequest, convertChallengePhaseFromSecondsToHours, normalizeChallengeDataFromAPI } from '../util/date'
-import { GROUPS_DROPDOWN_PER_PAGE } from '../config/constants'
+import { GROUPS_DROPDOWN_PER_PAGE, UPDATE_SKILLS_V5_API_URL } from '../config/constants'
 const {
   CHALLENGE_API_URL,
+  CHALLENGE_API_VERSION,
   CHALLENGE_TYPES_URL,
   CHALLENGE_TRACKS_URL,
   CHALLENGE_TIMELINE_TEMPLATES_URL,
@@ -12,8 +13,6 @@ const {
   CHALLENGE_TIMELINES_URL,
   SUBMISSIONS_API_URL,
   GROUPS_API_URL,
-  PLATFORMS_V4_API_URL,
-  TECHNOLOGIES_V4_API_URL,
   TERMS_API_URL,
   RESOURCES_API_URL,
   RESOURCE_ROLES_API_URL
@@ -35,19 +34,6 @@ export async function fetchChallengeTypes () {
 export async function fetchChallengeTracks () {
   const response = await axiosInstance.get(`${CHALLENGE_TRACKS_URL}`)
   return _.get(response, 'data', [])
-}
-
-/**
- * Api request for fetching challenge tags
- * @returns {Promise<*>}
- */
-export async function fetchChallengeTags () {
-  const platforms = await axiosInstance.get(PLATFORMS_V4_API_URL)
-  const technologies = await axiosInstance.get(TECHNOLOGIES_V4_API_URL)
-  return [
-    ..._.map(_.get(platforms, 'data.result.content', []), tag => _.pick(tag, 'name')),
-    ..._.map(_.get(technologies, 'data.result.content', []), tag => _.pick(tag, 'name'))
-  ]
 }
 
 /**
@@ -112,7 +98,11 @@ export async function fetchChallengePhases () {
  * @returns {Promise<*>}
  */
 export async function fetchChallenge (challengeId) {
-  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/${challengeId}`)
+  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/${challengeId}`, {
+    headers: {
+      'app-version': CHALLENGE_API_VERSION
+    }
+  })
   return normalizeChallengeDataFromAPI(_.get(response, 'data'))
 }
 
@@ -122,7 +112,11 @@ export async function fetchChallenge (challengeId) {
  * @returns {Promise<*>} challenge data
  */
 export function createChallenge (challenge) {
-  return axiosInstance.post(CHALLENGE_API_URL, updateChallengePhaseBeforeSendRequest(challenge)).then(response => {
+  return axiosInstance.post(CHALLENGE_API_URL, updateChallengePhaseBeforeSendRequest(challenge), {
+    headers: {
+      'app-version': CHALLENGE_API_VERSION
+    }
+  }).then(response => {
     return normalizeChallengeDataFromAPI(_.get(response, 'data'))
   })
 }
@@ -134,7 +128,11 @@ export function createChallenge (challenge) {
  * @returns {Promise<*>} challenge data
  */
 export function updateChallenge (challengeId, challenge) {
-  return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(challenge)).then(response => {
+  return axiosInstance.put(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(challenge), {
+    headers: {
+      'app-version': CHALLENGE_API_VERSION
+    }
+  }).then(response => {
     return normalizeChallengeDataFromAPI(_.get(response, 'data'))
   })
 }
@@ -148,7 +146,11 @@ export function updateChallenge (challengeId, challenge) {
  * @returns {Promise<*>} attachments data
  */
 export function createAttachments (challengeId, attachments) {
-  return axiosInstance.post(`${CHALLENGE_API_URL}/${challengeId}/attachments`, attachments)
+  return axiosInstance.post(`${CHALLENGE_API_URL}/${challengeId}/attachments`, attachments, {
+    headers: {
+      'app-version': CHALLENGE_API_VERSION
+    }
+  })
 }
 
 /**
@@ -160,7 +162,11 @@ export function createAttachments (challengeId, attachments) {
  * @returns {Promise<void>}
  */
 export function removeAttachment (challengeId, attachmentId) {
-  return axiosInstance.delete(`${CHALLENGE_API_URL}/${challengeId}/attachments/${attachmentId}`)
+  return axiosInstance.delete(`${CHALLENGE_API_URL}/${challengeId}/attachments/${attachmentId}`, {
+    headers: {
+      'app-version': CHALLENGE_API_VERSION
+    }
+  })
 }
 
 /**
@@ -173,7 +179,11 @@ export function fetchChallenges (filters, params) {
     ...filters,
     ...params
   }
-  return axiosInstance.get(`${CHALLENGE_API_URL}?${qs.stringify(query, { encode: false })}`).then(response => {
+  return axiosInstance.get(`${CHALLENGE_API_URL}?${qs.stringify(query, { encode: false })}`, {
+    headers: {
+      'app-version': CHALLENGE_API_VERSION
+    }
+  }).then(response => {
     // normalize challenge data in the list of challenges for consistency with data of a single challenge details page
     response.data = response.data.map(normalizeChallengeDataFromAPI)
     return response
@@ -186,7 +196,11 @@ export function fetchChallenges (filters, params) {
  * @param params
  */
 export function patchChallenge (challengeId, params) {
-  return axiosInstance.patch(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(params)).then(rs => {
+  return axiosInstance.patch(`${CHALLENGE_API_URL}/${challengeId}`, updateChallengePhaseBeforeSendRequest(params), {
+    headers: {
+      'app-version': CHALLENGE_API_VERSION
+    }
+  }).then(rs => {
     return normalizeChallengeDataFromAPI(_.get(rs, 'data'))
   })
 }
@@ -196,7 +210,11 @@ export function patchChallenge (challengeId, params) {
 * @param challengeId
 */
 export function deleteChallenge (challengeId) {
-  return axiosInstance.delete(`${CHALLENGE_API_URL}/${challengeId}`)
+  return axiosInstance.delete(`${CHALLENGE_API_URL}/${challengeId}`, {
+    headers: {
+      'app-version': CHALLENGE_API_VERSION
+    }
+  })
 }
 
 /**
@@ -265,5 +283,15 @@ export async function fetchResourceRoles () {
  */
 export async function deleteResource (resource) {
   const resp = await axiosInstance.delete(RESOURCES_API_URL, { data: resource })
+  return _.get(resp, 'data', {})
+}
+
+/**
+ * Api request for updating challenge skill
+ * @param {Object} skills data
+ * @returns {Promise<*>}
+ */
+export async function updateChallengeSkillsApi (skills) {
+  const resp = await axiosInstance.post(UPDATE_SKILLS_V5_API_URL, skills)
   return _.get(resp, 'data', {})
 }

@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
+import SpecialChallengeField from '../SpecialChallengeField'
 import TagsField from '../TagsField'
+import SkillsField from '../SkillsField'
 import FinalDeliverablesField from '../FinalDeliverables-Field'
 import StockArtsField from '../StockArts-Field'
 import SubmssionVisibility from '../SubmissionVisibility-Field'
@@ -25,21 +27,18 @@ class TextEditorField extends Component {
 
   render () {
     const {
-      challengeTags,
       challenge,
       onUpdateCheckbox,
       addFileType,
       removeFileType,
       onUpdateDescription,
+      onUpdateSkills,
       onUpdateMultiSelect,
       shouldShowPrivateDescription,
       onUpdateMetadata,
       readOnly
     } = this.props
     const { addedNewPrivateDescription } = this.state
-    const challengeTagsFiltered = challengeTags.map(function (tag) {
-      return { id: tag.name, name: tag.name }
-    })
     const showShowPrivateDescriptionField = addedNewPrivateDescription || (challenge.privateDescription !== null && challenge.privateDescription !== undefined)
 
     return (
@@ -79,11 +78,20 @@ class TextEditorField extends Component {
             />
           </div>
         )}
-        <TagsField
-          challengeTags={challengeTagsFiltered}
+        <SpecialChallengeField
           challenge={challenge}
           onUpdateMultiSelect={onUpdateMultiSelect}
           readOnly={readOnly}
+        />
+        <TagsField
+          challenge={challenge}
+          onUpdateMultiSelect={onUpdateMultiSelect}
+          readOnly={readOnly}
+        />
+        <SkillsField
+          readOnly={readOnly}
+          challenge={challenge}
+          onUpdateSkills={onUpdateSkills}
         />
         {challenge.trackId === CHALLENGE_TRACKS.DESIGN && (
           <React.Fragment>
@@ -117,24 +125,24 @@ class TextEditorField extends Component {
 }
 
 TextEditorField.defaultProps = {
-  challengeTags: [],
   shouldShowPrivateDescription: true,
   onUpdateMetadata: () => {},
   onUpdateCheckbox: () => {},
   addFileType: () => {},
   onUpdateDescription: () => {},
+  onUpdateSkills: () => {},
   onUpdateMultiSelect: () => {},
   readOnly: false
 }
 
 TextEditorField.propTypes = {
-  challengeTags: PropTypes.arrayOf(PropTypes.object).isRequired,
   challenge: PropTypes.shape().isRequired,
   onUpdateCheckbox: PropTypes.func,
   addFileType: PropTypes.func,
   removeFileType: PropTypes.func,
   onUpdateMetadata: PropTypes.func,
   onUpdateDescription: PropTypes.func,
+  onUpdateSkills: PropTypes.func,
   onUpdateMultiSelect: PropTypes.func,
   shouldShowPrivateDescription: PropTypes.bool,
   readOnly: PropTypes.bool

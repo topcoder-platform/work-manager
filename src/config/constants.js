@@ -27,7 +27,10 @@ export const {
   API_V2,
   API_V3,
   API_V4,
-  API_V5
+  API_V5,
+  SKILLS_V5_API_URL,
+  UPDATE_SKILLS_V5_API_URL,
+  WORK_TYPE_ID
 } = process.env
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
 
@@ -87,6 +90,8 @@ export const LOAD_MEMBER_FAILURE = 'LOAD_MEMBER_FAILURE'
 export const LOAD_CHALLENGES_SUCCESS = 'LOAD_CHALLENGES_SUCCESS'
 export const LOAD_CHALLENGES_PENDING = 'LOAD_CHALLENGES_PENDING'
 export const LOAD_CHALLENGES_FAILURE = 'LOAD_CHALLENGES_FAILURE'
+
+export const UPDATE_CHALLENGES_SKILLS_SUCCESS = 'UPDATE_CHALLENGES_SKILLS_SUCCESS'
 
 export const LOAD_CHALLENGE_DETAILS = 'LOAD_CHALLENGE_DETAILS'
 export const LOAD_CHALLENGE_DETAILS_SUCCESS = 'LOAD_CHALLENGE_DETAILS_SUCCESS'
@@ -355,4 +360,9 @@ export const PAGINATION_PER_PAGE_OPTIONS = [
   { label: '10', value: '10' },
   { label: '25', value: '25' },
   { label: '50', value: '50' }
+]
+
+export const SPECIAL_CHALLENGE_TAGS = [
+  'Marathon Match',
+  'Rapid Development Match'
 ]

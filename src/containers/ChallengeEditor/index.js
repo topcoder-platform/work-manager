@@ -16,7 +16,6 @@ import {
   loadChallengeTypes,
   loadChallengeTracks,
   loadChallengeTimelines,
-  loadChallengeTags,
   // loadChallengeTerms,
   loadGroups,
   loadChallengeDetails,
@@ -29,6 +28,7 @@ import {
   deleteChallenge,
   createChallenge,
   replaceResourceInRole,
+  updateChallengeSkills,
   createResource,
   deleteResource
 } from '../../actions/challenges'
@@ -90,7 +90,6 @@ class ChallengeEditor extends Component {
       loadChallengeTypes,
       loadChallengeTracks,
       loadChallengeTimelines,
-      loadChallengeTags,
       // loadChallengeTerms,
       loadGroups,
       loadResourceRoles,
@@ -103,7 +102,6 @@ class ChallengeEditor extends Component {
     loadChallengeTypes()
     loadChallengeTracks()
     loadChallengeTimelines()
-    loadChallengeTags()
     // loadChallengeTerms()
     loadGroups()
     loadResourceRoles()
@@ -418,6 +416,7 @@ class ChallengeEditor extends Component {
       partiallyUpdateChallengeDetails,
       createChallenge,
       replaceResourceInRole,
+      updateChallengeSkills,
       deleteChallenge,
       loggedInUser,
       projectPhases,
@@ -544,6 +543,7 @@ class ChallengeEditor extends Component {
               updateChallengeDetails={updateChallengeDetails}
               createChallenge={createChallenge}
               replaceResourceInRole={replaceResourceInRole}
+              updateChallengeSkills={updateChallengeSkills}
               partiallyUpdateChallengeDetails={partiallyUpdateChallengeDetails}
               projectPhases={projectPhases}
               assignYourselfCopilot={this.assignYourselfCopilot}
@@ -583,6 +583,7 @@ class ChallengeEditor extends Component {
                 assignedMemberDetails={assignedMemberDetails}
                 updateChallengeDetails={updateChallengeDetails}
                 replaceResourceInRole={replaceResourceInRole}
+                updateChallengeSkills={updateChallengeSkills}
                 partiallyUpdateChallengeDetails={
                   partiallyUpdateChallengeDetails
                 }
@@ -643,7 +644,6 @@ ChallengeEditor.propTypes = {
   loadChallengeTypes: PropTypes.func,
   loadChallengeTracks: PropTypes.func,
   loadChallengeTimelines: PropTypes.func,
-  loadChallengeTags: PropTypes.func,
   // loadChallengeTerms: PropTypes.func,
   loadGroups: PropTypes.func,
   loadChallengeDetails: PropTypes.func,
@@ -676,6 +676,7 @@ ChallengeEditor.propTypes = {
   createResource: PropTypes.func.isRequired,
   deleteResource: PropTypes.func.isRequired,
   replaceResourceInRole: PropTypes.func,
+  updateChallengeSkills: PropTypes.func,
   loadProject: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
   isProjectPhasesLoading: PropTypes.bool,
@@ -726,7 +727,6 @@ const mapDispatchToProps = {
   loadChallengeTypes,
   loadChallengeTracks,
   loadChallengeTimelines,
-  loadChallengeTags,
   loadGroups,
   createAttachments,
   removeAttachment,
@@ -739,6 +739,7 @@ const mapDispatchToProps = {
   deleteChallenge,
   createChallenge,
   replaceResourceInRole,
+  updateChallengeSkills,
   loadProject,
   createResource,
   deleteResource
