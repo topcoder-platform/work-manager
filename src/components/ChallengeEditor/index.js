@@ -1576,15 +1576,13 @@ class ChallengeEditor extends Component {
           <div className={styles.bottomContainer}>
             {!isLoading && <LastSavedDisplay timeLastSaved={draftChallenge.data.updated} />}
             {!isLoading && (!isActive) && (!isCompleted) && <div className={styles.buttonContainer}>
-              {(!preventCopilotFromActivatingTask) && (
-                <div className={styles.button}>
-                  {!this.state.hasValidationErrors ? (
-                    <PrimaryButton text={isSaving ? 'Saving...' : 'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
-                  ) : (
-                    <PrimaryButton text={'Save Draft'} type={'disabled'} />
-                  )}
-                </div>
-              )}
+              <div className={styles.button}>
+                {!this.state.hasValidationErrors ? (
+                  <PrimaryButton text={isSaving ? 'Saving...' : 'Save Draft'} type={'info'} onClick={this.createDraftHandler} />
+                ) : (
+                  <PrimaryButton text={'Save Draft'} type={'disabled'} />
+                )}
+              </div>
               {
                 (
                   isDraft &&
