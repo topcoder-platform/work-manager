@@ -53,7 +53,6 @@ import {
   LOAD_CHALLENGE_RESOURCES_SUCCESS,
   LOAD_CHALLENGE_RESOURCES_PENDING,
   LOAD_CHALLENGE_RESOURCES_FAILURE,
-  WORK_TYPE_ID,
   UPDATE_CHALLENGES_SKILLS_SUCCESS
 } from '../config/constants'
 import { loadProject } from './projects'
@@ -746,11 +745,12 @@ export function updateChallengeSkills (challengeId, skills) {
       if (!skills) {
         return
       }
-      await updateChallengeSkillsApi({
-        workId: challengeId,
-        workTypeId: WORK_TYPE_ID,
-        skillIds: skills.map(skill => skill.id)
-      })
+      await updateChallengeSkillsApi(
+        challengeId,
+        {
+          skillIds: skills.map(skill => skill.id)
+        }
+      )
       dispatch({
         type: UPDATE_CHALLENGES_SKILLS_SUCCESS,
         payload: skills

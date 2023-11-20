@@ -29,8 +29,7 @@ export const {
   API_V4,
   API_V5,
   SKILLS_V5_API_URL,
-  UPDATE_SKILLS_V5_API_URL,
-  WORK_TYPE_ID
+  UPDATE_SKILLS_V5_API_URL
 } = process.env
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
 
