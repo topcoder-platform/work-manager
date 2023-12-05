@@ -291,7 +291,7 @@ export async function deleteResource (resource) {
  * @param {Object} skills data
  * @returns {Promise<*>}
  */
-export async function updateChallengeSkillsApi (skills) {
-  const resp = await axiosInstance.post(UPDATE_SKILLS_V5_API_URL, skills)
+export async function updateChallengeSkillsApi (challengeId, skills) {
+  const resp = await axiosInstance.post(`${UPDATE_SKILLS_V5_API_URL}/${challengeId}`, skills)
   return _.get(resp, 'data', {})
 }
