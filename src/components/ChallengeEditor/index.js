@@ -1069,8 +1069,11 @@ class ChallengeEditor extends Component {
       }
       let useDashboard = _.find(challengeMetadata, { name: 'show_data_dashboard' })
       if (useDashboard === undefined) {
-        useDashboard = { name: 'show_data_dashboard', value: true }
+        useDashboard = { name: 'show_data_dashboard', value: 'false' }
+      } else if (_.isBoolean(useDashboard.value)) {
+        useDashboard = { name: 'show_data_dashboard', value: _.toString(useDashboard.value) }
       }
+
       newChallenge.metadata.push(useDashboard)
     }
     try {
@@ -1646,7 +1649,11 @@ class ChallengeEditor extends Component {
     const showCheckpointPrizes = challenge.timelineTemplateId === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
     const showDashBoard = (challenge.trackId === DS_TRACK_ID && isChallengeType) || (isDevChallenge && isMM)
     const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
-    const useDashboard = useDashboardData ? useDashboardData.value : true
+
+    const useDashboard = useDashboardData
+      ? (_.isString(useDashboardData.value) && useDashboardData.value === 'true') ||
+      (_.isBoolean(useDashboardData.value) && useDashboardData.value) : false
+
     const workTypes = getDomainTypes(challenge.trackId)
     const filteredTypes = metadata.challengeTypes.filter(type => workTypes.includes(type.abbreviation))
 

@@ -198,5 +198,15 @@ export const updateChallengePhaseBeforeSendRequest = (challengeDetail) => {
     }))
     return challengeDetailTmp
   }
+  if (challengeDetail.metadata && challengeDetail.metadata.length > 0) {
+    challengeDetail.metadata = challengeDetail.metadata.map(m => {
+      // check if value is boolean and convert to string
+      if (typeof m.value === 'boolean') {
+        m.value = m.value.toString()
+      }
+
+      return m
+    })
+  }
   return challengeDetail
 }
