@@ -102,7 +102,9 @@ const ChallengeView = ({
   const showCheckpointPrizes = _.get(challenge, 'timelineTemplateId') === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
   const isDataScience = challenge.trackId === DS_TRACK_ID
   const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
-  const useDashboard = useDashboardData ? (useDashboardData.value === 'true') : false
+  const useDashboard = useDashboardData ? 
+    (_.isString(useDashboardData.value) && useDashboardData.value === "true") || 
+    (_.isBoolean(useDashboardData.value) && useDashboardData.value) : false
 
   return (
     <div className={styles.wrapper}>
