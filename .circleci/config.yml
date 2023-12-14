@@ -9,7 +9,7 @@ parameters:
 
 defaults: &defaults
     docker:
-      - image: cimg/python:3.11.0-browsers
+      - image: cimg/python:3.12.1-browsers
 
 test_defaults: &test_defaults
     docker:
@@ -152,7 +152,7 @@ workflows:
           context : org-global
           filters: &filters-dev
             branches:
-              only: ['develop', 'multiround', 'release_0.20.9']
+              only: ['develop', 'multiround', 'release_0.20.9', 'metadata-fix']
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.
