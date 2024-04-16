@@ -1005,7 +1005,7 @@ class ChallengeEditor extends Component {
     const isChallengeType = typeId === CHALLENGE_TYPE_ID
     const isDevChallenge = trackId === DEV_TRACK_ID
     const isMM = typeId === MARATHON_TYPE_ID
-    const showDashBoard = (isDataScience && isChallengeType) || (isDevChallenge && isMM)
+    const showDashBoard = (isDataScience && isChallengeType) || (isDevChallenge && isMM) || (isDevChallenge && isChallengeType)
 
     // indicate that creating process has started
     this.setState({ isSaving: true })
