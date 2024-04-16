@@ -8,12 +8,12 @@ parameters:
     type: boolean
 
 defaults: &defaults
-    docker:
-      - image: cimg/python:3.11.0-browsers
+  docker:
+    - image: cimg/python:3.11.7-browsers
 
 test_defaults: &test_defaults
-    docker:
-      - image: docker:17.11.0-ce-git
+  docker:
+    - image: docker:17.11.0-ce-git
 
 install_dependency: &install_dependency
   name: Installation of build and deployment dependencies.
@@ -22,8 +22,8 @@ install_dependency: &install_dependency
     sudo apt update
     sudo apt install python3-pip
     sudo pip3 install awscli --upgrade
-    sudo pip3 install docker==6.1.3
-    sudo pip3 install docker-compose
+    # sudo pip3 install docker==6.1.3
+    # sudo pip3 install docker-compose
 
 install_test_dependency: &install_test_dependency
   name: Installation of build and deployment dependencies.
@@ -51,39 +51,38 @@ save_cache_settings: &save_cache_settings
     - node_modules
 
 builddeploy_steps: &builddeploy_steps
-      - checkout
-      - setup_remote_docker
-      - run: *install_dependency
-      - run: *install_deploysuite
-      - run:
-          name: "configuring environment"
-          command: |
-            ./awsconfiguration.sh $DEPLOY_ENV
-            ./buildenv.sh -e $DEPLOY_ENV -b ${LOGICAL_ENV}-${APPNAME}-buildvar
-            echo awsenvconf >.dockerignore
-            echo buildenvvar >>.dockerignore
-      - run:
-          name: "building image"
-          command: |
-            source buildenvvar
-            ./build.sh ${APPNAME}
-      - deploy:
-          name: Running MasterScript.
-          command: |
-            #./awsconfiguration.sh $DEPLOY_ENV
-            source awsenvconf
-            ./buildenv.sh -e $DEPLOY_ENV -b ${LOGICAL_ENV}-${APPNAME}-deployvar
-            source buildenvvar
-            ./master_deploy.sh -d ECS -e $DEPLOY_ENV -t latest -s ${LOGICAL_ENV}-global-appvar,${LOGICAL_ENV}-${APPNAME}-appvar -i ${APPNAME}
-            #curl --request POST \
-            #--url https://circleci.com/api/v2/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pipeline \
-            #--header "Circle-Token: ${CIRCLE_TOKEN}" \
-            #--header 'content-type: application/json' \
-            #--data '{"branch":"'"$CIRCLE_BRANCH"'","parameters":{"run_smoketesting":true, "run_basedeployment": false}}'
+  - checkout
+  - setup_remote_docker
+  - run: *install_dependency
+  - run: *install_deploysuite
+  - run:
+      name: "configuring environment"
+      command: |
+        ./awsconfiguration.sh $DEPLOY_ENV
+        ./buildenv.sh -e $DEPLOY_ENV -b ${LOGICAL_ENV}-${APPNAME}-buildvar
+        echo awsenvconf >.dockerignore
+        echo buildenvvar >>.dockerignore
+  - run:
+      name: "building image"
+      command: |
+        source buildenvvar
+        ./build.sh ${APPNAME}
+  - deploy:
+      name: Running MasterScript.
+      command: |
+        #./awsconfiguration.sh $DEPLOY_ENV
+        source awsenvconf
+        ./buildenv.sh -e $DEPLOY_ENV -b ${LOGICAL_ENV}-${APPNAME}-deployvar
+        source buildenvvar
+        ./master_deploy.sh -d ECS -e $DEPLOY_ENV -t latest -s ${LOGICAL_ENV}-global-appvar,${LOGICAL_ENV}-${APPNAME}-appvar -i ${APPNAME}
+        #curl --request POST \
+        #--url https://circleci.com/api/v2/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pipeline \
+        #--header "Circle-Token: ${CIRCLE_TOKEN}" \
+        #--header 'content-type: application/json' \
+        #--data '{"branch":"'"$CIRCLE_BRANCH"'","parameters":{"run_smoketesting":true, "run_basedeployment": false}}'
 
 # Automated Smoke Testing
-smoke_testing: &smoke_testing
-  # Initialization.
+smoke_testing: &smoke_testing # Initialization.
   - checkout
   - setup_remote_docker
   - run: *install_test_dependency
@@ -150,15 +149,15 @@ workflows:
     jobs:
       # Development builds are executed on "develop" branch only.
       - "build-dev":
-          context : org-global
+          context: org-global
           filters: &filters-dev
             branches:
-              only: ['develop', 'multiround', 'release_0.20.9', 'metadata-fix']
+              only: ["develop", "multiround", "release_0.20.9", "metadata-fix"]
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.
       - "build-prod":
-          context : org-global
+          context: org-global
           filters: &filters-prod
             branches:
               only: master
@@ -169,13 +168,13 @@ workflows:
       - Hold [Smoke-Testing]:
           type: approval
       - smoke-testing-dev:
-          context : org-global
+          context: org-global
           requires:
             - Hold [Smoke-Testing]
           filters:
             <<: *filters-dev
       - smoke-testing-prod:
-          context : org-global
+          context: org-global
           requires:
             - Hold [Smoke-Testing]
           filters:
