@@ -1647,7 +1647,7 @@ class ChallengeEditor extends Component {
     const isChallengeType = challenge.typeId === CHALLENGE_TYPE_ID
     const showRoundType = isDesignChallenge && isChallengeType
     const showCheckpointPrizes = challenge.timelineTemplateId === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
-    const showDashBoard = (challenge.trackId === DS_TRACK_ID && isChallengeType) || (isDevChallenge && isMM)
+    const showDashBoard = (challenge.trackId === DS_TRACK_ID && isChallengeType) || (isDevChallenge && isMM) || (isDevChallenge && isChallengeType)
     const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
 
     const useDashboard = useDashboardData
