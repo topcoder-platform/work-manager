@@ -1005,7 +1005,7 @@ class ChallengeEditor extends Component {
     const isChallengeType = typeId === CHALLENGE_TYPE_ID
     const isDevChallenge = trackId === DEV_TRACK_ID
     const isMM = typeId === MARATHON_TYPE_ID
-    const showDashBoard = (isDataScience && isChallengeType) || (isDevChallenge && isMM)
+    const showDashBoard = (isDataScience && isChallengeType) || (isDevChallenge && isMM) || (isDevChallenge && isChallengeType)
 
     // indicate that creating process has started
     this.setState({ isSaving: true })
@@ -1647,7 +1647,7 @@ class ChallengeEditor extends Component {
     const isChallengeType = challenge.typeId === CHALLENGE_TYPE_ID
     const showRoundType = isDesignChallenge && isChallengeType
     const showCheckpointPrizes = challenge.timelineTemplateId === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
-    const showDashBoard = (challenge.trackId === DS_TRACK_ID && isChallengeType) || (isDevChallenge && isMM)
+    const showDashBoard = (challenge.trackId === DS_TRACK_ID && isChallengeType) || (isDevChallenge && isMM) || (isDevChallenge && isChallengeType)
     const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
 
     const useDashboard = useDashboardData
