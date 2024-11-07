@@ -459,22 +459,3 @@ ul.linkList {
     content:',\0000a0'; /* Non-breaking space */
   }
 }
-
-.newPlatformWarning{
-  text-align: center;
-  background-color: rgb(204, 65, 65);
-  padding: 20px;
-  max-width: 600px;
-  border-radius: 6px;
-  margin-bottom: 10px;
-
-  a {
-    color: white;
-    text-decoration: underline;
-  }
-}
-
-.warningHeader{
-  font-weight: bold;
-  font-size: 1.2rem;
-}

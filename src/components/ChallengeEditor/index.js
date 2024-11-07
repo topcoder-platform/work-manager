@@ -1641,8 +1641,6 @@ class ChallengeEditor extends Component {
     const currentChallengeId = this.getCurrentChallengeId()
     const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
     const copilotResources = metadata.members || challengeResources
-    console.log(`Members: ${JSON.stringify(metadata.members, null, 5)}`)
-    console.log(`challengeResources: ${JSON.stringify(challengeResources, null, 5)}`)
     const isDesignChallenge = challenge.trackId === DES_TRACK_ID
     const isDevChallenge = challenge.trackId === DEV_TRACK_ID
     const isMM = challenge.typeId === MARATHON_TYPE_ID
@@ -1662,10 +1660,6 @@ class ChallengeEditor extends Component {
     const challengeForm = isNew
       ? (
         <form name='challenge-new-form' noValidate autoComplete='off' onSubmit={this.createChallengeHandler}>
-          <div className={styles.newPlatformWarning}>
-            <span className={styles.warningHeader}>Please use the new platform</span><br />
-            <span>If you are launching a challenge that is not a Marathon Match or Innovation Challenge, please use the new app platform <a href='https://app.topcoder.com'>here</a></span>
-          </div>
           <div className={styles.newFormContainer}>
             <TrackField tracks={metadata.challengeTracks} challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
             <TypeField types={filteredTypes} onUpdateSelect={this.onUpdateSelect} challenge={challenge} />
