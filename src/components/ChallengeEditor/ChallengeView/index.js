@@ -18,7 +18,6 @@ import ChallengeTotalField from '../ChallengeTotal-Field'
 import Loader from '../../Loader'
 import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
-import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
 import {
   REVIEW_TYPES,
@@ -29,6 +28,7 @@ import {
 } from '../../../config/constants'
 import PhaseInput from '../../PhaseInput'
 import CheckpointPrizesField from '../CheckpointPrizes-Field'
+import { isBetaMode } from '../../../util/localstorage'
 
 const ChallengeView = ({
   projectDetail,
