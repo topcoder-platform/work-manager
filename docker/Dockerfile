@@ -1,5 +1,6 @@
 # Use the base image with Node.js
 FROM node:12
+RUN useradd -m -s /bin/bash appuser
 ARG NODE_ENV
 ARG BABEL_ENV
 
@@ -17,6 +18,9 @@ COPY . /challenge-engine-ui
 
 # Set working directory for future use
 WORKDIR /challenge-engine-ui
+
+RUN chown -R appuser:appuser /challenge-engine-ui
+USER appuser
 
 # Install the dependencies from package.json
 RUN echo "NODE ENV in Docker: $NODE_ENV"
