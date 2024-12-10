@@ -57,5 +57,5 @@ export function removeFromLocalStorage (key) {
  * A function that checks whether beta mode is enabled or not
  */
 export function isBetaMode () {
-  return getFromLocalStorage(BETA_MODE_COOKIE_TAG)
+  return getFromLocalStorage(BETA_MODE_COOKIE_TAG) === 'true'
 }
