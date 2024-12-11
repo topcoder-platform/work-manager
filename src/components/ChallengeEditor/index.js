@@ -69,11 +69,11 @@ import Tooltip from '../Tooltip'
 import CancelDropDown from './Cancel-Dropdown'
 import UseSchedulingAPIField from './UseSchedulingAPIField'
 
-import { isBetaMode } from '../../util/cookie'
 import MilestoneField from './Milestone-Field'
 import DiscussionField from './Discussion-Field'
 import CheckpointPrizesField from './CheckpointPrizes-Field'
 import { canChangeDuration } from '../../util/phase'
+import { isBetaMode } from '../../util/localstorage'
 
 const theme = {
   container: styles.modalContainer
