@@ -12,7 +12,7 @@ ReactDOM.render(<App />, document.getElementById('root'))
 
 // <!-- Start of topcoder Topcoder Universal Navigation script -->
 // SAST/open-redirect handling: make sure script hostname matches what we expect
-if ((new URL(UNIVERSAL_NAV_URL)).hostname.match(/uni-nav.topcoder(-dev)?.com$/i)) {
+if ((new URL(UNIVERSAL_NAV_URL)).hostname.match(/uni-nav\.topcoder(-dev)?\.com$/i)) {
   // eslint-disable-next-line no-unused-expressions
   !(function (n, t, e, a, c, i, o) {
   // eslint-disable-next-line no-unused-expressions, no-sequences
