@@ -2,7 +2,6 @@ import React from 'react'
 import PT from 'prop-types'
 import { Link } from 'react-router-dom'
 import cn from 'classnames'
-import xss from 'xss'
 
 import styles from './ProjectCard.module.scss'
 
@@ -14,7 +13,7 @@ const ProjectCard = ({ projectName, projectId, selected, setActiveProject }) => 
         className={cn(styles.projectName, { [styles.selected]: selected })}
         onClick={() => setActiveProject(parseInt(projectId))}
       >
-        <div className={styles.name} dangerouslySetInnerHTML={{ __html: xss(projectName) }} />
+        <div className={styles.name}>{projectName}</div>
       </Link>
     </div>
   )
