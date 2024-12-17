@@ -1,12 +1,10 @@
 {
   "copilotRole": {
     "email": "topcoderconnect+Copilot@gmail.com",
-    "password": "appirio123",
     "handle": "TCConnCopilot"
   },
   "copilotManagerRole": {
     "email": "topcoderconnect+CopilotManager@gmail.com",
-    "password": "appirio123",
     "handle": "TCConCopilotMgr"
   },
   "givenUrl": "https://challenges.topcoder-dev.com/",
