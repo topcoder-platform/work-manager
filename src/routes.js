@@ -94,9 +94,9 @@ class Routes extends React.Component {
     getFreshToken().then((token) => {
       this.props.saveToken(token)
     }).catch((error) => {
-      console.error(error)
-      const redirectBackToUrl = window.location.origin + this.props.location.pathname
-      window.location = ACCOUNTS_APP_LOGIN_URL + '?retUrl=' + redirectBackToUrl
+      console.error(error.message)
+      const redirectBackToUrl = encodeURIComponent(window.location.origin + this.props.location.pathname)
+      window.location = `${ACCOUNTS_APP_LOGIN_URL}?retUrl=${redirectBackToUrl}`
     })
   }
 
