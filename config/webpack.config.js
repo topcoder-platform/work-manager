@@ -27,9 +27,6 @@ const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP !== 'false'
 // makes for a smoother build process.
 const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== 'false'
 
-// Check if TypeScript is setup
-const useTypeScript = fs.existsSync(paths.appTsConfig)
-
 // style files regexes
 const cssRegex = /\.css$/
 const cssModuleRegex = /\.module\.css$/
@@ -257,7 +254,7 @@ module.exports = function (webpackEnv) {
       // for React Native Web.
       extensions: paths.moduleFileExtensions
         .map(ext => `.${ext}`)
-        .filter(ext => useTypeScript || !ext.includes('ts')),
+        .filter(ext => !ext.includes('ts')),
       alias: {
         // Support React Native Web
         // https://www.smashingmagazine.com/2016/08/a-glimpse-into-the-future-with-react-native-for-web/
