@@ -32,7 +32,7 @@ const paths = require('../config/paths')
 const configFactory = require('../config/webpack.config')
 const createDevServerConfig = require('../config/webpackDevServer.config')
 
-const useYarn = true
+const useYarn = false
 const isInteractive = process.stdout.isTTY
 
 // Warn and crash if required files are missing
