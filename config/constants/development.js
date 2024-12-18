@@ -51,7 +51,7 @@ module.exports = {
   // duration to show the prompt saying user will be logged out, before actually logging out the user
   IDLE_TIMEOUT_GRACE_MINUTES: 5,
   MULTI_ROUND_CHALLENGE_TEMPLATE_ID: 'd4201ca4-8437-4d63-9957-3f7708184b07',
-  UNIVERSAL_NAV_URL: '//uni-nav.topcoder-dev.com/v1/tc-universal-nav.js',
+  UNIVERSAL_NAV_URL: 'https://uni-nav.topcoder-dev.com/v1/tc-universal-nav.js',
   HEADER_AUTH_URLS_HREF: `https://accounts-auth0.${DOMAIN}?utm_source=community-app-main`,
   HEADER_AUTH_URLS_LOCATION: `https://accounts-auth0.${DOMAIN}?retUrl=%S&utm_source=community-app-main`,
   SKILLS_V5_API_URL: `${API_V5}/standardized-skills/skills/autocomplete`,
