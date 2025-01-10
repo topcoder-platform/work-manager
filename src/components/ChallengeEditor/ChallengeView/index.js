@@ -4,7 +4,6 @@ import PropTypes from 'prop-types'
 import cn from 'classnames'
 import { withRouter } from 'react-router-dom'
 import styles from './ChallengeView.module.scss'
-import xss from 'xss'
 import Track from '../../Track'
 import NDAField from '../NDAField'
 import UseSchedulingAPIField from '../UseSchedulingAPIField'
@@ -18,7 +17,6 @@ import ChallengeTotalField from '../ChallengeTotal-Field'
 import Loader from '../../Loader'
 import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
-import { isBetaMode } from '../../../util/cookie'
 import { loadGroupDetails } from '../../../actions/challenges'
 import {
   REVIEW_TYPES,
@@ -29,6 +27,7 @@ import {
 } from '../../../config/constants'
 import PhaseInput from '../../PhaseInput'
 import CheckpointPrizesField from '../CheckpointPrizes-Field'
+import { isBetaMode } from '../../../util/localstorage'
 
 const ChallengeView = ({
   projectDetail,
@@ -114,10 +113,7 @@ const ChallengeView = ({
             <div className={cn(styles.row, styles.topRow)}>
               <div className={styles.col}>
                 <span>
-                  <span className={styles.fieldTitle}>Project:</span>
-                  <span dangerouslySetInnerHTML={{
-                    __html: xss(projectDetail ? projectDetail.name : '')
-                  }} />
+                  <span className={styles.fieldTitle}>Project: {projectDetail ? projectDetail.name : ''}</span>
                 </span>
               </div>
               {selectedMilestone &&

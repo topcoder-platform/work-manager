@@ -17,11 +17,11 @@ import { saveToken } from './actions/auth'
 import { loadChallengeDetails } from './actions/challenges'
 import { connect } from 'react-redux'
 import { checkAllowedRoles, checkOnlyReadOnlyRoles, checkReadOnlyRoles } from './util/tc'
-import { setCookie, removeCookie, isBetaMode } from './util/cookie'
 import IdleTimer from 'react-idle-timer'
 import modalStyles from './styles/modal.module.scss'
 import ConfirmationModal from './components/Modal/ConfirmationModal'
 import Users from './containers/Users'
+import { isBetaMode, removeFromLocalStorage, saveToLocalStorage } from './util/localstorage'
 
 const { ACCOUNTS_APP_LOGIN_URL, IDLE_TIMEOUT_MINUTES, IDLE_TIMEOUT_GRACE_MINUTES, COMMUNITY_APP_URL } = process.env
 
@@ -94,9 +94,9 @@ class Routes extends React.Component {
     getFreshToken().then((token) => {
       this.props.saveToken(token)
     }).catch((error) => {
-      console.error(error)
-      const redirectBackToUrl = window.location.origin + this.props.location.pathname
-      window.location = ACCOUNTS_APP_LOGIN_URL + '?retUrl=' + redirectBackToUrl
+      console.error(error.message)
+      const redirectBackToUrl = encodeURIComponent(window.location.origin + this.props.location.pathname)
+      window.location = `${ACCOUNTS_APP_LOGIN_URL}?retUrl=${redirectBackToUrl}`
     })
   }
 
@@ -105,9 +105,9 @@ class Routes extends React.Component {
     const params = new URLSearchParams(search)
     if (!_.isEmpty(params.get('beta'))) {
       if (params.get('beta') === 'true' && !isBetaMode()) {
-        setCookie(BETA_MODE_COOKIE_TAG, 'true')
+        saveToLocalStorage(BETA_MODE_COOKIE_TAG, 'true')
       } else if (params.get('beta') === 'false' && isBetaMode()) {
-        removeCookie(BETA_MODE_COOKIE_TAG)
+        removeFromLocalStorage(BETA_MODE_COOKIE_TAG)
       }
       this.props.history.push(this.props.location.pathname)
     }
