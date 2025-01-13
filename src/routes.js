@@ -94,7 +94,7 @@ class Routes extends React.Component {
     getFreshToken().then((token) => {
       this.props.saveToken(token)
     }).catch((error) => {
-      console.error(error)
+      console.error('An unexpected error occurred while getting auth token')
       const redirectBackToUrl = window.location.origin + this.props.location.pathname
       window.location = ACCOUNTS_APP_LOGIN_URL + '?retUrl=' + redirectBackToUrl
     })

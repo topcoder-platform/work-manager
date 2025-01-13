@@ -112,7 +112,7 @@ checkBrowsers(paths.appPath, isInteractive)
   })
   .catch(err => {
     if (err && err.message) {
-      console.error(err.message)
+      console.error('An error occurred while starting the development server')
     }
     process.exit(1)
   })

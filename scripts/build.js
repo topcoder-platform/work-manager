@@ -10,7 +10,7 @@ process.on('unhandledRejection', err => {
 // Ensure environment variables are read.
 require('../config/env')
 
-console.log(`Build script is run with FILE_PICKER_API_KEY=${process.env.FILE_PICKER_API_KEY}`)
+console.log(`Build script is run`)
 
 const path = require('path')
 const chalk = require('chalk')
@@ -115,7 +115,7 @@ checkBrowsers(paths.appPath, isInteractive)
   )
   .catch(err => {
     if (err && err.message) {
-      console.error(err.message)
+      console.error('An unexpected error occurred while build')
     }
     process.exit(1)
   })
