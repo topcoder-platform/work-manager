@@ -782,7 +782,11 @@ class DescriptionField extends Component {
     }).then(res => {
       onload(res)
     }).catch(err => {
-      console.log('An unexpected error occured while uploading image')
+      if (process.env.NODE_ENV === 'development') {
+        console.log(err)
+      } else {
+        console.log('An unexpected error occured while uploading image')
+      }
       onerror()
     })
   }
