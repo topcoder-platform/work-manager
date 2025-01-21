@@ -114,7 +114,9 @@ checkBrowsers(paths.appPath, isInteractive)
     }
   )
   .catch(err => {
-    if (err && err.message) {
+    if (err && process.env.NODE_ENV === 'development') {
+      console.log(err)
+    } else {
       console.error('An unexpected error occurred while build')
     }
     process.exit(1)
