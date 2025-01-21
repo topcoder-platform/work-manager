@@ -8,8 +8,6 @@ import moment from 'moment-timezone'
 import { pick } from 'lodash/fp'
 import { withRouter } from 'react-router-dom'
 import { toastr } from 'react-redux-toastr'
-import xss from 'xss'
-
 import {
   VALIDATION_VALUE_TYPE,
   PRIZE_SETS_TYPE,
@@ -69,11 +67,11 @@ import Tooltip from '../Tooltip'
 import CancelDropDown from './Cancel-Dropdown'
 import UseSchedulingAPIField from './UseSchedulingAPIField'
 
-import { isBetaMode } from '../../util/cookie'
 import MilestoneField from './Milestone-Field'
 import DiscussionField from './Discussion-Field'
 import CheckpointPrizesField from './CheckpointPrizes-Field'
 import { canChangeDuration } from '../../util/phase'
+import { isBetaMode } from '../../util/localstorage'
 
 const theme = {
   container: styles.modalContainer
@@ -1704,10 +1702,7 @@ class ChallengeEditor extends Component {
             <div className={cn(styles.row, styles.topRow)}>
               <div className={styles.col}>
                 <span>
-                  <span className={styles.fieldTitle}>Project:</span>
-                  <span dangerouslySetInnerHTML={{
-                    __html: xss(projectDetail ? projectDetail.name : '')
-                  }} />
+                  <span className={styles.fieldTitle}>Project: {projectDetail ? projectDetail.name : ''}</span>
                 </span>
               </div>
               <div className={styles.col}>

@@ -10,7 +10,6 @@ import { CONNECT_APP_URL, PROJECT_ROLES } from '../../config/constants'
 import { PrimaryButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
-import xss from 'xss'
 import { checkReadOnlyRoles } from '../../util/tc'
 
 const ChallengesComponent = ({
@@ -61,12 +60,9 @@ const ChallengesComponent = ({
       <Helmet title={activeProject ? activeProject.name : ''} />
       {!dashboard && <div className={styles.titleContainer}>
         <div className={styles.titleLinks}>
-          <div
-            className={styles.title}
-            dangerouslySetInnerHTML={{
-              __html: xss(activeProject ? activeProject.name : '')
-            }}
-          />
+          <div className={styles.title}>
+            {activeProject ? activeProject.name : ''}
+          </div>
           {activeProject && activeProject.id && (
             <span>
               (
