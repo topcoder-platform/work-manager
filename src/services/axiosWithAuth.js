@@ -18,7 +18,11 @@ export const getToken = () => {
           resolve(token)
         })
         .catch((err) => {
-          console.error(err)
+          if (process.env.NODE_ENV === 'development') {
+            console.log(err)
+          } else {
+            console.error('Error getting auth token')
+          }
           reject(err)
         })
     }
@@ -40,7 +44,11 @@ axiosInstance.interceptors.request.use(config => {
       return config
     })
     .catch((err) => {
-      console.error(err)
+      if (process.env.NODE_ENV === 'development') {
+        console.log(err)
+      } else {
+        console.error('An unexpected error occured while retrieving the auth token.')
+      }
       const redirectBackToUrl = window.location.origin
       window.location = ACCOUNTS_APP_LOGIN_URL + '?retUrl=' + redirectBackToUrl
     })
