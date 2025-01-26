@@ -209,6 +209,16 @@ export const checkCopilot = token => {
 }
 
 /**
+ * Checks if token has any of the admin or copilot roles
+ * @param  token
+ */
+export const checkAdminOrCopilot = token => {
+  const roles = _.get(decodeToken(token), 'roles')
+  const allowedRoles = [...ADMIN_ROLES, ...COPILOT_ROLES]
+  return roles.some(val => allowedRoles.indexOf(val.toLowerCase()) > -1)
+}
+
+/**
  * Get resource role by name
  *
  * @param {Object[]} resourceRoles list of resource roles

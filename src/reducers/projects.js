@@ -11,8 +11,13 @@ import {
   LOAD_PROJECT_DETAILS_SUCCESS,
   LOAD_PROJECT_PHASES_FAILURE,
   LOAD_PROJECT_PHASES_PENDING,
-  LOAD_PROJECT_PHASES_SUCCESS
+  LOAD_PROJECT_PHASES_SUCCESS,
+  LOAD_PROJECT_TYPES_FAILURE,
+  LOAD_PROJECT_TYPES_PENDING,
+  LOAD_PROJECT_TYPES_SUCCESS,
+  UPDATE_PROJECT_SUCCESS
 } from '../config/constants'
+import { toastSuccess } from '../util/toaster'
 import moment from 'moment-timezone'
 
 /**
@@ -41,7 +46,9 @@ const initialState = {
   billingStartDate: null,
   billingEndDate: null,
   isPhasesLoading: false,
-  phases: []
+  phases: [],
+  isProjectTypesLoading: false,
+  projectTypes: []
 }
 
 export default function (state = initialState, action) {
@@ -101,6 +108,29 @@ export default function (state = initialState, action) {
       return {
         ...state,
         isPhasesLoading: false
+      }
+    case LOAD_PROJECT_TYPES_PENDING:
+      return {
+        ...state,
+        projectTypes: [],
+        isProjectTypesLoading: true
+      }
+    case LOAD_PROJECT_TYPES_SUCCESS:
+      return {
+        ...state,
+        projectTypes: action.payload,
+        isProjectTypesLoading: false
+      }
+    case LOAD_PROJECT_TYPES_FAILURE:
+      return {
+        ...state,
+        isProjectTypesLoading: false
+      }
+    case UPDATE_PROJECT_SUCCESS:
+      toastSuccess('Success', `Project updated successfully.`)
+      return {
+        ...state,
+        projectDetail: action.payload
       }
     default:
       return state

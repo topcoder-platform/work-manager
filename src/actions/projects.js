@@ -3,12 +3,18 @@ import {
   LOAD_CHALLENGE_MEMBERS_SUCCESS,
   LOAD_PROJECT_DETAILS,
   LOAD_PROJECT_PHASES,
-  LOAD_CHALLENGE_MEMBERS
+  LOAD_CHALLENGE_MEMBERS,
+  LOAD_PROJECT_TYPES,
+  CREATE_PROJECT,
+  UPDATE_PROJECT
 } from '../config/constants'
 import {
   fetchProjectById,
   fetchBillingAccount,
-  fetchProjectPhases
+  fetchProjectPhases,
+  getProjectTypes,
+  createProjectApi,
+  updateProjectApi
 } from '../services/projects'
 
 /**
@@ -41,6 +47,42 @@ export function loadProject (projectId, filterMembers = true) {
 
         return project
       })
+    })
+  }
+}
+
+/**
+ * Loads project types
+ */
+export function loadProjectTypes () {
+  return (dispatch) => {
+    return dispatch({
+      type: LOAD_PROJECT_TYPES,
+      payload: getProjectTypes()
+    })
+  }
+}
+
+/**
+ * Creates a project
+ */
+export function createProject (project) {
+  return (dispatch) => {
+    return dispatch({
+      type: CREATE_PROJECT,
+      payload: createProjectApi(project)
+    })
+  }
+}
+
+/**
+ * Updates a project
+ */
+export function updateProject (projectId, project) {
+  return (dispatch) => {
+    return dispatch({
+      type: UPDATE_PROJECT,
+      payload: updateProjectApi(projectId, project)
     })
   }
 }

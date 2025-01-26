@@ -6,12 +6,12 @@ import _ from 'lodash'
 import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import { Link } from 'react-router-dom'
-import { CONNECT_APP_URL, PROJECT_ROLES } from '../../config/constants'
+import { PROJECT_ROLES } from '../../config/constants'
 import { PrimaryButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
-import { checkReadOnlyRoles } from '../../util/tc'
-
+import { checkReadOnlyRoles, checkAdminOrCopilot } from '../../util/tc'
+import ProjectStatus from './ProjectStatus'
 const ChallengesComponent = ({
   challenges,
   projects,
@@ -62,17 +62,16 @@ const ChallengesComponent = ({
         <div className={styles.titleLinks}>
           <div className={styles.title}>
             {activeProject ? activeProject.name : ''}
+            {activeProject && activeProject.status && <ProjectStatus className={styles.status} status={activeProject.status} />}
           </div>
-          {activeProject && activeProject.id && (
+          {activeProject && activeProject.id && checkAdminOrCopilot(auth.token) && (
             <span>
               (
-              <a
-                href={`${CONNECT_APP_URL}/projects/${activeProject.id}`}
-                target='_blank'
-                rel='noopener noreferrer'
+              <Link
+                to={`/projects/${activeProject.id}/edit`}
               >
-                View Project
-              </a>
+                Edit Project
+              </Link>
               )
             </span>
           )}

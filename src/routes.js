@@ -22,6 +22,7 @@ import modalStyles from './styles/modal.module.scss'
 import ConfirmationModal from './components/Modal/ConfirmationModal'
 import Users from './containers/Users'
 import { isBetaMode, removeFromLocalStorage, saveToLocalStorage } from './util/localstorage'
+import ProjectEditor from './containers/ProjectEditor'
 
 const { ACCOUNTS_APP_LOGIN_URL, IDLE_TIMEOUT_MINUTES, IDLE_TIMEOUT_GRACE_MINUTES, COMMUNITY_APP_URL } = process.env
 
@@ -186,6 +187,22 @@ class Routes extends React.Component {
               <Challenges menu='NULL' key='projects' />,
               <TopBarContainer />,
               <Tab />,
+              <FooterContainer />
+            )()}
+          />
+          <Route exact path='/projects/new'
+            render={() => renderApp(
+              <ProjectEditor />,
+              <TopBarContainer />,
+              <Tab />,
+              <FooterContainer />
+            )()}
+          />
+          <Route exact path='/projects/:projectId/edit'
+            render={({ match }) => renderApp(
+              <ProjectEditor isEdit projectId={_.get(match.params, 'projectId', null)} />,
+              <TopBarContainer />,
+              <Tab projectId={match.params.projectId} />,
               <FooterContainer />
             )()}
           />

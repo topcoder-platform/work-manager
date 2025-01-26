@@ -154,3 +154,33 @@ export async function removeChallengeFromPhaseProduct (projectId, challengeId) {
     return axiosInstance.delete(`${PROJECT_API_URL}/${projectId}/phases/${selectedMilestoneProduct.phaseId}/products/${selectedMilestoneProduct.productId}`)
   }
 }
+
+/**
+ * Create project
+ * @param project project
+ * @returns {Promise<*>}
+ */
+export async function createProjectApi (project) {
+  const response = await axiosInstance.post(`${PROJECT_API_URL}`, project)
+  return _.get(response, 'data')
+}
+
+/**
+ * Update project
+ * @param projectId project id
+ * @param project project
+ * @returns {Promise<*>}
+ */
+export async function updateProjectApi (projectId, project) {
+  const response = await axiosInstance.patch(`${PROJECT_API_URL}/${projectId}`, project)
+  return _.get(response, 'data')
+}
+
+/**
+ * Get project types
+ * @returns {Promise<*>}
+ */
+export async function getProjectTypes () {
+  const response = await axiosInstance.get(`${PROJECT_API_URL}/metadata/projectTypes`)
+  return _.get(response, 'data')
+}

@@ -11,6 +11,24 @@
       margin-right: 10px;
     }
   }
+  .buttonNewProjectWrapper {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    margin-top: auto;
+    align-items: center;
+    .buttonNewProject {
+      min-width: 169px;
+      height: 40px;
+      text-decoration: none;
+      
+      :global {
+        span {
+          margin: 0 20px;
+        }
+      }
+    }
+  }
 
   ul {
     background-color: $lighter-gray;

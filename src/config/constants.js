@@ -155,6 +155,21 @@ export const RESET_SIDEBAR_ACTIVE_PARAMS = 'RESET_SIDEBAR_ACTIVE_PARAMS'
 
 export const BETA_MODE_COOKIE_TAG = 'beta-mode'
 
+export const LOAD_PROJECT_TYPES = 'LOAD_PROJECT_TYPES'
+export const LOAD_PROJECT_TYPES_SUCCESS = 'LOAD_PROJECT_TYPES_SUCCESS'
+export const LOAD_PROJECT_TYPES_PENDING = 'LOAD_PROJECT_TYPES_PENDING'
+export const LOAD_PROJECT_TYPES_FAILURE = 'LOAD_PROJECT_TYPES_FAILURE'
+
+export const CREATE_PROJECT = 'CREATE_PROJECT'
+export const CREATE_PROJECT_PENDING = 'CREATE_PROJECT_PENDING'
+export const CREATE_PROJECT_SUCCESS = 'CREATE_PROJECT_SUCCESS'
+export const CREATE_PROJECT_FAILURE = 'CREATE_PROJECT_FAILURE'
+
+export const UPDATE_PROJECT = 'UPDATE_PROJECT'
+export const UPDATE_PROJECT_PENDING = 'UPDATE_PROJECT_PENDING'
+export const UPDATE_PROJECT_SUCCESS = 'UPDATE_PROJECT_SUCCESS'
+export const UPDATE_PROJECT_FAILURE = 'UPDATE_PROJECT_FAILURE'
+
 // Name of challenge tracks
 export const CHALLENGE_TRACKS = {
   DESIGN: DES_TRACK_ID,
@@ -363,4 +378,16 @@ export const PAGINATION_PER_PAGE_OPTIONS = [
 export const SPECIAL_CHALLENGE_TAGS = [
   'Marathon Match',
   'Rapid Development Match'
+]
+
+/**
+ * Possible statuses of projects
+ */
+export const PROJECT_STATUS = [
+  { label: 'Active', value: 'active' },
+  { label: 'In Review', value: 'in_review' },
+  { label: 'Reviewed', value: 'reviewed' },
+  { label: 'Completed', value: 'completed' },
+  { label: 'Cancelled', value: 'cancelled' },
+  { label: 'Paused', value: 'paused' }
 ]

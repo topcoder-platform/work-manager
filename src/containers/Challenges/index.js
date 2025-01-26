@@ -22,7 +22,9 @@ import {
   resetSidebarActiveParams
 } from '../../actions/sidebar'
 import styles from './Challenges.module.scss'
-import { checkAdmin } from '../../util/tc'
+import { checkAdmin, checkAdminOrCopilot } from '../../util/tc'
+import { Link } from 'react-router-dom'
+import { PrimaryButton } from '../../components/Buttons'
 
 class Challenges extends Component {
   constructor (props) {
@@ -138,7 +140,7 @@ class Challenges extends Component {
     const projectInfo = _.find(projects, { id: activeProjectId }) || {}
     const projectComponents =
       !dashboard &&
-      projects.map(p => (
+      projects.map((p) => (
         <li key={p.id}>
           <ProjectCard
             projectName={p.name}
@@ -155,7 +157,14 @@ class Challenges extends Component {
           (activeProjectId === -1 && !selfService)) ? (
             <div className={!dashboard && styles.projectSearch}>
               {activeProjectId === -1 && !selfService && (
-                <div>No project selected. Select one below</div>
+                <div className={styles.buttonNewProjectWrapper}>
+                  <div>No project selected. Select one below</div>
+                  {checkAdminOrCopilot(auth.token) && (
+                    <Link className={styles.buttonNewProject} to={`/projects/new`}>
+                      <PrimaryButton text={'Create Project'} type={'info'} />
+                    </Link>
+                  )}
+                </div>
               )}
               <ul>{projectComponents}</ul>
             </div>
