@@ -6,7 +6,7 @@ import cn from 'classnames'
 import styles from './Outline.module.scss'
 import _ from 'lodash'
 
-const OutlineButton = ({ type, text, link, onClick, url, className, submit, disabled }) => {
+const OutlineButton = ({ type, text, link, onClick, url, className, submit, disabled, target = 'self' }) => {
   if (_.isEmpty(link) && _.isEmpty(url)) {
     return (
       <button
@@ -29,7 +29,7 @@ const OutlineButton = ({ type, text, link, onClick, url, className, submit, disa
   }
 
   return (
-    <a className={cn(styles.container, styles[type], className)} href={`${url}`}>
+    <a className={cn(styles.container, styles[type], className)} href={`${url}`} target={target}>
       <span>{text}</span>
     </a>
   )
@@ -43,7 +43,8 @@ OutlineButton.propTypes = {
   className: PropTypes.string,
   onClick: PropTypes.func,
   submit: PropTypes.bool,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  target: PropTypes.oneOf(['_blank', 'self'])
 }
 
 export default OutlineButton

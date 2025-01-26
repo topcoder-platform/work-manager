@@ -6,7 +6,10 @@ import {
   LOAD_CHALLENGE_MEMBERS,
   LOAD_PROJECT_TYPES,
   CREATE_PROJECT,
-  UPDATE_PROJECT
+  LOAD_PROJECT_BILLING_ACCOUNTS,
+  UPDATE_PROJECT_PENDING,
+  UPDATE_PROJECT_SUCCESS,
+  UPDATE_PROJECT_FAILURE
 } from '../config/constants'
 import {
   fetchProjectById,
@@ -14,6 +17,7 @@ import {
   fetchProjectPhases,
   getProjectTypes,
   createProjectApi,
+  fetchBillingAccounts,
   updateProjectApi
 } from '../services/projects'
 
@@ -32,6 +36,11 @@ export function loadProject (projectId, filterMembers = true) {
             payload: members
           })
         }
+        // Loads billing account
+        dispatch({
+          type: LOAD_PROJECT_BILLING_ACCOUNTS,
+          payload: fetchBillingAccounts(projectId)
+        })
 
         // Loads billing account
         dispatch({
@@ -75,18 +84,6 @@ export function createProject (project) {
   }
 }
 
-/**
- * Updates a project
- */
-export function updateProject (projectId, project) {
-  return (dispatch) => {
-    return dispatch({
-      type: UPDATE_PROJECT,
-      payload: updateProjectApi(projectId, project)
-    })
-  }
-}
-
 export function reloadProjectMembers (projectId) {
   return (dispatch) => {
     return dispatch({
@@ -98,6 +95,41 @@ export function reloadProjectMembers (projectId) {
           }
           return []
         })
+    })
+  }
+}
+
+/**
+ * Updates project details
+ * @param {string} projectId - The project ID
+ * @param {object} updatedProps - The updated project details
+ * @returns {Promise<object>} The updated project
+ */
+export function updateProject (projectId, updatedProps) {
+  return async (dispatch) => {
+    dispatch({
+      type: UPDATE_PROJECT_PENDING
+    })
+    return updateProjectApi(projectId, updatedProps).then((project) => {
+      // refresh billing account
+      dispatch({
+        type: LOAD_PROJECT_BILLING_ACCOUNT,
+        payload: fetchBillingAccount(projectId)
+      })
+      dispatch({
+        type: LOAD_PROJECT_BILLING_ACCOUNTS,
+        payload: fetchBillingAccounts(projectId)
+      })
+      return dispatch({
+        type: UPDATE_PROJECT_SUCCESS,
+        payload: project
+      })
+    }).catch((e) => {
+      dispatch({
+        type: UPDATE_PROJECT_FAILURE,
+        error: e
+      })
+      return Promise.reject(e)
     })
   }
 }

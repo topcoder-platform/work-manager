@@ -3,6 +3,9 @@
  */
 import _ from 'lodash'
 import {
+  LOAD_PROJECT_BILLING_ACCOUNTS_PENDING,
+  LOAD_PROJECT_BILLING_ACCOUNTS_SUCCESS,
+  LOAD_PROJECT_BILLING_ACCOUNTS_FAILURE,
   LOAD_PROJECT_BILLING_ACCOUNT_PENDING,
   LOAD_PROJECT_BILLING_ACCOUNT_SUCCESS,
   LOAD_PROJECT_BILLING_ACCOUNT_FAILURE,
@@ -15,9 +18,11 @@ import {
   LOAD_PROJECT_TYPES_FAILURE,
   LOAD_PROJECT_TYPES_PENDING,
   LOAD_PROJECT_TYPES_SUCCESS,
+  UPDATE_PROJECT_FAILURE,
+  UPDATE_PROJECT_PENDING,
   UPDATE_PROJECT_SUCCESS
 } from '../config/constants'
-import { toastSuccess } from '../util/toaster'
+import { toastSuccess, toastFailure } from '../util/toaster'
 import moment from 'moment-timezone'
 
 /**
@@ -37,12 +42,32 @@ const checkBillingExpired = (active, endDate) => {
 }
 const dateFormat = 'MMM DD, YYYY'
 
+/**
+ * Builds billing account options
+ * @param {array} billingAccountObj the billing account object
+ * @returns {array} the billing account options
+ */
+const buildBillingAccountOptions = (billingAccountObj) => {
+  const billingAccountOptions = billingAccountObj.map(billingAccount => ({
+    label: `(${billingAccount.tcBillingAccountId}) ${
+      billingAccount.endDate
+        ? ' - ' + moment(billingAccount.endDate).format(dateFormat)
+        : ''
+    }`,
+    value: billingAccount.tcBillingAccountId
+  }))
+  return billingAccountOptions
+}
+
 const initialState = {
   isLoading: false,
   projectDetail: {},
+  isBillingAccountsLoading: false,
+  billingAccounts: [],
   isBillingAccountExpired: false,
   isBillingAccountLoading: false,
   isBillingAccountLoadingFailed: false,
+  currentBillingAccount: null,
   billingStartDate: null,
   billingEndDate: null,
   isPhasesLoading: false,
@@ -66,21 +91,57 @@ export default function (state = initialState, action) {
         hasProjectAccess: true,
         isLoading: false
       }
+    case LOAD_PROJECT_BILLING_ACCOUNTS_PENDING:
+      return {
+        ...state,
+        isBillingAccountsLoading: true,
+        billingAccounts: []
+      }
+
+    case LOAD_PROJECT_BILLING_ACCOUNTS_SUCCESS:
+      return {
+        ...state,
+        isBillingAccountsLoading: false,
+        billingAccounts: [
+          ...buildBillingAccountOptions(
+            action.payload
+          )
+        ]
+      }
+    case LOAD_PROJECT_BILLING_ACCOUNTS_FAILURE:
+      return {
+        ...state,
+        isBillingAccountsLoading: false
+      }
     case LOAD_PROJECT_BILLING_ACCOUNT_PENDING:
       return {
         ...state,
         isBillingAccountLoading: true,
         isBillingAccountExpired: false,
         billingStartDate: '',
-        billingEndDate: ''
+        billingEndDate: '',
+        currentBillingAccount: null
       }
     case LOAD_PROJECT_BILLING_ACCOUNT_SUCCESS:
+      // Check if the payload is empty
+      if (!action.payload || Object.keys(action.payload).length === 0) {
+        // If empty, optionally just update the loading flag (or keep it as is):
+        return {
+          ...state,
+          isBillingAccountLoading: false,
+          isBillingAccountLoadingFailed: true
+        }
+      }
       return {
         ...state,
         isBillingAccountLoading: false,
-        isBillingAccountExpired: checkBillingExpired(action.payload.active, action.payload.endDate),
+        isBillingAccountExpired: checkBillingExpired(
+          action.payload.active,
+          action.payload.endDate
+        ),
         billingStartDate: moment(action.payload.startDate).format(dateFormat),
         billingEndDate: moment(action.payload.endDate).format(dateFormat),
+        currentBillingAccount: action.payload.tcBillingAccountId,
         isBillingAccountLoadingFailed: false
       }
     case LOAD_PROJECT_BILLING_ACCOUNT_FAILURE:
@@ -90,6 +151,7 @@ export default function (state = initialState, action) {
         isBillingAccountExpired: false,
         billingStartDate: '',
         billingEndDate: '',
+        currentBillingAccount: null,
         isBillingAccountLoadingFailed: true
       }
     case LOAD_PROJECT_PHASES_PENDING:
@@ -126,11 +188,28 @@ export default function (state = initialState, action) {
         ...state,
         isProjectTypesLoading: false
       }
-    case UPDATE_PROJECT_SUCCESS:
-      toastSuccess('Success', `Project updated successfully.`)
+    case UPDATE_PROJECT_PENDING:
       return {
         ...state,
-        projectDetail: action.payload
+        isUpdatingProject: true
+      }
+    case UPDATE_PROJECT_SUCCESS:
+      toastSuccess('Success', 'Project updated successfully.')
+      return {
+        ...state,
+        projectDetail: action.payload,
+        isUpdatingProject: false
+      }
+    case UPDATE_PROJECT_FAILURE:
+      const message = _.get(
+        action,
+        'payload.response.data.message',
+        'Failed to update project.'
+      )
+      toastFailure('Error', message)
+      return {
+        ...state,
+        isUpdatingProject: false
       }
     default:
       return state

@@ -1,4 +1,4 @@
-@import '../../styles/includes';
+@import "../../styles/includes";
 
 .challenges {
   width: 100%;
@@ -35,7 +35,11 @@
   display: flex;
   justify-content: space-between;
   padding: 0 30px;
+}
 
+.col-6 {
+  flex: 0 0 50%;
+  max-width: 50%;
 }
 
 .titleLinks {
@@ -56,15 +60,19 @@
     margin-left: 20px;
   }
 }
+.projectActionButtonWrapper {
+  display: flex;
+  gap: 5px;
 
-.buttonLaunchNew {
-  min-width: 169px;
-  height: 40px;
-  text-decoration: none;
+  a {
+    min-width: 169px;
+    height: 40px;
+    text-decoration: none;
 
-  :global {
-    span {
-      margin: 0 20px;
+    :global {
+      span {
+        margin: 0 20px;
+      }
     }
   }
 }

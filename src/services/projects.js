@@ -3,10 +3,23 @@ import { axiosInstance } from './axiosWithAuth'
 import * as queryString from 'query-string'
 import {
   GENERIC_PROJECT_MILESTONE_PRODUCT_NAME,
-  GENERIC_PROJECT_MILESTONE_PRODUCT_TYPE, PHASE_PRODUCT_CHALLENGE_ID_FIELD,
+  GENERIC_PROJECT_MILESTONE_PRODUCT_TYPE,
+  PHASE_PRODUCT_CHALLENGE_ID_FIELD,
   PHASE_PRODUCT_TEMPLATE_ID
 } from '../config/constants'
 const { PROJECT_API_URL } = process.env
+
+/**
+ * Get billing accounts based on project id
+ *
+ * @param {String} projectId Id of the project
+ *
+ * @returns {Promise<Object>} Billing accounts data
+ */
+export async function fetchBillingAccounts (projectId) {
+  const response = await axiosInstance.get(`${PROJECT_API_URL}/${projectId}/billingAccounts`)
+  return _.get(response, 'data')
+}
 
 /**
  * Get billing account based on project id

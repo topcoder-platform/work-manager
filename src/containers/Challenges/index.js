@@ -15,7 +15,7 @@ import {
   deleteChallenge,
   loadChallengeTypes
 } from '../../actions/challenges'
-import { loadProject } from '../../actions/projects'
+import { loadProject, updateProject } from '../../actions/projects'
 import {
   loadProjects,
   setActiveProject,
@@ -129,6 +129,10 @@ class Challenges extends Component {
       isBillingAccountExpired,
       billingStartDate,
       billingEndDate,
+      billingAccounts,
+      currentBillingAccount,
+      updateProject,
+      isBillingAccountsLoading,
       isBillingAccountLoadingFailed,
       isBillingAccountLoading,
       dashboard,
@@ -200,6 +204,10 @@ class Challenges extends Component {
             isBillingAccountExpired={isBillingAccountExpired}
             billingStartDate={billingStartDate}
             billingEndDate={billingEndDate}
+            billingAccounts={billingAccounts}
+            currentBillingAccount={currentBillingAccount}
+            updateProject={updateProject}
+            isBillingAccountsLoading={isBillingAccountsLoading}
             isBillingAccountLoadingFailed={isBillingAccountLoadingFailed}
             isBillingAccountLoading={isBillingAccountLoading}
             selfService={selfService}
@@ -244,6 +252,10 @@ Challenges.propTypes = {
   isBillingAccountExpired: PropTypes.bool,
   billingStartDate: PropTypes.string,
   billingEndDate: PropTypes.string,
+  billingAccounts: PropTypes.arrayOf(PropTypes.shape()),
+  currentBillingAccount: PropTypes.number,
+  updateProject: PropTypes.func.isRequired,
+  isBillingAccountsLoading: PropTypes.bool,
   isBillingAccountLoadingFailed: PropTypes.bool,
   isBillingAccountLoading: PropTypes.bool,
   selfService: PropTypes.bool,
@@ -264,6 +276,10 @@ const mapStateToProps = ({ challenges, sidebar, projects, auth }) => ({
   isBillingAccountExpired: projects.isBillingAccountExpired,
   billingStartDate: projects.billingStartDate,
   billingEndDate: projects.billingEndDate,
+  billingAccounts: projects.billingAccounts,
+  currentBillingAccount: projects.currentBillingAccount,
+  updateProject: projects.updateProject,
+  isBillingAccountsLoading: projects.isBillingAccountsLoading,
   isBillingAccountLoadingFailed: projects.isBillingAccountLoadingFailed,
   isBillingAccountLoading: projects.isBillingAccountLoading,
   auth: auth,
@@ -275,6 +291,7 @@ const mapDispatchToProps = {
   resetSidebarActiveParams,
   loadProject,
   loadProjects,
+  updateProject,
   loadChallengeTypes,
   setActiveProject,
   partiallyUpdateChallengeDetails,
