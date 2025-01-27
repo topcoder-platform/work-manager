@@ -52,5 +52,7 @@ module.exports = {
   HEADER_AUTH_URLS_HREF: `https://accounts-auth0.${DOMAIN}?utm_source=community-app-main`,
   HEADER_AUTH_URLS_LOCATION: `https://accounts-auth0.${DOMAIN}?retUrl=%S&utm_source=community-app-main`,
   SKILLS_V5_API_URL: `${API_V5}/standardized-skills/skills/autocomplete`,
-  UPDATE_SKILLS_V5_API_URL: `${API_V5}/standardized-skills/challenge-skills`
+  UPDATE_SKILLS_V5_API_URL: `${API_V5}/standardized-skills/challenge-skills`,
+  SALESFORCE_BILLING_ACCOUNT_LINK: 'https://topcoder.my.salesforce.com/apex/baredirect?id=',
+  TYPEFORM_URL: 'https://topcoder.typeform.com/to/YJ7AL4p8'
 }

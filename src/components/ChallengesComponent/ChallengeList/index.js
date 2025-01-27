@@ -22,6 +22,7 @@ import Message from '../Message'
 import SortIcon from '../../../assets/images/sort-icon.svg'
 import Select from '../../Select'
 import Loader from '../../Loader'
+import UpdateBillingAccount from '../../UpdateBillingAccount'
 
 import { CHALLENGE_STATUS, PAGE_SIZE, PAGINATION_PER_PAGE_OPTIONS, PROJECT_ROLES } from '../../../config/constants'
 import { checkAdmin, checkReadOnlyRoles } from '../../../util/tc'
@@ -393,6 +394,10 @@ class ChallengeList extends Component {
       setActiveProject,
       billingStartDate,
       billingEndDate,
+      currentBillingAccount,
+      billingAccounts,
+      isBillingAccountsLoading,
+      updateProject,
       isBillingAccountLoadingFailed,
       isBillingAccountLoading,
       selfService,
@@ -400,6 +405,7 @@ class ChallengeList extends Component {
       loginUserRoleInProject
     } = this.props
     const isReadOnly = checkReadOnlyRoles(this.props.auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
+    const isAdmin = checkAdmin(this.props.auth.token)
 
     if (warnMessage) {
       return <Message warnMessage={warnMessage} />
@@ -476,40 +482,23 @@ class ChallengeList extends Component {
       <div className={styles.list}>
         {dashboard && <h2>My Challenges</h2>}
         <div className={cn(styles.row, { [styles.dashboardRow]: dashboard })}>
-          {!dashboard &&
-            !isBillingAccountLoading &&
-            !isBillingAccountLoadingFailed &&
-            !isBillingAccountExpired && (
+          {!dashboard ? (
             <div className={styles['col-6']}>
-              <span className={styles.title}>Billing Account: </span>
-              <span className={styles.active}>ACTIVE</span> &nbsp;{' '}
-              <span className={styles.title}>Start Date:</span>{' '}
-              {billingStartDate} &nbsp;{' '}
-              <span className={styles.title}>End Date:</span> {billingEndDate}
+              <UpdateBillingAccount
+                billingAccounts={billingAccounts}
+                isBillingAccountsLoading={isBillingAccountsLoading}
+                isBillingAccountLoading={isBillingAccountLoading}
+                isBillingAccountLoadingFailed={isBillingAccountLoadingFailed}
+                billingStartDate={billingStartDate}
+                billingEndDate={billingEndDate}
+                isBillingAccountExpired={isBillingAccountExpired}
+                isAdmin={isAdmin}
+                currentBillingAccount={currentBillingAccount}
+                updateProject={updateProject}
+                projectId={activeProject.id}
+              />
             </div>
-          )}
-          {!dashboard &&
-            !isBillingAccountLoading &&
-            !isBillingAccountLoadingFailed &&
-            isBillingAccountExpired && (
-            <div className={styles['col-6']}>
-              <span className={styles.title}>Billing Account: </span>
-              <span className={styles.inactive}>INACTIVE</span> &nbsp;{' '}
-              <span className={styles.title}>Start Date:</span>{' '}
-              {billingStartDate} &nbsp;{' '}
-              <span className={styles.title}>End Date:</span> {billingEndDate}
-            </div>
-          )}
-          {!dashboard &&
-            !isBillingAccountLoading &&
-            isBillingAccountLoadingFailed && (
-            <div className={styles['col-6']}>
-              <span className={styles.error}>
-                  Billing Account failed to load
-              </span>
-            </div>
-          )}
-          {dashboard && (
+          ) : (
             <div className={styles['col-6']}>
               <div className={cn(styles.field, styles.input1)}>
                 <label htmlFor='project'>Project :</label>
@@ -888,6 +877,10 @@ ChallengeList.propTypes = {
   deleteChallenge: PropTypes.func.isRequired,
   isBillingAccountExpired: PropTypes.bool,
   billingStartDate: PropTypes.string,
+  currentBillingAccount: PropTypes.number,
+  updateProject: PropTypes.func.isRequired,
+  isBillingAccountsLoading: PropTypes.bool,
+  billingAccounts: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   isLoading: PropTypes.bool,
   billingEndDate: PropTypes.string,
   isBillingAccountLoadingFailed: PropTypes.bool,

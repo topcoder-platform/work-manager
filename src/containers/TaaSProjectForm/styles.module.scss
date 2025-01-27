@@ -1,0 +1,164 @@
+@import '../../styles/includes';
+
+.wrapper {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 30px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+@-moz-document url-prefix() {
+  .wrapper {
+    padding-bottom: 30px;
+  }
+}
+
+.status {
+  margin-left: 8px;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 16px;
+  background-color: #f0f0f0;
+  padding: 4px 8px;
+  border-radius: 25px;
+  color: $challenges-title;
+}
+
+.topContainer {
+  margin: 15px 20px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.leftContainer {
+  display: flex;
+  align-items: center;
+  .title {
+    text-align: left;
+  }
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 29px;
+  margin-right: 5px;
+  color: $challenges-title;
+  text-align: center;
+
+  display: flex;
+  gap: 5px;
+}
+
+.textRequired {
+  @include roboto-medium();
+
+  color: $tc-red;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 14px;
+  align-self: flex-end;
+  margin-bottom: 2px;
+}
+
+.container {
+  width: 100%;
+
+  .formContainer {
+    box-sizing: border-box;
+    margin: 15px 20px 30px 20px;
+
+    @include form-container-mobile();
+
+    form {
+      width: 100%;
+    }
+  }
+}
+
+.newFormContainer {
+  @include form-container-common();
+
+  padding: 30px;
+}
+
+.buttonContainer {
+  display: flex;
+  margin: 0px 30px;
+  flex-direction: row;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  gap: 30px;
+
+  .button {
+    height: 40px;
+
+    span {
+      padding: 0 20px;
+    }
+  }
+}
+
+.blockJobsContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.blockJobContainer {
+  border: 1px solid $lighter-gray;
+  padding: 30px;
+  width: 100%;
+}
+
+.blockFormColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.blockFormRow {
+  display: flex;
+  gap: 20px;
+}
+
+.iconPlus {
+  width: 16px;
+  height: 10px;
+
+  :global {
+    div {
+      display: flex;
+    }
+    div,
+    svg {
+      width: 16px;
+      height: 10px;
+      fill: grey;
+    }
+  }
+}
+
+.btnsAdd {
+  display: flex;
+  gap: 8px;
+  margin-top: 7px;
+}
+
+.btnAdd {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 23px;
+  height: 23px;
+  border: none;
+  background-color: $lighter-gray;
+  border-radius: 11px;
+}
+
+.blockField {
+  flex: 1;
+}

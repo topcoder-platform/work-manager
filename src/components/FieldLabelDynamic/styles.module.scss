@@ -1,0 +1,74 @@
+@import '../../styles/includes';
+
+.row {
+  box-sizing: border-box;
+  display: flex;
+  align-content: space-between;
+  justify-content: flex-start;
+  gap: 5px;
+
+  &.vertical {
+    flex-direction: column;
+  }
+
+  &.horizontal {
+    gap: 10px;
+
+    .col1 {
+      margin-top: 10px;
+    }
+
+    .blockContent {
+      flex: 1;
+    }
+  }
+
+  .field {
+    label {
+      @include roboto-bold();
+
+      font-size: 16px;
+      line-height: 19px;
+      font-weight: 500;
+      color: $tc-gray-80;
+      margin-bottom: 0;
+    }
+
+    &.col1 {
+      white-space: nowrap;
+      display: flex;
+      flex-direction: column;
+
+      span {
+        color: $tc-red;
+      }
+    }
+
+    &.col2 {
+      width: 100%;
+    }
+  }
+}
+
+.blockContent {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.blockValue {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.blockInfo {
+  font-size: 13px;
+  color: $tc-gray-70;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.error {
+  color: $tc-red;
+}

@@ -1,0 +1,48 @@
+
+@import "../../../styles/includes";
+.container {
+    min-height: 22px;
+    width: 86px;
+    border-radius: 3px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    margin-left: 4px;
+  
+    div {
+      @include roboto;
+  
+      font-size: 14px;
+      font-weight: 400;
+      line-height: 17px;
+      color: $white;
+      text-transform: capitalize;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 4px 8px;
+
+    }
+  
+    &.in_review,
+    &.reviewed {
+      background-color: $status-gray;
+    }
+  
+    &.active {
+      background-color: $status-green;
+    }
+  
+    &.completed {
+      background-color: $status-blue;
+    }
+  
+    &.cancelled {
+      background-color: $tc-black;
+    }
+  
+    &.paused {
+      background-color: $tc-red;
+    }
+  }

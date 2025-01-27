@@ -28,13 +28,17 @@ export function setActiveProject (projectId) {
 /**
  * Loads projects of the authenticated user
  */
-export function loadProjects (filterProjectName = '', myProjects = true) {
+export function loadProjects (filterProjectName = '', myProjects = true, paramFilters = {}) {
   return (dispatch) => {
     dispatch({
       type: LOAD_PROJECTS_PENDING
     })
 
-    const filters = {}
+    const filters = {
+      status: 'active',
+      sort: 'lastActivityAt desc',
+      ...paramFilters
+    }
     if (!_.isEmpty(filterProjectName)) {
       if (!isNaN(filterProjectName)) { // if it is number
         filters['id'] = parseInt(filterProjectName, 10)
@@ -42,8 +46,7 @@ export function loadProjects (filterProjectName = '', myProjects = true) {
         filters['keyword'] = decodeURIComponent(filterProjectName)
       }
     }
-    filters['status'] = 'active'
-    filters['sort'] = 'lastActivityAt desc'
+
     // filters['perPage'] = 20
     // filters['page'] = 1
     if (myProjects) {

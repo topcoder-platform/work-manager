@@ -1,0 +1,45 @@
+@import '../../styles/includes';
+
+.container {
+  padding: 20px 20px 0px;
+
+  ul {
+    background-color: $lighter-gray;
+    list-style: none;
+    width: 100%;
+    padding: 0;
+    margin-top: 0;
+    border-radius: 3px;
+    flex: 1;
+  }
+
+  div,
+  a {
+    color: $dark-gray;
+    text-decoration: none;
+  }
+}
+
+.searchHeader {
+  display: flex;
+  gap: 5px;
+  padding-bottom: 15px;
+  justify-content: space-between;
+}
+
+.canEdit {
+  cursor: pointer;
+}
+
+
+.buttonCreateNewTaaS {
+  min-width: 169px;
+  height: 40px;
+  text-decoration: none;
+  
+  :global {
+    span {
+      margin: 0 20px;
+    }
+  }
+}

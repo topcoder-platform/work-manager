@@ -28,7 +28,9 @@ export const {
   API_V4,
   API_V5,
   SKILLS_V5_API_URL,
-  UPDATE_SKILLS_V5_API_URL
+  UPDATE_SKILLS_V5_API_URL,
+  SALESFORCE_BILLING_ACCOUNT_LINK,
+  TYPEFORM_URL
 } = process.env
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
 
@@ -65,6 +67,12 @@ export const LOAD_ALL_USER_PROJECTS_FAILURE = 'LOAD_ALL_USER_PROJECTS_FAILURE'
 export const SEARCH_USER_PROJECTS_SUCCESS = 'SEARCH_USER_PROJECTS_SUCCESS'
 export const SEARCH_USER_PROJECTS_PENDING = 'SEARCH_USER_PROJECTS_PENDING'
 export const SEARCH_USER_PROJECTS_FAILURE = 'SEARCH_USER_PROJECTS_FAILURE'
+
+// project billingAccounts
+export const LOAD_PROJECT_BILLING_ACCOUNTS = 'LOAD_PROJECT_BILLING_ACCOUNTS'
+export const LOAD_PROJECT_BILLING_ACCOUNTS_PENDING = 'LOAD_PROJECT_BILLING_ACCOUNTS_PENDING'
+export const LOAD_PROJECT_BILLING_ACCOUNTS_FAILURE = 'LOAD_PROJECT_BILLING_ACCOUNTS_FAILURE'
+export const LOAD_PROJECT_BILLING_ACCOUNTS_SUCCESS = 'LOAD_PROJECT_BILLING_ACCOUNTS_SUCCESS'
 
 // project billingAccount
 export const LOAD_PROJECT_BILLING_ACCOUNT = 'LOAD_PROJECT_BILLING_ACCOUNT'
@@ -113,6 +121,11 @@ export const LOAD_PROJECT_DETAILS_SUCCESS = 'LOAD_PROJECT_DETAILS_SUCCESS'
 export const LOAD_PROJECT_DETAILS_PENDING = 'LOAD_PROJECT_DETAILS_PENDING'
 export const LOAD_PROJECT_DETAILS_FAILURE = 'LOAD_PROJECT_DETAILS_FAILURE'
 
+export const UPDATE_PROJECT_DETAILS = 'UPDATE_PROJECT_DETAILS'
+export const UPDATE_PROJECT_DETAILS_SUCCESS = 'UPDATE_PROJECT_DETAILS_SUCCESS'
+export const UPDATE_PROJECT_DETAILS_PENDING = 'UPDATE_PROJECT_DETAILS_PENDING'
+export const UPDATE_PROJECT_DETAILS_FAILURE = 'UPDATE_PROJECT_DETAILS_FAILURE'
+
 export const UPDATE_PROJECT_ROLE_FOR_MEMBER_SUCCESS = 'UPDATE_PROJECT_ROLE_FOR_MEMBER_SUCCESS'
 
 export const LOAD_CHALLENGE_SUBMISSIONS = 'LOAD_CHALLENGE_SUBMISSIONS'
@@ -154,6 +167,21 @@ export const SET_FILTER_CHALLENGE_VALUE = 'SET_FILTER_CHALLENGE_VALUE'
 export const RESET_SIDEBAR_ACTIVE_PARAMS = 'RESET_SIDEBAR_ACTIVE_PARAMS'
 
 export const BETA_MODE_COOKIE_TAG = 'beta-mode'
+
+export const LOAD_PROJECT_TYPES = 'LOAD_PROJECT_TYPES'
+export const LOAD_PROJECT_TYPES_SUCCESS = 'LOAD_PROJECT_TYPES_SUCCESS'
+export const LOAD_PROJECT_TYPES_PENDING = 'LOAD_PROJECT_TYPES_PENDING'
+export const LOAD_PROJECT_TYPES_FAILURE = 'LOAD_PROJECT_TYPES_FAILURE'
+
+export const CREATE_PROJECT = 'CREATE_PROJECT'
+export const CREATE_PROJECT_PENDING = 'CREATE_PROJECT_PENDING'
+export const CREATE_PROJECT_SUCCESS = 'CREATE_PROJECT_SUCCESS'
+export const CREATE_PROJECT_FAILURE = 'CREATE_PROJECT_FAILURE'
+
+export const UPDATE_PROJECT = 'UPDATE_PROJECT'
+export const UPDATE_PROJECT_PENDING = 'UPDATE_PROJECT_PENDING'
+export const UPDATE_PROJECT_SUCCESS = 'UPDATE_PROJECT_SUCCESS'
+export const UPDATE_PROJECT_FAILURE = 'UPDATE_PROJECT_FAILURE'
 
 // Name of challenge tracks
 export const CHALLENGE_TRACKS = {
@@ -363,4 +391,30 @@ export const PAGINATION_PER_PAGE_OPTIONS = [
 export const SPECIAL_CHALLENGE_TAGS = [
   'Marathon Match',
   'Rapid Development Match'
+]
+
+/**
+ * Possible statuses of projects
+ */
+export const PROJECT_STATUS = [
+  { label: 'Active', value: 'active' },
+  { label: 'In Review', value: 'in_review' },
+  { label: 'Reviewed', value: 'reviewed' },
+  { label: 'Completed', value: 'completed' },
+  { label: 'Cancelled', value: 'cancelled' },
+  { label: 'Paused', value: 'paused' }
+]
+
+export const JOB_ROLE_OPTIONS = [
+  { value: null, label: 'Select Role' },
+  { value: 'designer', label: 'Designer' },
+  { value: 'software-developer', label: 'Software Developer' },
+  { value: 'data-scientist', label: 'Data Scientist' },
+  { value: 'data-engineer', label: 'Data Engineer' }
+]
+
+export const JOB_WORKLOAD_OPTIONS = [
+  { value: null, label: 'Select Workload' },
+  { value: 'fulltime', label: 'Full-Time' },
+  { value: 'fractional', label: 'Fractional' }
 ]
