@@ -2,6 +2,9 @@
 
 .projectSearch {
   padding: 20px 20px 0px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 
   .projectSearchHeader {
     display: flex;
@@ -66,4 +69,17 @@
     padding-right: 20px;
     color: $white;
   }
+}
+
+.blockNoProjectSelected {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buttonCreateNewTaaS {
+  min-width: 169px;
+  height: 40px;
+  text-decoration: none;
 }

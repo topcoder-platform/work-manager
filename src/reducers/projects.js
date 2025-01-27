@@ -20,7 +20,10 @@ import {
   LOAD_PROJECT_TYPES_SUCCESS,
   UPDATE_PROJECT_FAILURE,
   UPDATE_PROJECT_PENDING,
-  UPDATE_PROJECT_SUCCESS
+  UPDATE_PROJECT_SUCCESS,
+  UPDATE_PROJECT_DETAILS_FAILURE,
+  UPDATE_PROJECT_DETAILS_PENDING,
+  UPDATE_PROJECT_DETAILS_SUCCESS
 } from '../config/constants'
 import { toastSuccess, toastFailure } from '../util/toaster'
 import moment from 'moment-timezone'
@@ -61,6 +64,7 @@ const buildBillingAccountOptions = (billingAccountObj) => {
 
 const initialState = {
   isLoading: false,
+  isUpdating: false,
   projectDetail: {},
   isBillingAccountsLoading: false,
   billingAccounts: [],
@@ -82,6 +86,12 @@ export default function (state = initialState, action) {
       return { ...state, isLoading: true }
     case LOAD_PROJECT_DETAILS_FAILURE: {
       const status = _.get(action, 'payload.response.status', 500)
+      const errorMessage = _.get(
+        action.payload,
+        'response.data.message',
+        'Failed to load project details'
+      )
+      toastFailure('Error', errorMessage)
       return { ...state, isLoading: false, hasProjectAccess: status !== 403 }
     }
     case LOAD_PROJECT_DETAILS_SUCCESS:
@@ -112,6 +122,29 @@ export default function (state = initialState, action) {
       return {
         ...state,
         isBillingAccountsLoading: false
+      }
+    case UPDATE_PROJECT_DETAILS_PENDING:
+      return { ...state, isUpdating: true }
+    case UPDATE_PROJECT_DETAILS_FAILURE: {
+      const errorMessage = _.get(
+        action.payload,
+        'response.data.message',
+        'Failed to update project info'
+      )
+      toastFailure('Error', errorMessage)
+      return { ...state, isUpdating: false }
+    }
+    case UPDATE_PROJECT_DETAILS_SUCCESS:
+      toastSuccess('Success', 'Project updated successfully.')
+      return {
+        ...state,
+        projectDetail: {
+          ...state.projectDetail,
+          name: action.payload.name,
+          details: action.payload.details
+        },
+        hasProjectAccess: true,
+        isUpdating: false
       }
     case LOAD_PROJECT_BILLING_ACCOUNT_PENDING:
       return {

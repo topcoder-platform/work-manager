@@ -10,6 +10,7 @@
     "@nateradebaugh/react-datetime": "^4.4.11",
     "@popperjs/core": "^2.5.4",
     "@svgr/webpack": "2.4.1",
+    "@toast-ui/editor": "^2.5.1",
     "axios": "^0.19.0",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "9.0.0",
@@ -43,6 +44,7 @@
     "file-loader": "2.0.0",
     "filestack-js": "^3.20.0",
     "filestack-react": "^4.0.1",
+    "formik": "^2.4.6",
     "fs-extra": "7.0.0",
     "html-webpack-plugin": "4.0.0-alpha.2",
     "identity-obj-proxy": "3.0.0",
@@ -117,7 +119,8 @@
     "webpack": "^4.43.0",
     "webpack-dev-server": "^3.11.0",
     "webpack-manifest-plugin": "2.0.4",
-    "xss": "^1.0.6"
+    "xss": "^1.0.6",
+    "yup": "^1.6.1"
   },
   "scripts": {
     "start": "node server.js",

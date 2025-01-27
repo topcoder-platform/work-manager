@@ -6,6 +6,7 @@ import React, { Component, Fragment } from 'react'
 // import { Redirect } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
+import { Link } from 'react-router-dom'
 import ChallengesComponent from '../../components/ChallengesComponent'
 import ProjectCard from '../../components/ProjectCard'
 // import Loader from '../../components/Loader'
@@ -23,7 +24,6 @@ import {
 } from '../../actions/sidebar'
 import styles from './Challenges.module.scss'
 import { checkAdmin, checkAdminOrCopilot } from '../../util/tc'
-import { Link } from 'react-router-dom'
 import { PrimaryButton } from '../../components/Buttons'
 
 class Challenges extends Component {
@@ -97,7 +97,9 @@ class Challenges extends Component {
         (!reduxProjectInfo || `${reduxProjectInfo.id}` !== projectId) &&
         !projectLoading
       ) {
-        loadProject(projectId)
+        if (projectId) {
+          loadProject(projectId)
+        }
       } else {
         window.localStorage.removeItem('projectLoading')
       }

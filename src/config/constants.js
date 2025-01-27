@@ -121,6 +121,11 @@ export const LOAD_PROJECT_DETAILS_SUCCESS = 'LOAD_PROJECT_DETAILS_SUCCESS'
 export const LOAD_PROJECT_DETAILS_PENDING = 'LOAD_PROJECT_DETAILS_PENDING'
 export const LOAD_PROJECT_DETAILS_FAILURE = 'LOAD_PROJECT_DETAILS_FAILURE'
 
+export const UPDATE_PROJECT_DETAILS = 'UPDATE_PROJECT_DETAILS'
+export const UPDATE_PROJECT_DETAILS_SUCCESS = 'UPDATE_PROJECT_DETAILS_SUCCESS'
+export const UPDATE_PROJECT_DETAILS_PENDING = 'UPDATE_PROJECT_DETAILS_PENDING'
+export const UPDATE_PROJECT_DETAILS_FAILURE = 'UPDATE_PROJECT_DETAILS_FAILURE'
+
 export const UPDATE_PROJECT_ROLE_FOR_MEMBER_SUCCESS = 'UPDATE_PROJECT_ROLE_FOR_MEMBER_SUCCESS'
 
 export const LOAD_CHALLENGE_SUBMISSIONS = 'LOAD_CHALLENGE_SUBMISSIONS'
@@ -398,4 +403,18 @@ export const PROJECT_STATUS = [
   { label: 'Completed', value: 'completed' },
   { label: 'Cancelled', value: 'cancelled' },
   { label: 'Paused', value: 'paused' }
+]
+
+export const JOB_ROLE_OPTIONS = [
+  { value: null, label: 'Select Role' },
+  { value: 'designer', label: 'Designer' },
+  { value: 'software-developer', label: 'Software Developer' },
+  { value: 'data-scientist', label: 'Data Scientist' },
+  { value: 'data-engineer', label: 'Data Engineer' }
+]
+
+export const JOB_WORKLOAD_OPTIONS = [
+  { value: null, label: 'Select Workload' },
+  { value: 'fulltime', label: 'Full-Time' },
+  { value: 'fractional', label: 'Fractional' }
 ]

@@ -55,6 +55,8 @@ class TabContainer extends Component {
       this.setState({ currentTab: 3 })
     } else if (nextProps.history.location.pathname === '/self-service') {
       this.setState({ currentTab: 4 })
+    } else if (nextProps.history.location.pathname === '/taas') {
+      this.setState({ currentTab: 5 })
     } else {
       this.setState({ currentTab: 0 })
     }
@@ -104,6 +106,9 @@ class TabContainer extends Component {
     } else if (tab === 4) {
       history.push('/self-service')
       this.setState({ currentTab: 4 })
+    } else if (tab === 5) {
+      history.push('/taas')
+      this.setState({ currentTab: 5 })
     }
 
     resetSidebarActiveParams()

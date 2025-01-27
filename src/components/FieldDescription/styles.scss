@@ -1,0 +1,20 @@
+@import "../../styles/includes";
+
+.description-editor {
+  width: 100%;
+
+  :global {
+    .tui-editor-contents {
+      code {
+        background-color: transparent;
+        color: inherit;
+      }
+
+      pre {
+        background-color: transparent;
+        color: inherit;
+        padding: 0;
+      }
+    }
+  }
+}

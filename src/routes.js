@@ -11,12 +11,20 @@ import TopBarContainer from './containers/TopbarContainer'
 import FooterContainer from './containers/FooterContainer'
 import Tab from './containers/Tab'
 import Challenges from './containers/Challenges'
+import TaaSList from './containers/TaaSList'
+import TaaSProjectForm from './containers/TaaSProjectForm'
 import ChallengeEditor from './containers/ChallengeEditor'
 import { getFreshToken, decodeToken } from 'tc-auth-lib'
 import { saveToken } from './actions/auth'
 import { loadChallengeDetails } from './actions/challenges'
 import { connect } from 'react-redux'
-import { checkAllowedRoles, checkOnlyReadOnlyRoles, checkReadOnlyRoles } from './util/tc'
+import {
+  checkAllowedRoles,
+  checkOnlyReadOnlyRoles,
+  checkReadOnlyRoles,
+  checkAdmin,
+  checkCopilot
+} from './util/tc'
 import IdleTimer from 'react-idle-timer'
 import modalStyles from './styles/modal.module.scss'
 import ConfirmationModal from './components/Modal/ConfirmationModal'
@@ -139,6 +147,8 @@ class Routes extends React.Component {
 
     const isAllowed = checkAllowedRoles(_.get(decodeToken(this.props.token), 'roles'))
     const isReadOnly = checkReadOnlyRoles(this.props.token)
+    const isCopilot = checkCopilot(this.props.token)
+    const isAdmin = checkAdmin(this.props.token)
     const modal = (<ConfirmationModal
       theme={theme}
       title='Session Timeout'
@@ -226,6 +236,42 @@ class Routes extends React.Component {
               <FooterContainer />
             )()}
           />
+          <Route exact path='/taas'
+            render={() => renderApp(
+              <TaaSList />,
+              <TopBarContainer />,
+              <Tab />,
+              <FooterContainer />
+            )()}
+          />
+          {(isCopilot || isAdmin) && (
+            <Route
+              exact
+              path='/taas/new'
+              render={({ match }) =>
+                renderApp(
+                  <TaaSProjectForm />,
+                  <TopBarContainer />,
+                  <Tab />,
+                  <FooterContainer />
+                )()
+              }
+            />
+          )}
+          {(isCopilot || isAdmin) && (
+            <Route
+              exact
+              path='/taas/:projectId/edit'
+              render={({ match }) =>
+                renderApp(
+                  <TaaSProjectForm projectId={match.params.projectId} />,
+                  <TopBarContainer />,
+                  <Tab projectId={match.params.projectId} />,
+                  <FooterContainer />
+                )()
+              }
+            />
+          )}
           {
             !isReadOnly && (
               <Route exact path='/projects/:projectId/challenges/new'

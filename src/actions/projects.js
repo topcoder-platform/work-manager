@@ -84,6 +84,19 @@ export function createProject (project) {
   }
 }
 
+/**
+ * Only loads project details
+ * @param {String} projectId Id of the project
+ */
+export function loadOnlyProjectInfo (projectId) {
+  return (dispatch) => {
+    return dispatch({
+      type: LOAD_PROJECT_DETAILS,
+      payload: fetchProjectById(projectId)
+    })
+  }
+}
+
 export function reloadProjectMembers (projectId) {
   return (dispatch) => {
     return dispatch({
