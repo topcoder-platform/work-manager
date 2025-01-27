@@ -36,7 +36,7 @@ class TabContainer extends Component {
       // do not fetch projects for users page
       history.location.pathname !== '/users'
     ) {
-      this.props.loadProjects()
+      this.loadProjects(this.props)
     }
 
     if (projectId && activeProjectId < 0) {
@@ -89,7 +89,17 @@ class TabContainer extends Component {
     }
 
     // now it's okay to load the projects
-    this.props.loadProjects()
+    this.loadProjects(nextProps)
+  }
+
+  loadProjects (props) {
+    const { history } = props
+
+    if (history.location.pathname === '/taas') {
+      this.props.loadProjects('', false, { type: 'talent-as-a-service', status: undefined })
+    } else {
+      this.props.loadProjects()
+    }
   }
 
   onTabChange (tab) {
@@ -99,6 +109,7 @@ class TabContainer extends Component {
       this.setState({ currentTab: 1 })
     } else if (tab === 2) {
       history.push('/projects')
+      this.props.unloadProjects()
       this.setState({ currentTab: 2 })
     } else if (tab === 3) {
       history.push('/users')
@@ -108,6 +119,7 @@ class TabContainer extends Component {
       this.setState({ currentTab: 4 })
     } else if (tab === 5) {
       history.push('/taas')
+      this.props.unloadProjects()
       this.setState({ currentTab: 5 })
     }
 

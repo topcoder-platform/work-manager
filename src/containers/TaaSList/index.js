@@ -6,7 +6,7 @@ import TaaSProjectCard from '../../components/TaaSProjectCard'
 import Loader from '../../components/Loader'
 import cn from 'classnames'
 import { checkAdmin, checkCopilot } from '../../util/tc'
-import { OutlineButton } from '../../components/Buttons'
+import { PrimaryButton } from '../../components/Buttons'
 
 import styles from './styles.module.scss'
 
@@ -29,8 +29,8 @@ const TaaSList = ({ taasProjects, auth, isLoading }) => {
         <div>No project selected. Select one below</div>
         {(isCopilot || isAdmin) && (
           <Link className={styles.buttonCreateNewTaaS} to='/taas/new'>
-            <OutlineButton
-              text='New TaaS Project'
+            <PrimaryButton
+              text='Create TaaS Project'
               type='info'
               submit
             />

@@ -27,7 +27,7 @@ export default function (state = initialState, action) {
     case LOAD_PROJECTS_SUCCESS:
       return {
         ...state,
-        projects: action.projects,
+        projects: _.filter(action.projects, p => p.type !== 'talent-as-a-service'),
         taasProjects: _.filter(action.projects, {
           type: 'talent-as-a-service'
         }),

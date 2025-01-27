@@ -30,3 +30,16 @@
 .canEdit {
   cursor: pointer;
 }
+
+
+.buttonCreateNewTaaS {
+  min-width: 169px;
+  height: 40px;
+  text-decoration: none;
+  
+  :global {
+    span {
+      margin: 0 20px;
+    }
+  }
+}

@@ -19,6 +19,7 @@ import { JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
 import { taaSProjectFormValidationSchema } from '../../util/validation'
 import { createProjectApi } from '../../services/projects'
 import { loadOnlyProjectInfo, updateProject } from '../../actions/projects'
+import ProjectStatus from '../../components/ChallengesComponent/ProjectStatus'
 
 import styles from './styles.module.scss'
 import Select from '../../components/Select'
@@ -110,7 +111,7 @@ const TaaSProjectForm = ({
         createProjectApi(createFormData)
           .then(result => {
             setIsLoading(false)
-            history.push(`/projects/${result.id}/challenges`)
+            history.push(`/taas/${result.id}/edit`)
             setActiveProject(parseInt(result.id))
           })
           .catch(e => {
@@ -184,13 +185,11 @@ const TaaSProjectForm = ({
     }
   }, [projectId])
 
-  const isTouched = useMemo(() => !_.isEmpty(formik.touched), [formik.touched])
-
   const getFormError = useCallback(
     fieldName => {
-      return isTouched ? _.get(formik.errors, fieldName) : ''
+      return _.get(formik.touched, fieldName) ? _.get(formik.errors, fieldName) : ''
     },
-    [formik, isTouched]
+    [formik]
   )
 
   return (
@@ -199,261 +198,260 @@ const TaaSProjectForm = ({
         <div className={styles.leftContainer}>
           <div className={styles.title}>
             {isCreateNewProject ? 'Create TaaS Project' : 'Edit TaaS Project'}
+            {projectDetail && projectDetail.status && (
+              <ProjectStatus className={styles.status} status={projectDetail.status} />
+            )}
           </div>
         </div>
       </div>
-      <div className={styles.textRequired}>* Required</div>
       <div className={styles.container}>
         <div className={styles.formContainer}>
           {canShowEditForm ? (
-            <FormikProvider value={formik}>
-              <form onSubmit={formik.handleSubmit}>
-                <div
-                  className={cn(
-                    styles.newFormContainer,
-                    styles.blockFormColumn
-                  )}
-                >
-                  <FieldLabelDynamic
-                    direction='vertical'
-                    title='Title of your project'
-                    errorMsg={getFormError('name')}
-                    isRequired
+            <>
+              <div className={styles.textRequired}>* Required</div>
+              <FormikProvider value={formik}>
+                <form onSubmit={formik.handleSubmit}>
+                  <div
+                    className={cn(
+                      styles.newFormContainer,
+                      styles.blockFormColumn
+                    )}
                   >
-                    <FieldInput
-                      value={formik.values.name || ''}
-                      onChangeValue={newValue => {
-                        updateFormField('name', newValue)
-                      }}
-                    />
-                  </FieldLabelDynamic>
-                  <FieldArray
-                    name='jobs'
-                    render={arrayHelpers => (
-                      <FieldLabelDynamic
-                        direction='vertical'
-                        title='Jobs'
-                        isRequired
-                        errorMsg={
-                          formik.errors.jobs &&
-                          _.every(formik.errors.jobs, _.identity)
-                            ? 'Please, choose at least one job.'
-                            : ''
-                        }
-                        info='If you have multiple open positions with different skills engagement duration requirements, click the + sign to the right and enter each role individually'
-                      >
-                        <div
-                          className={cn(
-                            styles.blockJobsContainer,
-                            styles.blockFormColumn
-                          )}
+                    <FieldLabelDynamic
+                      direction='vertical'
+                      title='Title of your project'
+                      errorMsg={getFormError('name')}
+                      isRequired
+                    >
+                      <FieldInput
+                        value={formik.values.name || ''}
+                        onChangeValue={newValue => {
+                          updateFormField('name', newValue)
+                        }}
+                      />
+                    </FieldLabelDynamic>
+                    <FieldArray
+                      name='jobs'
+                      render={arrayHelpers => (
+                        <FieldLabelDynamic
+                          direction='vertical'
+                          title='Jobs'
+                          isRequired
+                          info='If you have multiple open positions with different skills engagement duration requirements, click the + sign to the right and enter each role individually'
                         >
-                          {formik.values.jobs.map((job, index) => (
-                            <div
-                              key={index}
-                              className={cn(
-                                styles.blockJobContainer,
-                                styles.blockFormColumn
-                              )}
-                            >
-                              <div className={styles.blockFormRow}>
-                                <FieldLabelDynamic
-                                  title={`JOB ${index + 1}`}
-                                  errorMsg={getFormError(
-                                    `jobs[${index}].title`
-                                  )}
-                                  isRequired
-                                  className={styles.blockField}
-                                >
-                                  <FieldInput
-                                    value={job.title}
-                                    onChangeValue={newValue => {
-                                      updateFormField(
-                                        `jobs[${index}].title`,
-                                        newValue
-                                      )
-                                    }}
-                                  />
-                                </FieldLabelDynamic>
-
-                                <div className={styles.btnsAdd}>
-                                  {formik.values.jobs.length < 10 && (
-                                    <button
-                                      type='button'
-                                      className={styles.btnAdd}
-                                      onClick={() =>
-                                        arrayHelpers.push(
-                                          _.cloneDeep(defaultJob)
-                                        )
-                                      }
-                                    >
-                                      <ReactSVG
-                                        className={styles.iconPlus}
-                                        path={assets(iconPlus)}
-                                      />
-                                    </button>
-                                  )}
-                                  {index !== 0 && (
-                                    <button
-                                      type='button'
-                                      className={styles.btnAdd}
-                                      onClick={() => arrayHelpers.remove(index)}
-                                    >
-                                      <ReactSVG
-                                        className={styles.iconPlus}
-                                        path={assets(iconX)}
-                                      />
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className={styles.blockFormRow}>
-                                <FieldLabelDynamic
-                                  direction='vertical'
-                                  title='NUMBER OF PEOPLE'
-                                  errorMsg={getFormError(
-                                    `jobs[${index}].people`
-                                  )}
-                                  isRequired
-                                  className={styles.blockField}
-                                >
-                                  <FieldInput
-                                    value={job.people}
-                                    onChangeValue={newValue => {
-                                      updateFormField(
-                                        `jobs[${index}].people`,
-                                        newValue
-                                      )
-                                    }}
-                                    type='number'
-                                  />
-                                </FieldLabelDynamic>
-
-                                <FieldLabelDynamic
-                                  direction='vertical'
-                                  title='ROLE'
-                                  errorMsg={getFormError(`jobs[${index}].role`)}
-                                  isRequired
-                                  className={styles.blockField}
-                                >
-                                  <Select
-                                    options={JOB_ROLE_OPTIONS}
-                                    placeholder='Select Role'
-                                    value={job.role}
-                                    isClearable={false}
-                                    onChange={newValue => {
-                                      updateFormField(
-                                        `jobs[${index}].role`,
-                                        newValue
-                                      )
-                                    }}
-                                  />
-                                </FieldLabelDynamic>
-                              </div>
-
-                              <div className={styles.blockFormRow}>
-                                <FieldLabelDynamic
-                                  direction='vertical'
-                                  title='DURATION (WEEKS)'
-                                  errorMsg={getFormError(
-                                    `jobs[${index}].duration`
-                                  )}
-                                  isRequired
-                                  className={styles.blockField}
-                                >
-                                  <FieldInput
-                                    value={job.duration}
-                                    onChangeValue={newValue => {
-                                      updateFormField(
-                                        `jobs[${index}].duration`,
-                                        newValue
-                                      )
-                                    }}
-                                    type='number'
-                                  />
-                                </FieldLabelDynamic>
-
-                                <FieldLabelDynamic
-                                  direction='vertical'
-                                  title='WORKLOAD'
-                                  errorMsg={getFormError(
-                                    `jobs[${index}].workload`
-                                  )}
-                                  isRequired
-                                  className={styles.blockField}
-                                >
-                                  <Select
-                                    options={JOB_WORKLOAD_OPTIONS}
-                                    placeholder='Select Workload'
-                                    value={job.workload}
-                                    isClearable={false}
-                                    onChange={newValue => {
-                                      updateFormField(
-                                        `jobs[${index}].workload`,
-                                        newValue
-                                      )
-                                    }}
-                                  />
-                                </FieldLabelDynamic>
-                              </div>
-
-                              <FieldLabelDynamic
-                                direction='vertical'
-                                title='JOB DESCRIPTION'
-                                errorMsg={getFormError(
-                                  `jobs[${index}].description`
+                          <div
+                            className={cn(
+                              styles.blockJobsContainer,
+                              styles.blockFormColumn
+                            )}
+                          >
+                            {formik.values.jobs.map((job, index) => (
+                              <div
+                                key={index}
+                                className={cn(
+                                  styles.blockJobContainer,
+                                  styles.blockFormColumn
                                 )}
                               >
-                                <FieldDescription
-                                  value={job.description}
-                                  onChange={newValue => {
-                                    updateFormField(
-                                      `jobs[${index}].description`,
-                                      newValue
-                                    )
-                                  }}
-                                  placeholder='Job Description'
-                                />
-                              </FieldLabelDynamic>
+                                <div className={styles.blockFormRow}>
+                                  <FieldLabelDynamic
+                                    title={`JOB ${index + 1}`}
+                                    errorMsg={getFormError(
+                                      `jobs[${index}].title`
+                                    )}
+                                    isRequired
+                                    className={styles.blockField}
+                                  >
+                                    <FieldInput
+                                      value={job.title}
+                                      onChangeValue={newValue => {
+                                        updateFormField(
+                                          `jobs[${index}].title`,
+                                          newValue
+                                        )
+                                      }}
+                                    />
+                                  </FieldLabelDynamic>
 
-                              <FieldLabelDynamic
-                                direction='vertical'
-                                title='SKILLS'
-                                errorMsg={getFormError(`jobs[${index}].skills`)}
-                                isRequired
-                              >
-                                <FieldSkillsBasic
-                                  value={job.skills}
-                                  onChangeValue={newValue => {
-                                    updateFormField(
-                                      `jobs[${index}].skills`,
-                                      newValue
-                                    )
-                                  }}
-                                  placeholder='Start typing a skill then select from the list'
-                                />
-                              </FieldLabelDynamic>
-                            </div>
-                          ))}
-                        </div>
-                      </FieldLabelDynamic>
-                    )}
-                  />
-                </div>
+                                  <div className={styles.btnsAdd}>
+                                    {formik.values.jobs.length < 10 && (
+                                      <button
+                                        type='button'
+                                        className={styles.btnAdd}
+                                        onClick={() =>
+                                          arrayHelpers.push(
+                                            _.cloneDeep(defaultJob)
+                                          )
+                                        }
+                                      >
+                                        <ReactSVG
+                                          className={styles.iconPlus}
+                                          path={assets(iconPlus)}
+                                        />
+                                      </button>
+                                    )}
+                                    {index !== 0 && (
+                                      <button
+                                        type='button'
+                                        className={styles.btnAdd}
+                                        onClick={() => arrayHelpers.remove(index)}
+                                      >
+                                        <ReactSVG
+                                          className={styles.iconPlus}
+                                          path={assets(iconX)}
+                                        />
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
 
-                <div className={styles.buttonContainer}>
-                  <div className={styles.button}>
-                    <OutlineButton
-                      text={isCreateNewProject ? 'Create' : 'Update'}
-                      type='success'
-                      submit
-                      disabled={isLoading || isUpdating}
+                                <div className={styles.blockFormRow}>
+                                  <FieldLabelDynamic
+                                    direction='vertical'
+                                    title='NUMBER OF PEOPLE'
+                                    errorMsg={getFormError(
+                                      `jobs[${index}].people`
+                                    )}
+                                    isRequired
+                                    className={styles.blockField}
+                                  >
+                                    <FieldInput
+                                      value={job.people}
+                                      onChangeValue={newValue => {
+                                        updateFormField(
+                                          `jobs[${index}].people`,
+                                          newValue
+                                        )
+                                      }}
+                                      type='number'
+                                    />
+                                  </FieldLabelDynamic>
+
+                                  <FieldLabelDynamic
+                                    direction='vertical'
+                                    title='ROLE'
+                                    errorMsg={getFormError(`jobs[${index}].role`)}
+                                    isRequired
+                                    className={styles.blockField}
+                                  >
+                                    <Select
+                                      options={JOB_ROLE_OPTIONS}
+                                      placeholder='Select Role'
+                                      value={job.role}
+                                      isClearable={false}
+                                      onChange={newValue => {
+                                        updateFormField(
+                                          `jobs[${index}].role`,
+                                          newValue
+                                        )
+                                      }}
+                                    />
+                                  </FieldLabelDynamic>
+                                </div>
+
+                                <div className={styles.blockFormRow}>
+                                  <FieldLabelDynamic
+                                    direction='vertical'
+                                    title='DURATION (WEEKS)'
+                                    errorMsg={getFormError(
+                                      `jobs[${index}].duration`
+                                    )}
+                                    isRequired
+                                    className={styles.blockField}
+                                  >
+                                    <FieldInput
+                                      value={job.duration}
+                                      onChangeValue={newValue => {
+                                        updateFormField(
+                                          `jobs[${index}].duration`,
+                                          newValue
+                                        )
+                                      }}
+                                      type='number'
+                                    />
+                                  </FieldLabelDynamic>
+
+                                  <FieldLabelDynamic
+                                    direction='vertical'
+                                    title='WORKLOAD'
+                                    errorMsg={getFormError(
+                                      `jobs[${index}].workload`
+                                    )}
+                                    isRequired
+                                    className={styles.blockField}
+                                  >
+                                    <Select
+                                      options={JOB_WORKLOAD_OPTIONS}
+                                      placeholder='Select Workload'
+                                      value={job.workload}
+                                      isClearable={false}
+                                      onChange={newValue => {
+                                        updateFormField(
+                                          `jobs[${index}].workload`,
+                                          newValue
+                                        )
+                                      }}
+                                    />
+                                  </FieldLabelDynamic>
+                                </div>
+
+                                <FieldLabelDynamic
+                                  direction='vertical'
+                                  title='JOB DESCRIPTION'
+                                  errorMsg={getFormError(
+                                    `jobs[${index}].description`
+                                  )}
+                                >
+                                  <FieldDescription
+                                    value={job.description}
+                                    onChange={newValue => {
+                                      updateFormField(
+                                        `jobs[${index}].description`,
+                                        newValue
+                                      )
+                                    }}
+                                    placeholder='Job Description'
+                                  />
+                                </FieldLabelDynamic>
+
+                                <FieldLabelDynamic
+                                  direction='vertical'
+                                  title='SKILLS'
+                                  errorMsg={getFormError(`jobs[${index}].skills`)}
+                                  isRequired
+                                >
+                                  <FieldSkillsBasic
+                                    value={job.skills}
+                                    onChangeValue={newValue => {
+                                      updateFormField(
+                                        `jobs[${index}].skills`,
+                                        newValue
+                                      )
+                                    }}
+                                    placeholder='Start typing a skill then select from the list'
+                                  />
+                                </FieldLabelDynamic>
+                              </div>
+                            ))}
+                          </div>
+                        </FieldLabelDynamic>
+                      )}
                     />
                   </div>
-                </div>
-              </form>
-            </FormikProvider>
+
+                  <div className={styles.buttonContainer}>
+                    <div className={styles.button}>
+                      <OutlineButton
+                        text={isCreateNewProject ? 'Create' : 'Update'}
+                        type='success'
+                        submit
+                        disabled={isLoading || isUpdating}
+                      />
+                    </div>
+                  </div>
+                </form>
+              </FormikProvider>
+            </>
           ) : (
             <Loader />
           )}
