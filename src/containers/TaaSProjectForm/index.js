@@ -31,7 +31,7 @@ const iconX = './x-gray.svg'
 const defaultJob = {
   title: '',
   role: JOB_ROLE_OPTIONS[0],
-  workload: JOB_WORKLOAD_OPTIONS[0],
+  workLoad: JOB_WORKLOAD_OPTIONS[0],
   skills: [],
   description: '',
   people: 0,
@@ -73,9 +73,9 @@ const TaaSProjectForm = ({
           value: item.role.value,
           title: item.role.label
         },
-        workload: {
-          value: item.workload.value,
-          title: item.workload.label
+        workLoad: {
+          value: item.workLoad.value,
+          title: item.workLoad.label
         }
       }))
       if (isCreateNewProject) {
@@ -164,9 +164,9 @@ const TaaSProjectForm = ({
             value: item.role.value,
             label: item.role.title
           },
-          workload: {
-            value: (item.workLoad || item.workload).value,
-            label: (item.workLoad || item.workload).title
+          workLoad: {
+            value: (item.workLoad || {}).value,
+            label: (item.workLoad || {}).title
           },
           skills: item.skills
         }))
@@ -375,7 +375,7 @@ const TaaSProjectForm = ({
                                     direction='vertical'
                                     title='WORKLOAD'
                                     errorMsg={getFormError(
-                                      `jobs[${index}].workload`
+                                      `jobs[${index}].workLoad`
                                     )}
                                     isRequired
                                     className={styles.blockField}
@@ -383,11 +383,11 @@ const TaaSProjectForm = ({
                                     <Select
                                       options={JOB_WORKLOAD_OPTIONS}
                                       placeholder='Select Workload'
-                                      value={job.workload}
+                                      value={job.workLoad}
                                       isClearable={false}
                                       onChange={newValue => {
                                         updateFormField(
-                                          `jobs[${index}].workload`,
+                                          `jobs[${index}].workLoad`,
                                           newValue
                                         )
                                       }}

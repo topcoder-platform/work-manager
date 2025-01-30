@@ -34,11 +34,11 @@ export const taaSProjectFormValidationSchema = Yup.object({
         .test('number', 'Please choose at least one people', isValidNumber),
       role: Yup.object().test('role', 'Please choose role', isValidSelect),
       duration: Yup.number()
-        .min(4, 'Please choose at least 4 weeks')
+        .min(4, 'Please, choose at least 4 weeks')
         .test('number', 'Please choose at least 4 weeks', isValidNumber),
-      workload: Yup.object().test(
-        'workload',
-        'Please choose workload',
+      workLoad: Yup.object().test(
+        'workLoad',
+        'Please, choose workLoad',
         isValidSelect
       ),
       description: Yup.string().required('Please enter a job description'),
