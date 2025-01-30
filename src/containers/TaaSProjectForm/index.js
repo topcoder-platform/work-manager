@@ -401,6 +401,7 @@ const TaaSProjectForm = ({
                                   errorMsg={getFormError(
                                     `jobs[${index}].description`
                                   )}
+                                  isRequired
                                 >
                                   <FieldDescription
                                     value={job.description}

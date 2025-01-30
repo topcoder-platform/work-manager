@@ -28,20 +28,20 @@ export const taaSProjectFormValidationSchema = Yup.object({
     .required('Please enter project title'),
   jobs: Yup.array().of(
     Yup.object().shape({
-      title: Yup.string().required('Please, enter job title'),
+      title: Yup.string().required('Please enter job title'),
       people: Yup.number()
-        .min(1, 'Please, choose at least one people')
-        .test('number', 'Please, choose at least one people', isValidNumber),
-      role: Yup.object().test('role', 'Please, choose role', isValidSelect),
+        .min(1, 'Please choose at least one people')
+        .test('number', 'Please choose at least one people', isValidNumber),
+      role: Yup.object().test('role', 'Please choose role', isValidSelect),
       duration: Yup.number()
         .min(4, 'Please, choose at least 4 weeks')
-        .test('number', 'Please, choose at least 4 weeks', isValidNumber),
+        .test('number', 'Please choose at least 4 weeks', isValidNumber),
       workLoad: Yup.object().test(
         'workLoad',
         'Please, choose workLoad',
         isValidSelect
       ),
-      description: Yup.string().optional(),
+      description: Yup.string().required('Please enter a job description'),
       skills: Yup.array()
         .of(
           Yup.object().shape({
@@ -49,8 +49,8 @@ export const taaSProjectFormValidationSchema = Yup.object({
             skillId: Yup.string()
           })
         )
-        .required('Required', 'Please, choose at least one skill.')
-        .min(1, 'Please, choose at least one skill.')
+        .required('Required', 'Please choose at least one skill.')
+        .min(1, 'Please choose at least one skill.')
     })
   )
 })
