@@ -6,6 +6,9 @@ import { fetchGroups as fetchGroupsApi } from '../../../services/challenges'
 import { AUTOCOMPLETE_DEBOUNCE_TIME_MS } from '../../../config/constants'
 import { useMapSelectedGroups } from './use-map-selected-groups.hook'
 
+/**
+ * Search & fetch groups from api, filtering by group name
+ */
 const fetchGroups = debounce((inputValue, callback) => {
   fetchGroupsApi({ name: inputValue })
     .then(groups => {
@@ -20,6 +23,9 @@ const fetchGroups = debounce((inputValue, callback) => {
     })
 }, AUTOCOMPLETE_DEBOUNCE_TIME_MS)
 
+/**
+ * Component to handle project groups
+ */
 const GroupsFormField = ({ value, name, onBlur, onChange, id, placeholder, ref }) => {
   const selectedGroups = useMapSelectedGroups(value)
 
