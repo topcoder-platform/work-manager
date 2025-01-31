@@ -1,10 +1,12 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import cn from 'classnames'
+import { get } from 'lodash'
 import styles from './ProjectForm.module.scss'
 import { PrimaryButton } from '../Buttons'
 import Select from '../Select'
-import { PROJECT_STATUS } from '../../config/constants'
+import { PROJECT_STATUS, DEFAULT_NDA_UUID } from '../../config/constants'
+import GroupsFormField from './GroupsFormField'
 
 const ProjectForm = ({
   projectTypes,
@@ -31,7 +33,9 @@ const ProjectForm = ({
         : null,
       projectType: isEdit
         ? projectTypes.find((item) => item.key === projectDetail.type) || null
-        : null // we'll store type as an object from react-select
+        : null, // we'll store type as an object from react-select
+      terms: get(projectDetail, ['terms', 0], ''),
+      groups: get(projectDetail, ['groups'], [])
     }
   })
 
@@ -41,18 +45,18 @@ const ProjectForm = ({
     setIsSaving(true)
 
     try {
+      const payload = {
+        name: data.projectName,
+        description: data.description,
+        type: data.projectType.value,
+        groups: data.groups,
+        terms: data.terms ? [data.terms] : []
+      }
+
       if (isEdit) {
-        await updateProject(projectDetail.id, {
-          name: data.projectName,
-          description: data.description,
-          status: data.status.value
-        })
+        await updateProject(projectDetail.id, payload)
       } else {
-        const res = await createProject({
-          name: data.projectName,
-          description: data.description,
-          type: data.projectType.value
-        })
+        const res = await createProject(payload)
 
         history.push(`/projects/${res.value.id}/challenges`)
         setActiveProject(res.value.id)
@@ -65,10 +69,10 @@ const ProjectForm = ({
   }
 
   // Build options for react-select from `types`
-  const selectOptions = projectTypes.map((t) => ({
+  const projectTypeOptions = useMemo(() => projectTypes.map((t) => ({
     value: t.key,
     label: t.displayName
-  }))
+  })), [projectTypes])
 
   return (
     <div>
@@ -149,7 +153,7 @@ const ProjectForm = ({
                   rules={{ required: 'Please select a type' }}
                   render={({ field }) => (
                     <Select
-                      options={selectOptions}
+                      options={projectTypeOptions}
                       id='projectType'
                       {...field}
                       isClearable
@@ -186,6 +190,47 @@ const ProjectForm = ({
                   {errors.description.message}
                 </div>
               )}
+            </div>
+          </div>
+          <div className={cn(styles.row)}>
+            <div className={cn(styles.formLabel, styles.field)}>
+              <label label htmlFor='description'>
+                Enforce Topcoder NDA:
+              </label>
+            </div>
+            <div className={cn(styles.field, styles.formField, styles.flexField)}>
+              <label className={cn(styles.flexRow)}>
+                Yes
+                <input
+                  type='radio'
+                  value={DEFAULT_NDA_UUID}
+                  {...register('terms', {})}
+                />
+              </label>
+              <label className={cn(styles.flexRow)}>
+                No
+                <input
+                  type='radio'
+                  value=''
+                  {...register('terms', {})}
+                />
+              </label>
+            </div>
+          </div>
+          <div className={cn(styles.row)}>
+            <div className={cn(styles.formLabel, styles.field)}>
+              <label label htmlFor='description'>
+                Intended Work Groups:
+              </label>
+            </div>
+            <div className={cn(styles.field, styles.formField)}>
+              <Controller
+                name='groups'
+                control={control}
+                render={({ field }) => (
+                  <GroupsFormField {...field} />
+                )}
+              />
             </div>
           </div>
         </div>

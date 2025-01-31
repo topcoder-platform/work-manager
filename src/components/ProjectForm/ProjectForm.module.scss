@@ -59,6 +59,15 @@ form {
         color: $tc-gray-80;
         padding: 10px 20px;
       }
+      input[type=radio] {
+        width: 18px;
+      }
+    }
+
+    .flexField {
+      display: flex;
+      flex-direction: row;
+      gap: 15px;
     }
 
     .error {
@@ -80,4 +89,10 @@ form {
       max-width: 100px;
     }
   }
+}
+
+.flexRow {
+  display: flex;
+  gap: 5px;
+  align-items: center;
 }
