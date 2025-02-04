@@ -2,6 +2,12 @@
 form {
   width: 100%;
 
+  .description:focus {
+    outline-color: $light-blue;
+    outline-width: 1px;
+    outline-style: solid;
+    outline-offset: -1px;
+  }
   .group {
     @include form-container-default();
     @include form-container-common();
