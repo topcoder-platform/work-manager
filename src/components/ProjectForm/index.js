@@ -126,7 +126,6 @@ const ProjectForm = ({
                       options={PROJECT_STATUS}
                       id='status'
                       {...field}
-                      isClearable
                       placeholder='Select Project Status'
                     />
                   )}
