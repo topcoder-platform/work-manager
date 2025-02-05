@@ -22,7 +22,8 @@ const ProjectForm = ({
     register,
     handleSubmit,
     control,
-    formState: { errors }
+    reset,
+    formState: { isDirty, errors }
   } = useForm({
     defaultValues: {
       projectName: isEdit ? projectDetail.name : '',
@@ -65,6 +66,7 @@ const ProjectForm = ({
       console.error(err)
     } finally {
       setIsSaving(false)
+      reset(data)
     }
   }
 
@@ -155,7 +157,6 @@ const ProjectForm = ({
                       options={projectTypeOptions}
                       id='projectType'
                       {...field}
-                      isClearable
                       placeholder='Select Project Type'
                     />
                   )}
@@ -238,7 +239,7 @@ const ProjectForm = ({
             text={isSaving ? 'Saving...' : 'Save'}
             type={'info'}
             submit
-            disabled={isSaving}
+            disabled={isSaving || !isDirty}
           />
         </div>
       </form>
