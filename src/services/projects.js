@@ -2,6 +2,8 @@ import _ from 'lodash'
 import { axiosInstance } from './axiosWithAuth'
 import * as queryString from 'query-string'
 import {
+  ATTACHMENT_TYPE_FILE,
+  FILE_PICKER_SUBMISSION_CONTAINER_NAME,
   GENERIC_PROJECT_MILESTONE_PRODUCT_NAME,
   GENERIC_PROJECT_MILESTONE_PRODUCT_TYPE,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
@@ -196,4 +198,83 @@ export async function updateProjectApi (projectId, project) {
 export async function getProjectTypes () {
   const response = await axiosInstance.get(`${PROJECT_API_URL}/metadata/projectTypes`)
   return _.get(response, 'data')
+}
+
+/**
+ * Get project attachment
+ * @param projectId project id
+ * @param attachmentId attachment id
+ * @returns {Promise<*>}
+ */
+export async function getProjectAttachment (projectId, attachmentId) {
+  const response = await axiosInstance.get(
+    `${PROJECT_API_URL}/${projectId}/attachments/${attachmentId}`
+  )
+  return _.get(response, 'data')
+}
+
+/**
+ * Add attachment to project
+ * @param projectId project id
+ * @param data attachment data
+ * @returns {Promise<*>}
+ */
+export async function addProjectAttachmentApi (projectId, data) {
+  if (data.type === ATTACHMENT_TYPE_FILE) {
+    // add s3 bucket prop
+    data.s3Bucket = FILE_PICKER_SUBMISSION_CONTAINER_NAME
+  }
+
+  // The api takes only arrays
+  if (!data.tags) {
+    data.tags = []
+  }
+
+  const response = await axiosInstance.post(
+    `${PROJECT_API_URL}/${projectId}/attachments`,
+    data
+  )
+  return _.get(response, 'data')
+}
+
+/**
+ * Update project attachment
+ * @param projectId project id
+ * @param attachmentId attachment id
+ * @param attachment attachment data
+ * @returns {Promise<*>}
+ */
+export async function updateProjectAttachmentApi (
+  projectId,
+  attachmentId,
+  attachment
+) {
+  let data = {
+    ...attachment
+  }
+  if (data && (!data.allowedUsers || data.allowedUsers.length === 0)) {
+    data.allowedUsers = null
+  }
+
+  // The api takes only arrays
+  if (data && !data.tags) {
+    data.tags = []
+  }
+
+  const response = await axiosInstance.patch(
+    `${PROJECT_API_URL}/${projectId}/attachments/${attachmentId}`,
+    data
+  )
+  return _.get(response, 'data')
+}
+
+/**
+ * Remove project attachment
+ * @param projectId project id
+ * @param attachmentId attachment id
+ */
+export async function removeProjectAttachmentApi (projectId, attachmentId) {
+  await axiosInstance.delete(
+    `${PROJECT_API_URL}/${projectId}/attachments/${attachmentId}`
+  )
 }

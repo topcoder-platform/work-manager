@@ -9,7 +9,10 @@ import {
   LOAD_PROJECT_BILLING_ACCOUNTS,
   UPDATE_PROJECT_PENDING,
   UPDATE_PROJECT_SUCCESS,
-  UPDATE_PROJECT_FAILURE
+  UPDATE_PROJECT_FAILURE,
+  ADD_PROJECT_ATTACHMENT_SUCCESS,
+  UPDATE_PROJECT_ATTACHMENT_SUCCESS,
+  REMOVE_PROJECT_ATTACHMENT_SUCCESS
 } from '../config/constants'
 import {
   fetchProjectById,
@@ -80,6 +83,45 @@ export function createProject (project) {
     return dispatch({
       type: CREATE_PROJECT,
       payload: createProjectApi(project)
+    })
+  }
+}
+
+/**
+ * Add attachment to project
+ * @param {Object} newAttachment new attachment data
+ */
+export function addAttachment (newAttachment) {
+  return (dispatch) => {
+    return dispatch({
+      type: ADD_PROJECT_ATTACHMENT_SUCCESS,
+      payload: newAttachment
+    })
+  }
+}
+
+/**
+ * Update project attachment
+ * @param {Object} newAttachment new attachment data
+ */
+export function updateAttachment (newAttachment) {
+  return (dispatch) => {
+    return dispatch({
+      type: UPDATE_PROJECT_ATTACHMENT_SUCCESS,
+      payload: newAttachment
+    })
+  }
+}
+
+/**
+ * Remove project attachment
+ * @param {number} attachmentId attachment id
+ */
+export function removeAttachment (attachmentId) {
+  return (dispatch) => {
+    return dispatch({
+      type: REMOVE_PROJECT_ATTACHMENT_SUCCESS,
+      payload: attachmentId
     })
   }
 }

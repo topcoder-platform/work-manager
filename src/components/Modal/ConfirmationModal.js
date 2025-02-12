@@ -1,30 +1,45 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
+import _ from 'lodash'
 import Modal from '.'
 import styles from './ConfirmationModal.module.scss'
 import OutlineButton from '../Buttons/OutlineButton'
 import PrimaryButton from '../Buttons/PrimaryButton'
 
-const ConfirmationModal = ({ title, message, errorMessage, theme, isProcessing, cancelText, confirmText, onCancel, onConfirm, disableConfirmButton }) => (
-  <Modal theme={theme} onCancel={onCancel}>
+const ConfirmationModal = ({
+  title,
+  message,
+  errorMessage,
+  theme,
+  isProcessing,
+  cancelText,
+  confirmText,
+  onCancel,
+  onConfirm,
+  disableConfirmButton,
+  confirmType,
+  cancelType
+}) => (
+  <Modal theme={theme} onCancel={isProcessing ? _.noop : onCancel}>
     <div className={styles.contentContainer}>
-      <div className={styles.title}>{title}</div>
+      <div className={styles.title} title={title}>{title}</div>
       <span>{message}</span>
       <div className={styles.buttonGroup}>
         <div className={styles.button}>
           <OutlineButton
             className={cn({ disabled: isProcessing })}
             text={cancelText || 'Cancel'}
-            type={'danger'}
+            type={cancelType}
             onClick={onCancel}
+            disabled={isProcessing}
           />
         </div>
         <div className={styles.button}>
           <PrimaryButton
             text={isProcessing ? 'Processing...' : confirmText || 'Confirm'}
             disabled={disableConfirmButton || isProcessing}
-            type={'info'}
+            type={confirmType}
             onClick={onConfirm}
           />
         </div>
@@ -34,6 +49,11 @@ const ConfirmationModal = ({ title, message, errorMessage, theme, isProcessing, 
   </Modal>
 )
 
+ConfirmationModal.defaultProps = {
+  confirmType: 'info',
+  cancelType: 'danger'
+}
+
 ConfirmationModal.propTypes = {
   title: PropTypes.string,
   message: PropTypes.oneOf(PropTypes.string, PropTypes.node),
@@ -42,7 +62,9 @@ ConfirmationModal.propTypes = {
   isProcessing: PropTypes.bool,
   disableConfirmButton: PropTypes.bool,
   cancelText: PropTypes.string,
+  cancelType: PropTypes.string,
   confirmText: PropTypes.string,
+  confirmType: PropTypes.string,
   onCancel: PropTypes.func,
   onConfirm: PropTypes.func
 }

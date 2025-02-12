@@ -324,3 +324,23 @@ export function getChallengeTypeAbbr (track, challengeTypes) {
 export function is2RoundsChallenge (challenge) {
   return !!_.find(challenge.phases, { name: 'Checkpoint Submission' })
 }
+
+/**
+ * Get full name of user
+ * @param {Object} user user info
+ * @returns
+ */
+export function getFullNameWithFallback (user) {
+  if (!user) return ''
+  let userFullName = user.firstName
+  if (userFullName && user.lastName) {
+    userFullName += ' ' + user.lastName
+  }
+  userFullName =
+    userFullName && userFullName.trim().length > 0 ? userFullName : user.handle
+  userFullName =
+    userFullName && userFullName.trim().length > 0
+      ? userFullName
+      : 'Connect user'
+  return userFullName
+}

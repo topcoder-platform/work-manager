@@ -1,48 +1,47 @@
-@import "../../styles/includes";
+@import '../../styles/includes';
 
 table {
   border-spacing: 0;
-   tbody > tr {
-    display: flex;
-    flex-wrap: wrap;
-    background-color: $white;
-    font-size: 15px;
-    padding: 0 20px;
 
-    td {
-      width: 100%;
-    }
+  tr {
+    border-bottom: 1px solid #d5d5d5;
+  }
 
-    td:last-of-type {
-      justify-content: flex-end;
+  tbody {
+    tr {
+      &:hover {
+        background-color: rgba($tc-dark-blue-10, 0.5);
+      }
     }
   }
 
-  > thead > tr {
-    display: flex;
-    flex-wrap: wrap;
-    background-color: $light-bg;
-    font-size: 15px;
-    padding: 0 20px;
+  th {
+    padding: 10px 10px;
+    color: grey;
+    font-size: 13px;
+    line-height: 30px;
+  }
 
-    th {
-      @include roboto();
-      width: 100%;
-      text-align: start;
-      padding: 15px 0 15px 0;
+  td {
+    padding: 15px 10px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+
+  th,
+  td {
+    @include roboto();
+
+    &:last-of-type {
+      padding-right: 20px;
     }
 
-    th:last-of-type {
-      text-align: right;
-      justify-content: flex-end;
+    &:first-of-type {
+      padding-left: 20px;
     }
   }
 }
 
 .hidden {
   display: none;
-}
-
-tbody.expand {
-  width: 100%;
 }

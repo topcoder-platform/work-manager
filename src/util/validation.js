@@ -54,3 +54,30 @@ export const taaSProjectFormValidationSchema = Yup.object({
     })
   )
 })
+
+/**
+ * regex for url validation
+ */
+const urlRegex = /((https?):\/\/)?(www.)?[a-z0-9]+(\.[a-z]{2,}){1,3}(#?\/?[a-zA-Z0-9#]+)*\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/
+
+/**
+ * validation schema for add link form in assets library
+ */
+export const assetsLibraryAddLinkSchema = Yup.object({
+  title: Yup.string()
+    .trim()
+    .required('Name is required'),
+  path: Yup.string()
+    .trim()
+    .required('URL is required')
+    .matches(urlRegex, 'Please enter a valid URL')
+})
+
+/**
+ * validation schema for edit file form in assets library
+ */
+export const assetsLibraryEditFileSchema = Yup.object({
+  title: Yup.string()
+    .trim()
+    .required('Title is required')
+})
