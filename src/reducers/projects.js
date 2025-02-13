@@ -252,7 +252,7 @@ export default function (state = initialState, action) {
         ...state,
         projectDetail: {
           ...state.projectDetail,
-          attachments: [...state.projectDetail.attachments, action.payload]
+          attachments: [...(state.projectDetail.attachments || []), action.payload]
         }
       }
     case UPDATE_PROJECT_ATTACHMENT_SUCCESS:

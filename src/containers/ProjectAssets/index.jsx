@@ -191,7 +191,7 @@ const ProjectAssets = ({
             <PrimaryButton
               text='Back'
               type={'info'}
-              link={`/projects/${projectId}/edit`}
+              link={`/projects/${projectId}/challenges`}
             />
           </div>
         </div>
