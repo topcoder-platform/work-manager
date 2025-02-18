@@ -1,0 +1,35 @@
+@import '../../../styles/includes';
+
+.container {
+  display: flex;
+  padding: 0;
+  margin: 0;
+  border: none;
+  outline: none !important;
+  background-color: transparent;
+  color: $tc-gray-90 !important;
+  &:hover .downloadIcon {
+    opacity: 1;
+  }
+}
+
+.loader {
+  width: auto;
+  height: auto;
+  margin-left: 5px;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.downloadIcon {
+  opacity: 0;
+  margin-left: 5px;
+  transition: 0.15s ease;
+  svg {
+    width: 12px;
+    height: 12px;
+  }
+}

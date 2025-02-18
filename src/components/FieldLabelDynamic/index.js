@@ -1,3 +1,5 @@
+/* Component to render field label */
+
 import React from 'react'
 import PropTypes from 'prop-types'
 import styles from './styles.module.scss'
@@ -23,11 +25,13 @@ const FieldLabelDynamic = ({
         className
       )}
     >
-      <div className={cn(styles.field, styles.col1)}>
-        <label>
-          {title} {isRequired && <span>*</span>}
-        </label>
-      </div>
+      {!!title && (
+        <div className={cn(styles.field, styles.col1)}>
+          <label>
+            {title} {isRequired && <span>*</span>}
+          </label>
+        </div>
+      )}
       <div className={styles.blockContent}>
         <div className={styles.blockValue}>
           {info && <div className={styles.blockInfo}>{info}</div>}

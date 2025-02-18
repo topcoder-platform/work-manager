@@ -84,6 +84,15 @@ const ChallengesComponent = ({
         </div>
         {activeProject && activeProject.id && !isReadOnly ? (
           <div className={styles.projectActionButtonWrapper}>
+            {isAdminOrCopilot && (
+              <OutlineButton
+                text={'Assets Library'}
+                type={'info'}
+                submit
+                link={`/projects/${activeProjectId}/assets`}
+                className={styles.btnOutline}
+              />
+            )}
             {checkAdmin(auth.token) && (
               <OutlineButton
                 text='Request Copilot'

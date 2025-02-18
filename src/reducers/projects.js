@@ -23,7 +23,10 @@ import {
   UPDATE_PROJECT_SUCCESS,
   UPDATE_PROJECT_DETAILS_FAILURE,
   UPDATE_PROJECT_DETAILS_PENDING,
-  UPDATE_PROJECT_DETAILS_SUCCESS
+  UPDATE_PROJECT_DETAILS_SUCCESS,
+  ADD_PROJECT_ATTACHMENT_SUCCESS,
+  UPDATE_PROJECT_ATTACHMENT_SUCCESS,
+  REMOVE_PROJECT_ATTACHMENT_SUCCESS
 } from '../config/constants'
 import { toastSuccess, toastFailure } from '../util/toaster'
 import moment from 'moment-timezone'
@@ -243,6 +246,34 @@ export default function (state = initialState, action) {
       return {
         ...state,
         isUpdatingProject: false
+      }
+    case ADD_PROJECT_ATTACHMENT_SUCCESS:
+      return {
+        ...state,
+        projectDetail: {
+          ...state.projectDetail,
+          attachments: [...(state.projectDetail.attachments || []), action.payload]
+        }
+      }
+    case UPDATE_PROJECT_ATTACHMENT_SUCCESS:
+      return {
+        ...state,
+        projectDetail: {
+          ...state.projectDetail,
+          attachments: state.projectDetail.attachments.map(item =>
+            item.id !== action.payload.id ? item : action.payload
+          )
+        }
+      }
+    case REMOVE_PROJECT_ATTACHMENT_SUCCESS:
+      return {
+        ...state,
+        projectDetail: {
+          ...state.projectDetail,
+          attachments: state.projectDetail.attachments.filter(
+            item => item.id !== action.payload
+          )
+        }
       }
     default:
       return state
