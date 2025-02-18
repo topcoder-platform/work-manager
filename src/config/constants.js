@@ -303,6 +303,8 @@ export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
 
 export const PAGE_SIZE = 10
 
+export const PROJECTS_PAGE_SIZE = 20
+
 /**
  * The minimal number of characters to enter before starting showing autocomplete suggestions
  */
