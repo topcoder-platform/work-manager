@@ -50,6 +50,7 @@ const ProjectForm = ({
         name: data.projectName,
         description: data.description,
         type: data.projectType.value,
+        status: data.status.value,
         groups: data.groups,
         terms: data.terms ? [data.terms] : []
       }
