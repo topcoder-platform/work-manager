@@ -50,6 +50,7 @@ const ChallengesComponent = ({
 }) => {
   const [loginUserRoleInProject, setLoginUserRoleInProject] = useState('')
   const isReadOnly = checkReadOnlyRoles(auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
+  const isAdminOrCopilot = checkAdminOrCopilot(auth.token, activeProject)
 
   useEffect(() => {
     const loggedInUser = auth.user
@@ -69,7 +70,7 @@ const ChallengesComponent = ({
             {activeProject ? activeProject.name : ''}
             {activeProject && activeProject.status && <ProjectStatus className={styles.status} status={activeProject.status} />}
           </div>
-          {activeProject && activeProject.id && checkAdminOrCopilot(auth.token) && (
+          {activeProject && activeProject.id && isAdminOrCopilot && (
             <span>
               (
               <Link

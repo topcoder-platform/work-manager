@@ -35,7 +35,7 @@ class ProjectEditor extends Component {
 
   componentDidUpdate () {
     const { auth } = this.props
-    if (!checkAdminOrCopilot(auth.token)) {
+    if (!checkAdminOrCopilot(auth.token, this.props.projectDetail)) {
       this.props.history.push('/projects')
     }
   }

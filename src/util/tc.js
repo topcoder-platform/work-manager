@@ -203,19 +203,26 @@ export const checkAdmin = token => {
  * Checks if token has any of the copilot roles
  * @param  token
  */
-export const checkCopilot = token => {
-  const roles = _.get(decodeToken(token), 'roles')
-  return roles.some(val => COPILOT_ROLES.indexOf(val.toLowerCase()) > -1)
+export const checkCopilot = (token, project) => {
+  const tokenData = decodeToken(token)
+  const roles = _.get(tokenData, 'roles')
+  const isCopilot = roles.some(val => COPILOT_ROLES.indexOf(val.toLowerCase()) > -1)
+  const canManageProject = !project || _.isEmpty(project) || ALLOWED_EDIT_RESOURCE_ROLES.includes(_.get(_.find(project.members, { userId: tokenData.userId }), 'role'))
+  return isCopilot && canManageProject
 }
 
 /**
  * Checks if token has any of the admin or copilot roles
  * @param  token
  */
-export const checkAdminOrCopilot = token => {
-  const roles = _.get(decodeToken(token), 'roles')
+export const checkAdminOrCopilot = (token, project) => {
+  const tokenData = decodeToken(token)
+  const roles = _.get(tokenData, 'roles')
   const allowedRoles = [...ADMIN_ROLES, ...COPILOT_ROLES]
-  return roles.some(val => allowedRoles.indexOf(val.toLowerCase()) > -1)
+  const isAdminOrCopilot = roles.some(val => allowedRoles.indexOf(val.toLowerCase()) > -1)
+  const canManageProject = !project || _.isEmpty(project) || ALLOWED_EDIT_RESOURCE_ROLES.includes(_.get(_.find(project.members, { userId: tokenData.userId }), 'role'))
+
+  return isAdminOrCopilot && canManageProject
 }
 
 /**
