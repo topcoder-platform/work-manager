@@ -26,7 +26,7 @@ import {
 import styles from './Challenges.module.scss'
 import { checkAdmin, checkAdminOrCopilot } from '../../util/tc'
 import { PrimaryButton } from '../../components/Buttons'
-import InfiniteScrollTrigger from '../../components/InfiniteLoadTrigger'
+import InfiniteLoadTrigger from '../../components/InfiniteLoadTrigger'
 
 class Challenges extends Component {
   constructor (props) {
@@ -151,6 +151,7 @@ class Challenges extends Component {
       projects.map((p) => (
         <li key={p.id}>
           <ProjectCard
+            projectStatus={p.status}
             projectName={p.name}
             projectId={p.id}
             selected={activeProjectId === `${p.id}`}
@@ -176,7 +177,7 @@ class Challenges extends Component {
               )}
               <ul>{projectComponents}</ul>
               {projects && !!projects.length && (
-                <InfiniteScrollTrigger onLoadMore={this.props.loadMoreProjects} />
+                <InfiniteLoadTrigger onLoadMore={this.props.loadMoreProjects} />
               )}
             </div>
           ) : null}

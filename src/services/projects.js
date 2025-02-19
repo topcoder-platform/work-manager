@@ -9,6 +9,8 @@ import {
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
   PHASE_PRODUCT_TEMPLATE_ID
 } from '../config/constants'
+import { paginationHeaders } from '../util/pagination'
+
 const { PROJECT_API_URL } = process.env
 
 /**
@@ -39,13 +41,21 @@ export async function fetchBillingAccount (projectId) {
  * Api request for fetching member's projects
  * @returns {Promise<*>}
  */
-export async function fetchMemberProjects (filters) {
+export function fetchMemberProjects (filters) {
   const params = {
     ...filters
   }
 
-  const response = await axiosInstance.get(`${PROJECT_API_URL}?${queryString.stringify(params)}`)
-  return _.get(response, 'data')
+  for (let param in params) {
+    if (params[param] && Array.isArray(params[param])) {
+      params[`${param}[$in]`] = params[param]
+      params[param] = undefined
+    }
+  }
+
+  return axiosInstance.get(`${PROJECT_API_URL}?${queryString.stringify(params)}`).then(response => {
+    return { projects: _.get(response, 'data'), pagination: paginationHeaders(response) }
+  })
 }
 
 /**

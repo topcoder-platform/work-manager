@@ -17,6 +17,8 @@ const initialState = {
   isLoading: false,
   projects: [],
   taasProjects: [],
+  total: 0,
+  page: 0,
   isLoadProjectsSuccess: false
 }
 
@@ -31,12 +33,14 @@ export default function (state = initialState, action) {
         taasProjects: _.filter(action.projects, {
           type: 'talent-as-a-service'
         }),
+        total: action.total,
+        page: action.page,
         isLoading: false,
         isLoggedIn: true,
         isLoadProjectsSuccess: true
       }
     case UNLOAD_PROJECTS_SUCCESS:
-      return { ...state, projects: [], isLoading: false, isLoggedIn: true, isLoadProjectsSuccess: false }
+      return { ...state, total: 0, page: 0, projects: [], isLoading: false, isLoggedIn: true, isLoadProjectsSuccess: false }
     case LOAD_PROJECTS_PENDING:
       return { ...state, isLoading: true }
     case LOAD_PROJECTS_FAILURE: {

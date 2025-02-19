@@ -247,6 +247,11 @@ export const PROJECT_ROLES = {
   COPILOT: 'copilot'
 }
 
+export const ALLOWED_ACCEPT_PROJECT_ROLES = [
+  'administrator',
+  PROJECT_ROLES.MANAGER
+]
+
 export const ALLOWED_DOWNLOAD_SUBMISSIONS_ROLES = [
   'administrator',
   PROJECT_ROLES.MANAGER,

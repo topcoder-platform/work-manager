@@ -15,6 +15,7 @@ const ProjectForm = ({
   setActiveProject,
   history,
   isEdit,
+  canManage,
   projectDetail
 }) => {
   const [isSaving, setIsSaving] = useState(false)
@@ -50,7 +51,7 @@ const ProjectForm = ({
         name: data.projectName,
         description: data.description,
         type: data.projectType.value,
-        status: (data.status || {}).value,
+        status: canManage ? (data.status || {}).value : undefined,
         groups: data.groups,
         terms: data.terms ? [data.terms] : []
       }
@@ -112,7 +113,7 @@ const ProjectForm = ({
               )}
             </div>
           </div>
-          {isEdit && (
+          {isEdit && canManage && (
             <div className={cn(styles.row)}>
               <div className={cn(styles.formLabel, styles.field)}>
                 <label label htmlFor='status'>

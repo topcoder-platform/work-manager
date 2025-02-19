@@ -36,7 +36,6 @@ export function loadProjects (filterProjectName = '', myProjects = true, paramFi
     })
 
     const filters = {
-      status: 'active',
       sort: 'lastActivityAt desc',
       perPage: PROJECTS_PAGE_SIZE,
       ...paramFilters
@@ -54,10 +53,13 @@ export function loadProjects (filterProjectName = '', myProjects = true, paramFi
     }
 
     const state = getState().sidebar
-    fetchMemberProjects(filters).then(projects => dispatch({
+    // eslint-disable-next-line no-sequences
+    fetchMemberProjects(filters).then(({ projects, pagination }) => (console.log('here', pagination), dispatch({
       type: LOAD_PROJECTS_SUCCESS,
-      projects: _.uniqBy((state.projects || []).concat(projects), 'id')
-    })).catch(() => dispatch({
+      projects: _.uniqBy((state.projects || []).concat(projects), 'id'),
+      total: pagination.xTotal,
+      page: pagination.xPage
+    }))).catch(() => dispatch({
       type: LOAD_PROJECTS_FAILURE
     }))
   }
@@ -69,13 +71,18 @@ export function loadProjects (filterProjectName = '', myProjects = true, paramFi
 export function loadMoreProjects (filterProjectName = '', myProjects = true, paramFilters = {}) {
   return (dispatch, getState) => {
     const state = getState().sidebar
-    const projects = state.projects || []
 
     loadProjects(filterProjectName, myProjects, _.assignIn({}, paramFilters, {
       perPage: PROJECTS_PAGE_SIZE,
-      page: Math.ceil(projects.length / PROJECTS_PAGE_SIZE) + 1
+      page: state.page + 1
     }))(dispatch, getState)
   }
+}
+
+export function loadTaasProjects (filterProjectName = '', myProjects = true, paramFilters = {}) {
+  return loadProjects(filterProjectName, myProjects, Object.assign({
+    type: 'talent-as-a-service'
+  }, paramFilters))
 }
 
 /**

@@ -1,7 +1,10 @@
 import React, { useEffect, useRef, useCallback } from 'react'
 import PropTypes from 'prop-types'
 
-const InfiniteScrollTrigger = ({ onLoadMore, rootMargin = '100px', threshold = 0.1 }) => {
+import styles from './InfiniteLoadTrigger.module.scss'
+import { OutlineButton } from '../Buttons'
+
+const InfiniteLoadTrigger = ({ onLoadMore, rootMargin = '100px', threshold = 0.1 }) => {
   const triggerRef = useRef(null)
 
   const observerCallback = useCallback(
@@ -33,13 +36,17 @@ const InfiniteScrollTrigger = ({ onLoadMore, rootMargin = '100px', threshold = 0
     }
   }, [observerCallback, rootMargin, threshold])
 
-  return <div ref={triggerRef} style={{ height: '1px', width: '100%' }} />
+  return (
+    <div ref={triggerRef} className={styles.loader}>
+      <OutlineButton type='info' text='Load More' onClick={() => onLoadMore()} />
+    </div>
+  )
 }
 
-InfiniteScrollTrigger.propTypes = {
+InfiniteLoadTrigger.propTypes = {
   onLoadMore: PropTypes.func.isRequired,
   rootMargin: PropTypes.string,
   threshold: PropTypes.number
 }
 
-export default InfiniteScrollTrigger
+export default InfiniteLoadTrigger

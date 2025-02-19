@@ -66,7 +66,7 @@ export function searchUserProjects (isAdmin = true, keyword) {
       filters['memberOnly'] = true
     }
 
-    fetchMemberProjects(filters).then(projects => dispatch({
+    fetchMemberProjects(filters).then(({ projects }) => dispatch({
       type: SEARCH_USER_PROJECTS_SUCCESS,
       projects
     })).catch(() => dispatch({
