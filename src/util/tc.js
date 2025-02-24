@@ -10,7 +10,6 @@ import {
   SUBMITTER_ROLE_UUID,
   READ_ONLY_ROLES,
   ALLOWED_DOWNLOAD_SUBMISSIONS_ROLES,
-  ALLOWED_ACCEPT_PROJECT_ROLES,
   ALLOWED_EDIT_RESOURCE_ROLES
 } from '../config/constants'
 import _ from 'lodash'
@@ -195,13 +194,10 @@ export const checkEditResourceRoles = resourceRoles => {
  * Checks if token has any of the admin roles
  * @param  token
  */
-export const checkAdmin = (token, project) => {
+export const checkAdmin = (token) => {
   const tokenData = decodeToken(token)
   const roles = _.get(tokenData, 'roles')
-  const isAdmin = roles.some(val => ADMIN_ROLES.indexOf(val.toLowerCase()) > -1)
-  const canManageProject = !project || _.isEmpty(project) || ALLOWED_ACCEPT_PROJECT_ROLES.includes(_.get(_.find(project.members, { userId: tokenData.userId }), 'role'))
-
-  return isAdmin && canManageProject
+  return roles.some(val => ADMIN_ROLES.indexOf(val.toLowerCase()) > -1)
 }
 
 /**
@@ -224,11 +220,11 @@ export const checkCopilot = (token, project) => {
 export const checkAdminOrCopilot = (token, project) => {
   const tokenData = decodeToken(token)
   const roles = _.get(tokenData, 'roles')
-  const allowedRoles = [...ADMIN_ROLES, ...COPILOT_ROLES]
-  const isAdminOrCopilot = roles.some(val => allowedRoles.indexOf(val.toLowerCase()) > -1)
+  const isAdmin = roles.some(val => ADMIN_ROLES.indexOf(val.toLowerCase()) > -1)
+  const isCopilot = roles.some(val => COPILOT_ROLES.indexOf(val.toLowerCase()) > -1)
   const canManageProject = !project || _.isEmpty(project) || ALLOWED_EDIT_RESOURCE_ROLES.includes(_.get(_.find(project.members, { userId: tokenData.userId }), 'role'))
 
-  return isAdminOrCopilot && canManageProject
+  return isAdmin || (isCopilot && canManageProject)
 }
 
 /**
