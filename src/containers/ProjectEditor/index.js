@@ -91,7 +91,7 @@ class ProjectEditor extends Component {
     if (isProjectTypesLoading || (isEdit && isProjectLoading)) return <Loader />
 
     const isAdmin = checkAdmin(this.props.auth.token)
-    const isCopilotOrManager = this.checkIsCopilotOrManager(_.get(this.state.project, 'members', []), _.get(this.props.auth, 'user.handle', null))
+    const isCopilotOrManager = this.checkIsCopilotOrManager(_.get(projectDetail, 'members', []), _.get(this.props.auth, 'user.handle', null))
     const canManage = isAdmin || isCopilotOrManager
 
     const projectId = this.getProjectId(match)
