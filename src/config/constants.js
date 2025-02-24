@@ -408,7 +408,7 @@ export const SPECIAL_CHALLENGE_TAGS = [
 /**
  * Possible statuses of projects
  */
-export const PROJECT_STATUS = [
+export const PROJECT_STATUSES = [
   { label: 'Active', value: 'active' },
   { label: 'In Review', value: 'in_review' },
   { label: 'Reviewed', value: 'reviewed' },
@@ -416,6 +416,15 @@ export const PROJECT_STATUS = [
   { label: 'Cancelled', value: 'cancelled' },
   { label: 'Paused', value: 'paused' }
 ]
+
+export const PROJECT_STATUS = {
+  ACTIVE: 'active',
+  IN_REVIEW: 'in_review',
+  REVIEWED: 'reviewed',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled',
+  PAUSED: 'paused'
+}
 
 export const JOB_ROLE_OPTIONS = [
   { value: null, label: 'Select Role' },

@@ -7,7 +7,7 @@ import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import { Link } from 'react-router-dom'
 import ProjectStatus from './ProjectStatus'
-import { PROJECT_ROLES, TYPEFORM_URL } from '../../config/constants'
+import { PROJECT_ROLES, TYPEFORM_URL, PROJECT_STATUS } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
@@ -101,11 +101,15 @@ const ChallengesComponent = ({
                 target={'_blank'}
               />
             )}
-            <Link
-              to={`/projects/${activeProject.id}/challenges/new`}
-            >
-              <PrimaryButton text={'Launch New'} type={'info'} />
-            </Link>
+            {activeProject.status === PROJECT_STATUS.ACTIVE ? (
+              <Link
+                to={`/projects/${activeProject.id}/challenges/new`}
+              >
+                <PrimaryButton text={'Launch New'} type={'info'} />
+              </Link>
+            ) : (
+              <PrimaryButton text={'Launch New'} type={'info'} disabled />
+            )}
           </div>
         ) : (
           <span />

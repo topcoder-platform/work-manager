@@ -5,7 +5,7 @@ import { get } from 'lodash'
 import styles from './ProjectForm.module.scss'
 import { PrimaryButton } from '../Buttons'
 import Select from '../Select'
-import { PROJECT_STATUS, DEFAULT_NDA_UUID } from '../../config/constants'
+import { PROJECT_STATUSES, DEFAULT_NDA_UUID } from '../../config/constants'
 import GroupsFormField from './GroupsFormField'
 
 const ProjectForm = ({
@@ -30,7 +30,7 @@ const ProjectForm = ({
       projectName: isEdit ? projectDetail.name : '',
       description: isEdit ? projectDetail.description : '',
       status: isEdit
-        ? PROJECT_STATUS.find((item) => item.value === projectDetail.status) ||
+        ? PROJECT_STATUSES.find((item) => item.value === projectDetail.status) ||
           null
         : null,
       projectType: isEdit
@@ -127,7 +127,7 @@ const ProjectForm = ({
                   rules={{ required: 'Please select a status' }}
                   render={({ field }) => (
                     <Select
-                      options={PROJECT_STATUS}
+                      options={PROJECT_STATUSES}
                       id='status'
                       {...field}
                       placeholder='Select Project Status'
