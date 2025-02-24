@@ -8,7 +8,7 @@ import PT from 'prop-types'
 import moment from 'moment'
 import _ from 'lodash'
 import { STUDIO_URL, SUBMISSION_REVIEW_APP_URL, getTCMemberURL } from '../../../config/constants'
-import { PrimaryButton } from '../../Buttons'
+import { OutlineButton, PrimaryButton } from '../../Buttons'
 import AlertModal from '../../Modal/AlertModal'
 import cn from 'classnames'
 import ReactSVG from 'react-svg'
@@ -29,6 +29,7 @@ import {
 } from '../../../util/files'
 import styles from './Submissions.module.scss'
 import modalStyles from '../../../styles/modal.module.scss'
+import { ArtifactsListModal } from '../ArtifactsListModal'
 const assets = require.context('../../../assets/images', false, /svg/)
 const ArrowDown = './arrow-down.svg'
 const Lock = './lock.svg'
@@ -50,7 +51,8 @@ class SubmissionsComponent extends React.Component {
       memberOfModal: '',
       sortedSubmissions: [],
       downloadingAll: false,
-      alertMessage: ''
+      alertMessage: '',
+      selectedSubmissionId: ''
     }
     this.getSubmissionsSortParam = this.getSubmissionsSortParam.bind(this)
     this.updateSortedSubmissions = this.updateSortedSubmissions.bind(this)
@@ -218,6 +220,12 @@ class SubmissionsComponent extends React.Component {
       }
     })
     return isReviewPhaseComplete
+  }
+
+  closeArtifactsModal () {
+    this.setState({
+      selectedSubmissionId: ''
+    })
   }
 
   render () {
@@ -544,40 +552,52 @@ class SubmissionsComponent extends React.Component {
                         </span>
                       </td>
                       {canDownloadSubmission ? (<td className={cn(styles['col-8Table'], styles['col-bodyTable'])}>
-                        <button
-                          onClick={() => {
-                            // download submission
-                            const reactLib = getTopcoderReactLib()
-                            const { getService } = reactLib.services.submissions
-                            const submissionsService = getService(token)
-                            submissionsService.downloadSubmission(s.id)
-                              .then((blob) => {
-                                isValidDownloadFile(blob).then((isValidFile) => {
-                                  if (isValidFile.success) {
-                                    // eslint-disable-next-line no-undef
-                                    const url = window.URL.createObjectURL(new Blob([blob]))
-                                    const link = document.createElement('a')
-                                    link.href = url
-                                    let fileName = s.legacySubmissionId
-                                    if (!fileName) {
-                                      fileName = s.id
+                        <div className={styles['button-wrapper']}>
+                          <button
+                            className={styles['download-submission-button']}
+                            onClick={() => {
+                              // download submission
+                              const reactLib = getTopcoderReactLib()
+                              const { getService } = reactLib.services.submissions
+                              const submissionsService = getService(token)
+                              submissionsService.downloadSubmission(s.id)
+                                .then((blob) => {
+                                  isValidDownloadFile(blob).then((isValidFile) => {
+                                    if (isValidFile.success) {
+                                      // eslint-disable-next-line no-undef
+                                      const url = window.URL.createObjectURL(new Blob([blob]))
+                                      const link = document.createElement('a')
+                                      link.href = url
+                                      let fileName = s.legacySubmissionId
+                                      if (!fileName) {
+                                        fileName = s.id
+                                      }
+                                      fileName = fileName + '.zip'
+                                      link.setAttribute('download', `${fileName}`)
+                                      document.body.appendChild(link)
+                                      link.click()
+                                      link.parentNode.removeChild(link)
+                                    } else {
+                                      this.setState({
+                                        alertMessage: isValidFile.message || 'Can not download this submission.'
+                                      })
                                     }
-                                    fileName = fileName + '.zip'
-                                    link.setAttribute('download', `${fileName}`)
-                                    document.body.appendChild(link)
-                                    link.click()
-                                    link.parentNode.removeChild(link)
-                                  } else {
-                                    this.setState({
-                                      alertMessage: isValidFile.message || 'Can not download this submission.'
-                                    })
-                                  }
+                                  })
                                 })
-                              })
-                          }}
-                        >
-                          <ReactSVG path={assets(`${Download}`)} />
-                        </button>
+                            }}
+                          >
+                            <ReactSVG path={assets(`${Download}`)} />
+                          </button>
+
+                          <OutlineButton
+                            text='Download Artifacts'
+                            type='info'
+                            className={styles['download-artifacts-button']}
+                            onClick={async () => {
+                              this.setState({ selectedSubmissionId: s.id })
+                            }}
+                          />
+                        </div>
                       </td>) : null}
                     </tr>
                   )
@@ -585,6 +605,21 @@ class SubmissionsComponent extends React.Component {
               </tbody>
             </table>
           </div>
+
+          {
+            this.state.selectedSubmissionId ? (
+              <ArtifactsListModal
+                submissionId={this.state.selectedSubmissionId}
+                token={this.props.token}
+                theme={theme}
+                onClose={() => {
+                  this.setState({
+                    selectedSubmissionId: ''
+                  })
+                }}
+              />
+            ) : null
+          }
 
           {canDownloadSubmission ? (<div className={styles['top-title']} >
 
