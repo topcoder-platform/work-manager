@@ -55,19 +55,19 @@ class ProjectEditor extends Component {
     }
   }
 
-  getMemberRole (members, handle) {
-    if (!handle) { return null }
+  getMemberRole (members, userId) {
+    if (!userId) { return null }
 
     const found = _.find(members, (m) => {
-      return m.handle === handle
+      return m.userId === userId
     })
 
     return _.get(found, 'role')
   }
 
-  checkIsCopilotOrManager (projectMembers, handle) {
+  checkIsCopilotOrManager (projectMembers, userId) {
     if (projectMembers && projectMembers.length > 0) {
-      const role = this.getMemberRole(projectMembers, handle)
+      const role = this.getMemberRole(projectMembers, userId)
       return role === PROJECT_ROLES.COPILOT || role === PROJECT_ROLES.MANAGER
     } else {
       return false
@@ -91,7 +91,7 @@ class ProjectEditor extends Component {
     if (isProjectTypesLoading || (isEdit && isProjectLoading)) return <Loader />
 
     const isAdmin = checkAdmin(this.props.auth.token)
-    const isCopilotOrManager = this.checkIsCopilotOrManager(_.get(projectDetail, 'members', []), _.get(this.props.auth, 'user.handle', null))
+    const isCopilotOrManager = this.checkIsCopilotOrManager(_.get(projectDetail, 'members', []), _.get(this.props.auth, 'user.userId', null))
     const canManage = isAdmin || isCopilotOrManager
 
     const projectId = this.getProjectId(match)
