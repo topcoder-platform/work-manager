@@ -15,8 +15,10 @@ import {
   updateProject
 } from '../../actions/projects'
 import { setActiveProject } from '../../actions/sidebar'
-import { checkAdminOrCopilot } from '../../util/tc'
+import { checkAdminOrCopilot, checkAdmin } from '../../util/tc'
+import { PROJECT_ROLES } from '../../config/constants'
 import Loader from '../../components/Loader'
+
 class ProjectEditor extends Component {
   constructor (props) {
     super(props)
@@ -53,6 +55,25 @@ class ProjectEditor extends Component {
     }
   }
 
+  getMemberRole (members, handle) {
+    if (!handle) { return null }
+
+    const found = _.find(members, (m) => {
+      return m.handle === handle
+    })
+
+    return _.get(found, 'role')
+  }
+
+  checkIsCopilotOrManager (projectMembers, handle) {
+    if (projectMembers && projectMembers.length > 0) {
+      const role = this.getMemberRole(projectMembers, handle)
+      return role === PROJECT_ROLES.COPILOT || role === PROJECT_ROLES.MANAGER
+    } else {
+      return false
+    }
+  }
+
   render () {
     const {
       match,
@@ -66,7 +87,12 @@ class ProjectEditor extends Component {
       isProjectLoading,
       projectDetail
     } = this.props
+
     if (isProjectTypesLoading || (isEdit && isProjectLoading)) return <Loader />
+
+    const isAdmin = checkAdmin(this.props.auth.token)
+    const isCopilotOrManager = this.checkIsCopilotOrManager(_.get(this.state.project, 'members', []), _.get(this.props.auth, 'user.handle', null))
+    const canManage = isAdmin || isCopilotOrManager
 
     const projectId = this.getProjectId(match)
     return (
@@ -97,6 +123,7 @@ class ProjectEditor extends Component {
               setActiveProject={setActiveProject}
               history={history}
               isEdit={isEdit}
+              canManage={canManage}
               projectDetail={projectDetail}
             />
           </div>
