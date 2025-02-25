@@ -12,6 +12,7 @@ import FooterContainer from './containers/FooterContainer'
 import Tab from './containers/Tab'
 import Challenges from './containers/Challenges'
 import TaaSList from './containers/TaaSList'
+import ProjectAssets from './containers/ProjectAssets'
 import TaaSProjectForm from './containers/TaaSProjectForm'
 import ChallengeEditor from './containers/ChallengeEditor'
 import { getFreshToken, decodeToken } from 'tc-auth-lib'
@@ -216,6 +217,20 @@ class Routes extends React.Component {
               <FooterContainer />
             )()}
           />
+          {(isCopilot || isAdmin) && (
+            <Route
+              exact
+              path='/projects/:projectId/assets'
+              render={({ match }) =>
+                renderApp(
+                  <ProjectAssets projectId={match.params.projectId} />,
+                  <TopBarContainer />,
+                  <Tab projectId={match.params.projectId} />,
+                  <FooterContainer />
+                )()
+              }
+            />
+          )}
           {
             !isReadOnly && (
               <Route exact path='/users'

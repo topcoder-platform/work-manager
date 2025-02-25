@@ -2,11 +2,15 @@ import _ from 'lodash'
 import { axiosInstance } from './axiosWithAuth'
 import * as queryString from 'query-string'
 import {
+  ATTACHMENT_TYPE_FILE,
+  FILE_PICKER_SUBMISSION_CONTAINER_NAME,
   GENERIC_PROJECT_MILESTONE_PRODUCT_NAME,
   GENERIC_PROJECT_MILESTONE_PRODUCT_TYPE,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
   PHASE_PRODUCT_TEMPLATE_ID
 } from '../config/constants'
+import { paginationHeaders } from '../util/pagination'
+
 const { PROJECT_API_URL } = process.env
 
 /**
@@ -37,13 +41,21 @@ export async function fetchBillingAccount (projectId) {
  * Api request for fetching member's projects
  * @returns {Promise<*>}
  */
-export async function fetchMemberProjects (filters) {
+export function fetchMemberProjects (filters) {
   const params = {
     ...filters
   }
 
-  const response = await axiosInstance.get(`${PROJECT_API_URL}?${queryString.stringify(params)}`)
-  return _.get(response, 'data')
+  for (let param in params) {
+    if (params[param] && Array.isArray(params[param])) {
+      params[`${param}[$in]`] = params[param]
+      params[param] = undefined
+    }
+  }
+
+  return axiosInstance.get(`${PROJECT_API_URL}?${queryString.stringify(params)}`).then(response => {
+    return { projects: _.get(response, 'data'), pagination: paginationHeaders(response) }
+  })
 }
 
 /**
@@ -196,4 +208,83 @@ export async function updateProjectApi (projectId, project) {
 export async function getProjectTypes () {
   const response = await axiosInstance.get(`${PROJECT_API_URL}/metadata/projectTypes`)
   return _.get(response, 'data')
+}
+
+/**
+ * Get project attachment
+ * @param projectId project id
+ * @param attachmentId attachment id
+ * @returns {Promise<*>}
+ */
+export async function getProjectAttachment (projectId, attachmentId) {
+  const response = await axiosInstance.get(
+    `${PROJECT_API_URL}/${projectId}/attachments/${attachmentId}`
+  )
+  return _.get(response, 'data')
+}
+
+/**
+ * Add attachment to project
+ * @param projectId project id
+ * @param data attachment data
+ * @returns {Promise<*>}
+ */
+export async function addProjectAttachmentApi (projectId, data) {
+  if (data.type === ATTACHMENT_TYPE_FILE) {
+    // add s3 bucket prop
+    data.s3Bucket = FILE_PICKER_SUBMISSION_CONTAINER_NAME
+  }
+
+  // The api takes only arrays
+  if (!data.tags) {
+    data.tags = []
+  }
+
+  const response = await axiosInstance.post(
+    `${PROJECT_API_URL}/${projectId}/attachments`,
+    data
+  )
+  return _.get(response, 'data')
+}
+
+/**
+ * Update project attachment
+ * @param projectId project id
+ * @param attachmentId attachment id
+ * @param attachment attachment data
+ * @returns {Promise<*>}
+ */
+export async function updateProjectAttachmentApi (
+  projectId,
+  attachmentId,
+  attachment
+) {
+  let data = {
+    ...attachment
+  }
+  if (data && (!data.allowedUsers || data.allowedUsers.length === 0)) {
+    data.allowedUsers = null
+  }
+
+  // The api takes only arrays
+  if (data && !data.tags) {
+    data.tags = []
+  }
+
+  const response = await axiosInstance.patch(
+    `${PROJECT_API_URL}/${projectId}/attachments/${attachmentId}`,
+    data
+  )
+  return _.get(response, 'data')
+}
+
+/**
+ * Remove project attachment
+ * @param projectId project id
+ * @param attachmentId attachment id
+ */
+export async function removeProjectAttachmentApi (projectId, attachmentId) {
+  await axiosInstance.delete(
+    `${PROJECT_API_URL}/${projectId}/attachments/${attachmentId}`
+  )
 }

@@ -7,7 +7,6 @@ export default {
     let styles = {
       ...provided,
       borderRadius: '2px !important',
-      height: '40px',
       minHeight: '40px'
     }
     if (state.isFocused) {

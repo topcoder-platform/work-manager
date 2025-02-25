@@ -37,6 +37,9 @@
 
 .actionButtons {
   top: 30px;
+  display: flex;
+  gap: 20px;
+
   a,button {
     height: 40px;
   }
@@ -250,4 +253,9 @@
         margin-bottom: 0;
       }
   }
+}
+
+.btnOutline {
+  padding: 0 40px;
+  white-space: nowrap;
 }

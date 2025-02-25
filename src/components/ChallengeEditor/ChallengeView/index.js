@@ -20,7 +20,6 @@ import { getResourceRoleByName } from '../../../util/tc'
 import { loadGroupDetails } from '../../../actions/challenges'
 import {
   REVIEW_TYPES,
-  CONNECT_APP_URL,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
   MULTI_ROUND_CHALLENGE_TEMPLATE_ID,
   DS_TRACK_ID
@@ -118,12 +117,7 @@ const ChallengeView = ({
               </div>
               {selectedMilestone &&
                 <div className={styles.col}>
-                  <span><span className={styles.fieldTitle}>Milestone:</span> {selectedMilestone ? (
-                    <a href={`${CONNECT_APP_URL}/projects/${projectDetail.id}`} target='_blank'
-                      rel='noopener noreferrer'>
-                      {selectedMilestone.name}
-                    </a>
-                  ) : ''}</span>
+                  <span><span className={styles.fieldTitle}>Milestone:</span> {selectedMilestone ? selectedMilestone.name : ''}</span>
                 </div>
               }
               <div className={styles.col}>

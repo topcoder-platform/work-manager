@@ -7,7 +7,7 @@ import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import { Link } from 'react-router-dom'
 import ProjectStatus from './ProjectStatus'
-import { PROJECT_ROLES, TYPEFORM_URL } from '../../config/constants'
+import { PROJECT_ROLES, TYPEFORM_URL, PROJECT_STATUS } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
@@ -50,6 +50,7 @@ const ChallengesComponent = ({
 }) => {
   const [loginUserRoleInProject, setLoginUserRoleInProject] = useState('')
   const isReadOnly = checkReadOnlyRoles(auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
+  const isAdminOrCopilot = checkAdminOrCopilot(auth.token, activeProject)
 
   useEffect(() => {
     const loggedInUser = auth.user
@@ -69,7 +70,7 @@ const ChallengesComponent = ({
             {activeProject ? activeProject.name : ''}
             {activeProject && activeProject.status && <ProjectStatus className={styles.status} status={activeProject.status} />}
           </div>
-          {activeProject && activeProject.id && checkAdminOrCopilot(auth.token) && (
+          {activeProject && activeProject.id && isAdminOrCopilot && (
             <span>
               (
               <Link
@@ -83,6 +84,15 @@ const ChallengesComponent = ({
         </div>
         {activeProject && activeProject.id && !isReadOnly ? (
           <div className={styles.projectActionButtonWrapper}>
+            {isAdminOrCopilot && (
+              <OutlineButton
+                text={'Assets Library'}
+                type={'info'}
+                submit
+                link={`/projects/${activeProjectId}/assets`}
+                className={styles.btnOutline}
+              />
+            )}
             {checkAdmin(auth.token) && (
               <OutlineButton
                 text='Request Copilot'
@@ -91,11 +101,15 @@ const ChallengesComponent = ({
                 target={'_blank'}
               />
             )}
-            <Link
-              to={`/projects/${activeProject.id}/challenges/new`}
-            >
-              <PrimaryButton text={'Launch New'} type={'info'} />
-            </Link>
+            {activeProject.status === PROJECT_STATUS.ACTIVE ? (
+              <Link
+                to={`/projects/${activeProject.id}/challenges/new`}
+              >
+                <PrimaryButton text={'Launch New'} type={'info'} />
+              </Link>
+            ) : (
+              <PrimaryButton text={'Launch New'} type={'info'} disabled />
+            )}
           </div>
         ) : (
           <span />
