@@ -1,0 +1,20 @@
+@import '../../../styles/includes';
+
+.container {
+  border: 1px solid $tc-gray-30;
+  border-radius: 6px;
+  display: flex;
+  line-height: 9px;
+  height: 12px;
+  padding: 0 3px;
+
+  i:before {
+    @include roboto;
+
+    color: $text-color;
+    content: '\B7';
+    display: flex;
+    font-size: 20px;
+    vertical-align: middle;
+  }
+}

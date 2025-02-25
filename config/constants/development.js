@@ -44,8 +44,10 @@ module.exports = {
   CREATE_FORUM_TYPE_IDS: ['927abff4-7af9-4145-8ba1-577c16e64e2e', 'dc876fa4-ef2d-4eee-b701-b555fcc6544c', 'ecd58c69-238f-43a4-a4bb-d172719b9f31', '78b37a69-92d5-4ad7-bf85-c79b65420c79', '929bc408-9cf2-4b3e-ba71-adfbf693046c'],
   FILE_PICKER_API_KEY: process.env.FILE_PICKER_API_KEY,
   FILE_PICKER_CONTAINER_NAME: 'tc-challenge-v5-dev',
+  FILE_PICKER_SUBMISSION_CONTAINER_NAME: process.env.FILE_PICKER_SUBMISSION_CONTAINER_NAME || 'submission-staging-dev',
   FILE_PICKER_REGION: 'us-east-1',
   FILE_PICKER_CNAME: 'fs.topcoder.com',
+  FILE_PICKER_LOCATION: 's3',
   // if idle for this many minutes, show user a prompt saying they'll be logged out
   IDLE_TIMEOUT_MINUTES: 10,
   // duration to show the prompt saying user will be logged out, before actually logging out the user
@@ -57,5 +59,6 @@ module.exports = {
   SKILLS_V5_API_URL: `${API_V5}/standardized-skills/skills/autocomplete`,
   UPDATE_SKILLS_V5_API_URL: `${API_V5}/standardized-skills/challenge-skills`,
   SALESFORCE_BILLING_ACCOUNT_LINK: 'https://c.cs18.visual.force.com/apex/baredirect?id=',
-  TYPEFORM_URL: 'https://topcoder.typeform.com/to/YJ7AL4p8'
+  TYPEFORM_URL: 'https://topcoder.typeform.com/to/YJ7AL4p8',
+  PROFILE_URL: 'https://profiles.topcoder-dev.com/'
 }

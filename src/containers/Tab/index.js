@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import Tab from '../../components/Tab'
 import {
   loadProjects,
+  loadTaasProjects,
   setActiveProject,
   resetSidebarActiveParams,
   unloadProjects
@@ -96,7 +97,7 @@ class TabContainer extends Component {
     const { history } = props
 
     if (history.location.pathname === '/taas') {
-      this.props.loadProjects('', false, { type: 'talent-as-a-service', status: undefined })
+      this.props.loadTaasProjects()
     } else {
       this.props.loadProjects()
     }
@@ -138,6 +139,7 @@ TabContainer.propTypes = {
   isLoading: PropTypes.bool,
   isLoadProjectsSuccess: PropTypes.bool,
   loadProjects: PropTypes.func,
+  loadTaasProjects: PropTypes.func,
   unloadProjects: PropTypes.func,
   activeProjectId: PropTypes.number,
   history: PropTypes.any.isRequired,
@@ -153,6 +155,7 @@ const mapStateToProps = ({ sidebar }) => ({
 
 const mapDispatchToProps = {
   loadProjects,
+  loadTaasProjects,
   unloadProjects,
   setActiveProject,
   resetSidebarActiveParams

@@ -6,9 +6,9 @@ import PropTypes from 'prop-types'
 import cn from 'classnames'
 import styles from './Table.module.scss'
 
-const Table = (props) => {
+const Table = props => {
   const { options, rows, className } = props
-  const headers = options.map(o => <th style={{ flex: o.width || 0 }} key={`th-${o.name}`}>{o.name}</th>)
+  const headers = options.map(o => <th key={`th-${o.name}`}>{o.name}</th>)
   // If the table is expandable it uses multiple tbodys
   return (
     <table className={cn(className)}>
@@ -16,7 +16,7 @@ const Table = (props) => {
         <Table.Row>{headers}</Table.Row>
       </thead>
       {props.expandable && rows}
-      {!props.expandable && (<tbody>{rows}</tbody>)}
+      {!props.expandable && <tbody>{rows}</tbody>}
     </table>
   )
 }
@@ -32,9 +32,11 @@ Table.propTypes = {
   className: PropTypes.string
 }
 
-Table.Row = (props) => {
+Table.Row = props => {
   return (
-    <tr className={props.className} onClick={props.onClick}>{props.children}</tr>
+    <tr className={props.className} onClick={props.onClick}>
+      {props.children}
+    </tr>
   )
 }
 
@@ -44,10 +46,8 @@ Table.Row.propTypes = {
   onClick: PropTypes.func
 }
 
-Table.Col = (props) => {
-  return (
-    <td style={{ flex: props.width || 0 }} {...props}>{props.children}</td>
-  )
+Table.Col = props => {
+  return <td {...props}>{props.children}</td>
 }
 
 Table.Col.propTypes = {
@@ -55,16 +55,22 @@ Table.Col.propTypes = {
   width: PropTypes.number
 }
 
-Table.ExpandableRow = (props) => {
+Table.ExpandableRow = props => {
   return (
-      <>
-        <tbody>
-          <Table.Row {...props} onClick={props.onClick} />
-        </tbody>
-        <tbody className={cn(styles.expand, { [styles.hidden]: !props.expanded }, props.expandContainerClassName)}>
-          {props.expandRows}
-        </tbody>
-      </>
+    <>
+      <tbody>
+        <Table.Row {...props} onClick={props.onClick} />
+      </tbody>
+      <tbody
+        className={cn(
+          styles.expand,
+          { [styles.hidden]: !props.expanded },
+          props.expandContainerClassName
+        )}
+      >
+        {props.expandRows}
+      </tbody>
+    </>
   )
 }
 

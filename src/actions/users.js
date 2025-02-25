@@ -28,7 +28,7 @@ export function loadAllUserProjects (isAdmin = true) {
       filters['memberOnly'] = true
     }
 
-    fetchMemberProjects(filters).then(projects => dispatch({
+    fetchMemberProjects(filters).then(({ projects }) => dispatch({
       type: LOAD_ALL_USER_PROJECTS_SUCCESS,
       projects
     })).catch(() => dispatch({
@@ -66,7 +66,7 @@ export function searchUserProjects (isAdmin = true, keyword) {
       filters['memberOnly'] = true
     }
 
-    fetchMemberProjects(filters).then(projects => dispatch({
+    fetchMemberProjects(filters).then(({ projects }) => dispatch({
       type: SEARCH_USER_PROJECTS_SUCCESS,
       projects
     })).catch(() => dispatch({

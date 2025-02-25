@@ -18,6 +18,7 @@ import {
 } from '../../actions/challenges'
 import { loadProject, updateProject } from '../../actions/projects'
 import {
+  loadMoreProjects,
   loadProjects,
   setActiveProject,
   resetSidebarActiveParams
@@ -25,6 +26,7 @@ import {
 import styles from './Challenges.module.scss'
 import { checkAdmin, checkAdminOrCopilot } from '../../util/tc'
 import { PrimaryButton } from '../../components/Buttons'
+import InfiniteLoadTrigger from '../../components/InfiniteLoadTrigger'
 
 class Challenges extends Component {
   constructor (props) {
@@ -149,6 +151,7 @@ class Challenges extends Component {
       projects.map((p) => (
         <li key={p.id}>
           <ProjectCard
+            projectStatus={p.status}
             projectName={p.name}
             projectId={p.id}
             selected={activeProjectId === `${p.id}`}
@@ -173,6 +176,9 @@ class Challenges extends Component {
                 </div>
               )}
               <ul>{projectComponents}</ul>
+              {projects && !!projects.length && (
+                <InfiniteLoadTrigger onLoadMore={this.props.loadMoreProjects} />
+              )}
             </div>
           ) : null}
         {(dashboard || activeProjectId !== -1 || selfService) && (
@@ -264,6 +270,7 @@ Challenges.propTypes = {
   dashboard: PropTypes.bool,
   auth: PropTypes.object.isRequired,
   loadChallengeTypes: PropTypes.func,
+  loadMoreProjects: PropTypes.func,
   metadata: PropTypes.shape({
     challengeTypes: PropTypes.array
   })
@@ -291,6 +298,7 @@ const mapStateToProps = ({ challenges, sidebar, projects, auth }) => ({
 const mapDispatchToProps = {
   loadChallengesByPage,
   resetSidebarActiveParams,
+  loadMoreProjects,
   loadProject,
   loadProjects,
   updateProject,

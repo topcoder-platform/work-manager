@@ -194,8 +194,9 @@ export const checkEditResourceRoles = resourceRoles => {
  * Checks if token has any of the admin roles
  * @param  token
  */
-export const checkAdmin = token => {
-  const roles = _.get(decodeToken(token), 'roles')
+export const checkAdmin = (token) => {
+  const tokenData = decodeToken(token)
+  const roles = _.get(tokenData, 'roles')
   return roles.some(val => ADMIN_ROLES.indexOf(val.toLowerCase()) > -1)
 }
 
@@ -203,19 +204,27 @@ export const checkAdmin = token => {
  * Checks if token has any of the copilot roles
  * @param  token
  */
-export const checkCopilot = token => {
-  const roles = _.get(decodeToken(token), 'roles')
-  return roles.some(val => COPILOT_ROLES.indexOf(val.toLowerCase()) > -1)
+export const checkCopilot = (token, project) => {
+  const tokenData = decodeToken(token)
+  const roles = _.get(tokenData, 'roles')
+  const isCopilot = roles.some(val => COPILOT_ROLES.indexOf(val.toLowerCase()) > -1)
+  const canManageProject = !project || _.isEmpty(project) || ALLOWED_EDIT_RESOURCE_ROLES.includes(_.get(_.find(project.members, { userId: tokenData.userId }), 'role'))
+
+  return isCopilot && canManageProject
 }
 
 /**
  * Checks if token has any of the admin or copilot roles
  * @param  token
  */
-export const checkAdminOrCopilot = token => {
-  const roles = _.get(decodeToken(token), 'roles')
-  const allowedRoles = [...ADMIN_ROLES, ...COPILOT_ROLES]
-  return roles.some(val => allowedRoles.indexOf(val.toLowerCase()) > -1)
+export const checkAdminOrCopilot = (token, project) => {
+  const tokenData = decodeToken(token)
+  const roles = _.get(tokenData, 'roles')
+  const isAdmin = roles.some(val => ADMIN_ROLES.indexOf(val.toLowerCase()) > -1)
+  const isCopilot = roles.some(val => COPILOT_ROLES.indexOf(val.toLowerCase()) > -1)
+  const canManageProject = !project || _.isEmpty(project) || ALLOWED_EDIT_RESOURCE_ROLES.includes(_.get(_.find(project.members, { userId: tokenData.userId }), 'role'))
+
+  return isAdmin || (isCopilot && canManageProject)
 }
 
 /**
@@ -323,4 +332,24 @@ export function getChallengeTypeAbbr (track, challengeTypes) {
  */
 export function is2RoundsChallenge (challenge) {
   return !!_.find(challenge.phases, { name: 'Checkpoint Submission' })
+}
+
+/**
+ * Get full name of user
+ * @param {Object} user user info
+ * @returns
+ */
+export function getFullNameWithFallback (user) {
+  if (!user) return ''
+  let userFullName = user.firstName
+  if (userFullName && user.lastName) {
+    userFullName += ' ' + user.lastName
+  }
+  userFullName =
+    userFullName && userFullName.trim().length > 0 ? userFullName : user.handle
+  userFullName =
+    userFullName && userFullName.trim().length > 0
+      ? userFullName
+      : 'Connect user'
+  return userFullName
 }
