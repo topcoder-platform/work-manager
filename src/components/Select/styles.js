@@ -6,7 +6,8 @@ export default {
   control: (provided, state) => {
     let styles = {
       ...provided,
-      borderRadius: '2px !important'
+      borderRadius: '2px !important',
+      minHeight: '40px'
     }
     if (state.isFocused) {
       styles = {

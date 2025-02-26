@@ -40,4 +40,4 @@ app.get('/*', (req, res) => res.sendFile(path.join(__dirname, 'build', 'index.ht
 const port = process.env.PORT || 3000
 app.listen(port)
 
-console.log(`App is listening on port ${port}`)
+console.log(`App is now listening...`)

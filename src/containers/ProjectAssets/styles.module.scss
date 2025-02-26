@@ -1,0 +1,65 @@
+@import '../../styles/includes';
+
+.container {
+  padding: 30px 20px;
+}
+
+.btn {
+  height: 40px;
+
+  span,
+  button {
+    padding: 0 20px;
+    white-space: nowrap;
+  }
+}
+
+.blockHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 29px;
+  color: $challenges-title;
+}
+
+.modalContainer {
+  padding: 0;
+  position: fixed;
+  overflow: auto;
+  z-index: 10000;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: auto;
+  max-width: none;
+  transform: none;
+  background: transparent;
+  color: $text-color;
+  opacity: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  @include xs-to-lg {
+    max-width: 100vw;
+  }
+}
+
+.btns {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.blockTabs {
+  margin-top: 20px;
+  margin-bottom: 30px;
+}

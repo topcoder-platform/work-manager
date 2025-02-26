@@ -1,0 +1,18 @@
+@import '../../styles/includes';
+
+@-moz-document url-prefix() {
+  .inputField {
+    &::-moz-placeholder {
+      /* Mozilla Firefox 19+ */
+      line-height: 38px;
+    }
+    &::-webkit-input-placeholder {
+      /* Webkit */
+      line-height: 38px;
+    }
+    &:-ms-input-placeholder {
+      /* IE */
+      line-height: 38px;
+    }
+  }
+}

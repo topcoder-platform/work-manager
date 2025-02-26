@@ -1,0 +1,11 @@
+.loader {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+
+    > * {
+        width: auto;
+        min-width: 130px;
+    }
+}

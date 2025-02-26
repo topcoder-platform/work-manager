@@ -2,7 +2,7 @@
  * Reducer to process actions related to challenge list
  */
 import _ from 'lodash'
-import { toastr } from 'react-redux-toastr'
+import { toastSuccess, toastFailure } from '../util/toaster'
 import {
   LOAD_CHALLENGE_DETAILS_FAILURE,
   LOAD_CHALLENGE_DETAILS_PENDING,
@@ -59,18 +59,6 @@ const initialState = {
   page: 1,
   totalChallenges: 0,
   projectId: -1
-}
-
-function toastrFailure (title, message) {
-  setImmediate(() => {
-    toastr.error(title, message)
-  })
-}
-
-function toastrSuccess (title, message) {
-  setImmediate(() => {
-    toastr.success(title, message)
-  })
 }
 
 export default function (state = initialState, action) {
@@ -189,7 +177,7 @@ export default function (state = initialState, action) {
     case DELETE_CHALLENGE_SUCCESS: {
       const deletedChallengeDetails = action.challengeDetails.data
       const updatedChallenges = state.challenges.filter((challenge) => challenge.id !== deletedChallengeDetails.id)
-      toastrSuccess('Success', `Challenge deleted successfully.`)
+      toastSuccess('Success', `Challenge deleted successfully.`)
       return {
         ...state,
         challenges: updatedChallenges
@@ -300,7 +288,7 @@ export default function (state = initialState, action) {
       return { ...state, attachments }
     }
     case CREATE_ATTACHMENT_FAILURE: {
-      toastrFailure('Upload failure', `Failed to upload ${action.file.name}`)
+      toastFailure('Upload failure', `Failed to upload ${action.file.name}`)
       const attachments = _.reject(state.attachments, (attachment) =>
         _.find(action.files, { url: attachment.url })
       )
@@ -326,7 +314,7 @@ export default function (state = initialState, action) {
       return { ...state, attachments }
     }
     case REMOVE_ATTACHMENT_FAILURE: {
-      toastrFailure('Removing failure', `Failed to remove attachment`)
+      toastFailure('Removing failure', `Failed to remove attachment`)
       const attachments = _.map(state.attachments, item => {
         if (item.id !== action.attachmentId) {
           return item

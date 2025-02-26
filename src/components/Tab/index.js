@@ -35,6 +35,13 @@ const Tab = ({
     selectTab(4)
   }
 
+  const onTaaSClick = () => {
+    if (currentTab === 5) {
+      return
+    }
+    selectTab(5)
+  }
+
   const tabComponent = (
     <ul className={styles.challengeTab}>
       <li
@@ -92,6 +99,20 @@ const Tab = ({
         role='presentation'
       >
           Self-Service
+      </li>
+      <li
+        key='tab-item-taas'
+        className={cn(styles.item, { [styles.active]: currentTab === 5 })}
+        onClick={onTaaSClick}
+        onKeyDown={e => {
+          if (e.key !== 'Enter') {
+            return
+          }
+          onTaaSClick()
+        }}
+        role='presentation'
+      >
+          TaaS
       </li>
     </ul>
   )

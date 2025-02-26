@@ -4,8 +4,6 @@ import _ from 'lodash'
 import Select from '../../Select'
 import cn from 'classnames'
 import styles from './Milestone-Field.module.scss'
-import { CONNECT_APP_URL } from '../../../config/constants'
-import PrimaryButton from '../../Buttons/PrimaryButton'
 
 const MilestoneField = ({ milestones, onUpdateSelect, disabled, projectId, selectedMilestoneId }) => {
   const options = milestones.map(type => ({ label: type.name, value: type.id }))
@@ -28,10 +26,6 @@ const MilestoneField = ({ milestones, onUpdateSelect, disabled, projectId, selec
             isDisabled={disabled}
           />
         </div>
-        <a className={cn(styles.field, styles.manageLink)} href={`${CONNECT_APP_URL}/projects/${projectId}`} target='_blank'
-          rel='noopener noreferrer'>
-          <PrimaryButton type='successDark' text='MANAGE MILESTONES' />
-        </a>
       </div>
     </>
   )

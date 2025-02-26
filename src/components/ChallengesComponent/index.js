@@ -6,11 +6,12 @@ import _ from 'lodash'
 import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import { Link } from 'react-router-dom'
-import { CONNECT_APP_URL, PROJECT_ROLES } from '../../config/constants'
-import { PrimaryButton } from '../Buttons'
+import ProjectStatus from './ProjectStatus'
+import { PROJECT_ROLES, TYPEFORM_URL, PROJECT_STATUS } from '../../config/constants'
+import { PrimaryButton, OutlineButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
-import { checkReadOnlyRoles } from '../../util/tc'
+import { checkAdmin, checkReadOnlyRoles, checkAdminOrCopilot } from '../../util/tc'
 
 const ChallengesComponent = ({
   challenges,
@@ -37,6 +38,10 @@ const ChallengesComponent = ({
   isBillingAccountExpired,
   billingStartDate,
   billingEndDate,
+  billingAccounts,
+  currentBillingAccount,
+  updateProject,
+  isBillingAccountsLoading,
   isBillingAccountLoadingFailed,
   isBillingAccountLoading,
   selfService,
@@ -45,6 +50,7 @@ const ChallengesComponent = ({
 }) => {
   const [loginUserRoleInProject, setLoginUserRoleInProject] = useState('')
   const isReadOnly = checkReadOnlyRoles(auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
+  const isAdminOrCopilot = checkAdminOrCopilot(auth.token, activeProject)
 
   useEffect(() => {
     const loggedInUser = auth.user
@@ -62,28 +68,49 @@ const ChallengesComponent = ({
         <div className={styles.titleLinks}>
           <div className={styles.title}>
             {activeProject ? activeProject.name : ''}
+            {activeProject && activeProject.status && <ProjectStatus className={styles.status} status={activeProject.status} />}
           </div>
-          {activeProject && activeProject.id && (
+          {activeProject && activeProject.id && isAdminOrCopilot && (
             <span>
               (
-              <a
-                href={`${CONNECT_APP_URL}/projects/${activeProject.id}`}
-                target='_blank'
-                rel='noopener noreferrer'
+              <Link
+                to={`/projects/${activeProject.id}/edit`}
               >
-                View Project
-              </a>
+                Edit Project
+              </Link>
               )
             </span>
           )}
         </div>
         {activeProject && activeProject.id && !isReadOnly ? (
-          <Link
-            className={styles.buttonLaunchNew}
-            to={`/projects/${activeProject.id}/challenges/new`}
-          >
-            <PrimaryButton text={'Launch New'} type={'info'} />
-          </Link>
+          <div className={styles.projectActionButtonWrapper}>
+            {isAdminOrCopilot && (
+              <OutlineButton
+                text={'Assets Library'}
+                type={'info'}
+                submit
+                link={`/projects/${activeProjectId}/assets`}
+                className={styles.btnOutline}
+              />
+            )}
+            {checkAdmin(auth.token) && (
+              <OutlineButton
+                text='Request Copilot'
+                type={'info'}
+                url={`${TYPEFORM_URL}#handle=${auth.user.handle}&projectid=${activeProjectId}`}
+                target={'_blank'}
+              />
+            )}
+            {activeProject.status === PROJECT_STATUS.ACTIVE ? (
+              <Link
+                to={`/projects/${activeProject.id}/challenges/new`}
+              >
+                <PrimaryButton text={'Launch New'} type={'info'} />
+              </Link>
+            ) : (
+              <PrimaryButton text={'Launch New'} type={'info'} disabled />
+            )}
+          </div>
         ) : (
           <span />
         )}
@@ -114,6 +141,10 @@ const ChallengesComponent = ({
           isBillingAccountExpired={isBillingAccountExpired}
           billingStartDate={billingStartDate}
           billingEndDate={billingEndDate}
+          billingAccounts={billingAccounts}
+          currentBillingAccount={currentBillingAccount}
+          updateProject={updateProject}
+          isBillingAccountsLoading={isBillingAccountsLoading}
           isBillingAccountLoadingFailed={isBillingAccountLoadingFailed}
           isBillingAccountLoading={isBillingAccountLoading}
           selfService={selfService}
@@ -154,6 +185,10 @@ ChallengesComponent.propTypes = {
   dashboard: PropTypes.bool,
   billingStartDate: PropTypes.string,
   billingEndDate: PropTypes.string,
+  billingAccounts: PropTypes.arrayOf(PropTypes.shape()),
+  updateProject: PropTypes.func.isRequired,
+  isBillingAccountsLoading: PropTypes.bool,
+  currentBillingAccount: PropTypes.number,
   isBillingAccountLoadingFailed: PropTypes.bool,
   isBillingAccountLoading: PropTypes.bool,
   selfService: PropTypes.bool,

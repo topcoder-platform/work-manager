@@ -1,0 +1,104 @@
+@import "../../styles/includes";
+form {
+  width: 100%;
+
+  .description:focus {
+    outline-color: $light-blue;
+    outline-width: 1px;
+    outline-style: solid;
+    outline-offset: -1px;
+  }
+  .group {
+    @include form-container-default();
+    @include form-container-common();
+    background-color: $white;
+    width: 100%;
+    border-radius: 6px;
+    box-sizing: border-box;
+
+    .row {
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: row;
+      margin: 30px 30px 0 30px;
+      align-content: space-between;
+      justify-content: flex-start;
+      &:last-of-type {
+        margin-bottom: 30px;
+      }
+    }
+    .formLabel {
+      max-width: 185px;
+      min-width: 185px;
+      margin-right: 14px;
+      margin-bottom: auto;
+      padding-top: 10px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+
+      span {
+        color: $tc-red;
+      }
+    }
+    .formField {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      align-self: flex-end;
+      width: 80%;
+      margin-bottom: auto;
+      margin-top: auto;
+      max-width: 600px;
+      min-width: 600px;
+      textarea {
+        width: 100%;
+        height: 100px;
+        box-sizing: border-box;
+        border: 1px solid $tc-gray-40;
+        @include roboto;
+        border-radius: 2px;
+        font-size: 16px;
+        font-weight: 400;
+        line-height: 19px;
+        color: $tc-gray-80;
+        padding: 10px 20px;
+      }
+      input[type=radio] {
+        width: 18px;
+      }
+    }
+
+    .flexField {
+      display: flex;
+      flex-direction: row;
+      gap: 15px;
+    }
+
+    .error {
+      padding-right: 40px;
+      padding-bottom: 5px;
+      color: $tc-red;
+
+      .errorMessage {
+        font-size: 25px;
+      }
+    }
+  }
+  .actionButtons {
+    top: 20px;
+    display: flex;
+    justify-content: center;
+    button {
+      height: 40px;
+      max-width: 100px;
+    }
+  }
+}
+
+.flexRow {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+}

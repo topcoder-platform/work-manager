@@ -1,0 +1,80 @@
+@import "../../styles/includes";
+
+.field {
+  @include upto-sm {
+    display: block;
+    padding-bottom: 10px;
+  }
+
+  label {
+    @include roboto-bold();
+
+    font-size: 16px;
+    line-height: 19px;
+    font-weight: 500;
+    color: $tc-gray-80;
+  }
+
+  &.input1 {
+    max-width: 185px;
+    min-width: 185px;
+    margin-right: 14px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+
+    span {
+      color: $tc-red;
+    }
+  }
+
+  &.input2.error {
+    color: $tc-red;
+    margin-top: -25px;
+  }
+  &.input2 {
+    align-self: flex-end;
+    width: 50%;
+    margin-bottom: auto;
+    margin-top: auto;
+    display: flex;
+    flex-direction: row;
+    max-width: 500px;
+    flex-grow: 1;
+  }
+}
+.buttonContainer {
+  display: flex;
+  padding-right: 10px;
+
+  button {
+    margin-left: 10px;
+    max-width: 100px;
+    height: 40px;
+  }
+}
+
+.manageBillingAccountLinkWrapper {
+  margin-top: 5px;
+}
+
+.manageBillingAccountLink {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.title {
+  font-weight: bold;
+}
+.error {
+  font-weight: bold;
+  color: #be405e;
+}
+.active {
+  color: #008000;
+  text-transform: uppercase;
+}
+.inactive {
+  color: #be405e;
+}

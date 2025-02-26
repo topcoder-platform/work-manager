@@ -2,6 +2,9 @@
 
 .projectSearch {
   padding: 20px 20px 0px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 
   .projectSearchHeader {
     display: flex;
@@ -9,6 +12,24 @@
     label {
       line-height: 40px;
       margin-right: 10px;
+    }
+  }
+  .buttonNewProjectWrapper {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    margin-top: auto;
+    align-items: center;
+    .buttonNewProject {
+      min-width: 169px;
+      height: 40px;
+      text-decoration: none;
+      
+      :global {
+        span {
+          margin: 0 20px;
+        }
+      }
     }
   }
 
@@ -48,4 +69,17 @@
     padding-right: 20px;
     color: $white;
   }
+}
+
+.blockNoProjectSelected {
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buttonCreateNewTaaS {
+  min-width: 169px;
+  height: 40px;
+  text-decoration: none;
 }

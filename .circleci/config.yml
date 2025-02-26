@@ -9,7 +9,7 @@ parameters:
 
 defaults: &defaults
   docker:
-    - image: cimg/python:3.11.7-browsers
+    - image: cimg/python:3.11.11-browsers
 
 test_defaults: &test_defaults
   docker:
@@ -74,7 +74,7 @@ builddeploy_steps: &builddeploy_steps
         source awsenvconf
         ./buildenv.sh -e $DEPLOY_ENV -b ${LOGICAL_ENV}-${APPNAME}-deployvar
         source buildenvvar
-        ./master_deploy.sh -d ECS -e $DEPLOY_ENV -t latest -s ${LOGICAL_ENV}-global-appvar,${LOGICAL_ENV}-${APPNAME}-appvar -i ${APPNAME}
+        ./master_deploy.sh -d ECS -e $DEPLOY_ENV -t latest -s ${LOGICAL_ENV}-global-appvar,${LOGICAL_ENV}-${APPNAME}-appvar -i ${APPNAME} -p FARGATE
         #curl --request POST \
         #--url https://circleci.com/api/v2/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pipeline \
         #--header "Circle-Token: ${CIRCLE_TOKEN}" \
@@ -152,7 +152,7 @@ workflows:
           context: org-global
           filters: &filters-dev
             branches:
-              only: ["develop", "multiround", "release_0.20.9", "metadata-fix"]
+              only: ["develop", "PM-803_wm-regression-fixes"]
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.

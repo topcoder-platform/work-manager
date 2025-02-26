@@ -2,11 +2,13 @@
  * Component to render as a loading indication
  */
 import React from 'react'
+import cn from 'classnames'
+import PropTypes from 'prop-types'
 import styles from './Loader.module.scss'
 
-function Loader () {
+function Loader ({ classsName }) {
   return (
-    <div className={styles.loader}>
+    <div className={cn(styles.loader, classsName)}>
       <svg
         className={styles.container}
         viewBox='0 0 64 64'
@@ -28,6 +30,10 @@ function Loader () {
       </svg>
     </div>
   )
+}
+
+Loader.propTypes = {
+  classsName: PropTypes.string
 }
 
 export default Loader

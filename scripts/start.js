@@ -111,8 +111,10 @@ checkBrowsers(paths.appPath, isInteractive)
     })
   })
   .catch(err => {
-    if (err && err.message) {
-      console.error(err.message)
+    if (err && process.env.NODE_ENV === 'development') {
+      console.log(err)
+    } else {
+      console.error('An error occurred while starting the development server')
     }
     process.exit(1)
   })
