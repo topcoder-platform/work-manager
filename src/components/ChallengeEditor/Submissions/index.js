@@ -61,6 +61,7 @@ class SubmissionsComponent extends React.Component {
     this.checkIsReviewPhaseComplete = this.checkIsReviewPhaseComplete.bind(
       this
     )
+    this.downloadSubmission = this.downloadSubmission.bind(this)
   }
 
   componentDidMount () {
@@ -226,6 +227,37 @@ class SubmissionsComponent extends React.Component {
     this.setState({
       selectedSubmissionId: ''
     })
+  }
+
+  async downloadSubmission (submission) {
+    // download submission
+    const reactLib = getTopcoderReactLib()
+    const { getService } = reactLib.services.submissions
+    const submissionsService = getService(this.props.token)
+    submissionsService.downloadSubmission(submission.id)
+      .then((blob) => {
+        isValidDownloadFile(blob).then((isValidFile) => {
+          if (isValidFile.success) {
+            // eslint-disable-next-line no-undef
+            const url = window.URL.createObjectURL(new Blob([blob]))
+            const link = document.createElement('a')
+            link.href = url
+            let fileName = submission.legacySubmissionId
+            if (!fileName) {
+              fileName = submission.id
+            }
+            fileName = fileName + '.zip'
+            link.setAttribute('download', `${fileName}`)
+            document.body.appendChild(link)
+            link.click()
+            link.parentNode.removeChild(link)
+          } else {
+            this.setState({
+              alertMessage: isValidFile.message || 'Can not download this submission.'
+            })
+          }
+        })
+      })
   }
 
   render () {
@@ -555,36 +587,7 @@ class SubmissionsComponent extends React.Component {
                         <div className={styles['button-wrapper']}>
                           <button
                             className={styles['download-submission-button']}
-                            onClick={() => {
-                              // download submission
-                              const reactLib = getTopcoderReactLib()
-                              const { getService } = reactLib.services.submissions
-                              const submissionsService = getService(token)
-                              submissionsService.downloadSubmission(s.id)
-                                .then((blob) => {
-                                  isValidDownloadFile(blob).then((isValidFile) => {
-                                    if (isValidFile.success) {
-                                      // eslint-disable-next-line no-undef
-                                      const url = window.URL.createObjectURL(new Blob([blob]))
-                                      const link = document.createElement('a')
-                                      link.href = url
-                                      let fileName = s.legacySubmissionId
-                                      if (!fileName) {
-                                        fileName = s.id
-                                      }
-                                      fileName = fileName + '.zip'
-                                      link.setAttribute('download', `${fileName}`)
-                                      document.body.appendChild(link)
-                                      link.click()
-                                      link.parentNode.removeChild(link)
-                                    } else {
-                                      this.setState({
-                                        alertMessage: isValidFile.message || 'Can not download this submission.'
-                                      })
-                                    }
-                                  })
-                                })
-                            }}
+                            onClick={() => this.downloadSubmission(s)}
                           >
                             <ReactSVG path={assets(`${Download}`)} />
                           </button>
