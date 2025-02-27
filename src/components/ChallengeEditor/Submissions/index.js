@@ -8,7 +8,7 @@ import PT from 'prop-types'
 import moment from 'moment'
 import _ from 'lodash'
 import { STUDIO_URL, SUBMISSION_REVIEW_APP_URL, getTCMemberURL } from '../../../config/constants'
-import { OutlineButton, PrimaryButton } from '../../Buttons'
+import { PrimaryButton } from '../../Buttons'
 import AlertModal from '../../Modal/AlertModal'
 import cn from 'classnames'
 import ReactSVG from 'react-svg'
@@ -30,10 +30,12 @@ import {
 import styles from './Submissions.module.scss'
 import modalStyles from '../../../styles/modal.module.scss'
 import { ArtifactsListModal } from '../ArtifactsListModal'
+import Tooltip from '../../Tooltip'
 const assets = require.context('../../../assets/images', false, /svg/)
 const ArrowDown = './arrow-down.svg'
 const Lock = './lock.svg'
 const Download = './IconSquareDownload.svg'
+const DownloadArtifact = './IconDownloadArtifacts.svg'
 
 const theme = {
   container: modalStyles.modalContainer
@@ -585,21 +587,25 @@ class SubmissionsComponent extends React.Component {
                       </td>
                       {canDownloadSubmission ? (<td className={cn(styles['col-8Table'], styles['col-bodyTable'])}>
                         <div className={styles['button-wrapper']}>
-                          <button
-                            className={styles['download-submission-button']}
-                            onClick={() => this.downloadSubmission(s)}
-                          >
-                            <ReactSVG path={assets(`${Download}`)} />
-                          </button>
+                          <Tooltip content='Download Submission'>
+                            <button
+                              className={styles['download-submission-button']}
+                              onClick={() => this.downloadSubmission(s)}
+                            >
+                              <ReactSVG path={assets(`${Download}`)} />
+                            </button>
+                          </Tooltip>
 
-                          <OutlineButton
-                            text='Download Artifacts'
-                            type='info'
-                            className={styles['download-artifacts-button']}
-                            onClick={async () => {
-                              this.setState({ selectedSubmissionId: s.id })
-                            }}
-                          />
+                          <Tooltip content='Download Submission Artifacts'>
+                            <button
+                              className={styles['download-submission-button']}
+                              onClick={async () => {
+                                this.setState({ selectedSubmissionId: s.id })
+                              }}
+                            >
+                              <ReactSVG path={assets(`${DownloadArtifact}`)} />
+                            </button>
+                          </Tooltip>
                         </div>
                       </td>) : null}
                     </tr>
