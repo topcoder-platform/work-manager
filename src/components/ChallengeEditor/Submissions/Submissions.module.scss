@@ -250,6 +250,9 @@ $base-unit: 5px;
         outline: none;
         margin-right: 14px;
         width: 24px;
+        svg {
+          width: 24px;
+        }
       }
 
       .download-artifacts-button {
