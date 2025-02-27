@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import Modal from '../../Modal'
 
 import styles from './ArtifactsListModal.module.scss'
@@ -12,16 +12,16 @@ export const ArtifactsListModal = ({ onClose, submissionId, token, theme }) => {
   const [artifacts, setArtifacts] = useState([])
   const [loading, setLoading] = useState(false)
 
-  const getArtifacts = async () => {
+  const getArtifacts = useCallback(async () => {
     const reactLib = getTopcoderReactLib()
     const { getService } = reactLib.services.submissions
     const submissionsService = getService(token)
     const { artifacts: resp } = await submissionsService.getSubmissionArtifacts(submissionId)
     setArtifacts(resp)
     setLoading(false)
-  }
+  }, [submissionId, token])
 
-  const getExtensionFromMime = (mimeType) => {
+  const getExtensionFromMime = useCallback((mimeType) => {
     const mimeMap = {
       'application/zip': 'zip',
       'application/pdf': 'pdf',
@@ -30,12 +30,39 @@ export const ArtifactsListModal = ({ onClose, submissionId, token, theme }) => {
       'text/plain': 'txt'
     }
     return mimeMap[mimeType] || 'zip'
-  }
+  }, [])
 
   useEffect(() => {
     setLoading(true)
     getArtifacts()
   }, [submissionId])
+
+  const onDownloadArtifact = useCallback((item) => {
+    // download submission
+    const reactLib = getTopcoderReactLib()
+    const { getService } = reactLib.services.submissions
+    const submissionsService = getService(token)
+    submissionsService.downloadSubmissionArtifact(submissionId, item)
+      .then((blob) => {
+        isValidDownloadFile(blob).then((isValidFile) => {
+          if (isValidFile.success) {
+            // eslint-disable-next-line no-undef
+            const blobFile = new Blob([blob])
+            const url = window.URL.createObjectURL(blobFile)
+            const link = document.createElement('a')
+            link.href = url
+            const extension = getExtensionFromMime(blob.type)
+            const fileName = `${submissionId}.${extension}`
+            link.setAttribute('download', `${fileName}`)
+            document.body.appendChild(link)
+            link.click()
+            link.parentNode.removeChild(link)
+          } else {
+            console.log('failed to download artifact')
+          }
+        })
+      })
+  }, [submissionId, token])
 
   return (
     <Modal theme={theme} onCancel={onClose}>
@@ -53,32 +80,7 @@ export const ArtifactsListModal = ({ onClose, submissionId, token, theme }) => {
                   <ReactSVG
                     className={styles['icon-download']}
                     path={assets('./IconSquareDownload.svg')}
-                    onClick={() => {
-                      // download submission
-                      const reactLib = getTopcoderReactLib()
-                      const { getService } = reactLib.services.submissions
-                      const submissionsService = getService(token)
-                      submissionsService.downloadSubmissionArtifact(submissionId, item)
-                        .then((blob) => {
-                          isValidDownloadFile(blob).then((isValidFile) => {
-                            if (isValidFile.success) {
-                              // eslint-disable-next-line no-undef
-                              const blobFile = new Blob([blob])
-                              const url = window.URL.createObjectURL(blobFile)
-                              const link = document.createElement('a')
-                              link.href = url
-                              const extension = getExtensionFromMime(blob.type)
-                              const fileName = `${submissionId}.${extension}`
-                              link.setAttribute('download', `${fileName}`)
-                              document.body.appendChild(link)
-                              link.click()
-                              link.parentNode.removeChild(link)
-                            } else {
-                              console.log(isValidFile, 'failed')
-                            }
-                          })
-                        })
-                    }}
+                    onClick={() => onDownloadArtifact(item)}
                   />
                 </div>
               )
