@@ -31,11 +31,13 @@ import styles from './Submissions.module.scss'
 import modalStyles from '../../../styles/modal.module.scss'
 import { ArtifactsListModal } from '../ArtifactsListModal'
 import Tooltip from '../../Tooltip'
+import { RatingsListModal } from '../RatingsListModal'
 const assets = require.context('../../../assets/images', false, /svg/)
 const ArrowDown = './arrow-down.svg'
 const Lock = './lock.svg'
 const Download = './IconSquareDownload.svg'
 const DownloadArtifact = './IconDownloadArtifacts.svg'
+const ReviewRatingList = './IconReviewRatingList.svg'
 
 const theme = {
   container: modalStyles.modalContainer
@@ -54,7 +56,9 @@ class SubmissionsComponent extends React.Component {
       sortedSubmissions: [],
       downloadingAll: false,
       alertMessage: '',
-      selectedSubmissionId: ''
+      selectedSubmissionId: '',
+      showArtifactsListModal: false,
+      showRatingsListModal: false
     }
     this.getSubmissionsSortParam = this.getSubmissionsSortParam.bind(this)
     this.updateSortedSubmissions = this.updateSortedSubmissions.bind(this)
@@ -227,7 +231,8 @@ class SubmissionsComponent extends React.Component {
 
   closeArtifactsModal () {
     this.setState({
-      selectedSubmissionId: ''
+      selectedSubmissionId: '',
+      showArtifactsListModal: false
     })
   }
 
@@ -600,10 +605,21 @@ class SubmissionsComponent extends React.Component {
                             <button
                               className={styles['download-submission-button']}
                               onClick={async () => {
-                                this.setState({ selectedSubmissionId: s.id })
+                                this.setState({ selectedSubmissionId: s.id, showArtifactsListModal: true })
                               }}
                             >
                               <ReactSVG path={assets(`${DownloadArtifact}`)} />
+                            </button>
+                          </Tooltip>
+
+                          <Tooltip content='Ratings'>
+                            <button
+                              className={styles['download-submission-button']}
+                              onClick={() => {
+                                this.setState({ selectedSubmissionId: s.id, showRatingsListModal: true })
+                              }}
+                            >
+                              <ReactSVG path={assets(`${ReviewRatingList}`)} />
                             </button>
                           </Tooltip>
                         </div>
@@ -616,16 +632,31 @@ class SubmissionsComponent extends React.Component {
           </div>
 
           {
-            this.state.selectedSubmissionId ? (
+            this.state.showArtifactsListModal ? (
               <ArtifactsListModal
                 submissionId={this.state.selectedSubmissionId}
                 token={this.props.token}
                 theme={theme}
                 onClose={() => {
                   this.setState({
-                    selectedSubmissionId: ''
+                    selectedSubmissionId: '',
+                    showArtifactsListModal: false
                   })
                 }}
+              />
+            ) : null
+          }
+
+          {
+            this.state.showRatingsListModal ? (
+              <RatingsListModal
+                token={this.props.token}
+                theme={theme}
+                onClose={() => {
+                  this.setState({ showRatingsListModal: false })
+                }}
+                submissionId={this.state.selectedSubmissionId}
+                challengeId={this.props.challenge.id}
               />
             ) : null
           }
