@@ -24,6 +24,7 @@ module.exports = {
   RESOURCES_API_URL: `${PROD_API_HOSTNAME}/v5/resources`,
   RESOURCE_ROLES_API_URL: `${PROD_API_HOSTNAME}/v5/resource-roles`,
   SUBMISSIONS_API_URL: `${PROD_API_HOSTNAME}/v5/submissions`,
+  REVIEW_TYPE_API_URL: `${PROD_API_HOSTNAME}/v5/reviewTypes`,
   SUBMISSION_REVIEW_APP_URL: `https://submission-review.${DOMAIN}/challenges`,
   STUDIO_URL: `https://studio.${DOMAIN}`,
   CONNECT_APP_URL: `https://connect.${DOMAIN}`,

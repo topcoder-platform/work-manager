@@ -364,6 +364,13 @@ export const CANCEL_REASONS = [
 ]
 
 /**
+ * System reviewers
+ */
+export const SystemReviewers = {
+  Default: 'TC System'
+}
+
+/**
  * Milestone product details
  */
 export const GENERIC_PROJECT_MILESTONE_PRODUCT_TYPE = 'generic-product'

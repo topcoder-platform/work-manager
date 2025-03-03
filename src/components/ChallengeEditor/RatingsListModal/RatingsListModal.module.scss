@@ -1,0 +1,44 @@
+@import "../../../styles/includes";
+
+.container {
+  box-sizing: border-box;
+  background: $white;
+  opacity: 1;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  border-radius: 6px;
+  margin: 0 auto;
+  width: 800px;
+  min-height: 350px;
+  padding-top: 60px;
+  .list {
+    .header {
+      border-bottom: 1px solid $tc-gray-60;
+      padding-bottom: 10px;
+      display: flex;
+      padding-left: 40px;
+      padding-right: 40px;
+      color: $tc-gray-70;
+      font-weight: 500;
+
+      .header-item {
+        flex: 1;
+      }
+    }
+    .list-item {
+      border-bottom: 1px solid $tc-gray-60;
+      padding-bottom: 10px;
+      padding-top: 10px;
+      display: flex;
+      padding-left: 40px;
+      padding-right: 40px;
+      color: $tc-gray-70;
+      .list-col-item {
+        display: flex;
+        flex: 1;
+      }
+    }
+  }
+}
