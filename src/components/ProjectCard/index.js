@@ -8,13 +8,12 @@ import { PROJECT_STATUSES } from '../../config/constants'
 
 import styles from './ProjectCard.module.scss'
 
-const ProjectCard = ({ projectName, projectStatus, projectId, selected, setActiveProject }) => {
+const ProjectCard = ({ projectName, projectStatus, projectId, selected }) => {
   return (
     <div className={styles.container}>
       <Link
         to={`/projects/${projectId}/challenges`}
         className={cn(styles.projectName, { [styles.selected]: selected })}
-        onClick={() => setActiveProject(parseInt(projectId))}
       >
         <div className={styles.name}>
           <span>{projectName}</span>
@@ -29,8 +28,7 @@ ProjectCard.propTypes = {
   projectStatus: PT.string.isRequired,
   projectId: PT.number.isRequired,
   projectName: PT.string.isRequired,
-  selected: PT.bool.isRequired,
-  setActiveProject: PT.func
+  selected: PT.bool
 }
 
 export default ProjectCard

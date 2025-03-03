@@ -6,9 +6,7 @@ import React, { Component, Fragment } from 'react'
 // import { Redirect } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
-import { Link } from 'react-router-dom'
 import ChallengesComponent from '../../components/ChallengesComponent'
-import ProjectCard from '../../components/ProjectCard'
 // import Loader from '../../components/Loader'
 import {
   loadChallengesByPage,
@@ -18,15 +16,11 @@ import {
 } from '../../actions/challenges'
 import { loadProject, updateProject } from '../../actions/projects'
 import {
-  loadMoreProjects,
   loadProjects,
   setActiveProject,
   resetSidebarActiveParams
 } from '../../actions/sidebar'
-import styles from './Challenges.module.scss'
-import { checkAdmin, checkAdminOrCopilot } from '../../util/tc'
-import { PrimaryButton } from '../../components/Buttons'
-import InfiniteLoadTrigger from '../../components/InfiniteLoadTrigger'
+import { checkAdmin } from '../../util/tc'
 
 class Challenges extends Component {
   constructor (props) {
@@ -145,46 +139,11 @@ class Challenges extends Component {
       metadata
     } = this.props
     const { challengeTypes = [] } = metadata
-    const projectInfo = _.find(projects, { id: activeProjectId }) || {}
-    const projectComponents =
-      !dashboard &&
-      projects.map((p) => (
-        <li key={p.id}>
-          <ProjectCard
-            projectStatus={p.status}
-            projectName={p.name}
-            projectId={p.id}
-            selected={activeProjectId === `${p.id}`}
-            setActiveProject={setActiveProject}
-          />
-        </li>
-      ))
     return (
       <Fragment>
-        {!dashboard &&
-        (!!projectComponents.length ||
-          (activeProjectId === -1 && !selfService)) ? (
-            <div className={!dashboard && styles.projectSearch}>
-              {activeProjectId === -1 && !selfService && (
-                <div className={styles.buttonNewProjectWrapper}>
-                  <div>No project selected. Select one below</div>
-                  {checkAdminOrCopilot(auth.token) && (
-                    <Link className={styles.buttonNewProject} to={`/projects/new`}>
-                      <PrimaryButton text={'Create Project'} type={'info'} />
-                    </Link>
-                  )}
-                </div>
-              )}
-              <ul>{projectComponents}</ul>
-              {projects && !!projects.length && (
-                <InfiniteLoadTrigger onLoadMore={this.props.loadMoreProjects} />
-              )}
-            </div>
-          ) : null}
         {(dashboard || activeProjectId !== -1 || selfService) && (
           <ChallengesComponent
             activeProject={{
-              ...projectInfo,
               ...(reduxProjectInfo && reduxProjectInfo.id === activeProjectId
                 ? reduxProjectInfo
                 : {})
@@ -270,7 +229,6 @@ Challenges.propTypes = {
   dashboard: PropTypes.bool,
   auth: PropTypes.object.isRequired,
   loadChallengeTypes: PropTypes.func,
-  loadMoreProjects: PropTypes.func,
   metadata: PropTypes.shape({
     challengeTypes: PropTypes.array
   })
@@ -298,7 +256,6 @@ const mapStateToProps = ({ challenges, sidebar, projects, auth }) => ({
 const mapDispatchToProps = {
   loadChallengesByPage,
   resetSidebarActiveParams,
-  loadMoreProjects,
   loadProject,
   loadProjects,
   updateProject,

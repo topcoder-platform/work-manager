@@ -16,7 +16,6 @@ const initialState = {
   activeProjectId: -1,
   isLoading: false,
   projects: [],
-  taasProjects: [],
   total: 0,
   page: 0,
   isLoadProjectsSuccess: false
@@ -29,10 +28,7 @@ export default function (state = initialState, action) {
     case LOAD_PROJECTS_SUCCESS:
       return {
         ...state,
-        projects: _.filter(action.projects, p => p.type !== 'talent-as-a-service'),
-        taasProjects: _.filter(action.projects, {
-          type: 'talent-as-a-service'
-        }),
+        projects: action.projects,
         total: action.total,
         page: action.page,
         isLoading: false,

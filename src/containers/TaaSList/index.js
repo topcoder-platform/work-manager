@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { withRouter, Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
@@ -7,15 +7,25 @@ import Loader from '../../components/Loader'
 import cn from 'classnames'
 import { checkAdmin, checkCopilot } from '../../util/tc'
 import { PrimaryButton } from '../../components/Buttons'
+import InfiniteLoadTrigger from '../../components/InfiniteLoadTrigger'
+import { loadProjects as _loadProjects, loadMoreProjects, unloadProjects as _unloadProjects } from '../../actions/projects'
+import { PROJECT_TYPE_TAAS } from '../../config/constants'
 
 import styles from './styles.module.scss'
 
-const TaaSList = ({ taasProjects, auth, isLoading }) => {
+const TaaSList = ({ projects, auth, isLoading, projectsCount, loadProjects, loadMore, unloadProjects }) => {
   const isCopilot = checkCopilot(auth.token)
   const isAdmin = checkAdmin(auth.token)
   const canEdit = isCopilot || isAdmin
 
-  if (isLoading && taasProjects.length === 0) {
+  useEffect(() => {
+    loadProjects('', { type: PROJECT_TYPE_TAAS })
+  }, [])
+
+  // unload projects on dismount
+  useEffect(() => () => unloadProjects, [])
+
+  if (isLoading && projects.length === 0) {
     return (
       <div className={styles.container}>
         <Loader />
@@ -26,7 +36,7 @@ const TaaSList = ({ taasProjects, auth, isLoading }) => {
   return (
     <div className={styles.container}>
       <div className={styles.searchHeader}>
-        <div>No project selected. Select one below</div>
+        <h2>Projects</h2>
         {(isCopilot || isAdmin) && (
           <Link className={styles.buttonCreateNewTaaS} to='/taas/new'>
             <PrimaryButton
@@ -37,18 +47,24 @@ const TaaSList = ({ taasProjects, auth, isLoading }) => {
           </Link>
         )}
       </div>
-      {taasProjects.length > 0 ? (
-        <ul>
-          {taasProjects.map(p => (
-            <li key={p.id} className={cn({ [styles.canEdit]: canEdit })}>
-              <TaaSProjectCard
-                projectName={p.name}
-                projectId={p.id}
-                canEdit={canEdit}
-              />
-            </li>
-          ))}
-        </ul>
+      {projects.length > 0 ? (
+        <>
+          <ul>
+            {projects.map(p => (
+              <li key={p.id} className={cn({ [styles.canEdit]: canEdit })}>
+                <TaaSProjectCard
+                  projectName={p.name}
+                  projectId={p.id}
+                  canEdit={canEdit}
+                />
+              </li>
+            ))}
+          </ul>
+          {projects && projects.length < projectsCount - 1 && (
+            // fix
+            <InfiniteLoadTrigger onLoadMore={loadMore} />
+          )}
+        </>
       ) : (
         <span>No TaaS projects available yet</span>
       )}
@@ -57,20 +73,29 @@ const TaaSList = ({ taasProjects, auth, isLoading }) => {
 }
 
 TaaSList.propTypes = {
-  taasProjects: PropTypes.array,
+  projectsCount: PropTypes.number.isRequired,
+  projects: PropTypes.array,
   auth: PropTypes.object.isRequired,
-  isLoading: PropTypes.bool.isRequired
+  isLoading: PropTypes.bool.isRequired,
+  loadProjects: PropTypes.func.isRequired,
+  unloadProjects: PropTypes.func.isRequired,
+  loadMore: PropTypes.func.isRequired
 }
 
-const mapStateToProps = ({ sidebar, auth }) => {
+const mapStateToProps = ({ projects, auth }) => {
   return {
-    taasProjects: sidebar.taasProjects,
-    isLoading: sidebar.isLoading,
+    projectsCount: projects.projectsCount,
+    projects: projects.projects,
+    isLoading: projects.isLoading,
     auth
   }
 }
 
-const mapDispatchToProps = {}
+const mapDispatchToProps = {
+  loadProjects: _loadProjects,
+  unloadProjects: _unloadProjects,
+  loadMore: loadMoreProjects
+}
 
 export default withRouter(
   connect(mapStateToProps, mapDispatchToProps)(TaaSList)

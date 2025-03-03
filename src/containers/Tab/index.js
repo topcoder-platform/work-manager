@@ -5,7 +5,6 @@ import { connect } from 'react-redux'
 import Tab from '../../components/Tab'
 import {
   loadProjects,
-  loadTaasProjects,
   setActiveProject,
   resetSidebarActiveParams,
   unloadProjects
@@ -35,7 +34,7 @@ class TabContainer extends Component {
       !isLoading &&
       !selfService &&
       // do not fetch projects for users page
-      history.location.pathname !== '/users'
+      history.location.pathname === '/'
     ) {
       this.loadProjects(this.props)
     }
@@ -46,7 +45,11 @@ class TabContainer extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    const { projectId, isLoading, selfService, projects, isLoadProjectsSuccess } = nextProps
+    const { projectId, activeProjectId, isLoading, selfService, projects, isLoadProjectsSuccess } = nextProps
+
+    if (projectId && activeProjectId < 0) {
+      this.props.setActiveProject(parseInt(projectId))
+    }
 
     if (nextProps.history.location.pathname === '/') {
       this.setState({ currentTab: 1 })
@@ -96,9 +99,7 @@ class TabContainer extends Component {
   loadProjects (props) {
     const { history } = props
 
-    if (history.location.pathname === '/taas') {
-      this.props.loadTaasProjects()
-    } else {
+    if (history.location.pathname === '/') {
       this.props.loadProjects()
     }
   }
@@ -139,7 +140,6 @@ TabContainer.propTypes = {
   isLoading: PropTypes.bool,
   isLoadProjectsSuccess: PropTypes.bool,
   loadProjects: PropTypes.func,
-  loadTaasProjects: PropTypes.func,
   unloadProjects: PropTypes.func,
   activeProjectId: PropTypes.number,
   history: PropTypes.any.isRequired,
@@ -155,7 +155,6 @@ const mapStateToProps = ({ sidebar }) => ({
 
 const mapDispatchToProps = {
   loadProjects,
-  loadTaasProjects,
   unloadProjects,
   setActiveProject,
   resetSidebarActiveParams

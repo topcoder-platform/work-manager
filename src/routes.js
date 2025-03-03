@@ -11,6 +11,7 @@ import TopBarContainer from './containers/TopbarContainer'
 import FooterContainer from './containers/FooterContainer'
 import Tab from './containers/Tab'
 import Challenges from './containers/Challenges'
+import Projects from './containers/Projects'
 import TaaSList from './containers/TaaSList'
 import ProjectAssets from './containers/ProjectAssets'
 import TaaSProjectForm from './containers/TaaSProjectForm'
@@ -195,7 +196,7 @@ class Routes extends React.Component {
           />
           <Route exact path='/projects'
             render={() => renderApp(
-              <Challenges menu='NULL' key='projects' />,
+              <Projects />,
               <TopBarContainer />,
               <Tab />,
               <FooterContainer />
