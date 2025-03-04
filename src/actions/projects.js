@@ -1,4 +1,12 @@
+import _ from 'lodash'
+
 import {
+  PROJECT_TYPE_TAAS,
+  PROJECTS_PAGE_SIZE,
+  LOAD_PROJECTS_PENDING,
+  LOAD_PROJECTS_SUCCESS,
+  UNLOAD_PROJECTS_SUCCESS,
+  LOAD_PROJECTS_FAILURE,
   LOAD_PROJECT_BILLING_ACCOUNT,
   LOAD_CHALLENGE_MEMBERS_SUCCESS,
   LOAD_PROJECT_DETAILS,
@@ -21,8 +29,96 @@ import {
   getProjectTypes,
   createProjectApi,
   fetchBillingAccounts,
+  fetchMemberProjects,
   updateProjectApi
 } from '../services/projects'
+import { checkAdmin } from '../util/tc'
+
+function _loadProjects (projectNameOrIdFilter = '', paramFilters = {}) {
+  return (dispatch, getState) => {
+    dispatch({
+      type: LOAD_PROJECTS_PENDING
+    })
+
+    const filters = {
+      sort: 'lastActivityAt desc',
+      perPage: PROJECTS_PAGE_SIZE,
+      ...paramFilters
+    }
+
+    if (!_.isEmpty(projectNameOrIdFilter)) {
+      if (!isNaN(projectNameOrIdFilter)) { // if it is number
+        filters['id'] = parseInt(projectNameOrIdFilter, 10)
+      } else { // text search
+        filters['keyword'] = decodeURIComponent(projectNameOrIdFilter)
+      }
+    }
+
+    if (!checkAdmin(getState().auth.token)) {
+      filters['memberOnly'] = true
+    }
+
+    // eslint-disable-next-line no-debugger
+    const state = getState().projects
+    fetchMemberProjects(filters).then(({ projects, pagination }) => dispatch({
+      filters,
+      type: LOAD_PROJECTS_SUCCESS,
+      projects: _.uniqBy((filters.page ? state.projects || [] : []).concat(projects), 'id'),
+      total: pagination.xTotal,
+      page: pagination.xPage
+    })).catch(() => dispatch({
+      type: LOAD_PROJECTS_FAILURE
+    }))
+  }
+}
+
+export function loadProjects (projectNameOrIdFilter = '', paramFilters = {}) {
+  return async (dispatch, getState) => {
+    const _filters = _.assign({}, paramFilters)
+    if (_.isEmpty(_filters) || !_filters.type) {
+      let projectTypes = getState().projects.projectTypes
+
+      if (!projectTypes.length) {
+        dispatch({
+          type: LOAD_PROJECTS_PENDING
+        })
+        await loadProjectTypes()(dispatch)
+        projectTypes = getState().projects.projectTypes
+      }
+
+      _.assign(_filters, {
+        type: projectTypes.filter(d => d.key !== PROJECT_TYPE_TAAS).map(d => d.key)
+      })
+    }
+
+    return _loadProjects(projectNameOrIdFilter, _filters)(dispatch, getState)
+  }
+}
+
+/**
+ * Load more projects for the authenticated user
+ */
+export function loadMoreProjects () {
+  return (dispatch, getState) => {
+    const { projectFilters, projectsPage } = getState().projects
+
+    loadProjects('', _.assign({}, projectFilters, {
+      perPage: PROJECTS_PAGE_SIZE,
+      page: projectsPage + 1
+    }))(dispatch, getState)
+  }
+}
+
+/**
+ * Unloads projects of the authenticated user
+ */
+export function unloadProjects () {
+  return (dispatch) => {
+    dispatch({
+      type: UNLOAD_PROJECTS_SUCCESS
+    })
+  }
+}
 
 /**
  * Loads project details
