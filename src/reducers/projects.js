@@ -59,7 +59,7 @@ const dateFormat = 'MMM DD, YYYY'
  */
 const buildBillingAccountOptions = (billingAccountObj) => {
   const billingAccountOptions = billingAccountObj.map(billingAccount => ({
-    label: `(${billingAccount.tcBillingAccountId}) ${
+    label: `[${billingAccount.tcBillingAccountId}] ${billingAccount.name} ${
       billingAccount.endDate
         ? ' - ' + moment(billingAccount.endDate).format(dateFormat)
         : ''
