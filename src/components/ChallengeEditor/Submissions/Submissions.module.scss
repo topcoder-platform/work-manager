@@ -239,11 +239,24 @@ $base-unit: 5px;
     }
 
     .col-8Table {
-      button {
+      .button-wrapper {
+        display: flex;
+        align-items: center;
+      }
+      .download-submission-button {
         padding: 0;
         border: none;
         background-color: transparent;
         outline: none;
+        margin-right: 14px;
+        width: 24px;
+        svg {
+          width: 24px;
+        }
+      }
+
+      .download-artifacts-button {
+        height: 40px;
       }
     }
 
