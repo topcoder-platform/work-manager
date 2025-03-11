@@ -303,7 +303,6 @@ class ChallengeList extends Component {
     }
 
     let projectId = dashboard ? filterProjectOption : activeProjectId
-    console.log('project id', projectId)
     loadChallengesByPage(
       page,
       projectId,
