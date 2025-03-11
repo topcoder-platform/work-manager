@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import _ from 'lodash'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
-import { withRouter } from 'react-router-dom'
+import { withRouter, Link } from 'react-router-dom'
 import styles from './ChallengeView.module.scss'
 import Track from '../../Track'
 import NDAField from '../NDAField'
@@ -112,7 +112,10 @@ const ChallengeView = ({
             <div className={cn(styles.row, styles.topRow)}>
               <div className={styles.col}>
                 <span>
-                  <span className={styles.fieldTitle}>Project: {projectDetail ? projectDetail.name : ''}</span>
+                  <span className={styles.fieldTitle}>Project: <Link to={`/projects/${projectDetail.id}/challenges`}>
+                    {projectDetail ? projectDetail.name : ''}
+                  </Link>
+                  </span>
                 </span>
               </div>
               {selectedMilestone &&
