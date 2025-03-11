@@ -303,6 +303,7 @@ class ChallengeList extends Component {
     }
 
     let projectId = dashboard ? filterProjectOption : activeProjectId
+    console.log('project id', projectId)
     loadChallengesByPage(
       page,
       projectId,
@@ -341,14 +342,13 @@ class ChallengeList extends Component {
     const {
       activeProjectId,
       dashboard,
-      filterProjectOption,
       selfService,
       loadChallengesByPage
     } = this.props
 
     this.setState(_.cloneDeep(defaultSearchParam))
 
-    let projectId = dashboard ? filterProjectOption : activeProjectId
+    let projectId = dashboard ? undefined : activeProjectId
 
     loadChallengesByPage(
       1,
