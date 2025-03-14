@@ -21,7 +21,7 @@ import PropTypes from 'prop-types'
 import styles from './Tooltip.module.scss'
 import { usePopper } from 'react-popper'
 
-const Tooltip = ({ content, children }) => {
+const Tooltip = ({ content, children, closeOnClick }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [referenceElement, setReferenceElement] = useState(null)
   const [popperElement, setPopperElement] = useState(null)
@@ -69,15 +69,27 @@ const Tooltip = ({ content, children }) => {
     setIsOpen(true)
   }, [setIsOpen])
 
+  const defaultContentProps = {
+    onMouseEnter: open,
+    onMouseLeave: close,
+    innerRef: setReferenceElement,
+    ref: setReferenceElement
+  }
+
+  const getContentElementProps = child => closeOnClick ? {
+    ...defaultContentProps,
+    onClick: (event) => {
+      if (typeof child.props.onClick === 'function') {
+        child.props.onClick(event)
+      }
+      close(event)
+    }
+  } : defaultContentProps
+
   return (
     <>
       {React.Children.map(children, (child) =>
-        React.cloneElement(child, {
-          onMouseEnter: open,
-          onMouseLeave: close,
-          innerRef: setReferenceElement,
-          ref: setReferenceElement
-        })
+        React.cloneElement(child, getContentElementProps(child))
       )}
 
       {isOpen && (
@@ -101,7 +113,8 @@ const Tooltip = ({ content, children }) => {
 
 Tooltip.propTypes = {
   content: PropTypes.node,
-  children: PropTypes.node
+  children: PropTypes.node,
+  closeOnClick: PropTypes.bool
 }
 
 export default Tooltip
