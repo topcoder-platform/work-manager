@@ -601,7 +601,7 @@ class SubmissionsComponent extends React.Component {
                             </button>
                           </Tooltip>
 
-                          <Tooltip content='Download Submission Artifacts'>
+                          <Tooltip content='Download Submission Artifacts' closeOnClick>
                             <button
                               className={styles['download-submission-button']}
                               onClick={async () => {
@@ -612,7 +612,7 @@ class SubmissionsComponent extends React.Component {
                             </button>
                           </Tooltip>
 
-                          <Tooltip content='Ratings'>
+                          <Tooltip content='Ratings' closeOnClick>
                             <button
                               className={styles['download-submission-button']}
                               onClick={() => {

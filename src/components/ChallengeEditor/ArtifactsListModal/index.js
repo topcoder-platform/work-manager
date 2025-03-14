@@ -88,6 +88,10 @@ export const ArtifactsListModal = ({ onClose, submissionId, token, theme }) => {
           }
 
           {
+            !loading && artifacts.length === 0 && <div className={styles['no-artifacts']}>No artifacts found</div>
+          }
+
+          {
             loading && <Loader />
           }
         </div>

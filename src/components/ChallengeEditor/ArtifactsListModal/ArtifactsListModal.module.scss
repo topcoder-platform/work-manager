@@ -43,5 +43,11 @@
         cursor: pointer;
       }
     }
+    .no-artifacts {
+      @include roboto;
+
+      margin-top: 40px;
+      text-align: center;
+    }
   }
 }
