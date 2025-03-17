@@ -15,9 +15,10 @@ import { toastFailure } from '../util/toaster'
 const initialState = {
   activeProjectId: -1,
   isLoading: false,
+  projectFilters: {},
   projects: [],
-  total: 0,
-  page: 0,
+  projectsTotal: 0,
+  projectsPage: 0,
   isLoadProjectsSuccess: false
 }
 
@@ -29,14 +30,14 @@ export default function (state = initialState, action) {
       return {
         ...state,
         projects: action.projects,
-        total: action.total,
-        page: action.page,
+        projectsTotal: action.total,
+        projectsPage: action.page,
         isLoading: false,
         isLoggedIn: true,
         isLoadProjectsSuccess: true
       }
     case UNLOAD_PROJECTS_SUCCESS:
-      return { ...state, total: 0, page: 0, projects: [], isLoading: false, isLoggedIn: true, isLoadProjectsSuccess: false }
+      return { ...state, projectsTotal: 0, projectsPage: 0, projects: [], isLoading: false, isLoggedIn: true, isLoadProjectsSuccess: false }
     case LOAD_PROJECTS_PENDING:
       return { ...state, isLoading: true }
     case LOAD_PROJECTS_FAILURE: {

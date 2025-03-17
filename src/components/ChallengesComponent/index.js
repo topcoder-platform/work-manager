@@ -46,7 +46,8 @@ const ChallengesComponent = ({
   isBillingAccountLoading,
   selfService,
   auth,
-  challengeTypes
+  challengeTypes,
+  fetchNextProjects
 }) => {
   const [loginUserRoleInProject, setLoginUserRoleInProject] = useState('')
   const isReadOnly = checkReadOnlyRoles(auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
@@ -118,6 +119,7 @@ const ChallengesComponent = ({
       <div className={styles.challenges}>
         <ChallengeList
           challenges={challenges}
+          fetchNextProjects={fetchNextProjects}
           projects={projects}
           warnMessage={warnMessage}
           isLoading={isLoading}
@@ -160,6 +162,7 @@ const ChallengesComponent = ({
 ChallengesComponent.propTypes = {
   challenges: PropTypes.arrayOf(PropTypes.object),
   projects: PropTypes.arrayOf(PropTypes.object),
+  fetchNextProjects: PropTypes.func.isRequired,
   activeProject: PropTypes.shape({
     id: PropTypes.number,
     name: PropTypes.string
