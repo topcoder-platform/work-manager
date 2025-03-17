@@ -16,7 +16,7 @@ import {
 } from '../../actions/challenges'
 import { loadProject, updateProject } from '../../actions/projects'
 import {
-  loadProjects,
+  loadNextProjects,
   setActiveProject,
   resetSidebarActiveParams
 } from '../../actions/sidebar'
@@ -136,7 +136,8 @@ class Challenges extends Component {
       dashboard,
       selfService,
       auth,
-      metadata
+      metadata,
+      fetchNextProjects
     } = this.props
     const { challengeTypes = [] } = metadata
     return (
@@ -148,6 +149,7 @@ class Challenges extends Component {
                 ? reduxProjectInfo
                 : {})
             }}
+            fetchNextProjects={fetchNextProjects}
             warnMessage={warnMessage}
             setActiveProject={setActiveProject}
             dashboard={dashboard}
@@ -229,6 +231,7 @@ Challenges.propTypes = {
   dashboard: PropTypes.bool,
   auth: PropTypes.object.isRequired,
   loadChallengeTypes: PropTypes.func,
+  fetchNextProjects: PropTypes.func.isRequired,
   metadata: PropTypes.shape({
     challengeTypes: PropTypes.array
   })
@@ -257,7 +260,7 @@ const mapDispatchToProps = {
   loadChallengesByPage,
   resetSidebarActiveParams,
   loadProject,
-  loadProjects,
+  fetchNextProjects: loadNextProjects,
   updateProject,
   loadChallengeTypes,
   setActiveProject,

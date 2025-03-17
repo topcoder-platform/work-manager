@@ -67,6 +67,18 @@ export function loadProjects (filterProjectName = '', paramFilters = {}) {
   }
 }
 
+// Load next page of projects
+export function loadNextProjects () {
+  return (dispatch, getState) => {
+    const { projectFilters, projectsPage } = getState().sidebar
+
+    loadProjects('', _.assign({}, projectFilters, {
+      perPage: PROJECTS_PAGE_SIZE,
+      page: projectsPage + 1
+    }))(dispatch, getState)
+  }
+}
+
 /**
  * Unloads projects of the authenticated user
  */

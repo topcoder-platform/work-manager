@@ -401,7 +401,8 @@ class ChallengeList extends Component {
       isBillingAccountLoading,
       selfService,
       challengeTypes,
-      loginUserRoleInProject
+      loginUserRoleInProject,
+      fetchNextProjects
     } = this.props
     const isReadOnly = checkReadOnlyRoles(this.props.auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
     const isAdmin = checkAdmin(this.props.auth.token)
@@ -506,6 +507,9 @@ class ChallengeList extends Component {
                 <Select
                   name='project'
                   options={projectOptions}
+                  cacheOptions
+                  captureMenuScroll
+                  onMenuScrollBottom={fetchNextProjects}
                   placeholder='All Projects'
                   value={projectOption}
                   onChange={e =>
@@ -853,6 +857,7 @@ ChallengeList.defaultProps = {
 
 ChallengeList.propTypes = {
   challenges: PropTypes.arrayOf(PropTypes.object),
+  fetchNextProjects: PropTypes.func.isRequired,
   projects: PropTypes.arrayOf(PropTypes.object),
   activeProject: PropTypes.shape({
     id: PropTypes.number,
