@@ -15,10 +15,10 @@ import { toastFailure } from '../util/toaster'
 const initialState = {
   activeProjectId: -1,
   isLoading: false,
+  projectFilters: {},
   projects: [],
-  taasProjects: [],
-  total: 0,
-  page: 0,
+  projectsTotal: 0,
+  projectsPage: 0,
   isLoadProjectsSuccess: false
 }
 
@@ -29,18 +29,15 @@ export default function (state = initialState, action) {
     case LOAD_PROJECTS_SUCCESS:
       return {
         ...state,
-        projects: _.filter(action.projects, p => p.type !== 'talent-as-a-service'),
-        taasProjects: _.filter(action.projects, {
-          type: 'talent-as-a-service'
-        }),
-        total: action.total,
-        page: action.page,
+        projects: action.projects,
+        projectsTotal: action.total,
+        projectsPage: action.page,
         isLoading: false,
         isLoggedIn: true,
         isLoadProjectsSuccess: true
       }
     case UNLOAD_PROJECTS_SUCCESS:
-      return { ...state, total: 0, page: 0, projects: [], isLoading: false, isLoggedIn: true, isLoadProjectsSuccess: false }
+      return { ...state, projectsTotal: 0, projectsPage: 0, projects: [], isLoading: false, isLoggedIn: true, isLoadProjectsSuccess: false }
     case LOAD_PROJECTS_PENDING:
       return { ...state, isLoading: true }
     case LOAD_PROJECTS_FAILURE: {

@@ -364,6 +364,13 @@ export const CANCEL_REASONS = [
 ]
 
 /**
+ * System reviewers
+ */
+export const SystemReviewers = {
+  Default: 'TC System'
+}
+
+/**
  * Milestone product details
  */
 export const GENERIC_PROJECT_MILESTONE_PRODUCT_TYPE = 'generic-product'
@@ -451,3 +458,5 @@ export const ATTACHMENT_TYPE_LINK = 'link'
  */
 export const PROJECT_ASSETS_SHARED_WITH_ALL_MEMBERS = 'All Project Members'
 export const PROJECT_ASSETS_SHARED_WITH_ADMIN = 'Only Admins'
+
+export const PROJECT_TYPE_TAAS = 'talent-as-a-service'

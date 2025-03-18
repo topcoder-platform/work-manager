@@ -3,6 +3,10 @@
  */
 import _ from 'lodash'
 import {
+  LOAD_PROJECTS_PENDING,
+  LOAD_PROJECTS_SUCCESS,
+  LOAD_PROJECTS_FAILURE,
+  UNLOAD_PROJECTS_SUCCESS,
   LOAD_PROJECT_BILLING_ACCOUNTS_PENDING,
   LOAD_PROJECT_BILLING_ACCOUNTS_SUCCESS,
   LOAD_PROJECT_BILLING_ACCOUNTS_FAILURE,
@@ -55,7 +59,7 @@ const dateFormat = 'MMM DD, YYYY'
  */
 const buildBillingAccountOptions = (billingAccountObj) => {
   const billingAccountOptions = billingAccountObj.map(billingAccount => ({
-    label: `(${billingAccount.tcBillingAccountId}) ${
+    label: `[${billingAccount.tcBillingAccountId}] ${billingAccount.name} ${
       billingAccount.endDate
         ? ' - ' + moment(billingAccount.endDate).format(dateFormat)
         : ''
@@ -80,11 +84,44 @@ const initialState = {
   isPhasesLoading: false,
   phases: [],
   isProjectTypesLoading: false,
-  projectTypes: []
+  projectFilters: {},
+  projectTypes: [],
+  projects: [],
+  projectsCount: 0,
+  projectsPage: 0
 }
 
 export default function (state = initialState, action) {
   switch (action.type) {
+    case LOAD_PROJECTS_PENDING:
+      return { ...state, isLoading: true }
+    case LOAD_PROJECTS_SUCCESS:
+      return {
+        ...state,
+        projectFilters: action.filters,
+        projects: action.projects,
+        projectsCount: action.total,
+        projectsPage: action.page,
+        isLoading: false
+      }
+    case UNLOAD_PROJECTS_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        projectFilters: {},
+        projects: [],
+        projectsCount: 0,
+        projectsPage: 0
+      }
+    case LOAD_PROJECTS_FAILURE: {
+      const errorMessage = _.get(
+        action.payload,
+        'response.data.message',
+        'Failed to load projects'
+      )
+      toastFailure('Error', errorMessage)
+      return { ...state, isLoading: false }
+    }
     case LOAD_PROJECT_DETAILS_PENDING:
       return { ...state, isLoading: true }
     case LOAD_PROJECT_DETAILS_FAILURE: {

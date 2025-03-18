@@ -152,7 +152,7 @@ workflows:
           context: org-global
           filters: &filters-dev
             branches:
-              only: ["develop", "PM-803_wm-regression-fixes"]
+              only: ["develop", "PM-803_wm-regression-fixes", "PM-902_show-all-projects-on-challenge-page"]
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.

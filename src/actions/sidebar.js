@@ -37,6 +37,7 @@ export function loadProjects (filterProjectName = '', paramFilters = {}) {
     })
 
     const filters = {
+      status: 'active',
       sort: 'lastActivityAt desc',
       perPage: PROJECTS_PAGE_SIZE,
       ...paramFilters
@@ -66,24 +67,16 @@ export function loadProjects (filterProjectName = '', paramFilters = {}) {
   }
 }
 
-/**
- * Load more projects for the authenticated user
- */
-export function loadMoreProjects (filterProjectName = '', paramFilters = {}) {
+// Load next page of projects
+export function loadNextProjects () {
   return (dispatch, getState) => {
-    const state = getState().sidebar
+    const { projectFilters, projectsPage } = getState().sidebar
 
-    loadProjects(filterProjectName, _.assignIn({}, paramFilters, {
+    loadProjects('', _.assign({}, projectFilters, {
       perPage: PROJECTS_PAGE_SIZE,
-      page: state.page + 1
+      page: projectsPage + 1
     }))(dispatch, getState)
   }
-}
-
-export function loadTaasProjects (filterProjectName = '', paramFilters = {}) {
-  return loadProjects(filterProjectName, Object.assign({
-    type: 'talent-as-a-service'
-  }, paramFilters))
 }
 
 /**
