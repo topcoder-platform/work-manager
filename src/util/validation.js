@@ -58,7 +58,8 @@ export const taaSProjectFormValidationSchema = Yup.object({
 /**
  * regex for url validation
  */
-const urlRegex = /((https?):\/\/)?(www\.)?[\w-]+(\.[a-z]{2,}){1,3}(#?\/?([\w-._~:/?#[\]@!$&'()*+,;=]+)*)?\/?(\?[a-zA-Z0-9-_]+=[a-zA-Z0-9-%]+&?)?$/
+const urlRegex = /((https?):\/\/)?(www\.)?[\w-]+(\.[a-z]{2,}){1,3}(#?\/?([\w\-._~:/?#[\]@!$&'()*+,;=]+)*)?\/?(\?[a-zA-Z0-9\-_=]+(&[a-zA-Z0-9\-_=]+)*)?$/
+
 /**
  * validation schema for add link form in assets library
  */
