@@ -27,7 +27,7 @@ const Projects = ({ projects, auth, isLoading, projectsCount, loadProjects, load
     if (projectStatus) {
       params.status = projectStatus
     }
-    
+
     if (isProjectManager) {
       params.memberOnly = showOnlyMyProjects
     }
