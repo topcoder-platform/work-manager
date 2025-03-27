@@ -27,7 +27,7 @@ const Projects = ({ projects, auth, isLoading, projectsCount, loadProjects, load
     if (projectStatus) {
       params.status = projectStatus
     }
-    console.log(isProjectManager, showOnlyMyProjects)
+    
     if (isProjectManager) {
       params.memberOnly = showOnlyMyProjects
     }
@@ -95,7 +95,7 @@ const Projects = ({ projects, auth, isLoading, projectsCount, loadProjects, load
                   type='checkbox'
                   id='isOpenAdvanceSettings'
                   checked={showOnlyMyProjects}
-                  onChange={() => { setOnlyMyProjects(!showOnlyMyProjects) }}
+                  onChange={() => setOnlyMyProjects(!showOnlyMyProjects)}
                 />
                 <label htmlFor='isOpenAdvanceSettings'>
                   <div>Only My Projects</div>
