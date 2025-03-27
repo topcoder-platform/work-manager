@@ -308,6 +308,10 @@ export const COPILOT_ROLES = [
   'copilot'
 ]
 
+export const MANAGER_ROLES = [
+  'project manager'
+]
+
 export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
   `${CHALLENGE_API_URL}/${challengeId}/attachments/${attachmentId}/download?token=${token}`
 

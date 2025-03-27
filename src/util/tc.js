@@ -10,7 +10,8 @@ import {
   SUBMITTER_ROLE_UUID,
   READ_ONLY_ROLES,
   ALLOWED_DOWNLOAD_SUBMISSIONS_ROLES,
-  ALLOWED_EDIT_RESOURCE_ROLES
+  ALLOWED_EDIT_RESOURCE_ROLES,
+  MANAGER_ROLES
 } from '../config/constants'
 import _ from 'lodash'
 import { decodeToken } from 'tc-auth-lib'
@@ -200,6 +201,11 @@ export const checkAdmin = (token) => {
   return roles.some(val => ADMIN_ROLES.indexOf(val.toLowerCase()) > -1)
 }
 
+export const checkManager = (token) => {
+  const tokenData = decodeToken(token)
+  const roles = _.get(tokenData, 'roles')
+  return roles.some(val => MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
+}
 /**
  * Checks if token has any of the copilot roles
  * @param  token
