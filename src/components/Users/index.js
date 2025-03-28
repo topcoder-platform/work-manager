@@ -6,12 +6,12 @@ import styles from './Users.module.scss'
 import Select from '../Select'
 import UserCard from '../UserCard'
 import PrimaryButton from '../Buttons/PrimaryButton'
-import Modal from '../Modal'
-import SelectUserAutocomplete from '../SelectUserAutocomplete'
 import { PROJECT_ROLES, AUTOCOMPLETE_DEBOUNCE_TIME_MS } from '../../config/constants'
 import { checkAdmin } from '../../util/tc'
-import { addUserToProject, removeUserFromProject } from '../../services/projects'
+import { removeUserFromProject } from '../../services/projects'
 import ConfirmationModal from '../Modal/ConfirmationModal'
+import UserAddModalContent from './user-add.modal'
+import InviteUserModalContent from './invite-user.modal' // Import the new component
 
 const theme = {
   container: styles.modalContainer
@@ -23,11 +23,7 @@ class Users extends Component {
     this.state = {
       projectOption: null,
       showAddUserModal: false,
-      userToAdd: null,
-      userPermissionToAdd: PROJECT_ROLES.READ,
-      showSelectUserError: false,
-      isAdding: false,
-      addUserError: false,
+      showInviteUserModal: false, // Add state for invite user modal
       isRemoving: false,
       removeError: null,
       showRemoveConfirmationModal: false,
@@ -36,10 +32,9 @@ class Users extends Component {
     }
     this.setProjectOption = this.setProjectOption.bind(this)
     this.onAddUserClick = this.onAddUserClick.bind(this)
+    this.onInviteUserClick = this.onInviteUserClick.bind(this) // Bind the new method
     this.resetAddUserState = this.resetAddUserState.bind(this)
-    this.onUpdateUserToAdd = this.onUpdateUserToAdd.bind(this)
-    this.onAddUserConfirmClick = this.onAddUserConfirmClick.bind(this)
-    this.updatePermission = this.updatePermission.bind(this)
+    this.resetInviteUserState = this.resetInviteUserState.bind(this) // Bind reset method
     this.onRemoveClick = this.onRemoveClick.bind(this)
     this.resetRemoveUserState = this.resetRemoveUserState.bind(this)
     this.onRemoveConfirmClick = this.onRemoveConfirmClick.bind(this)
@@ -54,78 +49,24 @@ class Users extends Component {
     loadProject(projectOption.value, false)
   }
 
-  updatePermission (newRole) {
-    this.setState({
-      userPermissionToAdd: newRole
-    })
-  }
-
   onAddUserClick () {
     this.setState({
       showAddUserModal: true
     })
   }
 
+  onInviteUserClick () {
+    this.setState({
+      showInviteUserModal: true
+    })
+  }
+
   resetAddUserState () {
-    this.setState({
-      userToAdd: null,
-      showSelectUserError: false,
-      isAdding: false,
-      showAddUserModal: false,
-      userPermissionToAdd: PROJECT_ROLES.READ,
-      addUserError: null
-    })
+    this.setState({ showAddUserModal: false })
   }
 
-  onUpdateUserToAdd (option) {
-    let userToAdd = null
-    if (option && option.value) {
-      userToAdd = {
-        handle: option.label,
-        userId: parseInt(option.value, 10)
-      }
-    }
-
-    this.setState({
-      userToAdd,
-      showSelectUserError: !userToAdd
-    })
-  }
-
-  async onAddUserConfirmClick () {
-    const { addNewProjectMember } = this.props
-    if (this.state.isAdding) { return }
-
-    this.setState({
-      showSelectUserError: false,
-      addUserError: null
-    })
-
-    if (!this.state.userToAdd) {
-      this.setState({
-        showSelectUserError: true
-      })
-      return
-    }
-
-    this.setState({
-      isAdding: true
-    })
-
-    try {
-      const newUserInfo = await addUserToProject(this.state.projectOption.value, this.state.userToAdd.userId, this.state.userPermissionToAdd)
-      newUserInfo.handle = this.state.userToAdd.handle
-      // wait for a second so that project's members are updated
-      addNewProjectMember(newUserInfo)
-      this.resetAddUserState()
-    } catch (e) {
-      const error = _.get(
-        e,
-        'response.data.message',
-        `Unable to add user`
-      )
-      this.setState({ isAdding: false, addUserError: error })
-    }
+  resetInviteUserState () {
+    this.setState({ showInviteUserModal: false })
   }
 
   getHandle () {
@@ -260,133 +201,28 @@ class Users extends Component {
                 text={'Add User'}
                 type={'info'}
                 onClick={() => this.onAddUserClick()} />
+              <PrimaryButton
+                text={'Invite User'}
+                type={'info'}
+                onClick={() => this.onInviteUserClick()} />
             </div>
           )
         }
         {
           this.state.showAddUserModal && (
-            <Modal theme={theme} onCancel={() => this.resetAddUserState()}>
-              <div className={cn(styles.contentContainer, styles.confirm)}>
-                <div className={styles.title}>Add User</div>
-                <div className={styles.addUserContentContainer}>
-                  <div className={styles.row}>
-                    <div className={cn(styles.field, styles.col1, styles.addUserTitle)}>
-                      Member<span className={styles.required}>*</span> :
-                    </div>
-                    <div className={cn(styles.field, styles.col2)}>
-                      <SelectUserAutocomplete
-                        value={this.state.userToAdd ? { label: this.state.userToAdd.handle, value: this.state.userToAdd.userId.toString() } : null}
-                        onChange={this.onUpdateUserToAdd}
-                      />
-                    </div>
-                  </div>
-                  {
-                    this.state.showSelectUserError && (
-                      <div className={styles.row}>
-                        <div className={styles.errorMesssage}>Please select a member.</div>
-                      </div>
-                    )
-                  }
-                  <div className={styles.row}>
-                    <div className={cn(styles.field, styles.col1, styles.addUserTitle)}>
-                      <label htmlFor='memberToAdd'>Role :</label>
-                    </div>
-                    <div className={cn(styles.col5)}>
-                      <div className={styles.tcRadioButton}>
-                        <input
-                          name={`add-user-radio`}
-                          type='radio'
-                          id={`read-add-user`}
-                          checked={this.state.userPermissionToAdd === PROJECT_ROLES.READ}
-                          onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.READ)}
-                        />
-                        <label htmlFor={`read-add-user`}>
-                          <div>
-                            Read
-                          </div>
-                          <input type='hidden' />
-                        </label>
-                      </div>
-                    </div>
-                    <div className={cn(styles.col5)}>
-                      <div className={styles.tcRadioButton}>
-                        <input
-                          name={`add-user-radio`}
-                          type='radio'
-                          id={`write-add-user`}
-                          checked={this.state.userPermissionToAdd === PROJECT_ROLES.WRITE}
-                          onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.WRITE)}
-                        />
-                        <label htmlFor={`write-add-user`}>
-                          <div>
-                            Write
-                          </div>
-                          <input type='hidden' />
-                        </label>
-                      </div>
-                    </div>
-                    <div className={cn(styles.col5)}>
-                      <div className={styles.tcRadioButton}>
-                        <input
-                          name={`add-user-radio`}
-                          type='radio'
-                          id={`full-access-add-user`}
-                          checked={this.state.userPermissionToAdd === PROJECT_ROLES.MANAGER}
-                          onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.MANAGER)}
-                        />
-                        <label htmlFor={`full-access-add-user`}>
-                          <div>
-                            Full Access
-                          </div>
-                          <input type='hidden' />
-                        </label>
-                      </div>
-                    </div>
-                    <div className={cn(styles.col5)}>
-                      <div className={styles.tcRadioButton}>
-                        <input
-                          name={`add-user-radio`}
-                          type='radio'
-                          id={`copilot-add-user`}
-                          checked={this.state.userPermissionToAdd === PROJECT_ROLES.COPILOT}
-                          onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.COPILOT)}
-                        />
-                        <label htmlFor={`copilot-add-user`}>
-                          <div>
-                            Copilot
-                          </div>
-                          <input type='hidden' />
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                  {
-                    this.state.addUserError && (
-                      <div className={styles.errorMesssage}>
-                        {this.state.addUserError}
-                      </div>
-                    )
-                  }
-                </div>
-
-                <div className={styles.buttonGroup}>
-                  <div className={styles.buttonSizeA}>
-                    <PrimaryButton
-                      text={'Close'}
-                      type={'info'}
-                      onClick={() => this.resetAddUserState()}
-                    />
-                  </div>
-                  <div className={styles.buttonSizeA}>
-                    <PrimaryButton
-                      text={this.state.isAdding ? 'Adding user...' : 'Add User'}
-                      type={'info'}
-                      onClick={() => this.onAddUserConfirmClick()}
-                    />
-                  </div>
-                </div>
-              </div>
-            </Modal>
+            <UserAddModalContent
+              projectId={this.state.projectOption.value}
+              addNewProjectMember={this.props.addNewProjectMember}
+              onClose={this.resetAddUserState}
+            />
+          )
+        }
+        {
+          this.state.showInviteUserModal && (
+            <InviteUserModalContent
+              projectId={this.state.projectOption.value}
+              onClose={this.resetInviteUserState}
+            />
           )
         }
         {
