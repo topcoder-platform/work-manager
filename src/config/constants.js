@@ -33,7 +33,9 @@ export const {
   TYPEFORM_URL,
   PROFILE_URL
 } = process.env
+
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
+export const PROJECTS_API_URL = process.env.PROJECTS_API_URL || process.env.PROJECT_API_URL
 
 /**
  * Filepicker config
@@ -242,6 +244,7 @@ export const MARATHON_MATCH_SUBTRACKS = [
 
 export const PROJECT_ROLES = {
   READ: 'observer',
+  CUSTOMER: 'customer',
   WRITE: 'customer',
   MANAGER: 'manager',
   COPILOT: 'copilot'
