@@ -1,8 +1,7 @@
-/* eslint-disable no-unused-vars */
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
-import { get } from 'lodash'
+import { find, get } from 'lodash'
 import Modal from '../Modal'
 import PrimaryButton from '../Buttons/PrimaryButton'
 import { inviteUserToProject } from '../../services/projects'
@@ -19,23 +18,35 @@ const validateEmail = (email) => {
   return emailRegex.test(email)
 }
 
-const InviteUserModalContent = ({ projectId, onClose }) => {
+const InviteUserModalContent = ({ projectId, onClose, projectMembers, invitedMembers }) => {
   const [emailToInvite, setEmailToInvite] = useState('')
   const [showEmailError, setShowEmailError] = useState(false)
   const [inviteUserError, setInviteUserError] = useState(null)
   const [isInviting, setIsInviting] = useState(false)
 
-  const handleEmailBlur = () => {
+  const checkEmail = () => {
     if (!validateEmail(emailToInvite)) {
       setShowEmailError(true)
+      return false
     }
+
+    if (find(invitedMembers, { email: emailToInvite })) {
+      setInviteUserError('Email is already invited!')
+      return false
+    }
+
+    if (find(projectMembers, { email: emailToInvite })) {
+      setInviteUserError('Member already part of the project!')
+      return false
+    }
+
+    return true
   }
 
   const onInviteUserConfirmClick = async () => {
     if (isInviting) return
 
-    if (!emailToInvite || !validateEmail(emailToInvite)) {
-      setShowEmailError(true)
+    if (!checkEmail()) {
       return
     }
 
@@ -70,8 +81,9 @@ const InviteUserModalContent = ({ projectId, onClose }) => {
                 onChange={(e) => {
                   setEmailToInvite(e.target.value)
                   setShowEmailError(false)
+                  setInviteUserError(null)
                 }}
-                onBlur={handleEmailBlur}
+                onBlur={checkEmail}
               />
             </div>
           </div>
@@ -81,7 +93,9 @@ const InviteUserModalContent = ({ projectId, onClose }) => {
             </div>
           )}
           {inviteUserError && (
-            <div className={styles.errorMesssage}>{inviteUserError}</div>
+            <div className={styles.row}>
+              <div className={styles.errorMesssage}>{inviteUserError}</div>
+            </div>
           )}
         </div>
         <div className={styles.buttonGroup}>
@@ -107,7 +121,9 @@ const InviteUserModalContent = ({ projectId, onClose }) => {
 
 InviteUserModalContent.propTypes = {
   projectId: PropTypes.number.isRequired,
-  onClose: PropTypes.func.isRequired
+  onClose: PropTypes.func.isRequired,
+  projectMembers: PropTypes.arrayOf(PropTypes.object),
+  invitedMembers: PropTypes.arrayOf(PropTypes.object)
 }
 
 export default InviteUserModalContent

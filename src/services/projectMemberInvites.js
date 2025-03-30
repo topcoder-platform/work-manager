@@ -9,7 +9,7 @@ import { PROJECTS_API_URL } from '../config/constants'
  * @return {object}  project member invite returned by api
  */
 export function updateProjectMemberInvite (projectId, inviteId, status) {
-  const url = `${PROJECTS_API_URL}/v5/projects/${projectId}/invites/${inviteId}`
+  const url = `${PROJECTS_API_URL}/${projectId}/invites/${inviteId}`
   return axios.patch(url, { status })
     .then(resp => resp.data)
 }
@@ -21,7 +21,7 @@ export function updateProjectMemberInvite (projectId, inviteId, status) {
  * @return {object}  project member invite returned by api
  */
 export function deleteProjectMemberInvite (projectId, inviteId) {
-  const url = `${PROJECTS_API_URL}/v5/projects/${projectId}/invites/${inviteId}`
+  const url = `${PROJECTS_API_URL}/${projectId}/invites/${inviteId}`
   return axios.delete(url)
 }
 
@@ -47,7 +47,7 @@ export function createProjectMemberInvite (projectId, member) {
 
 export function getProjectMemberInvites (projectId) {
   const fields = 'id,projectId,userId,email,role,status,createdAt,updatedAt,createdBy,updatedBy,handle'
-  const url = `${PROJECTS_API_URL}/v5/projects/${projectId}/invites/?fields=` +
+  const url = `${PROJECTS_API_URL}/${projectId}/invites/?fields=` +
     encodeURIComponent(fields)
   return axios.get(url)
     .then(resp => {
@@ -61,6 +61,6 @@ export function getProjectMemberInvites (projectId) {
  * @return {object}  project member invite returned by api
  */
 export function getProjectInviteById (projectId) {
-  return axios.get(`${PROJECTS_API_URL}/v5/projects/${projectId}/invites`)
+  return axios.get(`${PROJECTS_API_URL}/${projectId}/invites`)
     .then(resp => resp.data)
 }

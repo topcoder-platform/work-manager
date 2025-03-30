@@ -9,6 +9,7 @@ import PrimaryButton from '../Buttons/PrimaryButton'
 import { PROJECT_ROLES, AUTOCOMPLETE_DEBOUNCE_TIME_MS } from '../../config/constants'
 import { checkAdmin } from '../../util/tc'
 import { removeUserFromProject } from '../../services/projects'
+import { deleteProjectMemberInvite } from '../../services/projectMemberInvites'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import UserAddModalContent from './user-add.modal'
 import InviteUserModalContent from './invite-user.modal' // Import the new component
@@ -108,11 +109,14 @@ class Users extends Component {
   async onRemoveConfirmClick () {
     if (this.state.isRemoving) { return }
 
-    const { removeProjectNember } = this.props
+    const { removeProjectNember, invitedMembers } = this.props
     const userToRemove = this.state.userToRemove
+    const isInvite = !!_.find(invitedMembers, { email: userToRemove.email })
     try {
       this.setState({ isRemoving: true })
-      await removeUserFromProject(userToRemove.projectId, userToRemove.id)
+      await (
+        isInvite ? deleteProjectMemberInvite(userToRemove.projectId, userToRemove.id) : removeUserFromProject(userToRemove.projectId, userToRemove.id)
+      )
       removeProjectNember(userToRemove)
 
       this.resetRemoveUserState()
@@ -151,6 +155,7 @@ class Users extends Component {
     const {
       projects,
       projectMembers,
+      invitedMembers,
       updateProjectNember,
       isEditable,
       isSearchingUserProjects,
@@ -166,7 +171,7 @@ class Users extends Component {
       }
     })
     const loggedInHandle = this.getHandle()
-    const membersExist = projectMembers && projectMembers.length > 0
+    const membersExist = (projectMembers && projectMembers.length > 0) || (invitedMembers && invitedMembers.length > 0)
     const isCopilotOrManager = this.checkIsCopilotOrManager(projectMembers, loggedInHandle)
     const isAdmin = checkAdmin(this.props.auth.token)
     const showAddUser = isEditable && this.state.projectOption && (isCopilotOrManager || isAdmin)
@@ -221,6 +226,8 @@ class Users extends Component {
           this.state.showInviteUserModal && (
             <InviteUserModalContent
               projectId={this.state.projectOption.value}
+              projectMembers={projectMembers}
+              invitedMembers={invitedMembers}
               onClose={this.resetInviteUserState}
             />
           )
@@ -229,7 +236,7 @@ class Users extends Component {
           this.state.showRemoveConfirmationModal && (
             <ConfirmationModal
               title='Confirm Removal'
-              message={`Are you sure you want to remove ${this.state.userToRemove.handle} from this project?`}
+              message={`Are you sure you want to remove ${this.state.userToRemove.handle || this.state.userToRemove.email} from this project?`}
               theme={theme}
               isProcessing={this.state.isRemoving}
               errorMessage={this.state.removeError}
@@ -273,6 +280,22 @@ class Users extends Component {
                   })
                 }
               </ul>
+              <ul className={styles.userList}>
+                {
+                  _.map(invitedMembers, (member) => {
+                    return (
+                      <li className={styles.userItem} key={`user-card-${member.id}`}>
+                        <UserCard
+                          isInvite
+                          user={member}
+                          onRemoveClick={this.onRemoveClick}
+                          updateProjectNember={updateProjectNember}
+                          isEditable={isEditable} />
+                      </li>
+                    )
+                  })
+                }
+              </ul>
             </>
           )
         }
@@ -292,6 +315,7 @@ Users.propTypes = {
   isSearchingUserProjects: PropTypes.bool,
   projects: PropTypes.arrayOf(PropTypes.object),
   projectMembers: PropTypes.arrayOf(PropTypes.object),
+  invitedMembers: PropTypes.arrayOf(PropTypes.object),
   searchUserProjects: PropTypes.func.isRequired,
   resultSearchUserProjects: PropTypes.arrayOf(PropTypes.object)
 }
