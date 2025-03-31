@@ -32,7 +32,7 @@ import {
   fetchMemberProjects,
   updateProjectApi
 } from '../services/projects'
-import { checkAdmin } from '../util/tc'
+import { checkAdmin, checkManager } from '../util/tc'
 
 function _loadProjects (projectNameOrIdFilter = '', paramFilters = {}) {
   return (dispatch, getState) => {
@@ -54,7 +54,7 @@ function _loadProjects (projectNameOrIdFilter = '', paramFilters = {}) {
       }
     }
 
-    if (!checkAdmin(getState().auth.token)) {
+    if (!checkAdmin(getState().auth.token) && !checkManager(getState().auth.token)) {
       filters['memberOnly'] = true
     }
 
