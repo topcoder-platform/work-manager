@@ -5,10 +5,11 @@ import PT from 'prop-types'
 import UsersComponent from '../../components/Users'
 import { PROJECT_ROLES } from '../../config/constants'
 import { fetchProjectById } from '../../services/projects'
-import { checkAdmin } from '../../util/tc'
+import { checkAdmin, checkManager } from '../../util/tc'
 
 import {
   loadAllUserProjects,
+  loadNextProjects,
   searchUserProjects
 } from '../../actions/users'
 
@@ -25,17 +26,30 @@ class Users extends Component {
     this.updateProjectNember = this.updateProjectNember.bind(this)
     this.removeProjectNember = this.removeProjectNember.bind(this)
     this.addNewProjectMember = this.addNewProjectMember.bind(this)
+    this.loadNextProjects = this.loadNextProjects.bind(this)
   }
 
   componentDidMount () {
-    const { token, isLoading, loadAllUserProjects } = this.props
+    const { token, isLoading, loadAllUserProjects, page } = this.props
     if (!isLoading) {
       const isAdmin = checkAdmin(token)
-      loadAllUserProjects(isAdmin)
+      const isManager = checkManager(token)
+      const params = {
+        page
+      }
+      loadAllUserProjects(params, isAdmin, isManager)
       this.setState({
         isAdmin
       })
     }
+  }
+
+  loadNextProjects () {
+    const { loadNextProjects: nextProjectsHandler, token } = this.props
+    const isAdmin = checkAdmin(token)
+    const isManager = checkManager(token)
+
+    nextProjectsHandler(isAdmin, isManager)
   }
 
   isEditable () {
@@ -129,6 +143,7 @@ class Users extends Component {
         updateProjectNember={this.updateProjectNember}
         removeProjectNember={this.removeProjectNember}
         addNewProjectMember={this.addNewProjectMember}
+        loadNextProjects={this.loadNextProjects}
         projectMembers={projectMembers}
         auth={auth}
         isAdmin={isAdmin}
@@ -146,6 +161,7 @@ class Users extends Component {
 const mapStateToProps = ({ users, auth }) => {
   return {
     projects: users.allUserProjects,
+    page: users.page,
     isLoading: users.isLoadingAllUserProjects,
     resultSearchUserProjects: users.searchUserProjects,
     isSearchingUserProjects: users.isSearchingUserProjects,
@@ -164,12 +180,15 @@ Users.propTypes = {
   isLoading: PT.bool,
   isSearchingUserProjects: PT.bool,
   loadAllUserProjects: PT.func.isRequired,
-  searchUserProjects: PT.func.isRequired
+  searchUserProjects: PT.func.isRequired,
+  loadNextProjects: PT.func.isRequired,
+  page: PT.number
 }
 
 const mapDispatchToProps = {
   loadAllUserProjects,
-  searchUserProjects
+  searchUserProjects,
+  loadNextProjects
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Users)

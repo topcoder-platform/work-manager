@@ -11,7 +11,7 @@ import {
   UNLOAD_PROJECTS_SUCCESS,
   PROJECTS_PAGE_SIZE
 } from '../config/constants'
-import { checkAdmin } from '../util/tc'
+import { checkAdmin, checkManager } from '../util/tc'
 import _ from 'lodash'
 
 /**
@@ -50,7 +50,7 @@ export function loadProjects (filterProjectName = '', paramFilters = {}) {
       }
     }
 
-    if (!checkAdmin(getState().auth.token)) {
+    if (!checkAdmin(getState().auth.token) && !checkManager(getState().auth.token)) {
       filters['memberOnly'] = true
     }
 
