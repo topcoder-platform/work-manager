@@ -18,7 +18,7 @@ import styles from './styles.module.scss'
 const Projects = ({ projects, auth, isLoading, projectsCount, loadProjects, loadMoreProjects, unloadProjects }) => {
   const [search, setSearch] = useState()
   const [projectStatus, setProjectStatus] = useState('')
-  const [showOnlyMyProjects, setOnlyMyProjects] = useState(true)
+  const [showOnlyMyProjects, setOnlyMyProjects] = useState(false)
   const selectedStatus = useMemo(() => PROJECT_STATUSES.find(s => s.value === projectStatus))
 
   const isProjectManager = checkManager(auth.token)
