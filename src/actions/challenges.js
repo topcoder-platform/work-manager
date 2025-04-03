@@ -57,7 +57,7 @@ import {
 } from '../config/constants'
 import { loadProject } from './projects'
 import { removeChallengeFromPhaseProduct, saveChallengeAsPhaseProduct } from '../services/projects'
-import { checkAdmin } from '../util/tc'
+import { checkAdmin, checkManager } from '../util/tc'
 
 /**
  * Member challenges related redux actions
@@ -159,7 +159,11 @@ export function loadChallengesByPage (
       filters['projectId'] = projectId
     } else if (_.isObject(projectId) && projectId.value > 0) {
       filters['projectId'] = projectId.value
-    } else if (!checkAdmin(getState().auth.token) && userId) {
+    } else if (
+      !checkAdmin(getState().auth.token) &&
+      !checkManager(getState().auth.token) &&
+      userId
+    ) {
       // Note that we only add the memberId field if *no* project ID is given,
       // so that the list of *all challenges shows only those that the member is on
       filters['memberId'] = userId
