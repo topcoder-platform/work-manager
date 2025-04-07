@@ -7,7 +7,7 @@ import Select from '../Select'
 import UserCard from '../UserCard'
 import PrimaryButton from '../Buttons/PrimaryButton'
 import { PROJECT_ROLES, AUTOCOMPLETE_DEBOUNCE_TIME_MS } from '../../config/constants'
-import { checkAdmin } from '../../util/tc'
+import { checkAdmin, checkManager } from '../../util/tc'
 import { removeUserFromProject } from '../../services/projects'
 import { deleteProjectMemberInvite } from '../../services/projectMemberInvites'
 import ConfirmationModal from '../Modal/ConfirmationModal'
@@ -159,7 +159,8 @@ class Users extends Component {
       updateProjectNember,
       isEditable,
       isSearchingUserProjects,
-      resultSearchUserProjects
+      resultSearchUserProjects,
+      loadNextProjects
     } = this.props
     const {
       searchKey
@@ -174,7 +175,8 @@ class Users extends Component {
     const membersExist = (projectMembers && projectMembers.length > 0) || (invitedMembers && invitedMembers.length > 0)
     const isCopilotOrManager = this.checkIsCopilotOrManager(projectMembers, loggedInHandle)
     const isAdmin = checkAdmin(this.props.auth.token)
-    const showAddUser = isEditable && this.state.projectOption && (isCopilotOrManager || isAdmin)
+    const isManager = checkManager(this.props.auth.token)
+    const showAddUser = isEditable && this.state.projectOption && (isCopilotOrManager || isAdmin || isManager)
 
     return (
       <div className={styles.contentContainer}>
@@ -192,6 +194,7 @@ class Users extends Component {
                 onChange={(e) => { this.setProjectOption(e) }}
                 onInputChange={this.debouncedOnInputChange}
                 isLoading={isSearchingUserProjects}
+                onMenuScrollBottom={loadNextProjects}
                 filterOption={() => true}
                 noOptionsMessage={() => isSearchingUserProjects ? 'Searching...' : 'No options'}
               />
@@ -319,7 +322,8 @@ Users.propTypes = {
   projectMembers: PropTypes.arrayOf(PropTypes.object),
   invitedMembers: PropTypes.arrayOf(PropTypes.object),
   searchUserProjects: PropTypes.func.isRequired,
-  resultSearchUserProjects: PropTypes.arrayOf(PropTypes.object)
+  resultSearchUserProjects: PropTypes.arrayOf(PropTypes.object),
+  loadNextProjects: PropTypes.func.isRequired
 }
 
 export default Users

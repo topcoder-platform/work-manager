@@ -14,7 +14,9 @@ const initialState = {
   allUserProjects: [],
   isLoadingAllUserProjects: false,
   searchUserProjects: [],
-  isSearchingUserProjects: false
+  isSearchingUserProjects: false,
+  page: 1,
+  total: null
 }
 
 export default function (state = initialState, action) {
@@ -23,7 +25,9 @@ export default function (state = initialState, action) {
       return {
         ...state,
         allUserProjects: action.projects,
-        isLoadingAllUserProjects: false
+        isLoadingAllUserProjects: false,
+        page: action.page,
+        total: action.total
       }
     case LOAD_ALL_USER_PROJECTS_PENDING:
       return { ...state, isLoadingAllUserProjects: true }
