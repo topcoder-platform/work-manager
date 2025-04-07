@@ -18,7 +18,7 @@ const validateEmail = (email) => {
   return emailRegex.test(email)
 }
 
-const InviteUserModalContent = ({ projectId, onClose, projectMembers, invitedMembers }) => {
+const InviteUserModalContent = ({ projectId, onClose, onMemberInvited, projectMembers, invitedMembers }) => {
   const [emailToInvite, setEmailToInvite] = useState('')
   const [showEmailError, setShowEmailError] = useState(false)
   const [inviteUserError, setInviteUserError] = useState(null)
@@ -55,8 +55,16 @@ const InviteUserModalContent = ({ projectId, onClose, projectMembers, invitedMem
 
     try {
       // api restriction: ONLY "customer" role can be invited via email
-      await inviteUserToProject(projectId, emailToInvite, PROJECT_ROLES.CUSTOMER)
-      onClose()
+      const { success: invitations = [], failed } = await inviteUserToProject(projectId, emailToInvite, PROJECT_ROLES.CUSTOMER)
+
+      if (failed) {
+        const error = get(failed, '0.message', 'Unable to invite user')
+        setInviteUserError(error)
+        setIsInviting(false)
+      } else {
+        onMemberInvited(invitations[0] || {})
+        onClose()
+      }
     } catch (e) {
       const error = get(e, 'response.data.message', 'Unable to invite user')
       setInviteUserError(error)
@@ -122,6 +130,7 @@ const InviteUserModalContent = ({ projectId, onClose, projectMembers, invitedMem
 InviteUserModalContent.propTypes = {
   projectId: PropTypes.number.isRequired,
   onClose: PropTypes.func.isRequired,
+  onMemberInvited: PropTypes.func.isRequired,
   projectMembers: PropTypes.arrayOf(PropTypes.object),
   invitedMembers: PropTypes.arrayOf(PropTypes.object)
 }

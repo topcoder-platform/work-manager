@@ -25,6 +25,7 @@ class Users extends Component {
     this.loadProject = this.loadProject.bind(this)
     this.updateProjectNember = this.updateProjectNember.bind(this)
     this.removeProjectNember = this.removeProjectNember.bind(this)
+    this.addNewProjectInvite = this.addNewProjectInvite.bind(this)
     this.addNewProjectMember = this.addNewProjectMember.bind(this)
   }
 
@@ -115,6 +116,15 @@ class Users extends Component {
     this.updateLoginUserRoleInProject(newProjectMembers, loggedInUser)
   }
 
+  addNewProjectInvite (invitedMember) {
+    this.setState(() => ({
+      invitedMembers: [
+        ...(this.state.invitedMembers || []),
+        invitedMember
+      ]
+    }))
+  }
+
   render () {
     const {
       projects,
@@ -135,6 +145,7 @@ class Users extends Component {
         updateProjectNember={this.updateProjectNember}
         removeProjectNember={this.removeProjectNember}
         addNewProjectMember={this.addNewProjectMember}
+        addNewProjectInvite={this.addNewProjectInvite}
         projectMembers={projectMembers}
         invitedMembers={invitedMembers}
         auth={auth}

@@ -228,6 +228,7 @@ class Users extends Component {
               projectId={this.state.projectOption.value}
               projectMembers={projectMembers}
               invitedMembers={invitedMembers}
+              onMemberInvited={this.props.addNewProjectInvite}
               onClose={this.resetInviteUserState}
             />
           )
@@ -309,6 +310,7 @@ Users.propTypes = {
   loadProject: PropTypes.func.isRequired,
   updateProjectNember: PropTypes.func.isRequired,
   removeProjectNember: PropTypes.func.isRequired,
+  addNewProjectInvite: PropTypes.func.isRequired,
   addNewProjectMember: PropTypes.func.isRequired,
   auth: PropTypes.object,
   isEditable: PropTypes.bool,
