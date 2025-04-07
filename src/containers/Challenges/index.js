@@ -14,7 +14,7 @@ import {
   deleteChallenge,
   loadChallengeTypes
 } from '../../actions/challenges'
-import { loadProject, updateProject } from '../../actions/projects'
+import { loadProject, loadProjects, updateProject } from '../../actions/projects'
 import {
   loadNextProjects,
   setActiveProject,
@@ -42,6 +42,7 @@ class Challenges extends Component {
     } = this.props
     loadChallengeTypes()
     if (dashboard) {
+      this.props.loadProjects('', {})
       this.reloadChallenges(this.props, true, true)
     }
     if (menu === 'NULL' && activeProjectId !== -1) {
@@ -234,7 +235,8 @@ Challenges.propTypes = {
   fetchNextProjects: PropTypes.func.isRequired,
   metadata: PropTypes.shape({
     challengeTypes: PropTypes.array
-  })
+  }),
+  loadProjects: PropTypes.func.isRequired
 }
 
 const mapStateToProps = ({ challenges, sidebar, projects, auth }) => ({
@@ -265,7 +267,8 @@ const mapDispatchToProps = {
   loadChallengeTypes,
   setActiveProject,
   partiallyUpdateChallengeDetails,
-  deleteChallenge
+  deleteChallenge,
+  loadProjects
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Challenges)
