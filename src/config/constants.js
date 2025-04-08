@@ -33,7 +33,9 @@ export const {
   TYPEFORM_URL,
   PROFILE_URL
 } = process.env
+
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
+export const PROJECTS_API_URL = process.env.PROJECTS_API_URL || process.env.PROJECT_API_URL
 
 /**
  * Filepicker config
@@ -193,6 +195,14 @@ export const UPDATE_PROJECT_PENDING = 'UPDATE_PROJECT_PENDING'
 export const UPDATE_PROJECT_SUCCESS = 'UPDATE_PROJECT_SUCCESS'
 export const UPDATE_PROJECT_FAILURE = 'UPDATE_PROJECT_FAILURE'
 
+export const PROJECT_MEMBER_INVITE_STATUS_ACCEPTED = 'accepted'
+export const PROJECT_MEMBER_INVITE_STATUS_REFUSED = 'refused'
+export const PROJECT_MEMBER_INVITE_STATUS_CANCELED = 'canceled'
+export const PROJECT_MEMBER_INVITE_STATUS_PENDING = 'pending'
+export const PROJECT_MEMBER_INVITE_STATUS_REQUESTED = 'requested'
+export const PROJECT_MEMBER_INVITE_STATUS_REQUEST_APPROVED = 'request_approved'
+export const PROJECT_MEMBER_INVITE_STATUS_REQUEST_REJECTED = 'request_rejected'
+
 // Name of challenge tracks
 export const CHALLENGE_TRACKS = {
   DESIGN: DES_TRACK_ID,
@@ -242,6 +252,7 @@ export const MARATHON_MATCH_SUBTRACKS = [
 
 export const PROJECT_ROLES = {
   READ: 'observer',
+  CUSTOMER: 'customer',
   WRITE: 'customer',
   MANAGER: 'manager',
   COPILOT: 'copilot'

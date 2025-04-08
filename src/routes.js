@@ -33,6 +33,7 @@ import ConfirmationModal from './components/Modal/ConfirmationModal'
 import Users from './containers/Users'
 import { isBetaMode, removeFromLocalStorage, saveToLocalStorage } from './util/localstorage'
 import ProjectEditor from './containers/ProjectEditor'
+import ProjectInvitations from './containers/ProjectInvitations'
 
 const { ACCOUNTS_APP_LOGIN_URL, IDLE_TIMEOUT_MINUTES, IDLE_TIMEOUT_GRACE_MINUTES, COMMUNITY_APP_URL } = process.env
 
@@ -205,6 +206,14 @@ class Routes extends React.Component {
           <Route exact path='/projects/new'
             render={() => renderApp(
               <ProjectEditor />,
+              <TopBarContainer />,
+              <Tab />,
+              <FooterContainer />
+            )()}
+          />
+          <Route exact path='/projects/:projectId/invitation/:action?'
+            render={() => renderApp(
+              <ProjectInvitations />,
               <TopBarContainer />,
               <Tab />,
               <FooterContainer />

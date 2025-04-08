@@ -233,6 +233,15 @@ export const checkAdminOrCopilot = (token, project) => {
   return isAdmin || (isCopilot && canManageProject)
 }
 
+export const checkIsUserInvited = (token, project) => {
+  if (!token) {
+    return
+  }
+
+  const tokenData = decodeToken(token)
+  return project && !_.isEmpty(project) && _.find(project.invites, { userId: tokenData.userId })
+}
+
 /**
  * Get resource role by name
  *

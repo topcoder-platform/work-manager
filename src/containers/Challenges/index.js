@@ -20,7 +20,8 @@ import {
   setActiveProject,
   resetSidebarActiveParams
 } from '../../actions/sidebar'
-import { checkAdmin } from '../../util/tc'
+import { checkAdmin, checkIsUserInvited } from '../../util/tc'
+import { withRouter } from 'react-router-dom'
 
 class Challenges extends Component {
   constructor (props) {
@@ -53,6 +54,14 @@ class Challenges extends Component {
         this.props.loadProject(projectId)
       }
       this.reloadChallenges(this.props, true)
+    }
+  }
+
+  componentDidUpdate () {
+    const { auth } = this.props
+
+    if (checkIsUserInvited(auth.token, this.props.projectDetail)) {
+      this.props.history.push(`/projects/${this.props.projectDetail.id}/invitation`)
     }
   }
 
@@ -195,6 +204,7 @@ Challenges.defaultProps = {
 }
 
 Challenges.propTypes = {
+  history: PropTypes.object,
   projects: PropTypes.arrayOf(PropTypes.shape()),
   menu: PropTypes.string,
   challenges: PropTypes.arrayOf(PropTypes.object),
@@ -271,4 +281,6 @@ const mapDispatchToProps = {
   loadProjects
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Challenges)
+export default withRouter(
+  connect(mapStateToProps, mapDispatchToProps)(Challenges)
+)

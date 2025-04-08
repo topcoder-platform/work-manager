@@ -20,11 +20,13 @@ class Users extends Component {
     this.state = {
       loginUserRoleInProject: '',
       projectMembers: null,
+      invitedMembers: null,
       isAdmin: false
     }
     this.loadProject = this.loadProject.bind(this)
     this.updateProjectNember = this.updateProjectNember.bind(this)
     this.removeProjectNember = this.removeProjectNember.bind(this)
+    this.addNewProjectInvite = this.addNewProjectInvite.bind(this)
     this.addNewProjectMember = this.addNewProjectMember.bind(this)
     this.loadNextProjects = this.loadNextProjects.bind(this)
   }
@@ -80,8 +82,10 @@ class Users extends Component {
   loadProject (projectId) {
     fetchProjectById(projectId).then((project) => {
       const projectMembers = _.get(project, 'members')
+      const invitedMembers = _.get(project, 'invites')
       this.setState({
-        projectMembers
+        projectMembers,
+        invitedMembers
       })
       const { loggedInUser } = this.props
       this.updateLoginUserRoleInProject(projectMembers, loggedInUser)
@@ -102,11 +106,13 @@ class Users extends Component {
   }
 
   removeProjectNember (projectMember) {
-    const { projectMembers } = this.state
+    const { projectMembers, invitedMembers } = this.state
     const newProjectMembers = _.filter(projectMembers, pm => pm.id !== projectMember.id)
+    const newInvitedMembers = _.filter(invitedMembers, pm => pm.id !== projectMember.id)
     const { loggedInUser } = this.props
     this.setState({
-      projectMembers: newProjectMembers
+      projectMembers: newProjectMembers,
+      invitedMembers: newInvitedMembers
     })
     this.updateLoginUserRoleInProject(newProjectMembers, loggedInUser)
   }
@@ -124,6 +130,15 @@ class Users extends Component {
     this.updateLoginUserRoleInProject(newProjectMembers, loggedInUser)
   }
 
+  addNewProjectInvite (invitedMember) {
+    this.setState(() => ({
+      invitedMembers: [
+        ...(this.state.invitedMembers || []),
+        invitedMember
+      ]
+    }))
+  }
+
   render () {
     const {
       projects,
@@ -134,6 +149,7 @@ class Users extends Component {
     } = this.props
     const {
       projectMembers,
+      invitedMembers,
       isAdmin
     } = this.state
     return (
@@ -143,8 +159,10 @@ class Users extends Component {
         updateProjectNember={this.updateProjectNember}
         removeProjectNember={this.removeProjectNember}
         addNewProjectMember={this.addNewProjectMember}
+        addNewProjectInvite={this.addNewProjectInvite}
         loadNextProjects={this.loadNextProjects}
         projectMembers={projectMembers}
+        invitedMembers={invitedMembers}
         auth={auth}
         isAdmin={isAdmin}
         isEditable={this.isEditable()}
