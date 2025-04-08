@@ -5,7 +5,8 @@ on:
     types:
       - opened
       - synchronize
-permissions: write-all
+permissions:
+  pull-requests: write
 jobs:
   tc-ai-pr-review:
     runs-on: ubuntu-latest
