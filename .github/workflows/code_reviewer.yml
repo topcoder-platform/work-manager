@@ -7,7 +7,7 @@ on:
       - synchronize
 permissions: write-all
 jobs:
-  tc-ai-pr-review:
+  tc-ai-pr-review-job:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
