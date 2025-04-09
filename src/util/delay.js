@@ -1,8 +1,8 @@
 /**
  * Creates a delay that can be awaited, and optionally aborted via an AbortSignal.
  *
- * @param ms - The number of milliseconds to delay.
- * @param signal - Optional AbortSignal to cancel the delay early.
+ * @param {number} ms - The number of milliseconds to delay.
+ * @param {AbortSignal} signal - Optional AbortSignal to cancel the delay early.
  * @returns A Promise that resolves after the delay, or rejects if aborted.
  */
 export function delay (ms, signal) {

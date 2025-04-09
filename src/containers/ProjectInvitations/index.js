@@ -54,7 +54,7 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
     // await for the project details to fetch
     await delay(1000)
     history.push(status === PROJECT_MEMBER_INVITE_STATUS_ACCEPTED ? `/projects/${projectId}/challenges` : '/projects')
-  }, [invitation])
+  }, [projectId, invitation, loadProject, history])
 
   const acceptInvite = useCallback(() => updateInvite(PROJECT_MEMBER_INVITE_STATUS_ACCEPTED), [updateInvite])
   const declineInvite = useCallback(() => updateInvite(PROJECT_MEMBER_INVITE_STATUS_REFUSED), [updateInvite])
