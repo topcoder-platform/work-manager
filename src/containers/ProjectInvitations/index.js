@@ -5,7 +5,7 @@ import { withRouter } from 'react-router-dom'
 import { toastr } from 'react-redux-toastr'
 import { checkIsUserInvited } from '../../util/tc'
 import { isEmpty } from 'lodash'
-import { loadProject } from '../../actions/projects'
+import { loadProjectInvites } from '../../actions/projects'
 import ConfirmationModal from '../../components/Modal/ConfirmationModal'
 
 import styles from './ProjectInvitations.module.scss'
@@ -17,7 +17,7 @@ const theme = {
   container: styles.modalContainer
 }
 
-const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDetail, loadProject }) => {
+const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDetail, loadProjectInvites }) => {
   const automaticAction = useMemo(() => [PROJECT_MEMBER_INVITE_STATUS_ACCEPTED, PROJECT_MEMBER_INVITE_STATUS_REFUSED].includes(match.params.action) ? match.params.action : undefined, [match.params])
   const projectId = useMemo(() => parseInt(match.params.projectId), [match.params])
   const invitation = useMemo(() => checkIsUserInvited(auth.token, projectDetail), [auth.token, projectDetail])
@@ -32,7 +32,7 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
 
     if (isProjectLoading || isEmpty(projectDetail)) {
       if (!isProjectLoading) {
-        loadProject(projectId)
+        loadProjectInvites(projectId)
       }
       return
     }
@@ -48,13 +48,13 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
 
     // await for the project details to propagate
     await delay(1000)
-    await loadProject(projectId)
+    await loadProjectInvites(projectId)
     toastr.success('Success', `Successfully ${status} the invitation.`)
 
     // await for the project details to fetch
     await delay(1000)
     history.push(status === PROJECT_MEMBER_INVITE_STATUS_ACCEPTED ? `/projects/${projectId}/challenges` : '/projects')
-  }, [projectId, invitation, loadProject, history])
+  }, [projectId, invitation, loadProjectInvites, history])
 
   const acceptInvite = useCallback(() => updateInvite(PROJECT_MEMBER_INVITE_STATUS_ACCEPTED), [updateInvite])
   const declineInvite = useCallback(() => updateInvite(PROJECT_MEMBER_INVITE_STATUS_REFUSED), [updateInvite])
@@ -104,20 +104,20 @@ ProjectInvitations.propTypes = {
   auth: PropTypes.object.isRequired,
   isProjectLoading: PropTypes.bool,
   history: PropTypes.object,
-  loadProject: PropTypes.func.isRequired,
+  loadProjectInvites: PropTypes.func.isRequired,
   projectDetail: PropTypes.object
 }
 
 const mapStateToProps = ({ projects, auth }) => {
   return {
     projectDetail: projects.projectDetail,
-    isProjectLoading: projects.isLoading,
+    isProjectLoading: projects.isLoading || projects.isProjectInvitationsLoading,
     auth
   }
 }
 
 const mapDispatchToProps = {
-  loadProject
+  loadProjectInvites
 }
 
 export default withRouter(

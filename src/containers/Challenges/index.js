@@ -60,7 +60,7 @@ class Challenges extends Component {
     const { auth } = this.props
 
     if (checkIsUserInvited(auth.token, this.props.projectDetail)) {
-      this.props.history.push(`/projects/${this.props.projectDetail.id}/invitation`)
+      this.props.history.push(`/projects/${this.props.projectId}/invitation`)
     }
   }
 

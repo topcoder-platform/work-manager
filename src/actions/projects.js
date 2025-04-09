@@ -20,7 +20,8 @@ import {
   UPDATE_PROJECT_FAILURE,
   ADD_PROJECT_ATTACHMENT_SUCCESS,
   UPDATE_PROJECT_ATTACHMENT_SUCCESS,
-  REMOVE_PROJECT_ATTACHMENT_SUCCESS
+  REMOVE_PROJECT_ATTACHMENT_SUCCESS,
+  LOAD_PROJECT_INVITES
 } from '../config/constants'
 import {
   fetchProjectById,
@@ -30,7 +31,8 @@ import {
   createProjectApi,
   fetchBillingAccounts,
   fetchMemberProjects,
-  updateProjectApi
+  updateProjectApi,
+  getProjectInvites
 } from '../services/projects'
 import { checkAdmin, checkManager } from '../util/tc'
 
@@ -167,6 +169,18 @@ export function loadProjectTypes () {
     return dispatch({
       type: LOAD_PROJECT_TYPES,
       payload: getProjectTypes()
+    })
+  }
+}
+
+/**
+ * Loads project invites
+ */
+export function loadProjectInvites (projectId) {
+  return (dispatch) => {
+    return dispatch({
+      type: LOAD_PROJECT_INVITES,
+      payload: getProjectInvites(projectId)
     })
   }
 }
