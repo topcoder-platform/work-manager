@@ -5,7 +5,7 @@ import { withRouter, Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import Loader from '../../components/Loader'
-import { checkAdminOrCopilot, checkManager } from '../../util/tc'
+import { checkAdminOrCopilot, checkIsUserInvited, checkManager } from '../../util/tc'
 import { PrimaryButton } from '../../components/Buttons'
 import Select from '../../components/Select'
 import ProjectCard from '../../components/ProjectCard'
@@ -112,6 +112,7 @@ const Projects = ({ projects, auth, isLoading, projectsCount, loadProjects, load
             {projects.map(p => (
               <li key={p.id}>
                 <ProjectCard
+                  isInvited={!!checkIsUserInvited(auth.token, p)}
                   projectStatus={p.status}
                   projectName={p.name}
                   projectId={p.id}

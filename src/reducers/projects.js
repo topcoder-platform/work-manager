@@ -30,7 +30,10 @@ import {
   UPDATE_PROJECT_DETAILS_SUCCESS,
   ADD_PROJECT_ATTACHMENT_SUCCESS,
   UPDATE_PROJECT_ATTACHMENT_SUCCESS,
-  REMOVE_PROJECT_ATTACHMENT_SUCCESS
+  REMOVE_PROJECT_ATTACHMENT_SUCCESS,
+  LOAD_PROJECT_INVITES_PENDING,
+  LOAD_PROJECT_INVITES_SUCCESS,
+  LOAD_PROJECT_INVITES_FAILURE
 } from '../config/constants'
 import { toastSuccess, toastFailure } from '../util/toaster'
 import moment from 'moment-timezone'
@@ -78,6 +81,7 @@ const initialState = {
   isBillingAccountExpired: false,
   isBillingAccountLoading: false,
   isBillingAccountLoadingFailed: false,
+  isProjectInvitationsLoading: false,
   currentBillingAccount: null,
   billingStartDate: null,
   billingEndDate: null,
@@ -260,6 +264,29 @@ export default function (state = initialState, action) {
       return {
         ...state,
         isProjectTypesLoading: false
+      }
+    case LOAD_PROJECT_INVITES_PENDING:
+      return {
+        ...state,
+        projectDetail: {
+          ...state.projectDetail,
+          invites: []
+        },
+        isProjectInvitationsLoading: true
+      }
+    case LOAD_PROJECT_INVITES_SUCCESS:
+      return {
+        ...state,
+        projectDetail: {
+          ...state.projectDetail,
+          invites: action.payload
+        },
+        isProjectInvitationsLoading: false
+      }
+    case LOAD_PROJECT_INVITES_FAILURE:
+      return {
+        ...state,
+        isProjectInvitationsLoading: false
       }
     case UPDATE_PROJECT_PENDING:
       return {

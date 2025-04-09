@@ -225,6 +225,15 @@ export async function getProjectTypes () {
 }
 
 /**
+ * Get project invites
+ * @returns {Promise<*>}
+ */
+export async function getProjectInvites (projectId) {
+  const response = await axiosInstance.get(`${PROJECTS_API_URL}/${projectId}/invites`)
+  return _.get(response, 'data')
+}
+
+/**
  * Get project attachment
  * @param projectId project id
  * @param attachmentId attachment id
