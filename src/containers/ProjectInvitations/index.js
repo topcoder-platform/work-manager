@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import { toastr } from 'react-redux-toastr'
-import { checkIsUserInvited } from '../../util/tc'
+import { checkIsUserInvitedToProject } from '../../util/tc'
 import { isEmpty } from 'lodash'
 import { loadProjectInvites } from '../../actions/projects'
 import ConfirmationModal from '../../components/Modal/ConfirmationModal'
@@ -20,7 +20,7 @@ const theme = {
 const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDetail, loadProjectInvites }) => {
   const automaticAction = useMemo(() => [PROJECT_MEMBER_INVITE_STATUS_ACCEPTED, PROJECT_MEMBER_INVITE_STATUS_REFUSED].includes(match.params.action) ? match.params.action : undefined, [match.params])
   const projectId = useMemo(() => parseInt(match.params.projectId), [match.params])
-  const invitation = useMemo(() => checkIsUserInvited(auth.token, projectDetail), [auth.token, projectDetail])
+  const invitation = useMemo(() => checkIsUserInvitedToProject(auth.token, projectDetail), [auth.token, projectDetail])
   const [isUpdating, setIsUpdating] = useState(automaticAction || false)
   const isAccepting = isUpdating === PROJECT_MEMBER_INVITE_STATUS_ACCEPTED
   const isDeclining = isUpdating === PROJECT_MEMBER_INVITE_STATUS_REFUSED

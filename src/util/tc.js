@@ -233,13 +233,13 @@ export const checkAdminOrCopilot = (token, project) => {
   return isAdmin || (isCopilot && canManageProject)
 }
 
-export const checkIsUserInvited = (token, project) => {
+export const checkIsUserInvitedToProject = (token, project) => {
   if (!token) {
     return
   }
 
   const tokenData = decodeToken(token)
-  return project && !_.isEmpty(project) && _.find(project.invites, { userId: tokenData.userId })
+  return project && !_.isEmpty(project) && (_.find(project.invites, d => d.userId === tokenData.userId || d.email === tokenData.email))
 }
 
 /**

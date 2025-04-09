@@ -20,7 +20,7 @@ import {
   setActiveProject,
   resetSidebarActiveParams
 } from '../../actions/sidebar'
-import { checkAdmin, checkIsUserInvited } from '../../util/tc'
+import { checkAdmin, checkIsUserInvitedToProject } from '../../util/tc'
 import { withRouter } from 'react-router-dom'
 
 class Challenges extends Component {
@@ -59,7 +59,7 @@ class Challenges extends Component {
   componentDidUpdate () {
     const { auth } = this.props
 
-    if (checkIsUserInvited(auth.token, this.props.projectDetail)) {
+    if (checkIsUserInvitedToProject(auth.token, this.props.projectDetail)) {
       this.props.history.push(`/projects/${this.props.projectId}/invitation`)
     }
   }
