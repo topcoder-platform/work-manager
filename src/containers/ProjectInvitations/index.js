@@ -11,6 +11,7 @@ import ConfirmationModal from '../../components/Modal/ConfirmationModal'
 import styles from './ProjectInvitations.module.scss'
 import { updateProjectMemberInvite } from '../../services/projectMemberInvites'
 import { PROJECT_MEMBER_INVITE_STATUS_ACCEPTED, PROJECT_MEMBER_INVITE_STATUS_REFUSED } from '../../config/constants'
+import { delay } from '../../util/delay'
 
 const theme = {
   container: styles.modalContainer
@@ -44,7 +45,14 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
   const updateInvite = useCallback(async (status) => {
     setIsUpdating(status)
     await updateProjectMemberInvite(projectId, invitation.id, status)
+
+    // await for the project details to propagate
+    await delay(1000)
+    await loadProject(projectId)
     toastr.success('Success', `Successfully ${status} the invitation.`)
+
+    // await for the project details to fetch
+    await delay(1000)
     history.push(status === PROJECT_MEMBER_INVITE_STATUS_ACCEPTED ? `/projects/${projectId}/challenges` : '/projects')
   }, [invitation])
 
@@ -56,13 +64,11 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
       return
     }
 
-    setTimeout(() => {
-      if (automaticAction === PROJECT_MEMBER_INVITE_STATUS_ACCEPTED) {
-        acceptInvite()
-      } else if (automaticAction === PROJECT_MEMBER_INVITE_STATUS_REFUSED) {
-        declineInvite()
-      }
-    }, [1500])
+    if (automaticAction === PROJECT_MEMBER_INVITE_STATUS_ACCEPTED) {
+      acceptInvite()
+    } else if (automaticAction === PROJECT_MEMBER_INVITE_STATUS_REFUSED) {
+      declineInvite()
+    }
   }, [invitation, automaticAction])
 
   return (
