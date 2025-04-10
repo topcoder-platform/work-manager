@@ -84,7 +84,7 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
             Once you join the team you will be able to see the project details, collaborate on project specification and monitor the progress of all deliverables
           `}
           theme={theme}
-          cancelText='Cancel'
+          cancelText='Decline'
           confirmText='Join project'
           onCancel={declineInvite}
           onConfirm={acceptInvite}
