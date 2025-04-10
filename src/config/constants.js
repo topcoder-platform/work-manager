@@ -59,6 +59,7 @@ export const FILE_PICKER_PROGRESS_INTERVAL = 100
 export const FILE_PICKER_UPLOAD_RETRY = 2
 export const FILE_PICKER_UPLOAD_TIMEOUT = 30 * 60 * 1000 // 30 minutes
 export const SPECIFICATION_ATTACHMENTS_FOLDER = 'SPECIFICATION_ATTACHMENTS'
+export const MEMBERS_API_URL = process.env.MEMBERS_API_URL
 
 export const getAWSContainerFileURL = (key) => `https://${FILE_PICKER_CONTAINER_NAME}.s3.amazonaws.com/${key}`
 

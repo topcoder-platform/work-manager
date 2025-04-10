@@ -8,7 +8,8 @@ import {
   GENERIC_PROJECT_MILESTONE_PRODUCT_TYPE,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
   PHASE_PRODUCT_TEMPLATE_ID,
-  PROJECTS_API_URL
+  PROJECTS_API_URL,
+  MEMBERS_API_URL
 } from '../config/constants'
 import { paginationHeaders } from '../util/pagination'
 import { createProjectMemberInvite } from './projectMemberInvites'
@@ -69,6 +70,19 @@ export async function fetchProjectById (id) {
 }
 
 /**
+ * This fetches the user corresponding to the given userIds
+ * @param {*} userIds
+ */
+export async function fetchInviteMembers (userIds) {
+  const url = `${MEMBERS_API_URL}?${userIds.map(id => `userIds[]=${id}`).join('&')}`
+  const { data = [] } = await axiosInstance.get(url)
+  return data.reduce((acc, member) => {
+    acc[member.userId] = member
+    return acc
+  }, {})
+}
+
+/**
  * Api request for fetching project phases
  * @param id Project id
  * @returns {Promise<*>}
@@ -118,11 +132,8 @@ export async function addUserToProject (projectId, userId, role) {
  * @param role
  * @returns {Promise<*>}
  */
-export async function inviteUserToProject (projectId, email, role) {
-  return createProjectMemberInvite(projectId, {
-    emails: [email],
-    role: role
-  })
+export async function inviteUserToProject (projectId, params) {
+  return createProjectMemberInvite(projectId, params)
 }
 
 /**

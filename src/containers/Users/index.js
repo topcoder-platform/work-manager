@@ -4,7 +4,7 @@ import _ from 'lodash'
 import PT from 'prop-types'
 import UsersComponent from '../../components/Users'
 import { PROJECT_ROLES } from '../../config/constants'
-import { fetchProjectById } from '../../services/projects'
+import { fetchInviteMembers, fetchProjectById } from '../../services/projects'
 import { checkAdmin, checkManager } from '../../util/tc'
 
 import {
@@ -80,12 +80,18 @@ class Users extends Component {
   }
 
   loadProject (projectId) {
-    fetchProjectById(projectId).then((project) => {
+    fetchProjectById(projectId).then(async (project) => {
       const projectMembers = _.get(project, 'members')
       const invitedMembers = _.get(project, 'invites')
+      const invitedUserIds = _.filter(_.map(invitedMembers, 'userId'))
+      const invitedUsers = await fetchInviteMembers(invitedUserIds)
+
       this.setState({
         projectMembers,
-        invitedMembers
+        invitedMembers: invitedMembers.map(m => ({
+          ...m,
+          email: m.email || invitedUsers[m.userId].email
+        }))
       })
       const { loggedInUser } = this.props
       this.updateLoginUserRoleInProject(projectMembers, loggedInUser)

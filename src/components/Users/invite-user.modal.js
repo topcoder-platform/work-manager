@@ -55,7 +55,10 @@ const InviteUserModalContent = ({ projectId, onClose, onMemberInvited, projectMe
 
     try {
       // api restriction: ONLY "customer" role can be invited via email
-      const { success: invitations = [], failed } = await inviteUserToProject(projectId, emailToInvite, PROJECT_ROLES.CUSTOMER)
+      const { success: invitations = [], failed } = await inviteUserToProject(projectId, {
+        emails: [emailToInvite],
+        role: PROJECT_ROLES.CUSTOMER
+      })
 
       if (failed) {
         const error = get(failed, '0.message', 'Unable to invite user')
