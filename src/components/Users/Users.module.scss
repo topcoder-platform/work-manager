@@ -118,6 +118,12 @@
       text-decoration: none;
       font-size: 12px;
     }
+
+    &.inviteEmailInput {
+      input {
+        width: 250px;
+      }
+    }
   }
 }
 
@@ -395,10 +401,15 @@
 }
 
 .addButtonContainer {
-  width: 110px;
+  display: flex;
+  justify-content: flex-start;
   height: 30px;
   margin-top: 20px;
   margin-bottom: 20px;
+  gap: 8px;
+  > * {
+    width: 125px;
+  }
 }
 
 .addUserContentContainer {

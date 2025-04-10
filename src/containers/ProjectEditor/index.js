@@ -15,7 +15,7 @@ import {
   updateProject
 } from '../../actions/projects'
 import { setActiveProject } from '../../actions/sidebar'
-import { checkAdminOrCopilot, checkAdmin } from '../../util/tc'
+import { checkAdminOrCopilot, checkAdmin, checkIsUserInvitedToProject } from '../../util/tc'
 import { PROJECT_ROLES } from '../../config/constants'
 import Loader from '../../components/Loader'
 
@@ -37,6 +37,11 @@ class ProjectEditor extends Component {
 
   componentDidUpdate () {
     const { auth } = this.props
+
+    if (checkIsUserInvitedToProject(auth.token, this.props.projectDetail)) {
+      this.props.history.push(`/projects/${this.props.projectDetail.id}/invitation`)
+    }
+
     if (!checkAdminOrCopilot(auth.token, this.props.projectDetail)) {
       this.props.history.push('/projects')
     }

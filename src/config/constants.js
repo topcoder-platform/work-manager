@@ -33,7 +33,9 @@ export const {
   TYPEFORM_URL,
   PROFILE_URL
 } = process.env
+
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
+export const PROJECTS_API_URL = process.env.PROJECTS_API_URL || process.env.PROJECT_API_URL
 
 /**
  * Filepicker config
@@ -179,6 +181,11 @@ export const LOAD_PROJECT_TYPES_SUCCESS = 'LOAD_PROJECT_TYPES_SUCCESS'
 export const LOAD_PROJECT_TYPES_PENDING = 'LOAD_PROJECT_TYPES_PENDING'
 export const LOAD_PROJECT_TYPES_FAILURE = 'LOAD_PROJECT_TYPES_FAILURE'
 
+export const LOAD_PROJECT_INVITES = 'LOAD_PROJECT_INVITES'
+export const LOAD_PROJECT_INVITES_SUCCESS = 'LOAD_PROJECT_INVITES_SUCCESS'
+export const LOAD_PROJECT_INVITES_PENDING = 'LOAD_PROJECT_INVITES_PENDING'
+export const LOAD_PROJECT_INVITES_FAILURE = 'LOAD_PROJECT_INVITES_FAILURE'
+
 export const CREATE_PROJECT = 'CREATE_PROJECT'
 export const CREATE_PROJECT_PENDING = 'CREATE_PROJECT_PENDING'
 export const CREATE_PROJECT_SUCCESS = 'CREATE_PROJECT_SUCCESS'
@@ -192,6 +199,14 @@ export const UPDATE_PROJECT = 'UPDATE_PROJECT'
 export const UPDATE_PROJECT_PENDING = 'UPDATE_PROJECT_PENDING'
 export const UPDATE_PROJECT_SUCCESS = 'UPDATE_PROJECT_SUCCESS'
 export const UPDATE_PROJECT_FAILURE = 'UPDATE_PROJECT_FAILURE'
+
+export const PROJECT_MEMBER_INVITE_STATUS_ACCEPTED = 'accepted'
+export const PROJECT_MEMBER_INVITE_STATUS_REFUSED = 'refused'
+export const PROJECT_MEMBER_INVITE_STATUS_CANCELED = 'canceled'
+export const PROJECT_MEMBER_INVITE_STATUS_PENDING = 'pending'
+export const PROJECT_MEMBER_INVITE_STATUS_REQUESTED = 'requested'
+export const PROJECT_MEMBER_INVITE_STATUS_REQUEST_APPROVED = 'request_approved'
+export const PROJECT_MEMBER_INVITE_STATUS_REQUEST_REJECTED = 'request_rejected'
 
 // Name of challenge tracks
 export const CHALLENGE_TRACKS = {
@@ -242,6 +257,7 @@ export const MARATHON_MATCH_SUBTRACKS = [
 
 export const PROJECT_ROLES = {
   READ: 'observer',
+  CUSTOMER: 'customer',
   WRITE: 'customer',
   MANAGER: 'manager',
   COPILOT: 'copilot'
@@ -306,6 +322,10 @@ export const ADMIN_ROLES = [
 
 export const COPILOT_ROLES = [
   'copilot'
+]
+
+export const MANAGER_ROLES = [
+  'project manager'
 ]
 
 export const downloadAttachmentURL = (challengeId, attachmentId, token) =>

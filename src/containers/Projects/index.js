@@ -5,7 +5,7 @@ import { withRouter, Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import Loader from '../../components/Loader'
-import { checkAdminOrCopilot } from '../../util/tc'
+import { checkAdminOrCopilot, checkIsUserInvitedToProject, checkManager } from '../../util/tc'
 import { PrimaryButton } from '../../components/Buttons'
 import Select from '../../components/Select'
 import ProjectCard from '../../components/ProjectCard'
@@ -18,11 +18,21 @@ import styles from './styles.module.scss'
 const Projects = ({ projects, auth, isLoading, projectsCount, loadProjects, loadMoreProjects, unloadProjects }) => {
   const [search, setSearch] = useState()
   const [projectStatus, setProjectStatus] = useState('')
+  const [showOnlyMyProjects, setOnlyMyProjects] = useState(false)
   const selectedStatus = useMemo(() => PROJECT_STATUSES.find(s => s.value === projectStatus))
 
+  const isProjectManager = checkManager(auth.token)
   useEffect(() => {
-    loadProjects(search, projectStatus ? { status: projectStatus } : {})
-  }, [search, projectStatus])
+    const params = {}
+    if (projectStatus) {
+      params.status = projectStatus
+    }
+
+    if (isProjectManager) {
+      params.memberOnly = showOnlyMyProjects
+    }
+    loadProjects(search, params)
+  }, [search, projectStatus, showOnlyMyProjects, isProjectManager])
 
   // unload projects on dismount
   useEffect(() => () => unloadProjects, [])
@@ -46,7 +56,7 @@ const Projects = ({ projects, auth, isLoading, projectsCount, loadProjects, load
         )}
       </div>
       <div className={styles.searchWrapper}>
-        <div className={styles['col-6']}>
+        <div className={styles['col-4']}>
           <div className={cn(styles.field, styles.input1)}>
             <label>Search :</label>
           </div>
@@ -61,7 +71,7 @@ const Projects = ({ projects, auth, isLoading, projectsCount, loadProjects, load
             />
           </div>
         </div>
-        <div className={styles['col-6']}>
+        <div className={styles['col-4']}>
           <div className={cn(styles.field, styles.input1)}>
             <label>Project Status:</label>
           </div>
@@ -76,6 +86,25 @@ const Projects = ({ projects, auth, isLoading, projectsCount, loadProjects, load
             />
           </div>
         </div>
+        <div className={styles['col-4']}>
+          {
+            checkManager(auth.token) && (
+              <div className={styles.tcCheckbox}>
+                <input
+                  name='isOpenAdvanceSettings'
+                  type='checkbox'
+                  id='isOpenAdvanceSettings'
+                  checked={showOnlyMyProjects}
+                  onChange={() => setOnlyMyProjects(!showOnlyMyProjects)}
+                />
+                <label htmlFor='isOpenAdvanceSettings'>
+                  <div>Only My Projects</div>
+                  <input type='hidden' />
+                </label>
+              </div>
+            )
+          }
+        </div>
       </div>
       {projects.length > 0 ? (
         <>
@@ -83,6 +112,7 @@ const Projects = ({ projects, auth, isLoading, projectsCount, loadProjects, load
             {projects.map(p => (
               <li key={p.id}>
                 <ProjectCard
+                  isInvited={!!checkIsUserInvitedToProject(auth.token, p)}
                   projectStatus={p.status}
                   projectName={p.name}
                   projectId={p.id}

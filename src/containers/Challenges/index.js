@@ -14,13 +14,14 @@ import {
   deleteChallenge,
   loadChallengeTypes
 } from '../../actions/challenges'
-import { loadProject, updateProject } from '../../actions/projects'
+import { loadProject, loadProjects, updateProject } from '../../actions/projects'
 import {
   loadNextProjects,
   setActiveProject,
   resetSidebarActiveParams
 } from '../../actions/sidebar'
-import { checkAdmin } from '../../util/tc'
+import { checkAdmin, checkIsUserInvitedToProject } from '../../util/tc'
+import { withRouter } from 'react-router-dom'
 
 class Challenges extends Component {
   constructor (props) {
@@ -42,6 +43,7 @@ class Challenges extends Component {
     } = this.props
     loadChallengeTypes()
     if (dashboard) {
+      this.props.loadProjects('', {})
       this.reloadChallenges(this.props, true, true)
     }
     if (menu === 'NULL' && activeProjectId !== -1) {
@@ -52,6 +54,14 @@ class Challenges extends Component {
         this.props.loadProject(projectId)
       }
       this.reloadChallenges(this.props, true)
+    }
+  }
+
+  componentDidUpdate () {
+    const { auth } = this.props
+
+    if (checkIsUserInvitedToProject(auth.token, this.props.projectDetail)) {
+      this.props.history.push(`/projects/${this.props.projectId}/invitation`)
     }
   }
 
@@ -194,6 +204,7 @@ Challenges.defaultProps = {
 }
 
 Challenges.propTypes = {
+  history: PropTypes.object,
   projects: PropTypes.arrayOf(PropTypes.shape()),
   menu: PropTypes.string,
   challenges: PropTypes.arrayOf(PropTypes.object),
@@ -234,7 +245,8 @@ Challenges.propTypes = {
   fetchNextProjects: PropTypes.func.isRequired,
   metadata: PropTypes.shape({
     challengeTypes: PropTypes.array
-  })
+  }),
+  loadProjects: PropTypes.func.isRequired
 }
 
 const mapStateToProps = ({ challenges, sidebar, projects, auth }) => ({
@@ -265,7 +277,10 @@ const mapDispatchToProps = {
   loadChallengeTypes,
   setActiveProject,
   partiallyUpdateChallengeDetails,
-  deleteChallenge
+  deleteChallenge,
+  loadProjects
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Challenges)
+export default withRouter(
+  connect(mapStateToProps, mapDispatchToProps)(Challenges)
+)
