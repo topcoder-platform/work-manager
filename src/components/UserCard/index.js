@@ -72,7 +72,7 @@ class UserCard extends Component {
           )
         }
         {this.state.showWarningModal && (
-          <AlertModal
+          <AlertsModal
             title={`Cannot update permission for ${user.handle}`}
             message={this.state.permissionUpdateError}
             theme={theme}
