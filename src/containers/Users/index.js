@@ -24,8 +24,8 @@ class Users extends Component {
       isAdmin: false
     }
     this.loadProject = this.loadProject.bind(this)
-    this.updateProjectNember = this.updateProjectNember.bind(this)
-    this.removeProjectNember = this.removeProjectNember.bind(this)
+    this.updateProjectMember = this.updateProjectMember.bind(this)
+    this.removeProjectMember = this.removeProjectMember.bind(this)
     this.addNewProjectInvite = this.addNewProjectInvite.bind(this)
     this.addNewProjectMember = this.addNewProjectMember.bind(this)
     this.loadNextProjects = this.loadNextProjects.bind(this)
@@ -92,7 +92,7 @@ class Users extends Component {
     })
   }
 
-  updateProjectNember (newMemberInfo) {
+  updateProjectMember (newMemberInfo) {
     const { projectMembers } = this.state
     const newProjectMembers = projectMembers.map(pm => pm.id === newMemberInfo.id ? ({
       ...pm,
@@ -105,7 +105,7 @@ class Users extends Component {
     this.updateLoginUserRoleInProject(newProjectMembers, loggedInUser)
   }
 
-  removeProjectNember (projectMember) {
+  removeProjectMember (projectMember) {
     const { projectMembers, invitedMembers } = this.state
     const newProjectMembers = _.filter(projectMembers, pm => pm.id !== projectMember.id)
     const newInvitedMembers = _.filter(invitedMembers, pm => pm.id !== projectMember.id)
@@ -156,8 +156,8 @@ class Users extends Component {
       <UsersComponent
         projects={projects}
         loadProject={this.loadProject}
-        updateProjectNember={this.updateProjectNember}
-        removeProjectNember={this.removeProjectNember}
+        updateProjectMember={this.updateProjectMember}
+        removeProjectMember={this.removeProjectMember}
         addNewProjectMember={this.addNewProjectMember}
         addNewProjectInvite={this.addNewProjectInvite}
         loadNextProjects={this.loadNextProjects}
