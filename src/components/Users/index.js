@@ -109,7 +109,7 @@ class Users extends Component {
   async onRemoveConfirmClick () {
     if (this.state.isRemoving) { return }
 
-    const { removeProjectNember, invitedMembers } = this.props
+    const { removeProjectMember, invitedMembers } = this.props
     const userToRemove = this.state.userToRemove
     const isInvite = !!_.find(invitedMembers, { email: userToRemove.email })
     try {
@@ -117,7 +117,7 @@ class Users extends Component {
       await (
         isInvite ? deleteProjectMemberInvite(userToRemove.projectId, userToRemove.id) : removeUserFromProject(userToRemove.projectId, userToRemove.id)
       )
-      removeProjectNember(userToRemove)
+      removeProjectMember(userToRemove)
 
       this.resetRemoveUserState()
     } catch (e) {
@@ -156,7 +156,7 @@ class Users extends Component {
       projects,
       projectMembers,
       invitedMembers,
-      updateProjectNember,
+      updateProjectMember,
       isEditable,
       isSearchingUserProjects,
       resultSearchUserProjects,
@@ -277,7 +277,7 @@ class Users extends Component {
                         <UserCard
                           user={member}
                           onRemoveClick={this.onRemoveClick}
-                          updateProjectNember={updateProjectNember}
+                          updateProjectMember={updateProjectMember}
                           isEditable={isEditable} />
                       </li>
                     )
@@ -293,7 +293,7 @@ class Users extends Component {
                           isInvite
                           user={member}
                           onRemoveClick={this.onRemoveClick}
-                          updateProjectNember={updateProjectNember}
+                          updateProjectMember={updateProjectMember}
                           isEditable={isEditable} />
                       </li>
                     )
@@ -311,8 +311,8 @@ class Users extends Component {
 
 Users.propTypes = {
   loadProject: PropTypes.func.isRequired,
-  updateProjectNember: PropTypes.func.isRequired,
-  removeProjectNember: PropTypes.func.isRequired,
+  updateProjectMember: PropTypes.func.isRequired,
+  removeProjectMember: PropTypes.func.isRequired,
   addNewProjectInvite: PropTypes.func.isRequired,
   addNewProjectMember: PropTypes.func.isRequired,
   auth: PropTypes.object,

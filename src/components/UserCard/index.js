@@ -42,11 +42,11 @@ class UserCard extends Component {
       isUpdatingPermission: true
     })
 
-    const { user, updateProjectNember } = this.props
+    const { user, updateProjectMember } = this.props
 
     try {
       const newUserInfoRole = await updateProjectMemberRole(user.projectId, user.id, newRole)
-      updateProjectNember(newUserInfoRole)
+      updateProjectMember(newUserInfoRole)
       this.setState({ showSuccessModal: true })
     } catch (e) {
       const error = _.get(
@@ -190,7 +190,7 @@ class UserCard extends Component {
 UserCard.propTypes = {
   isInvite: PropTypes.bool,
   user: PropTypes.object,
-  updateProjectNember: PropTypes.func.isRequired,
+  updateProjectMember: PropTypes.func.isRequired,
   onRemoveClick: PropTypes.func.isRequired,
   isEditable: PropTypes.bool
 }
