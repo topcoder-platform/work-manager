@@ -17,7 +17,9 @@ const UpdateBillingAccount = ({
   isAdmin,
   currentBillingAccount,
   projectId,
-  updateProject
+  updateProject,
+  isMemberOfActiveProject,
+  isManager
 }) => {
   const [isEditing, setIsEditing] = useState(false)
   const [selectedBillingAccount, setSelectedBillingAccount] = useState(null)
@@ -129,7 +131,7 @@ const UpdateBillingAccount = ({
         !currentBillingAccount && (
         <Fragment>
           <span className={styles.error}>No Billing Account set</span>
-          {isAdmin && (
+          {(isAdmin || (isManager && isMemberOfActiveProject)) && (
             <span>
               {' '}
                 ({' '}
@@ -153,7 +155,7 @@ const UpdateBillingAccount = ({
           >
             {isBillingAccountExpired ? 'INACTIVE' : 'ACTIVE'}
           </span>{' '}
-          {isAdmin && (
+          {(isAdmin || (isManager && isMemberOfActiveProject)) && (
             <span>
               {' '}
                 ({' '}
@@ -187,7 +189,9 @@ UpdateBillingAccount.propTypes = {
   isBillingAccountExpired: PropTypes.bool,
   isAdmin: PropTypes.bool,
   projectId: PropTypes.number,
-  updateProject: PropTypes.func.isRequired
+  updateProject: PropTypes.func.isRequired,
+  isMemberOfActiveProject: PropTypes.bool.isRequired,
+  isManager: PropTypes.bool.isRequired
 }
 
 export default UpdateBillingAccount
