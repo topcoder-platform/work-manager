@@ -22,6 +22,7 @@ module.exports = {
   PROJECT_API_URL: `${DEV_API_HOSTNAME}/v5/projects`,
   GROUPS_API_URL: `${DEV_API_HOSTNAME}/v5/groups`,
   TERMS_API_URL: `${DEV_API_HOSTNAME}/v5/terms`,
+  MEMBERS_API_URL: `${DEV_API_HOSTNAME}/v5/members`,
   RESOURCES_API_URL: `${DEV_API_HOSTNAME}/v5/resources`,
   RESOURCE_ROLES_API_URL: `${DEV_API_HOSTNAME}/v5/resource-roles`,
   SUBMISSIONS_API_URL: `${DEV_API_HOSTNAME}/v5/submissions`,
