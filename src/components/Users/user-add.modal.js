@@ -46,13 +46,16 @@ const UserAddModalContent = ({ projectId, addNewProjectMember, onMemberInvited, 
 
     try {
       if (userPermissionToAdd === PROJECT_ROLES.COPILOT) {
-        const { success: invitations = [], failed } = await inviteUserToProject(projectId, {
+        const { success: invitations = [], failed, ...rest } = await inviteUserToProject(projectId, {
           handles: [userToAdd.handle],
           role: userPermissionToAdd
         })
         if (failed) {
-          const error = get(failed, '0.message', 'Unable to invite user')
+          const error = get(failed, '0.message', 'User cannot be invited')
           setAddUserError(error)
+          setIsAdding(false)
+        } else if (rest.message) {
+          setAddUserError(rest.message)
           setIsAdding(false)
         } else {
           onMemberInvited(invitations[0] || {})

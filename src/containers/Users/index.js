@@ -90,7 +90,7 @@ class Users extends Component {
         projectMembers,
         invitedMembers: invitedMembers.map(m => ({
           ...m,
-          email: m.email || invitedUsers[m.userId].email
+          email: m.email || invitedUsers[m.userId].handle
         }))
       })
       const { loggedInUser } = this.props
