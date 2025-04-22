@@ -91,7 +91,7 @@ class UserCard extends Component {
         )}
         <div className={styles.item}>
           <div className={cn(styles.col5)}>
-            {isInvite ? user.email : user.handle}
+            {isInvite ? (user.email || user.handle) : user.handle}
           </div>
           {!isInvite && (
             <>
