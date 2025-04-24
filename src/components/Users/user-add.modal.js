@@ -6,7 +6,7 @@ import Modal from '../Modal'
 import SelectUserAutocomplete from '../SelectUserAutocomplete'
 import { PROJECT_ROLES } from '../../config/constants'
 import PrimaryButton from '../Buttons/PrimaryButton'
-import { addUserToProject } from '../../services/projects'
+import { addUserToProject, inviteUserToProject } from '../../services/projects'
 
 import styles from './Users.module.scss'
 
@@ -14,7 +14,7 @@ const theme = {
   container: styles.modalContainer
 }
 
-const UserAddModalContent = ({ projectId, addNewProjectMember, onClose }) => {
+const UserAddModalContent = ({ projectId, addNewProjectMember, onMemberInvited, onClose }) => {
   const [userToAdd, setUserToAdd] = useState(null)
   const [userPermissionToAdd, setUserPermissionToAdd] = useState(PROJECT_ROLES.READ)
   const [showSelectUserError, setShowSelectUserError] = useState(false)
@@ -45,10 +45,28 @@ const UserAddModalContent = ({ projectId, addNewProjectMember, onClose }) => {
     setAddUserError(null)
 
     try {
-      const newUserInfo = await addUserToProject(projectId, userToAdd.userId, userPermissionToAdd)
-      newUserInfo.handle = userToAdd.handle
-      addNewProjectMember(newUserInfo)
-      onClose()
+      if (userPermissionToAdd === PROJECT_ROLES.COPILOT) {
+        const { success: invitations = [], failed, ...rest } = await inviteUserToProject(projectId, {
+          handles: [userToAdd.handle],
+          role: userPermissionToAdd
+        })
+        if (failed) {
+          const error = get(failed, '0.message', 'User cannot be invited')
+          setAddUserError(error)
+          setIsAdding(false)
+        } else if (rest.message) {
+          setAddUserError(rest.message)
+          setIsAdding(false)
+        } else {
+          onMemberInvited(invitations[0] || {})
+          onClose()
+        }
+      } else {
+        const newUserInfo = await addUserToProject(projectId, userToAdd.userId, userPermissionToAdd)
+        newUserInfo.handle = userToAdd.handle
+        addNewProjectMember(newUserInfo)
+        onClose()
+      }
     } catch (e) {
       const error = get(e, 'response.data.message', 'Unable to add user')
       setAddUserError(error)
@@ -169,6 +187,7 @@ const UserAddModalContent = ({ projectId, addNewProjectMember, onClose }) => {
 UserAddModalContent.propTypes = {
   projectId: PropTypes.number.isRequired,
   addNewProjectMember: PropTypes.func.isRequired,
+  onMemberInvited: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired
 }
 

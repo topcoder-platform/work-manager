@@ -221,6 +221,7 @@ class Users extends Component {
             <UserAddModalContent
               projectId={this.state.projectOption.value}
               addNewProjectMember={this.props.addNewProjectMember}
+              onMemberInvited={this.props.addNewProjectInvite}
               onClose={this.resetAddUserState}
             />
           )
