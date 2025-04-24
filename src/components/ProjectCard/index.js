@@ -9,6 +9,7 @@ import { PROJECT_STATUSES } from '../../config/constants'
 import styles from './ProjectCard.module.scss'
 
 const ProjectCard = ({ projectName, projectStatus, projectId, selected, isInvited }) => {
+  console.log(find(PROJECT_STATUSES, { value: projectStatus }), projectStatus, projectName, projectId)
   return (
     <div className={styles.container}>
       <Link
