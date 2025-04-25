@@ -21,7 +21,8 @@ class Users extends Component {
       loginUserRoleInProject: '',
       projectMembers: null,
       invitedMembers: null,
-      isAdmin: false
+      isAdmin: false,
+      isLoadingProject: false
     }
     this.loadProject = this.loadProject.bind(this)
     this.updateProjectNember = this.updateProjectNember.bind(this)
@@ -80,9 +81,10 @@ class Users extends Component {
   }
 
   loadProject (projectId) {
+    this.setState({ isLoadingProject: true })
     fetchProjectById(projectId).then(async (project) => {
       const projectMembers = _.get(project, 'members')
-      const invitedMembers = _.get(project, 'invites')
+      const invitedMembers = _.get(project, 'invites') || []
       const invitedUserIds = _.filter(_.map(invitedMembers, 'userId'))
       const invitedUsers = await fetchInviteMembers(invitedUserIds)
 
@@ -91,7 +93,8 @@ class Users extends Component {
         invitedMembers: invitedMembers.map(m => ({
           ...m,
           email: m.email || invitedUsers[m.userId].handle
-        }))
+        })),
+        isLoadingProject: false
       })
       const { loggedInUser } = this.props
       this.updateLoginUserRoleInProject(projectMembers, loggedInUser)
@@ -156,7 +159,8 @@ class Users extends Component {
     const {
       projectMembers,
       invitedMembers,
-      isAdmin
+      isAdmin,
+      isLoadingProject
     } = this.state
     return (
       <UsersComponent
@@ -169,6 +173,7 @@ class Users extends Component {
         loadNextProjects={this.loadNextProjects}
         projectMembers={projectMembers}
         invitedMembers={invitedMembers}
+        isLoadingProject={isLoadingProject}
         auth={auth}
         isAdmin={isAdmin}
         isEditable={this.isEditable()}
