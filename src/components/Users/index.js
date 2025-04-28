@@ -13,6 +13,7 @@ import { deleteProjectMemberInvite } from '../../services/projectMemberInvites'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import UserAddModalContent from './user-add.modal'
 import InviteUserModalContent from './invite-user.modal' // Import the new component
+import Loader from '../Loader'
 
 const theme = {
   container: styles.modalContainer
@@ -160,7 +161,8 @@ class Users extends Component {
       isEditable,
       isSearchingUserProjects,
       resultSearchUserProjects,
-      loadNextProjects
+      loadNextProjects,
+      isLoadingProject
     } = this.props
     const {
       searchKey
@@ -251,7 +253,7 @@ class Users extends Component {
           )
         }
         {
-          membersExist && (
+          !isLoadingProject && membersExist && (
             <>
               <div className={styles.header}>
                 <div className={cn(styles.col5)}>
@@ -305,6 +307,8 @@ class Users extends Component {
           )
         }
 
+        {isLoadingProject && <Loader />}
+
       </div>
     )
   }
@@ -322,6 +326,7 @@ Users.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.object),
   projectMembers: PropTypes.arrayOf(PropTypes.object),
   invitedMembers: PropTypes.arrayOf(PropTypes.object),
+  isLoadingProject: PropTypes.bool.isRequired,
   searchUserProjects: PropTypes.func.isRequired,
   resultSearchUserProjects: PropTypes.arrayOf(PropTypes.object),
   loadNextProjects: PropTypes.func.isRequired
