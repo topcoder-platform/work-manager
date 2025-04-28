@@ -437,6 +437,7 @@ export const SPECIAL_CHALLENGE_TAGS = [
  * Possible statuses of projects
  */
 export const PROJECT_STATUSES = [
+  { label: 'Draft', value: 'draft' },
   { label: 'Active', value: 'active' },
   { label: 'In Review', value: 'in_review' },
   { label: 'Reviewed', value: 'reviewed' },
