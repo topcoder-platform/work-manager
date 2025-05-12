@@ -157,7 +157,7 @@ class Users extends Component {
       projects,
       projectMembers,
       invitedMembers,
-      updateProjectNember,
+      updateProjectMember,
       isEditable,
       isSearchingUserProjects,
       resultSearchUserProjects,
@@ -280,7 +280,7 @@ class Users extends Component {
                         <UserCard
                           user={member}
                           onRemoveClick={this.onRemoveClick}
-                          updateProjectNember={updateProjectNember}
+                          updateProjectMember={updateProjectMember}
                           isEditable={isEditable} />
                       </li>
                     )
@@ -296,7 +296,7 @@ class Users extends Component {
                           isInvite
                           user={member}
                           onRemoveClick={this.onRemoveClick}
-                          updateProjectNember={updateProjectNember}
+                          updateProjectMember={updateProjectMember}
                           isEditable={isEditable} />
                       </li>
                     )
@@ -316,7 +316,7 @@ class Users extends Component {
 
 Users.propTypes = {
   loadProject: PropTypes.func.isRequired,
-  updateProjectNember: PropTypes.func.isRequired,
+  updateProjectMember: PropTypes.func.isRequired,
   removeProjectNember: PropTypes.func.isRequired,
   addNewProjectInvite: PropTypes.func.isRequired,
   addNewProjectMember: PropTypes.func.isRequired,

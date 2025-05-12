@@ -25,7 +25,7 @@ class Users extends Component {
       isLoadingProject: false
     }
     this.loadProject = this.loadProject.bind(this)
-    this.updateProjectNember = this.updateProjectNember.bind(this)
+    this.updateProjectMember = this.updateProjectMember.bind(this)
     this.removeProjectNember = this.removeProjectNember.bind(this)
     this.addNewProjectInvite = this.addNewProjectInvite.bind(this)
     this.addNewProjectMember = this.addNewProjectMember.bind(this)
@@ -101,7 +101,7 @@ class Users extends Component {
     })
   }
 
-  updateProjectNember (newMemberInfo) {
+  updateProjectMember (newMemberInfo) {
     const { projectMembers } = this.state
     const newProjectMembers = projectMembers.map(pm => pm.id === newMemberInfo.id ? ({
       ...pm,
@@ -166,7 +166,7 @@ class Users extends Component {
       <UsersComponent
         projects={projects}
         loadProject={this.loadProject}
-        updateProjectNember={this.updateProjectNember}
+        updateProjectMember={this.updateProjectMember}
         removeProjectNember={this.removeProjectNember}
         addNewProjectMember={this.addNewProjectMember}
         addNewProjectInvite={this.addNewProjectInvite}
