@@ -13,6 +13,7 @@ import { deleteProjectMemberInvite } from '../../services/projectMemberInvites'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import UserAddModalContent from './user-add.modal'
 import InviteUserModalContent from './invite-user.modal' // Import the new component
+import Loader from '../Loader'
 
 const theme = {
   container: styles.modalContainer
@@ -109,7 +110,7 @@ class Users extends Component {
   async onRemoveConfirmClick () {
     if (this.state.isRemoving) { return }
 
-    const { removeProjectNember, invitedMembers } = this.props
+    const { removeProjectMember, invitedMembers } = this.props
     const userToRemove = this.state.userToRemove
     const isInvite = !!_.find(invitedMembers, { email: userToRemove.email })
     try {
@@ -117,7 +118,7 @@ class Users extends Component {
       await (
         isInvite ? deleteProjectMemberInvite(userToRemove.projectId, userToRemove.id) : removeUserFromProject(userToRemove.projectId, userToRemove.id)
       )
-      removeProjectNember(userToRemove)
+      removeProjectMember(userToRemove)
 
       this.resetRemoveUserState()
     } catch (e) {
@@ -156,11 +157,12 @@ class Users extends Component {
       projects,
       projectMembers,
       invitedMembers,
-      updateProjectNember,
+      updateProjectMember,
       isEditable,
       isSearchingUserProjects,
       resultSearchUserProjects,
-      loadNextProjects
+      loadNextProjects,
+      isLoadingProject
     } = this.props
     const {
       searchKey
@@ -251,7 +253,7 @@ class Users extends Component {
           )
         }
         {
-          membersExist && (
+          !isLoadingProject && membersExist && (
             <>
               <div className={styles.header}>
                 <div className={cn(styles.col5)}>
@@ -278,7 +280,7 @@ class Users extends Component {
                         <UserCard
                           user={member}
                           onRemoveClick={this.onRemoveClick}
-                          updateProjectNember={updateProjectNember}
+                          updateProjectMember={updateProjectMember}
                           isEditable={isEditable} />
                       </li>
                     )
@@ -294,7 +296,7 @@ class Users extends Component {
                           isInvite
                           user={member}
                           onRemoveClick={this.onRemoveClick}
-                          updateProjectNember={updateProjectNember}
+                          updateProjectMember={updateProjectMember}
                           isEditable={isEditable} />
                       </li>
                     )
@@ -305,6 +307,8 @@ class Users extends Component {
           )
         }
 
+        {isLoadingProject && <Loader />}
+
       </div>
     )
   }
@@ -312,8 +316,8 @@ class Users extends Component {
 
 Users.propTypes = {
   loadProject: PropTypes.func.isRequired,
-  updateProjectNember: PropTypes.func.isRequired,
-  removeProjectNember: PropTypes.func.isRequired,
+  updateProjectMember: PropTypes.func.isRequired,
+  removeProjectMember: PropTypes.func.isRequired,
   addNewProjectInvite: PropTypes.func.isRequired,
   addNewProjectMember: PropTypes.func.isRequired,
   auth: PropTypes.object,
@@ -322,6 +326,7 @@ Users.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.object),
   projectMembers: PropTypes.arrayOf(PropTypes.object),
   invitedMembers: PropTypes.arrayOf(PropTypes.object),
+  isLoadingProject: PropTypes.bool.isRequired,
   searchUserProjects: PropTypes.func.isRequired,
   resultSearchUserProjects: PropTypes.arrayOf(PropTypes.object),
   loadNextProjects: PropTypes.func.isRequired

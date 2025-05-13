@@ -21,11 +21,12 @@ class Users extends Component {
       loginUserRoleInProject: '',
       projectMembers: null,
       invitedMembers: null,
-      isAdmin: false
+      isAdmin: false,
+      isLoadingProject: false
     }
     this.loadProject = this.loadProject.bind(this)
-    this.updateProjectNember = this.updateProjectNember.bind(this)
-    this.removeProjectNember = this.removeProjectNember.bind(this)
+    this.updateProjectMember = this.updateProjectMember.bind(this)
+    this.removeProjectMember = this.removeProjectMember.bind(this)
     this.addNewProjectInvite = this.addNewProjectInvite.bind(this)
     this.addNewProjectMember = this.addNewProjectMember.bind(this)
     this.loadNextProjects = this.loadNextProjects.bind(this)
@@ -80,9 +81,10 @@ class Users extends Component {
   }
 
   loadProject (projectId) {
+    this.setState({ isLoadingProject: true })
     fetchProjectById(projectId).then(async (project) => {
       const projectMembers = _.get(project, 'members')
-      const invitedMembers = _.get(project, 'invites')
+      const invitedMembers = _.get(project, 'invites') || []
       const invitedUserIds = _.filter(_.map(invitedMembers, 'userId'))
       const invitedUsers = await fetchInviteMembers(invitedUserIds)
 
@@ -91,14 +93,15 @@ class Users extends Component {
         invitedMembers: invitedMembers.map(m => ({
           ...m,
           email: m.email || invitedUsers[m.userId].handle
-        }))
+        })),
+        isLoadingProject: false
       })
       const { loggedInUser } = this.props
       this.updateLoginUserRoleInProject(projectMembers, loggedInUser)
     })
   }
 
-  updateProjectNember (newMemberInfo) {
+  updateProjectMember (newMemberInfo) {
     const { projectMembers } = this.state
     const newProjectMembers = projectMembers.map(pm => pm.id === newMemberInfo.id ? ({
       ...pm,
@@ -111,7 +114,7 @@ class Users extends Component {
     this.updateLoginUserRoleInProject(newProjectMembers, loggedInUser)
   }
 
-  removeProjectNember (projectMember) {
+  removeProjectMember (projectMember) {
     const { projectMembers, invitedMembers } = this.state
     const newProjectMembers = _.filter(projectMembers, pm => pm.id !== projectMember.id)
     const newInvitedMembers = _.filter(invitedMembers, pm => pm.id !== projectMember.id)
@@ -156,19 +159,21 @@ class Users extends Component {
     const {
       projectMembers,
       invitedMembers,
-      isAdmin
+      isAdmin,
+      isLoadingProject
     } = this.state
     return (
       <UsersComponent
         projects={projects}
         loadProject={this.loadProject}
-        updateProjectNember={this.updateProjectNember}
-        removeProjectNember={this.removeProjectNember}
+        updateProjectMember={this.updateProjectMember}
+        removeProjectMember={this.removeProjectMember}
         addNewProjectMember={this.addNewProjectMember}
         addNewProjectInvite={this.addNewProjectInvite}
         loadNextProjects={this.loadNextProjects}
         projectMembers={projectMembers}
         invitedMembers={invitedMembers}
+        isLoadingProject={isLoadingProject}
         auth={auth}
         isAdmin={isAdmin}
         isEditable={this.isEditable()}
