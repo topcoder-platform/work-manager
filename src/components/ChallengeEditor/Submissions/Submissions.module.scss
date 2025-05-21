@@ -269,6 +269,7 @@ $base-unit: 5px;
 .submissionsContainerTable {
   width: auto;
   max-width: 100%;
+  overflow: auto;
 
   table {
     width: 100%;
