@@ -269,7 +269,6 @@ $base-unit: 5px;
 .submissionsContainerTable {
   width: auto;
   max-width: 100%;
-  overflow: auto;
 
   table {
     width: 100%;
@@ -400,4 +399,26 @@ $base-unit: 5px;
     white-space: nowrap;
     overflow: hidden;
   }
+}
+
+.paginationWrapper {
+  display: flex;
+  margin-top: 30px;
+  flex: 1;
+  justify-content: center;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
+}
+
+.perPageContainer {
+  margin-right: 20px;
+  max-width: 150px;
+}
+
+.paginationContainer {
+  display: flex;
 }
