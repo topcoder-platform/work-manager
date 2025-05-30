@@ -25,10 +25,7 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
   const isAccepting = isUpdating === PROJECT_MEMBER_INVITE_STATUS_ACCEPTED
   const isDeclining = isUpdating === PROJECT_MEMBER_INVITE_STATUS_REFUSED
   const queryParams = new URLSearchParams(window.location.search)
-
   const source = queryParams.get('source')
-
-  console.log(source)
 
   useEffect(() => {
     if (!projectId) {
