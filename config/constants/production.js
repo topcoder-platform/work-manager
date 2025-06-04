@@ -59,6 +59,5 @@ module.exports = {
   SKILLS_V5_API_URL: `${API_V5}/standardized-skills/skills/autocomplete`,
   UPDATE_SKILLS_V5_API_URL: `${API_V5}/standardized-skills/challenge-skills`,
   SALESFORCE_BILLING_ACCOUNT_LINK: 'https://topcoder.my.salesforce.com/apex/baredirect?id=',
-  TYPEFORM_URL: 'https://topcoder.typeform.com/to/YJ7AL4p8',
   PROFILE_URL: 'https://profiles.topcoder.com/'
 }
