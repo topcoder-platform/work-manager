@@ -11,7 +11,7 @@ import { PROJECT_ROLES, PROJECT_STATUS, COPILOTS_URL } from '../../config/consta
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
-import { checkAdmin, checkReadOnlyRoles, checkAdminOrCopilot } from '../../util/tc'
+import { checkAdmin, checkReadOnlyRoles, checkAdminOrCopilot, checkManager } from '../../util/tc'
 
 const ChallengesComponent = ({
   challenges,
@@ -94,7 +94,7 @@ const ChallengesComponent = ({
                 className={styles.btnOutline}
               />
             )}
-            {checkAdmin(auth.token) && (
+            {(checkAdmin(auth.token) || checkManager(auth.token)) && (
               <OutlineButton
                 text='Request Copilot'
                 type={'info'}
