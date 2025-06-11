@@ -263,9 +263,15 @@ export async function fetchResources (challengeId) {
 * @param challengeId Challenge id
 * @returns {Promise<*>}
 */
-export async function fetchSubmissions (challengeId) {
-  const response = await axiosInstance.get(`${SUBMISSIONS_API_URL}?challengeId=${challengeId}&perPage=100`)
-  return _.get(response, 'data', [])
+export async function fetchSubmissions (challengeId, pageObj) {
+  const { page, perPage } = pageObj
+  const response = await axiosInstance.get(`${SUBMISSIONS_API_URL}?challengeId=${challengeId}&perPage=${perPage}&page=${page}`)
+  return {
+    data: _.get(response, 'data', []),
+    headers: _.get(response, 'headers', {}),
+    page,
+    perPage
+  }
 }
 
 export async function getReviewTypes () {

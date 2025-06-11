@@ -55,7 +55,11 @@ const ChallengeViewTabs = ({
   loggedInUser,
   onApproveChallenge,
   createResource,
-  deleteResource
+  deleteResource,
+  loadSubmissions,
+  totalSubmissions,
+  submissionsPerPage,
+  page
 }) => {
   const [selectedTab, setSelectedTab] = useState(0)
   const [showAddResourceModal, setShowAddResourceModal] = useState(false)
@@ -114,7 +118,7 @@ const ChallengeViewTabs = ({
       })
       return s
     })
-  }, [challengeSubmissions, allResources])
+  }, [challengeSubmissions, allResources, page])
 
   const isTask = _.get(challenge, 'task.isTask', false)
 
@@ -298,7 +302,7 @@ const ChallengeViewTabs = ({
         >
           RESOURCES
         </a>
-        {challengeSubmissions.length ? (
+        {totalSubmissions ? (
           <a
             tabIndex='2'
             role='tab'
@@ -311,7 +315,7 @@ const ChallengeViewTabs = ({
             }}
             className={getSelectorStyle(selectedTab, 2)}
           >
-            SUBMISSIONS ({submissions.length})
+            SUBMISSIONS ({totalSubmissions})
           </a>
         ) : null}
       </div>
@@ -353,6 +357,10 @@ const ChallengeViewTabs = ({
           submissions={submissions}
           token={token}
           loggedInUserResource={loggedInUserResource}
+          loadSubmissions={loadSubmissions}
+          totalSubmissions={totalSubmissions}
+          submissionsPerPage={submissionsPerPage}
+          page={page}
         />
       )}
       {showAddResourceModal ? (<ResourcesAdd
@@ -396,7 +404,11 @@ ChallengeViewTabs.propTypes = {
   deleteResource: PropTypes.func.isRequired,
   showRejectChallengeModal: PropTypes.func.isRequired,
   loggedInUser: PropTypes.object.isRequired,
-  onApproveChallenge: PropTypes.func
+  onApproveChallenge: PropTypes.func,
+  loadSubmissions: PropTypes.func,
+  totalSubmissions: PropTypes.number,
+  submissionsPerPage: PropTypes.number,
+  page: PropTypes.number
 }
 
 export default ChallengeViewTabs

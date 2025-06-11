@@ -7,11 +7,11 @@ import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import { Link } from 'react-router-dom'
 import ProjectStatus from './ProjectStatus'
-import { PROJECT_ROLES, TYPEFORM_URL, PROJECT_STATUS } from '../../config/constants'
+import { PROJECT_ROLES, PROJECT_STATUS, COPILOTS_URL } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
-import { checkAdmin, checkReadOnlyRoles, checkAdminOrCopilot } from '../../util/tc'
+import { checkAdmin, checkReadOnlyRoles, checkAdminOrCopilot, checkManager } from '../../util/tc'
 
 const ChallengesComponent = ({
   challenges,
@@ -94,11 +94,11 @@ const ChallengesComponent = ({
                 className={styles.btnOutline}
               />
             )}
-            {checkAdmin(auth.token) && (
+            {(checkAdmin(auth.token) || checkManager(auth.token)) && (
               <OutlineButton
                 text='Request Copilot'
                 type={'info'}
-                url={`${TYPEFORM_URL}#handle=${auth.user.handle}&projectid=${activeProjectId}`}
+                url={`${COPILOTS_URL}/requests/new`}
                 target={'_blank'}
               />
             )}
