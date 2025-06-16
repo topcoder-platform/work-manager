@@ -11,11 +11,11 @@ import { PROJECTS_API_URL } from '../config/constants'
 export function updateProjectMemberInvite (projectId, inviteId, status, source) {
   const url = `${PROJECTS_API_URL}/${projectId}/invites/${inviteId}`
   const body = {
-    status,
-  };
+    status
+  }
 
   if (source) {
-    body.source = source;
+    body.source = source
   }
   return axios.patch(url, body)
     .then(resp => resp.data)
