@@ -8,9 +8,16 @@ import { PROJECTS_API_URL } from '../config/constants'
  * @param  {string}  status the new status for invitation
  * @return {object}  project member invite returned by api
  */
-export function updateProjectMemberInvite (projectId, inviteId, status) {
+export function updateProjectMemberInvite (projectId, inviteId, status, source) {
   const url = `${PROJECTS_API_URL}/${projectId}/invites/${inviteId}`
-  return axios.patch(url, { status })
+  const body = {
+    status
+  }
+
+  if (source) {
+    body.source = source
+  }
+  return axios.patch(url, body)
     .then(resp => resp.data)
 }
 

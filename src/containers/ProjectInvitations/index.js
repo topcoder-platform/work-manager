@@ -24,6 +24,8 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
   const [isUpdating, setIsUpdating] = useState(automaticAction || false)
   const isAccepting = isUpdating === PROJECT_MEMBER_INVITE_STATUS_ACCEPTED
   const isDeclining = isUpdating === PROJECT_MEMBER_INVITE_STATUS_REFUSED
+  const queryParams = new URLSearchParams(window.location.search)
+  const source = queryParams.get('source')
 
   useEffect(() => {
     if (!projectId) {
@@ -42,9 +44,9 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
     }
   }, [projectId, auth, projectDetail, isProjectLoading, history])
 
-  const updateInvite = useCallback(async (status) => {
+  const updateInvite = useCallback(async (status, source) => {
     setIsUpdating(status)
-    await updateProjectMemberInvite(projectId, invitation.id, status)
+    await updateProjectMemberInvite(projectId, invitation.id, status, source)
 
     // await for the project details to propagate
     await delay(1000)
@@ -56,8 +58,8 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
     history.push(status === PROJECT_MEMBER_INVITE_STATUS_ACCEPTED ? `/projects/${projectId}/challenges` : '/projects')
   }, [projectId, invitation, loadProjectInvites, history])
 
-  const acceptInvite = useCallback(() => updateInvite(PROJECT_MEMBER_INVITE_STATUS_ACCEPTED), [updateInvite])
-  const declineInvite = useCallback(() => updateInvite(PROJECT_MEMBER_INVITE_STATUS_REFUSED), [updateInvite])
+  const acceptInvite = useCallback(() => updateInvite(PROJECT_MEMBER_INVITE_STATUS_ACCEPTED, source), [updateInvite, source])
+  const declineInvite = useCallback(() => updateInvite(PROJECT_MEMBER_INVITE_STATUS_REFUSED, source), [updateInvite, source])
 
   useEffect(() => {
     if (!invitation || !automaticAction) {
@@ -69,7 +71,7 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
     } else if (automaticAction === PROJECT_MEMBER_INVITE_STATUS_REFUSED) {
       declineInvite()
     }
-  }, [invitation, automaticAction])
+  }, [invitation, automaticAction, source])
 
   return (
     <>

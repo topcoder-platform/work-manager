@@ -401,3 +401,25 @@ $base-unit: 5px;
     overflow: hidden;
   }
 }
+
+.paginationWrapper {
+  display: flex;
+  margin-top: 30px;
+  flex: 1;
+  justify-content: center;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 30px;
+}
+
+.perPageContainer {
+  margin-right: 20px;
+  max-width: 150px;
+}
+
+.paginationContainer {
+  display: flex;
+}

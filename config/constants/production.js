@@ -18,6 +18,7 @@ module.exports = {
   CHALLENGE_TRACKS_URL: `${PROD_API_HOSTNAME}/v5/challenge-tracks`,
   CHALLENGE_PHASES_URL: `${PROD_API_HOSTNAME}/v5/challenge-phases`,
   CHALLENGE_TIMELINES_URL: `${PROD_API_HOSTNAME}/v5/challenge-timelines`,
+  COPILOTS_URL: `https://copilots.${DOMAIN}`,
   PROJECT_API_URL: `${PROD_API_HOSTNAME}/v5/projects`,
   GROUPS_API_URL: `${PROD_API_HOSTNAME}/v5/groups`,
   TERMS_API_URL: `${PROD_API_HOSTNAME}/v5/terms`,
@@ -58,6 +59,5 @@ module.exports = {
   SKILLS_V5_API_URL: `${API_V5}/standardized-skills/skills/autocomplete`,
   UPDATE_SKILLS_V5_API_URL: `${API_V5}/standardized-skills/challenge-skills`,
   SALESFORCE_BILLING_ACCOUNT_LINK: 'https://topcoder.my.salesforce.com/apex/baredirect?id=',
-  TYPEFORM_URL: 'https://topcoder.typeform.com/to/YJ7AL4p8',
   PROFILE_URL: 'https://profiles.topcoder.com/'
 }
