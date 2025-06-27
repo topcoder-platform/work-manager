@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import _ from 'lodash'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
-import { withRouter } from 'react-router-dom'
+import { withRouter, Link } from 'react-router-dom'
 import styles from './ChallengeView.module.scss'
 import Track from '../../Track'
 import NDAField from '../NDAField'
@@ -20,7 +20,6 @@ import { getResourceRoleByName } from '../../../util/tc'
 import { loadGroupDetails } from '../../../actions/challenges'
 import {
   REVIEW_TYPES,
-  CONNECT_APP_URL,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
   MULTI_ROUND_CHALLENGE_TEMPLATE_ID,
   DS_TRACK_ID
@@ -113,17 +112,15 @@ const ChallengeView = ({
             <div className={cn(styles.row, styles.topRow)}>
               <div className={styles.col}>
                 <span>
-                  <span className={styles.fieldTitle}>Project: {projectDetail ? projectDetail.name : ''}</span>
+                  <span className={styles.fieldTitle}>Project: <Link to={`/projects/${projectDetail.id}/challenges`}>
+                    {projectDetail ? projectDetail.name : ''}
+                  </Link>
+                  </span>
                 </span>
               </div>
               {selectedMilestone &&
                 <div className={styles.col}>
-                  <span><span className={styles.fieldTitle}>Milestone:</span> {selectedMilestone ? (
-                    <a href={`${CONNECT_APP_URL}/projects/${projectDetail.id}`} target='_blank'
-                      rel='noopener noreferrer'>
-                      {selectedMilestone.name}
-                    </a>
-                  ) : ''}</span>
+                  <span><span className={styles.fieldTitle}>Milestone:</span> {selectedMilestone ? selectedMilestone.name : ''}</span>
                 </div>
               }
               <div className={styles.col}>

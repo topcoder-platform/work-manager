@@ -7,16 +7,13 @@ import React from 'react'
 import PT from 'prop-types'
 import moment from 'moment'
 import _ from 'lodash'
-import { STUDIO_URL, SUBMISSION_REVIEW_APP_URL, getTCMemberURL } from '../../../config/constants'
+import { PAGINATION_PER_PAGE_OPTIONS, STUDIO_URL, SUBMISSION_REVIEW_APP_URL, getTCMemberURL } from '../../../config/constants'
 import { PrimaryButton } from '../../Buttons'
 import AlertModal from '../../Modal/AlertModal'
 import cn from 'classnames'
 import ReactSVG from 'react-svg'
 import {
   getRatingLevel,
-  sortList,
-  getProvisionalScore,
-  getFinalScore,
   checkDownloadSubmissionRoles,
   checkAdmin
 } from '../../../util/tc'
@@ -29,10 +26,16 @@ import {
 } from '../../../util/files'
 import styles from './Submissions.module.scss'
 import modalStyles from '../../../styles/modal.module.scss'
+import { ArtifactsListModal } from '../ArtifactsListModal'
+import Tooltip from '../../Tooltip'
+import { RatingsListModal } from '../RatingsListModal'
+import Select from '../../Select'
+import Pagination from 'react-js-pagination'
 const assets = require.context('../../../assets/images', false, /svg/)
-const ArrowDown = './arrow-down.svg'
 const Lock = './lock.svg'
 const Download = './IconSquareDownload.svg'
+const DownloadArtifact = './IconDownloadArtifacts.svg'
+const ReviewRatingList = './IconReviewRatingList.svg'
 
 const theme = {
   container: modalStyles.modalContainer
@@ -48,157 +51,21 @@ class SubmissionsComponent extends React.Component {
       },
       isShowInformation: false,
       memberOfModal: '',
-      sortedSubmissions: [],
+      submissions: [],
       downloadingAll: false,
-      alertMessage: ''
+      alertMessage: '',
+      selectedSubmissionId: '',
+      showArtifactsListModal: false,
+      showRatingsListModal: false
     }
-    this.getSubmissionsSortParam = this.getSubmissionsSortParam.bind(this)
-    this.updateSortedSubmissions = this.updateSortedSubmissions.bind(this)
-    this.sortSubmissions = this.sortSubmissions.bind(this)
-    this.onSortChange = this.onSortChange.bind(this)
     this.checkIsReviewPhaseComplete = this.checkIsReviewPhaseComplete.bind(
       this
     )
+    this.downloadSubmission = this.downloadSubmission.bind(this)
+    this.handlePageChange = this.handlePageChange.bind(this)
+    this.handlePerPageChange = this.handlePerPageChange.bind(this)
   }
 
-  componentDidMount () {
-    this.updateSortedSubmissions()
-  }
-
-  /**
-   * Get submission sort parameter
-   */
-  getSubmissionsSortParam () {
-    const { submissionsSort } = this.state
-    let { field, sort } = submissionsSort
-    if (!field) {
-      field = 'Submission Date' // default field for submission sorting
-    }
-
-    if (!sort) {
-      sort = 'asc' // default order for submission sorting
-    }
-
-    return {
-      field,
-      sort
-    }
-  }
-
-  /**
-   * Update sorted submission array
-   */
-  updateSortedSubmissions () {
-    const { submissions } = this.props
-    const sortedSubmissions = _.cloneDeep(submissions)
-    this.sortSubmissions(sortedSubmissions)
-    this.setState({ sortedSubmissions })
-  }
-
-  /**
-   * Sort array of submission
-   * @param {Array} submissions array of submission
-   */
-  sortSubmissions (submissions) {
-    const { field, sort } = this.getSubmissionsSortParam()
-    let isHaveFinalScore = false
-    if (field === 'Initial / Final Score') {
-      isHaveFinalScore = _.some(
-        submissions,
-        s => !_.isNil(s.reviewSummation && s.reviewSummation[0].aggregateScore)
-      )
-    }
-    return sortList(submissions, field, sort, (a, b) => {
-      let valueA = 0
-      let valueB = 0
-      let valueIsString = false
-      switch (field) {
-        case 'Country': {
-          valueA = a.registrant ? a.registrant.countryCode : ''
-          valueB = b.registrant ? b.registrant.countryCode : ''
-          valueIsString = true
-          break
-        }
-        case 'Rating': {
-          valueA = a.registrant ? a.registrant.rating : 0
-          valueB = b.registrant ? b.registrant.rating : 0
-          break
-        }
-        case 'Username': {
-          valueA = _.get(a.registrant, 'memberHandle', '').toLowerCase()
-          valueB = _.get(b.registrant, 'memberHandle', '').toLowerCase()
-          valueIsString = true
-          break
-        }
-        case 'Email': {
-          valueA = _.get(a.registrant, 'email', '').toLowerCase()
-          valueB = _.get(b.registrant, 'email', '').toLowerCase()
-          valueIsString = true
-          break
-        }
-        case 'Time':
-          valueA = new Date(a.submissions && a.submissions[0].submissionTime)
-          valueB = new Date(b.submissions && b.submissions[0].submissionTime)
-          break
-        case 'Submission Date': {
-          valueA = new Date(a.created)
-          valueB = new Date(b.created)
-          break
-        }
-        case 'Initial / Final Score': {
-          if (isHaveFinalScore) {
-            valueA = getFinalScore(a)
-            valueB = getFinalScore(b)
-          } else {
-            valueA = !_.isEmpty(a.review) && a.review[0].score
-            valueB = !_.isEmpty(b.review) && b.review[0].score
-          }
-          break
-        }
-        case 'Final Rank': {
-          if (this.checkIsReviewPhaseComplete()) {
-            valueA = a.finalRank ? a.finalRank : 0
-            valueB = b.finalRank ? b.finalRank : 0
-          }
-          break
-        }
-        case 'Provisional Rank': {
-          valueA = a.provisionalRank ? a.provisionalRank : 0
-          valueB = b.provisionalRank ? b.provisionalRank : 0
-          break
-        }
-        case 'Final Score': {
-          valueA = getFinalScore(a)
-          valueB = getFinalScore(b)
-          break
-        }
-        case 'Provisional Score': {
-          valueA = getProvisionalScore(a)
-          valueB = getProvisionalScore(b)
-          break
-        }
-        default:
-      }
-
-      if (valueIsString === false) {
-        if (valueA === '-') valueA = 0
-        if (valueB === '-') valueB = 0
-      }
-
-      return {
-        valueA,
-        valueB,
-        valueIsString
-      }
-    })
-  }
-
-  onSortChange (sort) {
-    this.setState({
-      submissionsSort: sort
-    })
-    this.updateSortedSubmissions()
-  }
   /**
    * Check if review phase complete
    */
@@ -220,17 +87,96 @@ class SubmissionsComponent extends React.Component {
     return isReviewPhaseComplete
   }
 
+  closeArtifactsModal () {
+    this.setState({
+      selectedSubmissionId: '',
+      showArtifactsListModal: false
+    })
+  }
+
+  async downloadSubmission (submission) {
+    // download submission
+    const reactLib = getTopcoderReactLib()
+    const { getService } = reactLib.services.submissions
+    const submissionsService = getService(this.props.token)
+    submissionsService.downloadSubmission(submission.id)
+      .then((blob) => {
+        isValidDownloadFile(blob).then((isValidFile) => {
+          if (isValidFile.success) {
+            // eslint-disable-next-line no-undef
+            const url = window.URL.createObjectURL(new Blob([blob]))
+            const link = document.createElement('a')
+            link.href = url
+            let fileName = submission.legacySubmissionId
+            if (!fileName) {
+              fileName = submission.id
+            }
+            fileName = fileName + '.zip'
+            link.setAttribute('download', `${fileName}`)
+            document.body.appendChild(link)
+            link.click()
+            link.parentNode.removeChild(link)
+          } else {
+            this.setState({
+              alertMessage: isValidFile.message || 'Can not download this submission.'
+            })
+          }
+        })
+      })
+  }
+
+  /**
+   * Update filter for getting project by pagination
+   * @param {Number} perPageNumber per page number
+   */
+  handlePerPageChange (option) {
+    const perPageNumber = option.value
+    const {
+      submissionsPerPage,
+      loadSubmissions,
+      challenge: {
+        id
+      }
+    } = this.props
+
+    if (submissionsPerPage !== perPageNumber) {
+      loadSubmissions(id, {
+        page: 1,
+        perPage: perPageNumber
+      })
+    }
+  }
+
+  /**
+   * Update filter for getting project by pagination
+   * @param {Number} pageNumber page number
+   */
+  async handlePageChange (pageNumber) {
+    const {
+      page,
+      submissionsPerPage,
+      loadSubmissions,
+      challenge: {
+        id
+      }
+    } = this.props
+
+    if (page !== pageNumber) {
+      loadSubmissions(id, {
+        page: pageNumber,
+        perPage: submissionsPerPage
+      })
+    }
+  }
+
   render () {
-    const { challenge, token, loggedInUserResource } = this.props
+    const { challenge, token, loggedInUserResource, page, submissionsPerPage, totalSubmissions, submissions } = this.props
     const { checkpoints, track, type, tags } = challenge
     const canDownloadSubmission =
       (loggedInUserResource && checkDownloadSubmissionRoles(loggedInUserResource.roles)) ||
       checkAdmin(token)
 
-    const { field, sort } = this.getSubmissionsSortParam()
-    const revertSort = sort === 'desc' ? 'asc' : 'desc'
-
-    const { sortedSubmissions, downloadingAll, alertMessage } = this.state
+    const { downloadingAll, alertMessage } = this.state
 
     const renderSubmission = s => (
       <div className={styles.submission} key={s.id}>
@@ -272,7 +218,7 @@ class SubmissionsComponent extends React.Component {
     const isBugHunt = _.includes(tags, 'Bug Hunt')
 
     // copy colorStyle from registrants to submissions
-    _.forEach(sortedSubmissions, s => {
+    _.forEach(submissions, s => {
       if (s.registrant && s.registrant.colorStyle && !s.colorStyle) {
         const { colorStyle } = s.registrant
         /* eslint-disable no-param-reassign */
@@ -297,7 +243,7 @@ class SubmissionsComponent extends React.Component {
           <div className={cn(styles.container, styles.view)}>
             <div className={styles['title']}>ROUND 2 (FINAL) SUBMISSIONS</div>
             <div className={styles['content']}>
-              {sortedSubmissions.map(renderSubmission)}
+              {submissions.map(renderSubmission)}
             </div>
             {checkpoints.length > 0 && (
               <div className={styles['title']}>
@@ -341,117 +287,20 @@ class SubmissionsComponent extends React.Component {
                 <tr>
                   {!isF2F && !isBugHunt && (
                     <th>
-                      <button
-                        type='button'
-                        onClick={() => {
-                          this.onSortChange({
-                            field: 'Rating',
-                            sort: field === 'Rating' ? revertSort : 'desc'
-                          })
-                        }}
-                        className={cn(styles['col-2Table'], styles['header-sort'])}
-                      >
-                        <span>Rating</span>
-                        <div
-                          className={cn(styles['col-arrow'], {
-                            [styles['col-arrow-sort-asc']]:
-                              field === 'Rating' && sort === 'asc',
-                            [styles['col-arrow-is-sorting']]: field === 'Rating'
-                          })}
-                        >
-                          <ReactSVG path={assets(`${ArrowDown}`)} />
-                        </div>
-                      </button>
+                      <span>Rating</span>
                     </th>
                   )}
                   <th>
-                    <button
-                      type='button'
-                      onClick={() => {
-                        this.onSortChange({
-                          field: 'Username',
-                          sort: field === 'Username' ? revertSort : 'desc'
-                        })
-                      }}
-                      className={cn(styles['col-3Table'], styles['header-sort'])}
-                    >
-                      <span>Username</span>
-                      <div
-                        className={cn(styles['col-arrow'], {
-                          [styles['col-arrow-sort-asc']]: field === 'Username' && sort === 'asc',
-                          [styles['col-arrow-is-sorting']]: field === 'Username'
-                        })}
-                      >
-                        <ReactSVG path={assets(`${ArrowDown}`)} />
-                      </div>
-                    </button>
+                    <span>Username</span>
                   </th>
                   <th>
-                    <button
-                      type='button'
-                      onClick={() => {
-                        this.onSortChange({
-                          field: 'Email',
-                          sort: field === 'Email' ? revertSort : 'desc'
-                        })
-                      }}
-                      className={cn(styles['col-9Table'], styles['header-sort'])}
-                    >
-                      <span>Email</span>
-                      <div
-                        className={cn(styles['col-arrow'], {
-                          [styles['col-arrow-sort-asc']]: field === 'Email' && sort === 'asc',
-                          [styles['col-arrow-is-sorting']]: field === 'Email'
-                        })}
-                      >
-                        <ReactSVG path={assets(`${ArrowDown}`)} />
-                      </div>
-                    </button>
+                    <span>Email</span>
                   </th>
                   <th>
-                    <button
-                      type='button'
-                      onClick={() => {
-                        this.onSortChange({
-                          field: 'Submission Date',
-                          sort: field === 'Submission Date' ? revertSort : 'desc'
-                        })
-                      }}
-                      className={cn(styles['col-4Table'], styles['header-sort'])}
-                    >
-                      <span>Submission Date</span>
-                      <div
-                        className={cn(styles['col-arrow'], {
-                          [styles['col-arrow-sort-asc']]: field === 'Submission Date' && sort === 'asc',
-                          [styles['col-arrow-is-sorting']]: field === 'Submission Date'
-                        })}
-                      >
-                        <ReactSVG path={assets(`${ArrowDown}`)} />
-                      </div>
-                    </button>
+                    <span>Submission Date</span>
                   </th>
                   <th>
-                    <button
-                      type='button'
-                      onClick={() => {
-                        this.onSortChange({
-                          field: 'Initial / Final Score',
-                          sort: field === 'Initial / Final Score' ? revertSort : 'desc'
-                        })
-                      }}
-                      className={cn(styles['col-5Table'], styles['header-sort'])}
-                    >
-                      <span>Initial / Final Score</span>
-                      <div
-                        className={cn('col-arrow', {
-                          'col-arrow-sort-asc':
-                            field === 'Initial / Final Score' && sort === 'asc',
-                          'col-arrow-is-sorting': field === 'Initial / Final Score'
-                        })}
-                      >
-                        <ReactSVG path={assets(`${ArrowDown}`)} />
-                      </div>
-                    </button>
+                    <span>Initial / Final Score</span>
                   </th>
                   <th
                     className={cn(styles['col-6Table'])}
@@ -471,7 +320,7 @@ class SubmissionsComponent extends React.Component {
                 </tr>
               </thead>
               <tbody>
-                {sortedSubmissions.map(s => {
+                {submissions.map(s => {
                   const rating = s.registrant && !_.isNil(s.registrant.rating)
                     ? s.registrant.rating
                     : '-'
@@ -544,40 +393,38 @@ class SubmissionsComponent extends React.Component {
                         </span>
                       </td>
                       {canDownloadSubmission ? (<td className={cn(styles['col-8Table'], styles['col-bodyTable'])}>
-                        <button
-                          onClick={() => {
-                            // download submission
-                            const reactLib = getTopcoderReactLib()
-                            const { getService } = reactLib.services.submissions
-                            const submissionsService = getService(token)
-                            submissionsService.downloadSubmission(s.id)
-                              .then((blob) => {
-                                isValidDownloadFile(blob).then((isValidFile) => {
-                                  if (isValidFile.success) {
-                                    // eslint-disable-next-line no-undef
-                                    const url = window.URL.createObjectURL(new Blob([blob]))
-                                    const link = document.createElement('a')
-                                    link.href = url
-                                    let fileName = s.legacySubmissionId
-                                    if (!fileName) {
-                                      fileName = s.id
-                                    }
-                                    fileName = fileName + '.zip'
-                                    link.setAttribute('download', `${fileName}`)
-                                    document.body.appendChild(link)
-                                    link.click()
-                                    link.parentNode.removeChild(link)
-                                  } else {
-                                    this.setState({
-                                      alertMessage: isValidFile.message || 'Can not download this submission.'
-                                    })
-                                  }
-                                })
-                              })
-                          }}
-                        >
-                          <ReactSVG path={assets(`${Download}`)} />
-                        </button>
+                        <div className={styles['button-wrapper']}>
+                          <Tooltip content='Download Submission'>
+                            <button
+                              className={styles['download-submission-button']}
+                              onClick={() => this.downloadSubmission(s)}
+                            >
+                              <ReactSVG path={assets(`${Download}`)} />
+                            </button>
+                          </Tooltip>
+
+                          <Tooltip content='Download Submission Artifacts' closeOnClick>
+                            <button
+                              className={styles['download-submission-button']}
+                              onClick={async () => {
+                                this.setState({ selectedSubmissionId: s.id, showArtifactsListModal: true })
+                              }}
+                            >
+                              <ReactSVG path={assets(`${DownloadArtifact}`)} />
+                            </button>
+                          </Tooltip>
+
+                          <Tooltip content='Ratings' closeOnClick>
+                            <button
+                              className={styles['download-submission-button']}
+                              onClick={() => {
+                                this.setState({ selectedSubmissionId: s.id, showRatingsListModal: true })
+                              }}
+                            >
+                              <ReactSVG path={assets(`${ReviewRatingList}`)} />
+                            </button>
+                          </Tooltip>
+                        </div>
                       </td>) : null}
                     </tr>
                   )
@@ -585,6 +432,36 @@ class SubmissionsComponent extends React.Component {
               </tbody>
             </table>
           </div>
+
+          {
+            this.state.showArtifactsListModal ? (
+              <ArtifactsListModal
+                submissionId={this.state.selectedSubmissionId}
+                token={this.props.token}
+                theme={theme}
+                onClose={() => {
+                  this.setState({
+                    selectedSubmissionId: '',
+                    showArtifactsListModal: false
+                  })
+                }}
+              />
+            ) : null
+          }
+
+          {
+            this.state.showRatingsListModal ? (
+              <RatingsListModal
+                token={this.props.token}
+                theme={theme}
+                onClose={() => {
+                  this.setState({ showRatingsListModal: false })
+                }}
+                submissionId={this.state.selectedSubmissionId}
+                challengeId={this.props.challenge.id}
+              />
+            ) : null
+          }
 
           {canDownloadSubmission ? (<div className={styles['top-title']} >
 
@@ -604,7 +481,7 @@ class SubmissionsComponent extends React.Component {
                   const allFiles = []
                   let downloadedFile = 0
                   const checkToCompressFiles = () => {
-                    if (downloadedFile === sortedSubmissions.length) {
+                    if (downloadedFile === submissions.length) {
                       if (downloadedFile > 0) {
                         compressFiles(allFiles, 'all-submissions.zip', () => {
                           this.setState({
@@ -619,7 +496,7 @@ class SubmissionsComponent extends React.Component {
                     }
                   }
                   checkToCompressFiles()
-                  _.forEach(sortedSubmissions, (submission) => {
+                  _.forEach(submissions, (submission) => {
                     let fileName = submission.legacySubmissionId
                     if (!fileName) {
                       fileName = submission.id
@@ -644,6 +521,30 @@ class SubmissionsComponent extends React.Component {
               />
             </div>
           </div>) : null}
+        </div>
+
+        <div className={styles.paginationWrapper}>
+          <div className={styles.perPageContainer}>
+            <Select
+              styles={styles}
+              name='perPage'
+              value={{ label: submissionsPerPage, value: submissionsPerPage }}
+              placeholder='Per page'
+              options={PAGINATION_PER_PAGE_OPTIONS}
+              onChange={this.handlePerPageChange}
+            />
+          </div>
+          <div className={styles.paginationContainer}>
+            <Pagination
+              activePage={page}
+              itemsCountPerPage={submissionsPerPage}
+              totalItemsCount={totalSubmissions}
+              pageRangeDisplayed={5}
+              onChange={this.handlePageChange}
+              itemClass='page-item'
+              linkClass='page-link'
+            />
+          </div>
         </div>
 
         {alertMessage ? (
@@ -684,7 +585,11 @@ SubmissionsComponent.propTypes = {
   }).isRequired,
   submissions: PT.arrayOf(PT.shape()),
   token: PT.string,
-  loggedInUserResource: PT.any
+  loggedInUserResource: PT.any,
+  page: PT.number,
+  submissionsPerPage: PT.number,
+  totalSubmissions: PT.number,
+  loadSubmissions: PT.func
 }
 
 export default SubmissionsComponent

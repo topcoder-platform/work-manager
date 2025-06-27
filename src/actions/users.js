@@ -10,30 +10,52 @@ import {
   SEARCH_USER_PROJECTS_SUCCESS,
   SEARCH_USER_PROJECTS_FAILURE
 } from '../config/constants'
+import _ from 'lodash'
 
 /**
  * Loads projects of the authenticated user
  */
-export function loadAllUserProjects (isAdmin = true) {
-  return (dispatch) => {
+export function loadAllUserProjects (params, isAdmin = true, isManager = true) {
+  return (dispatch, getState) => {
     dispatch({
       type: LOAD_ALL_USER_PROJECTS_PENDING
     })
 
+    const state = getState().users
+
     const filters = {
       status: 'active',
-      sort: 'lastActivityAt desc'
+      sort: 'lastActivityAt desc',
+      perPage: 20,
+      ...params
     }
-    if (!isAdmin) {
+
+    if (!isAdmin && !isManager) {
       filters['memberOnly'] = true
     }
 
-    fetchMemberProjects(filters).then(projects => dispatch({
+    fetchMemberProjects(filters).then(({ projects, pagination }) => dispatch({
       type: LOAD_ALL_USER_PROJECTS_SUCCESS,
-      projects
+      projects: _.uniqBy((filters.page ? state.allUserProjects || [] : []).concat(projects), 'id'),
+      total: pagination.xTotal,
+      page: pagination.xPage
     })).catch(() => dispatch({
       type: LOAD_ALL_USER_PROJECTS_FAILURE
     }))
+  }
+}
+
+export function loadNextProjects (isAdmin = true, isManager = true) {
+  return (dispatch, getState) => {
+    const { page, total, allUserProjects } = getState().users
+    if (allUserProjects.length >= total) {
+      return
+    }
+
+    loadAllUserProjects(_.assign({}, {
+      perPage: 20,
+      page: page + 1
+    }), isAdmin, isManager)(dispatch, getState)
   }
 }
 
@@ -66,7 +88,7 @@ export function searchUserProjects (isAdmin = true, keyword) {
       filters['memberOnly'] = true
     }
 
-    fetchMemberProjects(filters).then(projects => dispatch({
+    fetchMemberProjects(filters).then(({ projects }) => dispatch({
       type: SEARCH_USER_PROJECTS_SUCCESS,
       projects
     })).catch(() => dispatch({

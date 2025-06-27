@@ -34,7 +34,7 @@ class TabContainer extends Component {
       !isLoading &&
       !selfService &&
       // do not fetch projects for users page
-      history.location.pathname !== '/users'
+      history.location.pathname === '/'
     ) {
       this.loadProjects(this.props)
     }
@@ -45,7 +45,11 @@ class TabContainer extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
-    const { projectId, isLoading, selfService, projects, isLoadProjectsSuccess } = nextProps
+    const { projectId, activeProjectId, isLoading, selfService, projects, isLoadProjectsSuccess } = nextProps
+
+    if (projectId && activeProjectId < 0) {
+      this.props.setActiveProject(parseInt(projectId))
+    }
 
     if (nextProps.history.location.pathname === '/') {
       this.setState({ currentTab: 1 })
@@ -95,9 +99,7 @@ class TabContainer extends Component {
   loadProjects (props) {
     const { history } = props
 
-    if (history.location.pathname === '/taas') {
-      this.props.loadProjects('', false, { type: 'talent-as-a-service', status: undefined })
-    } else {
+    if (history.location.pathname === '/') {
       this.props.loadProjects()
     }
   }

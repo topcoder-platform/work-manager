@@ -18,12 +18,15 @@ module.exports = {
   CHALLENGE_TRACKS_URL: `${PROD_API_HOSTNAME}/v5/challenge-tracks`,
   CHALLENGE_PHASES_URL: `${PROD_API_HOSTNAME}/v5/challenge-phases`,
   CHALLENGE_TIMELINES_URL: `${PROD_API_HOSTNAME}/v5/challenge-timelines`,
+  COPILOTS_URL: `https://copilots.${DOMAIN}`,
   PROJECT_API_URL: `${PROD_API_HOSTNAME}/v5/projects`,
   GROUPS_API_URL: `${PROD_API_HOSTNAME}/v5/groups`,
   TERMS_API_URL: `${PROD_API_HOSTNAME}/v5/terms`,
+  MEMBERS_API_URL: `${PROD_API_HOSTNAME}/v5/members`,
   RESOURCES_API_URL: `${PROD_API_HOSTNAME}/v5/resources`,
   RESOURCE_ROLES_API_URL: `${PROD_API_HOSTNAME}/v5/resource-roles`,
   SUBMISSIONS_API_URL: `${PROD_API_HOSTNAME}/v5/submissions`,
+  REVIEW_TYPE_API_URL: `${PROD_API_HOSTNAME}/v5/reviewTypes`,
   SUBMISSION_REVIEW_APP_URL: `https://submission-review.${DOMAIN}/challenges`,
   STUDIO_URL: `https://studio.${DOMAIN}`,
   CONNECT_APP_URL: `https://connect.${DOMAIN}`,
@@ -43,8 +46,10 @@ module.exports = {
   CREATE_FORUM_TYPE_IDS: ['927abff4-7af9-4145-8ba1-577c16e64e2e', 'dc876fa4-ef2d-4eee-b701-b555fcc6544c', 'ecd58c69-238f-43a4-a4bb-d172719b9f31', '78b37a69-92d5-4ad7-bf85-c79b65420c79', '929bc408-9cf2-4b3e-ba71-adfbf693046c'],
   FILE_PICKER_API_KEY: process.env.FILE_PICKER_API_KEY,
   FILE_PICKER_CONTAINER_NAME: 'tc-challenge-v5-prod',
+  FILE_PICKER_SUBMISSION_CONTAINER_NAME: process.env.FILE_PICKER_SUBMISSION_CONTAINER_NAME || 'submission-staging-prod',
   FILE_PICKER_REGION: 'us-east-1',
   FILE_PICKER_CNAME: 'fs.topcoder.com',
+  FILE_PICKER_LOCATION: 's3',
   IDLE_TIMEOUT_MINUTES: 10,
   IDLE_TIMEOUT_GRACE_MINUTES: 5,
   MULTI_ROUND_CHALLENGE_TEMPLATE_ID: 'd4201ca4-8437-4d63-9957-3f7708184b07',
@@ -54,5 +59,5 @@ module.exports = {
   SKILLS_V5_API_URL: `${API_V5}/standardized-skills/skills/autocomplete`,
   UPDATE_SKILLS_V5_API_URL: `${API_V5}/standardized-skills/challenge-skills`,
   SALESFORCE_BILLING_ACCOUNT_LINK: 'https://topcoder.my.salesforce.com/apex/baredirect?id=',
-  TYPEFORM_URL: 'https://topcoder.typeform.com/to/YJ7AL4p8'
+  PROFILE_URL: 'https://profiles.topcoder.com/'
 }

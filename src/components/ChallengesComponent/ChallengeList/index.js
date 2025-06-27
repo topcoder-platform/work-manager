@@ -25,7 +25,7 @@ import Loader from '../../Loader'
 import UpdateBillingAccount from '../../UpdateBillingAccount'
 
 import { CHALLENGE_STATUS, PAGE_SIZE, PAGINATION_PER_PAGE_OPTIONS, PROJECT_ROLES } from '../../../config/constants'
-import { checkAdmin, checkReadOnlyRoles } from '../../../util/tc'
+import { checkAdmin, checkManager, checkReadOnlyRoles } from '../../../util/tc'
 
 require('bootstrap/scss/bootstrap.scss')
 
@@ -341,14 +341,13 @@ class ChallengeList extends Component {
     const {
       activeProjectId,
       dashboard,
-      filterProjectOption,
       selfService,
       loadChallengesByPage
     } = this.props
 
     this.setState(_.cloneDeep(defaultSearchParam))
 
-    let projectId = dashboard ? filterProjectOption : activeProjectId
+    let projectId = dashboard ? undefined : activeProjectId
 
     loadChallengesByPage(
       1,
@@ -402,10 +401,14 @@ class ChallengeList extends Component {
       isBillingAccountLoading,
       selfService,
       challengeTypes,
-      loginUserRoleInProject
+      loginUserRoleInProject,
+      fetchNextProjects
     } = this.props
     const isReadOnly = checkReadOnlyRoles(this.props.auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
     const isAdmin = checkAdmin(this.props.auth.token)
+    const isManager = checkManager(this.props.auth.token)
+    const loginUserId = this.props.auth.user.userId
+    const isMemberOfActiveProject = activeProject && activeProject.members && activeProject.members.some(member => member.userId === loginUserId)
 
     if (warnMessage) {
       return <Message warnMessage={warnMessage} />
@@ -496,6 +499,8 @@ class ChallengeList extends Component {
                 currentBillingAccount={currentBillingAccount}
                 updateProject={updateProject}
                 projectId={activeProject.id}
+                isMemberOfActiveProject={isMemberOfActiveProject}
+                isManager={isManager}
               />
             </div>
           ) : (
@@ -507,6 +512,9 @@ class ChallengeList extends Component {
                 <Select
                   name='project'
                   options={projectOptions}
+                  cacheOptions
+                  captureMenuScroll
+                  onMenuScrollBottom={fetchNextProjects}
                   placeholder='All Projects'
                   value={projectOption}
                   onChange={e =>
@@ -854,6 +862,7 @@ ChallengeList.defaultProps = {
 
 ChallengeList.propTypes = {
   challenges: PropTypes.arrayOf(PropTypes.object),
+  fetchNextProjects: PropTypes.func.isRequired,
   projects: PropTypes.arrayOf(PropTypes.object),
   activeProject: PropTypes.shape({
     id: PropTypes.number,

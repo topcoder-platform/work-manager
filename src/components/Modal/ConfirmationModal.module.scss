@@ -14,6 +14,10 @@
   width: 852px;
   padding: 30px;
 
+  @include xs-to-lg {
+    max-width: 95vw;
+  }
+
   .content {
     padding: 30px;
     width: 100%;
@@ -27,6 +31,11 @@
     line-height: 36px;
     margin-bottom: 30px;
     margin-top: 0;
+
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .message {
@@ -58,7 +67,7 @@
         width: 193px;
         height: 40px;
         margin-right: 33px;
-        
+
         span {
           font-size: 16px;
           line-height: 1;

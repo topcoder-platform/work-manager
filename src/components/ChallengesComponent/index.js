@@ -7,11 +7,11 @@ import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import { Link } from 'react-router-dom'
 import ProjectStatus from './ProjectStatus'
-import { PROJECT_ROLES, TYPEFORM_URL } from '../../config/constants'
+import { PROJECT_ROLES, PROJECT_STATUS, COPILOTS_URL } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
-import { checkAdmin, checkReadOnlyRoles, checkAdminOrCopilot } from '../../util/tc'
+import { checkAdmin, checkReadOnlyRoles, checkAdminOrCopilot, checkManager } from '../../util/tc'
 
 const ChallengesComponent = ({
   challenges,
@@ -46,10 +46,12 @@ const ChallengesComponent = ({
   isBillingAccountLoading,
   selfService,
   auth,
-  challengeTypes
+  challengeTypes,
+  fetchNextProjects
 }) => {
   const [loginUserRoleInProject, setLoginUserRoleInProject] = useState('')
   const isReadOnly = checkReadOnlyRoles(auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
+  const isAdminOrCopilot = checkAdminOrCopilot(auth.token, activeProject)
 
   useEffect(() => {
     const loggedInUser = auth.user
@@ -69,7 +71,7 @@ const ChallengesComponent = ({
             {activeProject ? activeProject.name : ''}
             {activeProject && activeProject.status && <ProjectStatus className={styles.status} status={activeProject.status} />}
           </div>
-          {activeProject && activeProject.id && checkAdminOrCopilot(auth.token) && (
+          {activeProject && activeProject.id && isAdminOrCopilot && (
             <span>
               (
               <Link
@@ -83,19 +85,32 @@ const ChallengesComponent = ({
         </div>
         {activeProject && activeProject.id && !isReadOnly ? (
           <div className={styles.projectActionButtonWrapper}>
-            {checkAdmin(auth.token) && (
+            {isAdminOrCopilot && (
+              <OutlineButton
+                text={'Assets Library'}
+                type={'info'}
+                submit
+                link={`/projects/${activeProjectId}/assets`}
+                className={styles.btnOutline}
+              />
+            )}
+            {(checkAdmin(auth.token) || checkManager(auth.token)) && (
               <OutlineButton
                 text='Request Copilot'
                 type={'info'}
-                url={`${TYPEFORM_URL}#handle=${auth.user.handle}&projectid=${activeProjectId}`}
+                url={`${COPILOTS_URL}/requests/new`}
                 target={'_blank'}
               />
             )}
-            <Link
-              to={`/projects/${activeProject.id}/challenges/new`}
-            >
-              <PrimaryButton text={'Launch New'} type={'info'} />
-            </Link>
+            {activeProject.status === PROJECT_STATUS.ACTIVE ? (
+              <Link
+                to={`/projects/${activeProject.id}/challenges/new`}
+              >
+                <PrimaryButton text={'Launch New'} type={'info'} />
+              </Link>
+            ) : (
+              <PrimaryButton text={'Launch New'} type={'info'} disabled />
+            )}
           </div>
         ) : (
           <span />
@@ -104,6 +119,7 @@ const ChallengesComponent = ({
       <div className={styles.challenges}>
         <ChallengeList
           challenges={challenges}
+          fetchNextProjects={fetchNextProjects}
           projects={projects}
           warnMessage={warnMessage}
           isLoading={isLoading}
@@ -146,6 +162,7 @@ const ChallengesComponent = ({
 ChallengesComponent.propTypes = {
   challenges: PropTypes.arrayOf(PropTypes.object),
   projects: PropTypes.arrayOf(PropTypes.object),
+  fetchNextProjects: PropTypes.func.isRequired,
   activeProject: PropTypes.shape({
     id: PropTypes.number,
     name: PropTypes.string

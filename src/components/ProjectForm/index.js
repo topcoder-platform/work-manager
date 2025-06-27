@@ -5,7 +5,7 @@ import { get } from 'lodash'
 import styles from './ProjectForm.module.scss'
 import { PrimaryButton } from '../Buttons'
 import Select from '../Select'
-import { PROJECT_STATUS, DEFAULT_NDA_UUID } from '../../config/constants'
+import { PROJECT_STATUSES, PROJECT_STATUS, DEFAULT_NDA_UUID } from '../../config/constants'
 import GroupsFormField from './GroupsFormField'
 
 const ProjectForm = ({
@@ -15,6 +15,7 @@ const ProjectForm = ({
   setActiveProject,
   history,
   isEdit,
+  canManage,
   projectDetail
 }) => {
   const [isSaving, setIsSaving] = useState(false)
@@ -23,13 +24,15 @@ const ProjectForm = ({
     handleSubmit,
     control,
     reset,
-    formState: { isDirty, errors }
+    formState: { isDirty, errors },
+    watch
   } = useForm({
     defaultValues: {
       projectName: isEdit ? projectDetail.name : '',
       description: isEdit ? projectDetail.description : '',
+      cancelReason: null,
       status: isEdit
-        ? PROJECT_STATUS.find((item) => item.value === projectDetail.status) ||
+        ? PROJECT_STATUSES.find((item) => item.value === projectDetail.status) ||
           null
         : null,
       projectType: isEdit
@@ -40,16 +43,22 @@ const ProjectForm = ({
     }
   })
 
+  const projectStatus = watch('status')
+  const isProjectCancelled = get(projectStatus, 'value') === PROJECT_STATUS.CANCELLED
+
   // Handle form submission
   const onSubmit = async (data) => {
     // indicate that creating process has started
     setIsSaving(true)
 
     try {
+      const status = canManage ? (data.status || {}).value : undefined
       const payload = {
         name: data.projectName,
         description: data.description,
         type: data.projectType.value,
+        status,
+        cancelReason: status === PROJECT_STATUS.CANCELLED ? data.cancelReason : undefined,
         groups: data.groups,
         terms: data.terms ? [data.terms] : []
       }
@@ -111,7 +120,7 @@ const ProjectForm = ({
               )}
             </div>
           </div>
-          {isEdit && (
+          {isEdit && canManage && (
             <div className={cn(styles.row)}>
               <div className={cn(styles.formLabel, styles.field)}>
                 <label label htmlFor='status'>
@@ -125,7 +134,7 @@ const ProjectForm = ({
                   rules={{ required: 'Please select a status' }}
                   render={({ field }) => (
                     <Select
-                      options={PROJECT_STATUS}
+                      options={PROJECT_STATUSES}
                       id='status'
                       {...field}
                       placeholder='Select Project Status'
@@ -139,6 +148,35 @@ const ProjectForm = ({
                 )}
               </div>
             </div>
+          )}
+          {isEdit && isProjectCancelled && (
+            <Controller
+              name='cancelReason'
+              control={control}
+              rules={{ required: 'Please provide a cancellation reason' }}
+              render={({ field }) => (
+                <div className={cn(styles.row)}>
+                  <div className={cn(styles.formLabel, styles.field)}>
+                    <label label htmlFor='status'>
+                      Cancel reason <span>*</span> :
+                    </label>
+                  </div>
+                  <div className={cn(styles.field, styles.formField)}>
+                    <input
+                      className={styles.projectName}
+                      id='cancelReason'
+                      placeholder='Reason'
+                      {...field}
+                    />
+                    {errors.projectStatus && (
+                      <div className={cn(styles.error)}>
+                        {errors.projectStatus.message}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            />
           )}
           {!isEdit && (
             <div className={cn(styles.row)}>

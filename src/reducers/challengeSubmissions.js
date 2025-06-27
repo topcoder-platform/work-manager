@@ -11,7 +11,10 @@ const initialState = {
   isLoading: true,
   loadingId: null,
   challengeId: null,
-  challengeSubmissions: []
+  challengeSubmissions: [],
+  totalSubmissions: 0,
+  submissionsPerPage: 10,
+  page: 1
 }
 
 export default function (state = initialState, action) {
@@ -19,10 +22,13 @@ export default function (state = initialState, action) {
     case LOAD_CHALLENGE_SUBMISSIONS_SUCCESS:
       return {
         ...state,
-        challengeSubmissions: action.payload,
+        challengeSubmissions: action.payload.data,
         isLoading: false,
         loadingId: null,
-        challengeId: state.loadingId
+        challengeId: state.loadingId,
+        totalSubmissions: action.payload.headers['x-total'],
+        page: action.payload.page,
+        submissionsPerPage: action.payload.perPage
       }
     case LOAD_CHALLENGE_SUBMISSIONS_PENDING:
       return {
@@ -30,7 +36,8 @@ export default function (state = initialState, action) {
         isLoading: true,
         loadingId: action.challengeId,
         challengeId: null,
-        challengeSubmissions: []
+        challengeSubmissions: [],
+        totalPages: 0
       }
     case LOAD_CHALLENGE_SUBMISSIONS_FAILURE:
       return {
@@ -38,7 +45,8 @@ export default function (state = initialState, action) {
         isLoading: false,
         loadingId: null,
         challengeId: null,
-        challengeSubmissions: []
+        challengeSubmissions: [],
+        totalPages: 0
       }
     default:
       return state

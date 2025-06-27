@@ -156,6 +156,7 @@ const TaaSProjectForm = ({
       setInitValues({
         name: projectDetail.name,
         jobs: _.cloneDeep(taasJobs).map(item => ({
+          jobId: item.jobId,
           title: item.title,
           people: parseInt(item.people),
           duration: parseInt(item.duration),

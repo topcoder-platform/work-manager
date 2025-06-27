@@ -1,3 +1,5 @@
+import _ from 'lodash'
+import moment from 'moment'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
@@ -6,7 +8,6 @@ import { PROJECT_ROLES } from '../../config/constants'
 import PrimaryButton from '../Buttons/PrimaryButton'
 import AlertModal from '../Modal/AlertModal'
 import { updateProjectMemberRole } from '../../services/projects'
-import _ from 'lodash'
 
 const theme = {
   container: styles.modalContainer
@@ -41,11 +42,11 @@ class UserCard extends Component {
       isUpdatingPermission: true
     })
 
-    const { user, updateProjectNember } = this.props
+    const { user, updateProjectMember } = this.props
 
     try {
       const newUserInfoRole = await updateProjectMemberRole(user.projectId, user.id, newRole)
-      updateProjectNember(newUserInfoRole)
+      updateProjectMember(newUserInfoRole)
       this.setState({ showSuccessModal: true })
     } catch (e) {
       const error = _.get(
@@ -58,7 +59,7 @@ class UserCard extends Component {
   }
 
   render () {
-    const { user, onRemoveClick, isEditable } = this.props
+    const { isInvite, user, onRemoveClick, isEditable } = this.props
     const showRadioButtons = _.includes(_.values(PROJECT_ROLES), user.role)
     return (
       <div>
@@ -90,76 +91,90 @@ class UserCard extends Component {
         )}
         <div className={styles.item}>
           <div className={cn(styles.col5)}>
-            {user.handle}
+            {isInvite ? (user.email || user.handle) : user.handle}
           </div>
-          <div className={cn(styles.col5)}>
-            {showRadioButtons && (<div className={styles.tcRadioButton}>
-              <input
-                name={`user-${user.id}`}
-                type='radio'
-                id={`read-${user.id}`}
-                checked={user.role === PROJECT_ROLES.READ}
-                onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.READ)}
-              />
-              <label className={cn({ [styles.isDisabled]: !isEditable })} htmlFor={`read-${user.id}`}>
-                <div>
-                  Read
-                </div>
-                <input type='hidden' />
-              </label>
-            </div>)}
-          </div>
-          <div className={cn(styles.col5)}>
-            {showRadioButtons && (<div className={styles.tcRadioButton}>
-              <input
-                name={`user-${user.id}`}
-                type='radio'
-                id={`write-${user.id}`}
-                checked={user.role === PROJECT_ROLES.WRITE}
-                onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.WRITE)}
-              />
-              <label className={cn({ [styles.isDisabled]: !isEditable })} htmlFor={`write-${user.id}`}>
-                <div>
-                  Write
-                </div>
-                <input type='hidden' />
-              </label>
-            </div>)}
-          </div>
-          <div className={cn(styles.col5)}>
-            {showRadioButtons && (<div className={styles.tcRadioButton}>
-              <input
-                name={`user-${user.id}`}
-                type='radio'
-                id={`full-access-${user.id}`}
-                checked={user.role === PROJECT_ROLES.MANAGER}
-                onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.MANAGER)}
-              />
-              <label className={cn({ [styles.isDisabled]: !isEditable })} htmlFor={`full-access-${user.id}`}>
-                <div>
-                  Full Access
-                </div>
-                <input type='hidden' />
-              </label>
-            </div>)}
-          </div>
-          <div className={cn(styles.col5)}>
-            {showRadioButtons && (<div className={styles.tcRadioButton}>
-              <input
-                name={`user-${user.id}`}
-                type='radio'
-                id={`copilot-${user.id}`}
-                checked={user.role === PROJECT_ROLES.COPILOT}
-                onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.COPILOT)}
-              />
-              <label className={cn({ [styles.isDisabled]: !isEditable })} htmlFor={`copilot-${user.id}`}>
-                <div>
-                  Copilot
-                </div>
-                <input type='hidden' />
-              </label>
-            </div>)}
-          </div>
+          {!isInvite && (
+            <>
+              <div className={cn(styles.col5)}>
+                {showRadioButtons && (<div className={styles.tcRadioButton}>
+                  <input
+                    name={`user-${user.id}`}
+                    type='radio'
+                    id={`read-${user.id}`}
+                    checked={user.role === PROJECT_ROLES.READ}
+                    onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.READ)}
+                  />
+                  <label className={cn({ [styles.isDisabled]: !isEditable })} htmlFor={`read-${user.id}`}>
+                    <div>
+                      Read
+                    </div>
+                    <input type='hidden' />
+                  </label>
+                </div>)}
+              </div>
+              <div className={cn(styles.col5)}>
+                {showRadioButtons && (<div className={styles.tcRadioButton}>
+                  <input
+                    name={`user-${user.id}`}
+                    type='radio'
+                    id={`write-${user.id}`}
+                    checked={user.role === PROJECT_ROLES.WRITE}
+                    onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.WRITE)}
+                  />
+                  <label className={cn({ [styles.isDisabled]: !isEditable })} htmlFor={`write-${user.id}`}>
+                    <div>
+                      Write
+                    </div>
+                    <input type='hidden' />
+                  </label>
+                </div>)}
+              </div>
+              <div className={cn(styles.col5)}>
+                {showRadioButtons && (<div className={styles.tcRadioButton}>
+                  <input
+                    name={`user-${user.id}`}
+                    type='radio'
+                    id={`full-access-${user.id}`}
+                    checked={user.role === PROJECT_ROLES.MANAGER}
+                    onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.MANAGER)}
+                  />
+                  <label className={cn({ [styles.isDisabled]: !isEditable })} htmlFor={`full-access-${user.id}`}>
+                    <div>
+                      Full Access
+                    </div>
+                    <input type='hidden' />
+                  </label>
+                </div>)}
+              </div>
+              <div className={cn(styles.col5)}>
+                {showRadioButtons && (<div className={styles.tcRadioButton}>
+                  <input
+                    name={`user-${user.id}`}
+                    type='radio'
+                    id={`copilot-${user.id}`}
+                    checked={user.role === PROJECT_ROLES.COPILOT}
+                    onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.COPILOT)}
+                  />
+                  <label className={cn({ [styles.isDisabled]: !isEditable })} htmlFor={`copilot-${user.id}`}>
+                    <div>
+                      Copilot
+                    </div>
+                    <input type='hidden' />
+                  </label>
+                </div>)}
+              </div>
+            </>
+          )}
+          {isInvite && (
+            <>
+              <div className={cn(styles.col5)} />
+              <div className={cn(styles.col5)}>
+                Invited {moment(user.createdAt).format('MMM D, YY')}
+              </div>
+              <div className={cn(styles.col5)} />
+              <div className={cn(styles.col5)} />
+            </>
+          )}
           {isEditable ? (<div className={cn(styles.col5)}>
             <PrimaryButton
               text={'Remove'}
@@ -173,8 +188,9 @@ class UserCard extends Component {
 }
 
 UserCard.propTypes = {
+  isInvite: PropTypes.bool,
   user: PropTypes.object,
-  updateProjectNember: PropTypes.func.isRequired,
+  updateProjectMember: PropTypes.func.isRequired,
   onRemoveClick: PropTypes.func.isRequired,
   isEditable: PropTypes.bool
 }
