@@ -206,7 +206,7 @@ const ChallengeViewTabs = ({
             (<div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>)}
           {canLaunch && (
             <div className={styles.button}>
-              {challenge.legacyId || isTask ? (
+              {challenge ? (
                 <PrimaryButton
                   text='Launch'
                   type='info'
