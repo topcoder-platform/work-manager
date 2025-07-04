@@ -14,12 +14,12 @@ ENV FORCE_DEV=$FORCE_DEV
 ENV NODE_OPTIONS="--max-old-space-size=6144"
 
 # Copy the current directory into the Docker image
-COPY . /challenge-engine-ui
+COPY . /challenge-engine-ui-v6
 
 # Set working directory for future use
-WORKDIR /challenge-engine-ui
+WORKDIR /challenge-engine-ui-v6
 
-RUN chown -R appuser:appuser /challenge-engine-ui
+RUN chown -R appuser:appuser /challenge-engine-ui-v6
 USER appuser
 
 # Install the dependencies from package.json
