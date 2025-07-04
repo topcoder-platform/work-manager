@@ -1,6 +1,6 @@
 version: '3'
 services:
-  challenge-engine-ui:
+  challenge-engine-ui-v6:
     image: challenge-engine-ui-v6:latest
     build:
       context: ../
