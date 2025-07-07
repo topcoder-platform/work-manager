@@ -1400,9 +1400,9 @@ class ChallengeEditor extends Component {
     let isDraft = false
     let isCompleted = false
     if (challenge.status) {
-      isDraft = challenge.status.toLowerCase() === 'draft'
-      isActive = challenge.status.toLowerCase() === 'active'
-      isCompleted = challenge.status.toLowerCase() === 'completed'
+      isDraft = challenge.status.toUpperCase() === CHALLENGE_STATUS.DRAFT
+      isActive = challenge.status.toUpperCase() === CHALLENGE_STATUS.ACTIVE
+      isCompleted = challenge.status.toUpperCase() === CHALLENGE_STATUS.COMPLETED
     }
     if (isLoading || _.isEmpty(metadata.challengePhases)) return <Loader />
     if (failedToLoad) {
