@@ -2,12 +2,17 @@ import _ from 'lodash'
 import { axiosInstance } from './axiosWithAuth'
 import * as queryString from 'query-string'
 import {
+  ATTACHMENT_TYPE_FILE,
+  FILE_PICKER_SUBMISSION_CONTAINER_NAME,
   GENERIC_PROJECT_MILESTONE_PRODUCT_NAME,
   GENERIC_PROJECT_MILESTONE_PRODUCT_TYPE,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
-  PHASE_PRODUCT_TEMPLATE_ID
+  PHASE_PRODUCT_TEMPLATE_ID,
+  PROJECTS_API_URL,
+  MEMBERS_API_URL
 } from '../config/constants'
-const { PROJECT_API_URL } = process.env
+import { paginationHeaders } from '../util/pagination'
+import { createProjectMemberInvite } from './projectMemberInvites'
 
 /**
  * Get billing accounts based on project id
@@ -17,7 +22,7 @@ const { PROJECT_API_URL } = process.env
  * @returns {Promise<Object>} Billing accounts data
  */
 export async function fetchBillingAccounts (projectId) {
-  const response = await axiosInstance.get(`${PROJECT_API_URL}/${projectId}/billingAccounts`)
+  const response = await axiosInstance.get(`${PROJECTS_API_URL}/${projectId}/billingAccounts`)
   return _.get(response, 'data')
 }
 
@@ -29,7 +34,7 @@ export async function fetchBillingAccounts (projectId) {
  * @returns {Promise<Object>} Billing account data
  */
 export async function fetchBillingAccount (projectId) {
-  const response = await axiosInstance.get(`${PROJECT_API_URL}/${projectId}/billingAccount`)
+  const response = await axiosInstance.get(`${PROJECTS_API_URL}/${projectId}/billingAccount`)
   return _.get(response, 'data')
 }
 
@@ -37,13 +42,21 @@ export async function fetchBillingAccount (projectId) {
  * Api request for fetching member's projects
  * @returns {Promise<*>}
  */
-export async function fetchMemberProjects (filters) {
+export function fetchMemberProjects (filters) {
   const params = {
     ...filters
   }
 
-  const response = await axiosInstance.get(`${PROJECT_API_URL}?${queryString.stringify(params)}`)
-  return _.get(response, 'data')
+  for (let param in params) {
+    if (params[param] && Array.isArray(params[param])) {
+      params[`${param}[$in]`] = params[param]
+      params[param] = undefined
+    }
+  }
+
+  return axiosInstance.get(`${PROJECTS_API_URL}?${queryString.stringify(params)}`).then(response => {
+    return { projects: _.get(response, 'data'), pagination: paginationHeaders(response) }
+  })
 }
 
 /**
@@ -52,8 +65,21 @@ export async function fetchMemberProjects (filters) {
  * @returns {Promise<*>}
  */
 export async function fetchProjectById (id) {
-  const response = await axiosInstance.get(`${PROJECT_API_URL}/${id}`)
+  const response = await axiosInstance.get(`${PROJECTS_API_URL}/${id}`)
   return _.get(response, 'data')
+}
+
+/**
+ * This fetches the user corresponding to the given userIds
+ * @param {*} userIds
+ */
+export async function fetchInviteMembers (userIds) {
+  const url = `${MEMBERS_API_URL}?${userIds.map(id => `userIds[]=${id}`).join('&')}`
+  const { data = [] } = await axiosInstance.get(url)
+  return data.reduce((acc, member) => {
+    acc[member.userId] = member
+    return acc
+  }, {})
 }
 
 /**
@@ -62,7 +88,7 @@ export async function fetchProjectById (id) {
  * @returns {Promise<*>}
  */
 export async function fetchProjectPhases (id) {
-  const response = await axiosInstance.get(`${PROJECT_API_URL}/${id}/phases`, {
+  const response = await axiosInstance.get(`${PROJECTS_API_URL}/${id}/phases`, {
     params: {
       fields: 'id,name,products,status'
     }
@@ -78,7 +104,7 @@ export async function fetchProjectPhases (id) {
  * @returns {Promise<*>}
  */
 export async function updateProjectMemberRole (projectId, memberRecordId, newRole) {
-  const response = await axiosInstance.patch(`${PROJECT_API_URL}/${projectId}/members/${memberRecordId}`, {
+  const response = await axiosInstance.patch(`${PROJECTS_API_URL}/${projectId}/members/${memberRecordId}`, {
     role: newRole
   })
   return _.get(response, 'data')
@@ -92,11 +118,22 @@ export async function updateProjectMemberRole (projectId, memberRecordId, newRol
  * @returns {Promise<*>}
  */
 export async function addUserToProject (projectId, userId, role) {
-  const response = await axiosInstance.post(`${PROJECT_API_URL}/${projectId}/members`, {
+  const response = await axiosInstance.post(`${PROJECTS_API_URL}/${projectId}/members`, {
     userId,
     role
   })
   return _.get(response, 'data')
+}
+
+/**
+ * adds the given user to the given project with the specified role
+ * @param projectId project id
+ * @param userId user id
+ * @param role
+ * @returns {Promise<*>}
+ */
+export async function inviteUserToProject (projectId, params) {
+  return createProjectMemberInvite(projectId, params)
 }
 
 /**
@@ -106,7 +143,7 @@ export async function addUserToProject (projectId, userId, role) {
  * @returns {Promise<*>}
  */
 export async function removeUserFromProject (projectId, memberRecordId) {
-  const response = await axiosInstance.delete(`${PROJECT_API_URL}/${projectId}/members/${memberRecordId}`)
+  const response = await axiosInstance.delete(`${PROJECTS_API_URL}/${projectId}/members/${memberRecordId}`)
   return response
 }
 
@@ -133,7 +170,7 @@ export async function saveChallengeAsPhaseProduct (projectId, phaseId, challenge
     estimatedPrice: 1
   }
 
-  return axiosInstance.post(`${PROJECT_API_URL}/${projectId}/phases/${phaseId}/products`,
+  return axiosInstance.post(`${PROJECTS_API_URL}/${projectId}/phases/${phaseId}/products`,
     _.set(payload, PHASE_PRODUCT_CHALLENGE_ID_FIELD, challengeId)
   )
 }
@@ -164,7 +201,7 @@ export async function removeChallengeFromPhaseProduct (projectId, challengeId) {
 
   if (selectedMilestoneProduct) {
     // If its the only challenge in product and product doesn't contain any other detail just delete it
-    return axiosInstance.delete(`${PROJECT_API_URL}/${projectId}/phases/${selectedMilestoneProduct.phaseId}/products/${selectedMilestoneProduct.productId}`)
+    return axiosInstance.delete(`${PROJECTS_API_URL}/${projectId}/phases/${selectedMilestoneProduct.phaseId}/products/${selectedMilestoneProduct.productId}`)
   }
 }
 
@@ -174,7 +211,7 @@ export async function removeChallengeFromPhaseProduct (projectId, challengeId) {
  * @returns {Promise<*>}
  */
 export async function createProjectApi (project) {
-  const response = await axiosInstance.post(`${PROJECT_API_URL}`, project)
+  const response = await axiosInstance.post(`${PROJECTS_API_URL}`, project)
   return _.get(response, 'data')
 }
 
@@ -185,7 +222,7 @@ export async function createProjectApi (project) {
  * @returns {Promise<*>}
  */
 export async function updateProjectApi (projectId, project) {
-  const response = await axiosInstance.patch(`${PROJECT_API_URL}/${projectId}`, project)
+  const response = await axiosInstance.patch(`${PROJECTS_API_URL}/${projectId}`, project)
   return _.get(response, 'data')
 }
 
@@ -194,6 +231,94 @@ export async function updateProjectApi (projectId, project) {
  * @returns {Promise<*>}
  */
 export async function getProjectTypes () {
-  const response = await axiosInstance.get(`${PROJECT_API_URL}/metadata/projectTypes`)
+  const response = await axiosInstance.get(`${PROJECTS_API_URL}/metadata/projectTypes`)
   return _.get(response, 'data')
+}
+
+/**
+ * Get project invites
+ * @returns {Promise<*>}
+ */
+export async function getProjectInvites (projectId) {
+  const response = await axiosInstance.get(`${PROJECTS_API_URL}/${projectId}/invites`)
+  return _.get(response, 'data')
+}
+
+/**
+ * Get project attachment
+ * @param projectId project id
+ * @param attachmentId attachment id
+ * @returns {Promise<*>}
+ */
+export async function getProjectAttachment (projectId, attachmentId) {
+  const response = await axiosInstance.get(
+    `${PROJECTS_API_URL}/${projectId}/attachments/${attachmentId}`
+  )
+  return _.get(response, 'data')
+}
+
+/**
+ * Add attachment to project
+ * @param projectId project id
+ * @param data attachment data
+ * @returns {Promise<*>}
+ */
+export async function addProjectAttachmentApi (projectId, data) {
+  if (data.type === ATTACHMENT_TYPE_FILE) {
+    // add s3 bucket prop
+    data.s3Bucket = FILE_PICKER_SUBMISSION_CONTAINER_NAME
+  }
+
+  // The api takes only arrays
+  if (!data.tags) {
+    data.tags = []
+  }
+
+  const response = await axiosInstance.post(
+    `${PROJECTS_API_URL}/${projectId}/attachments`,
+    data
+  )
+  return _.get(response, 'data')
+}
+
+/**
+ * Update project attachment
+ * @param projectId project id
+ * @param attachmentId attachment id
+ * @param attachment attachment data
+ * @returns {Promise<*>}
+ */
+export async function updateProjectAttachmentApi (
+  projectId,
+  attachmentId,
+  attachment
+) {
+  let data = {
+    ...attachment
+  }
+  if (data && (!data.allowedUsers || data.allowedUsers.length === 0)) {
+    data.allowedUsers = null
+  }
+
+  // The api takes only arrays
+  if (data && !data.tags) {
+    data.tags = []
+  }
+
+  const response = await axiosInstance.patch(
+    `${PROJECTS_API_URL}/${projectId}/attachments/${attachmentId}`,
+    data
+  )
+  return _.get(response, 'data')
+}
+
+/**
+ * Remove project attachment
+ * @param projectId project id
+ * @param attachmentId attachment id
+ */
+export async function removeProjectAttachmentApi (projectId, attachmentId) {
+  await axiosInstance.delete(
+    `${PROJECTS_API_URL}/${projectId}/attachments/${attachmentId}`
+  )
 }

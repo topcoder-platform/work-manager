@@ -12,6 +12,7 @@ const {
   CHALLENGE_PHASES_URL,
   CHALLENGE_TIMELINES_URL,
   SUBMISSIONS_API_URL,
+  REVIEW_TYPE_API_URL,
   GROUPS_API_URL,
   TERMS_API_URL,
   RESOURCES_API_URL,
@@ -262,8 +263,19 @@ export async function fetchResources (challengeId) {
 * @param challengeId Challenge id
 * @returns {Promise<*>}
 */
-export async function fetchSubmissions (challengeId) {
-  const response = await axiosInstance.get(`${SUBMISSIONS_API_URL}?challengeId=${challengeId}&perPage=100`)
+export async function fetchSubmissions (challengeId, pageObj) {
+  const { page, perPage } = pageObj
+  const response = await axiosInstance.get(`${SUBMISSIONS_API_URL}?challengeId=${challengeId}&perPage=${perPage}&page=${page}`)
+  return {
+    data: _.get(response, 'data', []),
+    headers: _.get(response, 'headers', {}),
+    page,
+    perPage
+  }
+}
+
+export async function getReviewTypes () {
+  const response = await axiosInstance.get(`${REVIEW_TYPE_API_URL}?perPage=500&page=1`)
   return _.get(response, 'data', [])
 }
 

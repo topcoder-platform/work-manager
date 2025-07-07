@@ -3,6 +3,10 @@
  */
 import _ from 'lodash'
 import {
+  LOAD_PROJECTS_PENDING,
+  LOAD_PROJECTS_SUCCESS,
+  LOAD_PROJECTS_FAILURE,
+  UNLOAD_PROJECTS_SUCCESS,
   LOAD_PROJECT_BILLING_ACCOUNTS_PENDING,
   LOAD_PROJECT_BILLING_ACCOUNTS_SUCCESS,
   LOAD_PROJECT_BILLING_ACCOUNTS_FAILURE,
@@ -23,7 +27,13 @@ import {
   UPDATE_PROJECT_SUCCESS,
   UPDATE_PROJECT_DETAILS_FAILURE,
   UPDATE_PROJECT_DETAILS_PENDING,
-  UPDATE_PROJECT_DETAILS_SUCCESS
+  UPDATE_PROJECT_DETAILS_SUCCESS,
+  ADD_PROJECT_ATTACHMENT_SUCCESS,
+  UPDATE_PROJECT_ATTACHMENT_SUCCESS,
+  REMOVE_PROJECT_ATTACHMENT_SUCCESS,
+  LOAD_PROJECT_INVITES_PENDING,
+  LOAD_PROJECT_INVITES_SUCCESS,
+  LOAD_PROJECT_INVITES_FAILURE
 } from '../config/constants'
 import { toastSuccess, toastFailure } from '../util/toaster'
 import moment from 'moment-timezone'
@@ -52,7 +62,7 @@ const dateFormat = 'MMM DD, YYYY'
  */
 const buildBillingAccountOptions = (billingAccountObj) => {
   const billingAccountOptions = billingAccountObj.map(billingAccount => ({
-    label: `(${billingAccount.tcBillingAccountId}) ${
+    label: `[${billingAccount.tcBillingAccountId}] ${billingAccount.name} ${
       billingAccount.endDate
         ? ' - ' + moment(billingAccount.endDate).format(dateFormat)
         : ''
@@ -71,17 +81,51 @@ const initialState = {
   isBillingAccountExpired: false,
   isBillingAccountLoading: false,
   isBillingAccountLoadingFailed: false,
+  isProjectInvitationsLoading: false,
   currentBillingAccount: null,
   billingStartDate: null,
   billingEndDate: null,
   isPhasesLoading: false,
   phases: [],
   isProjectTypesLoading: false,
-  projectTypes: []
+  projectFilters: {},
+  projectTypes: [],
+  projects: [],
+  projectsCount: 0,
+  projectsPage: 0
 }
 
 export default function (state = initialState, action) {
   switch (action.type) {
+    case LOAD_PROJECTS_PENDING:
+      return { ...state, isLoading: true }
+    case LOAD_PROJECTS_SUCCESS:
+      return {
+        ...state,
+        projectFilters: action.filters,
+        projects: action.projects,
+        projectsCount: action.total,
+        projectsPage: action.page,
+        isLoading: false
+      }
+    case UNLOAD_PROJECTS_SUCCESS:
+      return {
+        ...state,
+        isLoading: false,
+        projectFilters: {},
+        projects: [],
+        projectsCount: 0,
+        projectsPage: 0
+      }
+    case LOAD_PROJECTS_FAILURE: {
+      const errorMessage = _.get(
+        action.payload,
+        'response.data.message',
+        'Failed to load projects'
+      )
+      toastFailure('Error', errorMessage)
+      return { ...state, isLoading: false }
+    }
     case LOAD_PROJECT_DETAILS_PENDING:
       return { ...state, isLoading: true }
     case LOAD_PROJECT_DETAILS_FAILURE: {
@@ -221,6 +265,29 @@ export default function (state = initialState, action) {
         ...state,
         isProjectTypesLoading: false
       }
+    case LOAD_PROJECT_INVITES_PENDING:
+      return {
+        ...state,
+        projectDetail: {
+          ...state.projectDetail,
+          invites: []
+        },
+        isProjectInvitationsLoading: true
+      }
+    case LOAD_PROJECT_INVITES_SUCCESS:
+      return {
+        ...state,
+        projectDetail: {
+          ...state.projectDetail,
+          invites: action.payload
+        },
+        isProjectInvitationsLoading: false
+      }
+    case LOAD_PROJECT_INVITES_FAILURE:
+      return {
+        ...state,
+        isProjectInvitationsLoading: false
+      }
     case UPDATE_PROJECT_PENDING:
       return {
         ...state,
@@ -243,6 +310,34 @@ export default function (state = initialState, action) {
       return {
         ...state,
         isUpdatingProject: false
+      }
+    case ADD_PROJECT_ATTACHMENT_SUCCESS:
+      return {
+        ...state,
+        projectDetail: {
+          ...state.projectDetail,
+          attachments: [...(state.projectDetail.attachments || []), action.payload]
+        }
+      }
+    case UPDATE_PROJECT_ATTACHMENT_SUCCESS:
+      return {
+        ...state,
+        projectDetail: {
+          ...state.projectDetail,
+          attachments: state.projectDetail.attachments.map(item =>
+            item.id !== action.payload.id ? item : action.payload
+          )
+        }
+      }
+    case REMOVE_PROJECT_ATTACHMENT_SUCCESS:
+      return {
+        ...state,
+        projectDetail: {
+          ...state.projectDetail,
+          attachments: state.projectDetail.attachments.filter(
+            item => item.id !== action.payload
+          )
+        }
       }
     default:
       return state

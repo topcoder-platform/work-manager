@@ -1,0 +1,34 @@
+@import '../../../styles/includes';
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.textTitle {
+  color: $tc-gray-90;
+  @include roboto-bold();
+
+  font-size: 16px;
+  line-height: 20px;
+}
+
+.colMenu {
+  width: 50px;
+}
+
+.blockItem {
+  @include roboto;
+
+  font-size: 14px;
+  color: $tc-gray-90;
+
+  a {
+    color: $tc-gray-90;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+}

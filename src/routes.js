@@ -11,7 +11,9 @@ import TopBarContainer from './containers/TopbarContainer'
 import FooterContainer from './containers/FooterContainer'
 import Tab from './containers/Tab'
 import Challenges from './containers/Challenges'
+import Projects from './containers/Projects'
 import TaaSList from './containers/TaaSList'
+import ProjectAssets from './containers/ProjectAssets'
 import TaaSProjectForm from './containers/TaaSProjectForm'
 import ChallengeEditor from './containers/ChallengeEditor'
 import { getFreshToken, decodeToken } from 'tc-auth-lib'
@@ -31,6 +33,7 @@ import ConfirmationModal from './components/Modal/ConfirmationModal'
 import Users from './containers/Users'
 import { isBetaMode, removeFromLocalStorage, saveToLocalStorage } from './util/localstorage'
 import ProjectEditor from './containers/ProjectEditor'
+import ProjectInvitations from './containers/ProjectInvitations'
 
 const { ACCOUNTS_APP_LOGIN_URL, IDLE_TIMEOUT_MINUTES, IDLE_TIMEOUT_GRACE_MINUTES, COMMUNITY_APP_URL } = process.env
 
@@ -108,7 +111,7 @@ class Routes extends React.Component {
       } else {
         console.error('An unexpected error occurred while getting auth token')
       }
-      const redirectBackToUrl = encodeURIComponent(window.location.origin + this.props.location.pathname)
+      const redirectBackToUrl = encodeURIComponent(window.location.origin + this.props.location.pathname + this.props.location.search)
       window.location = `${ACCOUNTS_APP_LOGIN_URL}?retUrl=${redirectBackToUrl}`
     })
   }
@@ -194,7 +197,7 @@ class Routes extends React.Component {
           />
           <Route exact path='/projects'
             render={() => renderApp(
-              <Challenges menu='NULL' key='projects' />,
+              <Projects />,
               <TopBarContainer />,
               <Tab />,
               <FooterContainer />
@@ -208,6 +211,14 @@ class Routes extends React.Component {
               <FooterContainer />
             )()}
           />
+          <Route exact path='/projects/:projectId/invitation/:action?'
+            render={() => renderApp(
+              <ProjectInvitations />,
+              <TopBarContainer />,
+              <Tab />,
+              <FooterContainer />
+            )()}
+          />
           <Route exact path='/projects/:projectId/edit'
             render={({ match }) => renderApp(
               <ProjectEditor isEdit projectId={_.get(match.params, 'projectId', null)} />,
@@ -216,6 +227,20 @@ class Routes extends React.Component {
               <FooterContainer />
             )()}
           />
+          {(isCopilot || isAdmin) && (
+            <Route
+              exact
+              path='/projects/:projectId/assets'
+              render={({ match }) =>
+                renderApp(
+                  <ProjectAssets projectId={match.params.projectId} />,
+                  <TopBarContainer />,
+                  <Tab projectId={match.params.projectId} />,
+                  <FooterContainer />
+                )()
+              }
+            />
+          )}
           {
             !isReadOnly && (
               <Route exact path='/users'

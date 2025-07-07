@@ -38,7 +38,7 @@ import { loadSubmissions } from '../../actions/challengeSubmissions'
 import { loadProject } from '../../actions/projects'
 
 import { connect } from 'react-redux'
-import { SUBMITTER_ROLE_UUID, MESSAGE, PROJECT_ROLES } from '../../config/constants'
+import { SUBMITTER_ROLE_UUID, MESSAGE, PROJECT_ROLES, CHALLENGE_STATUS } from '../../config/constants'
 import { patchChallenge } from '../../services/challenges'
 import ConfirmationModal from '../../components/Modal/ConfirmationModal'
 import AlertModal from '../../components/Modal/AlertModal'
@@ -62,7 +62,8 @@ class ChallengeEditor extends Component {
       showLaunchModal: false,
       showRejectModal: false,
       cancelReason: null,
-      loginUserRoleInProject: ''
+      loginUserRoleInProject: '',
+      submissionsListPage: 1
     }
 
     this.onLaunchChallenge = this.onLaunchChallenge.bind(this)
@@ -95,7 +96,8 @@ class ChallengeEditor extends Component {
       loadResourceRoles,
       loadSubmissions,
       loadChallengeDetails,
-      loadResources
+      loadResources,
+      submissionsPerPage
     } = this.props
     loadTimelineTemplates()
     loadChallengePhases()
@@ -109,7 +111,8 @@ class ChallengeEditor extends Component {
       match,
       loadChallengeDetails,
       loadResources,
-      loadSubmissions
+      loadSubmissions,
+      submissionsPerPage
     )
     // this.unlisten = this.props.history.listen(() => {
     //   const { isLoading } = this.props
@@ -160,12 +163,16 @@ class ChallengeEditor extends Component {
     newMatch,
     loadChallengeDetails,
     loadResources,
-    loadSubmissions
+    loadSubmissions,
+    submissionsPerPage
   ) {
     let projectId = _.get(newMatch.params, 'projectId', null)
     projectId = projectId ? parseInt(projectId) : null
     const challengeId = _.get(newMatch.params, 'challengeId', null)
-    await [loadResources(challengeId), loadSubmissions(challengeId)]
+    await [loadResources(challengeId), loadSubmissions(challengeId, {
+      page: 1,
+      perPage: submissionsPerPage
+    })]
 
     loadChallengeDetails(projectId, challengeId)
     if (!challengeId) {
@@ -268,7 +275,7 @@ class ChallengeEditor extends Component {
     try {
       this.setState({ isLaunching: true })
       const payload = {
-        status: 'Active'
+        status: CHALLENGE_STATUS.ACTIVE
       }
       if (isTask) {
         payload.startDate = moment().format()
@@ -423,7 +430,11 @@ class ChallengeEditor extends Component {
       isProjectPhasesLoading,
       showRejectChallengeModal,
       createResource,
-      deleteResource
+      deleteResource,
+      totalSubmissions,
+      submissionsPerPage,
+      page,
+      loadSubmissions
       // members
     } = this.props
     const {
@@ -623,6 +634,10 @@ class ChallengeEditor extends Component {
               onApproveChallenge={this.onApproveChallenge}
               createResource={createResource}
               deleteResource={deleteResource}
+              loadSubmissions={loadSubmissions}
+              totalSubmissions={totalSubmissions}
+              submissionsPerPage={submissionsPerPage}
+              page={page}
             />
           )}
         />
@@ -680,13 +695,16 @@ ChallengeEditor.propTypes = {
   loadProject: PropTypes.func,
   projectPhases: PropTypes.arrayOf(PropTypes.object),
   isProjectPhasesLoading: PropTypes.bool,
-  showRejectChallengeModal: PropTypes.func
+  showRejectChallengeModal: PropTypes.func,
+  totalSubmissions: PropTypes.number,
+  submissionsPerPage: PropTypes.number,
+  page: PropTypes.number
   // members: PropTypes.arrayOf(PropTypes.shape())
 }
 
 const mapStateToProps = ({
   projects,
-  challengeSubmissions: { challengeSubmissions },
+  challengeSubmissions: { challengeSubmissions, totalSubmissions, submissionsPerPage, page },
   challenges: {
     challengeDetails,
     challengeResources,
@@ -715,7 +733,10 @@ const mapStateToProps = ({
     token: auth.token,
     loggedInUser: auth.user,
     failedToLoad,
-    errorMessage
+    errorMessage,
+    totalSubmissions,
+    submissionsPerPage,
+    page
     // members
   })
 }

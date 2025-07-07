@@ -1,3 +1,5 @@
+/* Component to render input field */
+
 import React from 'react'
 import PropTypes from 'prop-types'
 import styles from './styles.module.scss'
@@ -6,7 +8,8 @@ const FieldInput = ({
   onChangeValue,
   placeholder,
   value,
-  type
+  type,
+  inputControl
 }) => {
   return (
     <input
@@ -24,20 +27,23 @@ const FieldInput = ({
           }
           : undefined
       }
+      {...inputControl}
     />
   )
 }
 
 FieldInput.defaultProps = {
   type: 'text',
-  onChangeValue: () => {}
+  onChangeValue: () => {},
+  inputControl: {}
 }
 
 FieldInput.propTypes = {
   onChangeValue: PropTypes.func,
   placeholder: PropTypes.string,
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  type: PropTypes.string
+  type: PropTypes.string,
+  inputControl: PropTypes.any
 }
 
 export default FieldInput

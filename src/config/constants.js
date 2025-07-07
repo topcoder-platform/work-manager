@@ -4,6 +4,7 @@
 export const {
   COMMUNITY_APP_URL,
   CHALLENGE_API_URL,
+  COPILOTS_URL,
   SUBMISSION_REVIEW_APP_URL,
   STUDIO_URL,
   CONNECT_APP_URL,
@@ -30,9 +31,11 @@ export const {
   SKILLS_V5_API_URL,
   UPDATE_SKILLS_V5_API_URL,
   SALESFORCE_BILLING_ACCOUNT_LINK,
-  TYPEFORM_URL
+  PROFILE_URL
 } = process.env
+
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
+export const PROJECTS_API_URL = process.env.PROJECTS_API_URL || process.env.PROJECT_API_URL
 
 /**
  * Filepicker config
@@ -41,9 +44,14 @@ export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS ==
 // but if we want to test file uploading we should provide the real value in `FILE_PICKER_API_KEY` env variable
 export const FILE_PICKER_API_KEY = process.env.FILE_PICKER_API_KEY || 'DUMMY'
 export const FILE_PICKER_CONTAINER_NAME = process.env.FILE_PICKER_CONTAINER_NAME || 'tc-challenge-v5-dev'
+export const FILE_PICKER_SUBMISSION_CONTAINER_NAME = process.env.FILE_PICKER_SUBMISSION_CONTAINER_NAME || 'submission-staging-dev'
+export const PROJECT_ATTACHMENTS_FOLDER = process.env.PROJECT_ATTACHMENTS_FOLDER || 'PROJECT_ATTACHMENTS'
 export const FILE_PICKER_REGION = process.env.FILE_PICKER_REGION || 'us-east-1'
+export const FILE_PICKER_LOCATION = process.env.FILE_PICKER_LOCATION || 's3'
 export const FILE_PICKER_CNAME = process.env.FILE_PICKER_CNAME || 'fs.topcoder.com'
 export const FILE_PICKER_FROM_SOURCES = ['local_file_system', 'googledrive', 'dropbox']
+export const ASSETS_FILE_PICKER_FROM_SOURCES = ['local_file_system']
+export const ASSETS_FILE_PICKER_MAX_FILES = 4
 export const FILE_PICKER_ACCEPT = ['.bmp', '.gif', '.jpg', '.tex', '.xls', '.xlsx', '.doc', '.docx', '.zip', '.txt', '.pdf', '.png', '.ppt', '.pptx', '.rtf', '.csv']
 export const FILE_PICKER_MAX_FILES = 10
 export const FILE_PICKER_MAX_SIZE = 500 * 1024 * 1024 // 500Mb
@@ -51,6 +59,7 @@ export const FILE_PICKER_PROGRESS_INTERVAL = 100
 export const FILE_PICKER_UPLOAD_RETRY = 2
 export const FILE_PICKER_UPLOAD_TIMEOUT = 30 * 60 * 1000 // 30 minutes
 export const SPECIFICATION_ATTACHMENTS_FOLDER = 'SPECIFICATION_ATTACHMENTS'
+export const MEMBERS_API_URL = process.env.MEMBERS_API_URL
 
 export const getAWSContainerFileURL = (key) => `https://${FILE_PICKER_CONTAINER_NAME}.s3.amazonaws.com/${key}`
 
@@ -173,15 +182,32 @@ export const LOAD_PROJECT_TYPES_SUCCESS = 'LOAD_PROJECT_TYPES_SUCCESS'
 export const LOAD_PROJECT_TYPES_PENDING = 'LOAD_PROJECT_TYPES_PENDING'
 export const LOAD_PROJECT_TYPES_FAILURE = 'LOAD_PROJECT_TYPES_FAILURE'
 
+export const LOAD_PROJECT_INVITES = 'LOAD_PROJECT_INVITES'
+export const LOAD_PROJECT_INVITES_SUCCESS = 'LOAD_PROJECT_INVITES_SUCCESS'
+export const LOAD_PROJECT_INVITES_PENDING = 'LOAD_PROJECT_INVITES_PENDING'
+export const LOAD_PROJECT_INVITES_FAILURE = 'LOAD_PROJECT_INVITES_FAILURE'
+
 export const CREATE_PROJECT = 'CREATE_PROJECT'
 export const CREATE_PROJECT_PENDING = 'CREATE_PROJECT_PENDING'
 export const CREATE_PROJECT_SUCCESS = 'CREATE_PROJECT_SUCCESS'
 export const CREATE_PROJECT_FAILURE = 'CREATE_PROJECT_FAILURE'
 
+export const ADD_PROJECT_ATTACHMENT_SUCCESS = 'ADD_PROJECT_ATTACHMENT_SUCCESS'
+export const UPDATE_PROJECT_ATTACHMENT_SUCCESS = 'UPDATE_PROJECT_ATTACHMENT_SUCCESS'
+export const REMOVE_PROJECT_ATTACHMENT_SUCCESS = 'REMOVE_PROJECT_ATTACHMENT_SUCCESS'
+
 export const UPDATE_PROJECT = 'UPDATE_PROJECT'
 export const UPDATE_PROJECT_PENDING = 'UPDATE_PROJECT_PENDING'
 export const UPDATE_PROJECT_SUCCESS = 'UPDATE_PROJECT_SUCCESS'
 export const UPDATE_PROJECT_FAILURE = 'UPDATE_PROJECT_FAILURE'
+
+export const PROJECT_MEMBER_INVITE_STATUS_ACCEPTED = 'accepted'
+export const PROJECT_MEMBER_INVITE_STATUS_REFUSED = 'refused'
+export const PROJECT_MEMBER_INVITE_STATUS_CANCELED = 'canceled'
+export const PROJECT_MEMBER_INVITE_STATUS_PENDING = 'pending'
+export const PROJECT_MEMBER_INVITE_STATUS_REQUESTED = 'requested'
+export const PROJECT_MEMBER_INVITE_STATUS_REQUEST_APPROVED = 'request_approved'
+export const PROJECT_MEMBER_INVITE_STATUS_REQUEST_REJECTED = 'request_rejected'
 
 // Name of challenge tracks
 export const CHALLENGE_TRACKS = {
@@ -201,10 +227,10 @@ export const PHASE_STATUS = {
 
 // List of prize sets types
 export const PRIZE_SETS_TYPE = {
-  CHALLENGE_PRIZES: 'placement',
-  COPILOT_PAYMENT: 'copilot',
-  REVIEWER_PAYMENT: 'reviewer',
-  CHECKPOINT_PRIZES: 'checkpoint'
+  CHALLENGE_PRIZES: 'PLACEMENT',
+  COPILOT_PAYMENT: 'COPILOT',
+  REVIEWER_PAYMENT: 'REVIEWER',
+  CHECKPOINT_PRIZES: 'CHECKPOINT'
 }
 
 export const REVIEW_TYPES = {
@@ -232,6 +258,7 @@ export const MARATHON_MATCH_SUBTRACKS = [
 
 export const PROJECT_ROLES = {
   READ: 'observer',
+  CUSTOMER: 'customer',
   WRITE: 'customer',
   MANAGER: 'manager',
   COPILOT: 'copilot'
@@ -298,10 +325,16 @@ export const COPILOT_ROLES = [
   'copilot'
 ]
 
+export const MANAGER_ROLES = [
+  'project manager'
+]
+
 export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
   `${CHALLENGE_API_URL}/${challengeId}/attachments/${attachmentId}/download?token=${token}`
 
 export const PAGE_SIZE = 10
+
+export const PROJECTS_PAGE_SIZE = 20
 
 /**
  * The minimal number of characters to enter before starting showing autocomplete suggestions
@@ -321,7 +354,7 @@ export const GROUPS_DROPDOWN_PER_PAGE = 1000000 // make sure we are getting all 
 /**
  * The list of challenge types which can have multiple prizes
  */
-export const CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES = ['Challenge']
+export const CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES = ['CHALLENGE']
 
 /**
  * All the repeating messages.
@@ -350,6 +383,13 @@ export const CANCEL_REASONS = [
   'Cancelled - Requirements Infeasible',
   'Cancelled - Zero Registrations'
 ]
+
+/**
+ * System reviewers
+ */
+export const SystemReviewers = {
+  Default: 'TC System'
+}
 
 /**
  * Milestone product details
@@ -396,7 +436,8 @@ export const SPECIAL_CHALLENGE_TAGS = [
 /**
  * Possible statuses of projects
  */
-export const PROJECT_STATUS = [
+export const PROJECT_STATUSES = [
+  { label: 'Draft', value: 'draft' },
   { label: 'Active', value: 'active' },
   { label: 'In Review', value: 'in_review' },
   { label: 'Reviewed', value: 'reviewed' },
@@ -404,6 +445,15 @@ export const PROJECT_STATUS = [
   { label: 'Cancelled', value: 'cancelled' },
   { label: 'Paused', value: 'paused' }
 ]
+
+export const PROJECT_STATUS = {
+  ACTIVE: 'active',
+  IN_REVIEW: 'in_review',
+  REVIEWED: 'reviewed',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled',
+  PAUSED: 'paused'
+}
 
 export const JOB_ROLE_OPTIONS = [
   { value: null, label: 'Select Role' },
@@ -418,3 +468,17 @@ export const JOB_WORKLOAD_OPTIONS = [
   { value: 'fulltime', label: 'Full-Time' },
   { value: 'fractional', label: 'Fractional' }
 ]
+
+/*
+* Project Attachment types
+*/
+export const ATTACHMENT_TYPE_FILE = 'file'
+export const ATTACHMENT_TYPE_LINK = 'link'
+
+/**
+ * Project assets shared with type text
+ */
+export const PROJECT_ASSETS_SHARED_WITH_ALL_MEMBERS = 'All Project Members'
+export const PROJECT_ASSETS_SHARED_WITH_ADMIN = 'Only Admins'
+
+export const PROJECT_TYPE_TAAS = 'talent-as-a-service'

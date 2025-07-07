@@ -1,7 +1,7 @@
 version: '3'
 services:
-  challenge-engine-ui:
-    image: challenge-engine-ui:latest
+  challenge-engine-ui-v6:
+    image: challenge-engine-ui-v6:latest
     build:
       context: ../
       dockerfile: docker/Dockerfile
