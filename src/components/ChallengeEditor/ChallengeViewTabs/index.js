@@ -236,7 +236,7 @@ const ChallengeViewTabs = ({
           {
             (
               isTask &&
-              challenge.status === 'Active' &&
+              challenge.status === CHALLENGE_STATUS.ACTIVE &&
               !preventCopilotFromActivatingTask
             ) && (
               <div className={styles.button}>

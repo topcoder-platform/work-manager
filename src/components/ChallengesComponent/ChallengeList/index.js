@@ -415,7 +415,7 @@ class ChallengeList extends Component {
     }
 
     const statusOptions = _.map(CHALLENGE_STATUS, item => ({
-      label: _.capitalize(item),
+      label: item,
       value: item
     }))
 
