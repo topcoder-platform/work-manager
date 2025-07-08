@@ -170,7 +170,7 @@ export function loadChallengesByPage (
     }
 
     if (status !== 'all') {
-      filters['status'] = !status ? undefined : _.startCase(status.toLowerCase())
+      filters['status'] = !status ? undefined : status
     }
 
     if (!dashboard && !filters['status'] && !(_.isInteger(projectId) && projectId > 0)) {
