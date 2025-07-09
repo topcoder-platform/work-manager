@@ -375,13 +375,13 @@ export const MESSAGE = {
  * Challenge cancel reasons
  */
 export const CANCEL_REASONS = [
-  'Cancelled - Failed Review',
-  'Cancelled - Failed Screening',
-  'Cancelled - Zero Submissions',
-  'Cancelled - Winner Unresponsive',
-  'Cancelled - Client Request',
-  'Cancelled - Requirements Infeasible',
-  'Cancelled - Zero Registrations'
+  'CANCELLED_FAILED_REVIEW',
+  'CANCELLED_FAILED_SCREENING',
+  'CANCELLED_ZERO_SUBMISSIONS',
+  'CANCELLED_WINNER_UNRESPONSIVE',
+  'CANCELLED_CLIENT_REQUEST',
+  'CANCELLED_REQUIREMENTS_INFEASIBLE',
+  'CANCELLED_ZERO_REGISTRATIONS'
 ]
 
 /**
