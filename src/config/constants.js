@@ -354,7 +354,7 @@ export const GROUPS_DROPDOWN_PER_PAGE = 1000000 // make sure we are getting all 
 /**
  * The list of challenge types which can have multiple prizes
  */
-export const CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES = ['Challenge']
+export const CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES = ['Challenge', 'Marathon Match']
 
 /**
  * All the repeating messages.
