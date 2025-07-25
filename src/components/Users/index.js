@@ -63,8 +63,12 @@ class Users extends Component {
     })
   }
 
-  resetAddUserState () {
+  resetAddUserState (doReloadList) {
     this.setState({ showAddUserModal: false })
+
+    if (doReloadList) {
+
+    }
   }
 
   resetInviteUserState () {
@@ -225,6 +229,9 @@ class Users extends Component {
               addNewProjectMember={this.props.addNewProjectMember}
               onMemberInvited={this.props.addNewProjectInvite}
               onClose={this.resetAddUserState}
+              projectOption={this.state.projectOption}
+              projectMembers={projectMembers}
+              updateProjectMember={updateProjectMember}
             />
           )
         }
