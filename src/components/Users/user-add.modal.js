@@ -90,7 +90,8 @@ const UserAddModalContent = ({
 
   const onConfirmCopilotRoleChange = async () => {
     const member = projectMembers.find(item => item.userId === userToAdd.userId)
-    const response = await updateProjectMemberRole(projectId, member.id, 'copilot')
+    const action = member.role === 'manager' ? 'complete-copilot-requests' : ''
+    const response = await updateProjectMemberRole(projectId, member.id, 'copilot', action)
     updateProjectMember(response)
     onClose(true)
   }
@@ -103,7 +104,7 @@ const UserAddModalContent = ({
   return (
     <Modal theme={theme} onCancel={onClose}>
       {
-        isUserAddingFailed && (existingRole === 'observer' || existingRole === 'customer' || existingRole === 'copilot') && (
+        isUserAddingFailed && (existingRole === 'observer' || existingRole === 'customer' || existingRole === 'copilot' || existingRole === 'manager') && (
           <div className={cn(styles.contentContainer, styles.confirm)}>
             <div className={styles.textContent}>{`The copilot ${userToAdd.handle} is part of ${projectOption.label} project with ${existingRole} role.`}</div>
             <div className={styles.buttonWrapper}>
