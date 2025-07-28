@@ -63,12 +63,8 @@ class Users extends Component {
     })
   }
 
-  resetAddUserState (doReloadList) {
+  resetAddUserState () {
     this.setState({ showAddUserModal: false })
-
-    if (doReloadList) {
-
-    }
   }
 
   resetInviteUserState () {
