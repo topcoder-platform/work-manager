@@ -40,6 +40,11 @@
   }
 }
 
+.textContent {
+  font-size: 18px;
+  margin-top: 25px;
+}
+
 
 .row {
   display: flex;
@@ -400,7 +405,7 @@
   justify-content: center;
 }
 
-.addButtonContainer {
+.addButtonContainer, .buttonWrapper {
   display: flex;
   justify-content: flex-start;
   height: 30px;
@@ -410,10 +415,6 @@
   > * {
     width: 125px;
   }
-}
-
-.addUserContentContainer {
-
 }
 
 .tcRadioButton {
