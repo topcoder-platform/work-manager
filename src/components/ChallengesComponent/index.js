@@ -98,7 +98,7 @@ const ChallengesComponent = ({
               <OutlineButton
                 text='Request Copilot'
                 type={'info'}
-                url={`${COPILOTS_URL}/requests/new`}
+                url={`${COPILOTS_URL}/requests/new?projectId=${activeProject.id}`}
                 target={'_blank'}
               />
             )}
