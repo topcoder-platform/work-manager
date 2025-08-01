@@ -46,16 +46,22 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
 
   const updateInvite = useCallback(async (status, source) => {
     setIsUpdating(status)
-    await updateProjectMemberInvite(projectId, invitation.id, status, source)
+    try {
+      await updateProjectMemberInvite(projectId, invitation.id, status, source)
 
-    // await for the project details to propagate
-    await delay(1000)
-    await loadProjectInvites(projectId)
-    toastr.success('Success', `Successfully ${status} the invitation.`)
+      // await for the project details to propagate
+      await delay(1000)
+      await loadProjectInvites(projectId)
+      toastr.success('Success', `Successfully ${status} the invitation.`)
 
-    // await for the project details to fetch
-    await delay(1000)
-    history.push(status === PROJECT_MEMBER_INVITE_STATUS_ACCEPTED ? `/projects/${projectId}/challenges` : '/projects')
+      // await for the project details to fetch
+      await delay(1000)
+      history.push(status === PROJECT_MEMBER_INVITE_STATUS_ACCEPTED ? `/projects/${projectId}/challenges` : '/projects')
+    } catch (e) {
+      toastr.error('Error', e.response.data.message)
+      await delay(1000)
+      history.push('/projects')
+    }
   }, [projectId, invitation, loadProjectInvites, history])
 
   const acceptInvite = useCallback(() => updateInvite(PROJECT_MEMBER_INVITE_STATUS_ACCEPTED, source), [updateInvite, source])
