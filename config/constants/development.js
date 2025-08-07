@@ -20,7 +20,7 @@ module.exports = {
   CHALLENGE_PHASES_URL: `${DEV_API_HOSTNAME}/v6/challenge-phases`,
   CHALLENGE_TIMELINES_URL: `${DEV_API_HOSTNAME}/v6/challenge-timelines`,
   PROJECT_API_URL: `${DEV_API_HOSTNAME}/v5/projects`,
-  GROUPS_API_URL: `${DEV_API_HOSTNAME}/v5/groups`,
+  GROUPS_API_URL: `${DEV_API_HOSTNAME}/v6/groups`,
   TERMS_API_URL: `${DEV_API_HOSTNAME}/v5/terms`,
   RESOURCES_API_URL: `${DEV_API_HOSTNAME}/v6/resources`,
   RESOURCE_ROLES_API_URL: `${DEV_API_HOSTNAME}/v6/resource-roles`,
