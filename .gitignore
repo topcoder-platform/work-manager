@@ -25,7 +25,7 @@ yarn-debug.log*
 yarn-error.log*
 
 *.env
-
+*.pem
 *.vscode
 
 # e2e test case
