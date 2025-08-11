@@ -14,6 +14,7 @@ import ConfirmationModal from '../Modal/ConfirmationModal'
 import UserAddModalContent from './user-add.modal'
 import InviteUserModalContent from './invite-user.modal' // Import the new component
 import Loader from '../Loader'
+import { OutlineButton } from '../Buttons'
 
 const theme = {
   container: styles.modalContainer
@@ -43,6 +44,14 @@ class Users extends Component {
     this.onInputChange = this.onInputChange.bind(this)
 
     this.debouncedOnInputChange = _.debounce(this.onInputChange, AUTOCOMPLETE_DEBOUNCE_TIME_MS)
+  }
+  componentDidMount () {
+    if (this.props.initialProject && this.props.initialProject.id) {
+      this.setProjectOption({
+        value: this.props.initialProject.id,
+        label: this.props.initialProject.name
+      })
+    }
   }
 
   setProjectOption (projectOption) {
@@ -165,7 +174,8 @@ class Users extends Component {
       isLoadingProject
     } = this.props
     const {
-      searchKey
+      searchKey,
+      projectOption
     } = this.state
     const projectOptions = ((searchKey ? resultSearchUserProjects : projects) || []).map(p => {
       return {
@@ -204,20 +214,28 @@ class Users extends Component {
           </div>
         </div>
 
-        {
-          showAddUser && (
-            <div className={styles.addButtonContainer}>
-              <PrimaryButton
-                text={'Add User'}
-                type={'info'}
-                onClick={() => this.onAddUserClick()} />
-              <PrimaryButton
-                text={'Invite User'}
-                type={'info'}
-                onClick={() => this.onInviteUserClick()} />
-            </div>
-          )
-        }
+        <div className={styles.addButtonContainer}>
+          {
+            showAddUser && (
+              <>
+                <PrimaryButton
+                  text={'Add User'}
+                  type={'info'}
+                  onClick={() => this.onAddUserClick()} />
+                <PrimaryButton
+                  text={'Invite User'}
+                  type={'info'}
+                  onClick={() => this.onInviteUserClick()} />
+              </>
+            )
+          }
+          {projectOption && (
+            <OutlineButton
+              text={'Go To Project'}
+              type={'danger'}
+              link={`/projects/${projectOption.value}/challenges`} />
+          )}
+        </div>
         {
           this.state.showAddUserModal && (
             <UserAddModalContent
@@ -318,6 +336,10 @@ class Users extends Component {
 }
 
 Users.propTypes = {
+  initialProject: PropTypes.shape({
+    id: PropTypes.string,
+    name: PropTypes.string
+  }),
   loadProject: PropTypes.func.isRequired,
   updateProjectMember: PropTypes.func.isRequired,
   removeProjectMember: PropTypes.func.isRequired,
