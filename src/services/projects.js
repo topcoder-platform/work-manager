@@ -103,9 +103,10 @@ export async function fetchProjectPhases (id) {
  * @param newRole the new role
  * @returns {Promise<*>}
  */
-export async function updateProjectMemberRole (projectId, memberRecordId, newRole) {
+export async function updateProjectMemberRole (projectId, memberRecordId, newRole, action) {
   const response = await axiosInstance.patch(`${PROJECTS_API_URL}/${projectId}/members/${memberRecordId}`, {
-    role: newRole
+    role: newRole,
+    action
   })
   return _.get(response, 'data')
 }
