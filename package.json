@@ -129,8 +129,7 @@
     "build": "node scripts/build.js",
     "lint": "eslint ./src",
     "lint:fix": "eslint --fix ./src",
-    "test": "node scripts/test.js",
-    "restart": "node scripts/build.js && node server.js"
+    "test": "node scripts/test.js"
   },
   "eslintConfig": {
     "extends": [

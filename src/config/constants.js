@@ -227,10 +227,10 @@ export const PHASE_STATUS = {
 
 // List of prize sets types
 export const PRIZE_SETS_TYPE = {
-  CHALLENGE_PRIZES: 'PLACEMENT',
-  COPILOT_PAYMENT: 'COPILOT',
-  REVIEWER_PAYMENT: 'REVIEWER',
-  CHECKPOINT_PRIZES: 'CHECKPOINT'
+  CHALLENGE_PRIZES: 'placement',
+  COPILOT_PAYMENT: 'copilot',
+  REVIEWER_PAYMENT: 'reviewer',
+  CHECKPOINT_PRIZES: 'checkpoint'
 }
 
 export const REVIEW_TYPES = {

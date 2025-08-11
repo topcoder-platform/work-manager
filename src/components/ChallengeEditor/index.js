@@ -956,7 +956,7 @@ class ChallengeEditor extends Component {
       return { ...p, prizes }
     })
     challenge.status = status
-    if (status === CHALLENGE_STATUS.ACTIVE && isTask) {
+    if (status === 'Active' && isTask) {
       challenge.startDate = moment().format()
     }
 
@@ -1024,7 +1024,7 @@ class ChallengeEditor extends Component {
     }
 
     const newChallenge = {
-      status: CHALLENGE_STATUS.NEW,
+      status: 'New',
       projectId: this.props.projectId,
       name,
       typeId,
@@ -1095,7 +1095,7 @@ class ChallengeEditor extends Component {
       return ([
         {
           name: `${challenge.name} Discussion`,
-          type: 'CHALLENGE',
+          type: 'challenge',
           provider: 'vanilla'
         }
       ])
@@ -1290,11 +1290,11 @@ class ChallengeEditor extends Component {
   }
 
   async onActiveChallenge () {
-    this.updateAllChallengeInfo(CHALLENGE_STATUS.ACTIVE)
+    this.updateAllChallengeInfo('Active')
   }
 
   async saveDraft () {
-    this.updateAllChallengeInfo(CHALLENGE_STATUS.DRAFT)
+    this.updateAllChallengeInfo('Draft')
   }
 
   async onlySave () {
@@ -1487,7 +1487,7 @@ class ChallengeEditor extends Component {
       Closing Task Confirmation Modal and Error Modal
     */
     if (isCloseTask && !isConfirm) {
-      const taskPrize = _.get(_.find(challenge.prizeSets, { type: PRIZE_SETS_TYPE.CHALLENGE_PRIZES }), 'prizes[0].value')
+      const taskPrize = _.get(_.find(challenge.prizeSets, { type: 'placement' }), 'prizes[0].value')
       const assignedMemberId = _.get(assignedMemberDetails, 'userId')
       const assignedMember = _.get(assignedMemberDetails, 'handle', `User Id: ${assignedMemberId}`)
 
@@ -1535,7 +1535,7 @@ class ChallengeEditor extends Component {
         <AlertModal
           title='Success'
           message={
-            challenge.status === CHALLENGE_STATUS.DRAFT
+            challenge.status === 'Draft'
               ? 'Your challenge is saved as draft'
               : 'We have scheduled your challenge and processed the payment'
           }
@@ -1590,7 +1590,7 @@ class ChallengeEditor extends Component {
                   !preventCopilotFromActivatingTask
                 ) && (
                   <div className={styles.button}>
-                    {!this.state.hasValidationErrors ? (
+                    {(challenge.legacyId || isTask) && !this.state.hasValidationErrors ? (
                       <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
                     ) : (
                       <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>

@@ -197,7 +197,7 @@ class ChallengeCard extends React.Component {
       this.setState({ isSaving: true })
       const isTask = _.get(challenge, 'task.isTask', false)
       const payload = {
-        status: CHALLENGE_STATUS.ACTIVE
+        status: 'Active'
       }
       if (isTask) {
         payload.startDate = moment().format()
