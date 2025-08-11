@@ -51,6 +51,10 @@
     border-radius: 3px;
     border: 1px solid $light-gray;
     background-color: $lighter-gray;
+
+    > div {
+      width: 100%;
+    }
   }
 
   .tcCheckbox {
