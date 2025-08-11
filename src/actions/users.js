@@ -82,7 +82,7 @@ export function searchUserProjects (isAdmin = true, keyword) {
       sort: 'updatedAt desc',
       perPage: 20,
       page: 1,
-      keyword
+      keyword: `"${keyword}"`
     }
     if (!isAdmin) {
       filters['memberOnly'] = true
