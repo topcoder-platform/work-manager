@@ -22,7 +22,7 @@ const OutlineButton = ({ type, text, link, onClick, url, className, submit, disa
 
   if (!_.isEmpty(link)) {
     return (
-      <Link className={cn(styles.container, styles[type], className)} to={`${link}`}>
+      <Link className={cn(styles.container, styles[type], className)} to={link}>
         <span>{text}</span>
       </Link>
     )
@@ -38,7 +38,7 @@ const OutlineButton = ({ type, text, link, onClick, url, className, submit, disa
 OutlineButton.propTypes = {
   type: PropTypes.string.isRequired,
   text: PropTypes.string.isRequired,
-  link: PropTypes.string,
+  link: PropTypes.oneOfType([PropTypes.string, PropTypes.object]),
   url: PropTypes.string,
   className: PropTypes.string,
   onClick: PropTypes.func,

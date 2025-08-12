@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import _ from 'lodash'
 import PT from 'prop-types'
+import { withRouter } from 'react-router-dom'
 import UsersComponent from '../../components/Users'
 import { PROJECT_ROLES } from '../../config/constants'
 import { fetchInviteMembers, fetchProjectById } from '../../services/projects'
@@ -22,7 +23,11 @@ class Users extends Component {
       projectMembers: null,
       invitedMembers: null,
       isAdmin: false,
-      isLoadingProject: false
+      isLoadingProject: false,
+      project: props.location.state && props.location.state.projectId ? {
+        id: props.location.state && props.location.state.projectId,
+        name: props.location.state && props.location.state.projectName
+      } : null
     }
     this.loadProject = this.loadProject.bind(this)
     this.updateProjectMember = this.updateProjectMember.bind(this)
@@ -33,7 +38,7 @@ class Users extends Component {
   }
 
   componentDidMount () {
-    const { token, isLoading, loadAllUserProjects, page } = this.props
+    const { token, isLoading, loadAllUserProjects, page, location } = this.props
     if (!isLoading) {
       const isAdmin = checkAdmin(token)
       const isManager = checkManager(token)
@@ -44,6 +49,10 @@ class Users extends Component {
       this.setState({
         isAdmin
       })
+
+      if (location.state && location.state.projectId) {
+        this.loadProject(location.state.projectId)
+      }
     }
   }
 
@@ -157,6 +166,7 @@ class Users extends Component {
       isSearchingUserProjects
     } = this.props
     const {
+      project,
       projectMembers,
       invitedMembers,
       isAdmin,
@@ -164,6 +174,7 @@ class Users extends Component {
     } = this.state
     return (
       <UsersComponent
+        initialProject={project}
         projects={projects}
         loadProject={this.loadProject}
         updateProjectMember={this.updateProjectMember}
@@ -201,6 +212,7 @@ const mapStateToProps = ({ users, auth }) => {
 }
 
 Users.propTypes = {
+  location: PT.object.isRequired,
   projects: PT.arrayOf(PT.object),
   resultSearchUserProjects: PT.arrayOf(PT.object),
   auth: PT.object,
@@ -220,4 +232,4 @@ const mapDispatchToProps = {
   loadNextProjects
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Users)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Users))
