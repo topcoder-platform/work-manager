@@ -14,7 +14,6 @@ import ConfirmationModal from '../Modal/ConfirmationModal'
 import UserAddModalContent from './user-add.modal'
 import InviteUserModalContent from './invite-user.modal' // Import the new component
 import Loader from '../Loader'
-import { OutlineButton } from '../Buttons'
 
 const theme = {
   container: styles.modalContainer
@@ -230,7 +229,7 @@ class Users extends Component {
             )
           }
           {projectOption && (
-            <OutlineButton
+            <PrimaryButton
               text={'Go To Project'}
               type={'info'}
               link={`/projects/${projectOption.value}/challenges`} />

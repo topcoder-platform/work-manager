@@ -413,7 +413,7 @@
   margin-bottom: 20px;
   gap: 8px;
   > * {
-    width: 125px;
+    width: max-content;
   }
 }
 
