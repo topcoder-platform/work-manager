@@ -52,8 +52,6 @@
   align-items: center;
 
   input {
-    max-width: 280px;
-
     @include upto-sm {
       display: block;
       padding-bottom: 10px;
@@ -413,7 +411,7 @@
   margin-bottom: 20px;
   gap: 8px;
   > * {
-    width: 125px;
+    width: max-content;
   }
 }
 

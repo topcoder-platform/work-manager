@@ -52,7 +52,7 @@ function _loadProjects (projectNameOrIdFilter = '', paramFilters = {}) {
       if (!isNaN(projectNameOrIdFilter)) { // if it is number
         filters['id'] = parseInt(projectNameOrIdFilter, 10)
       } else { // text search
-        filters['keyword'] = decodeURIComponent(projectNameOrIdFilter)
+        filters['keyword'] = `"${decodeURIComponent(projectNameOrIdFilter)}"`
       }
     }
 
