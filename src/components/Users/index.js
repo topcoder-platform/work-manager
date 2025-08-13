@@ -232,7 +232,7 @@ class Users extends Component {
           {projectOption && (
             <OutlineButton
               text={'Go To Project'}
-              type={'danger'}
+              type={'info'}
               link={`/projects/${projectOption.value}/challenges`} />
           )}
         </div>

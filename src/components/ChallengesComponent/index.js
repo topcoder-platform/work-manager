@@ -94,7 +94,7 @@ const ChallengesComponent = ({
             {(checkAdmin(auth.token) || checkManager(auth.token)) && (
               <OutlineButton
                 text={'Users'}
-                type='danger'
+                type='info'
                 submit
                 link={{
                   pathname: '/users',
