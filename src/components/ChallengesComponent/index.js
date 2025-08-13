@@ -91,18 +91,16 @@ const ChallengesComponent = ({
         </div>
         {activeProject && activeProject.id && !isReadOnly ? (
           <div className={styles.projectActionButtonWrapper}>
-            {isAdminOrCopilot && (
-              <OutlineButton
-                text={'Users'}
-                type='info'
-                submit
-                link={{
-                  pathname: '/users',
-                  state: { projectId: activeProjectId, projectName: activeProject.name }
-                }}
-                className={styles.btnOutline}
-              />
-            )}
+            <OutlineButton
+              text={'Users'}
+              type='info'
+              submit
+              link={{
+                pathname: '/users',
+                state: { projectId: activeProjectId, projectName: activeProject.name }
+              }}
+              className={styles.btnOutline}
+            />
             {isAdminOrCopilot && (
               <OutlineButton
                 text={'Assets Library'}
