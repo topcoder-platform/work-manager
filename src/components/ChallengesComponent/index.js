@@ -91,7 +91,7 @@ const ChallengesComponent = ({
         </div>
         {activeProject && activeProject.id && !isReadOnly ? (
           <div className={styles.projectActionButtonWrapper}>
-            {(checkAdmin(auth.token) || checkManager(auth.token)) && (
+            {isAdminOrCopilot && (
               <OutlineButton
                 text={'Users'}
                 type='info'
