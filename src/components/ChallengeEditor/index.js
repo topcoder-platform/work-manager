@@ -239,6 +239,9 @@ class ChallengeEditor extends Component {
         const challengeDetail = { ...challengeData }
         const isRequiredNda = challengeDetail.terms && _.some(challengeDetail.terms, { id: DEFAULT_NDA_UUID })
         const isOpenAdvanceSettings = challengeDetail.groups.length > 0 || isRequiredNda
+        if (!challengeDetail.reviewer) {
+          challengeDetail.reviewer = []
+        }
         setState({
           challenge: challengeDetail,
           assignedMemberDetails,
@@ -1038,7 +1041,8 @@ class ChallengeEditor extends Component {
       terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }],
       groups: [],
       milestoneId,
-      tags
+      tags,
+      reviewer: []
       // prizeSets: this.getDefaultPrizeSets()
     }
     if (isTask) {
@@ -1854,6 +1858,8 @@ class ChallengeEditor extends Component {
               onUpdateSkills={this.onUpdateSkills}
               onUpdateMultiSelect={this.onUpdateMultiSelect}
               onUpdateMetadata={this.onUpdateMetadata}
+              showReviewerField
+              onUpdateOthers={this.onUpdateOthers}
             />
             {/* hide until challenge API change is pushed to PROD https://github.com/topcoder-platform/challenge-api/issues/348 */}
             {false && <AttachmentField
