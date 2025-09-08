@@ -946,7 +946,8 @@ class ChallengeEditor extends Component {
       'milestoneId',
       'discussions',
       'task',
-      'skills'
+      'skills',
+      'reviewers'
     ], this.state.challenge)
     const isTask = _.find(metadata.challengeTypes, { id: challenge.typeId, isTask: true })
     challenge.legacy = _.assign(this.state.challenge.legacy, {
