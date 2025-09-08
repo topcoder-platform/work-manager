@@ -83,7 +83,20 @@ class ChallengeReviewerField extends Component {
   async loadDefaultReviewers () {
     this.setState({ isLoadingDefaults: true, error: null })
     try {
-      const response = await axios.get('https://api.topcoder-dev.com/v6/challenge/default-reviewers')
+      const { challenge } = this.props
+
+      // only load default reviewers if we have typeId and trackId
+      if (!challenge.typeId || !challenge.trackId) {
+        console.log('Cannot load default reviewers: missing typeId or trackId')
+        this.setState({ defaultReviewer: [] })
+        return
+      }
+      const response = await axios.get('https://api.topcoder-dev.com/v6/challenges/default-reviewers', {
+        params: {
+          typeId: challenge.typeId,
+          trackId: challenge.trackId
+        }
+      })
       if (response.status === 200) {
         const data = response.data
         this.setState({ defaultReviewers: data })
