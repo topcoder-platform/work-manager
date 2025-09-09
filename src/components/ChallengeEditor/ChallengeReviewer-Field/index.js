@@ -1,19 +1,16 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
-import { axiosInstance as axios } from '../../../services/axiosWithAuth'
+import { connect } from 'react-redux'
 import cn from 'classnames'
 import { PrimaryButton, OutlineButton } from '../../Buttons'
 import { REVIEW_OPPORTUNITY_TYPES } from '../../../config/constants'
+import { loadScorecards, loadDefaultReviewers } from '../../../actions/challenges'
 import styles from './ChallengeReviewer-Field.module.scss'
 
 class ChallengeReviewerField extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      scorecards: [],
-      defaultReviewers: [],
-      isLoadingScorecards: false,
-      isLoadingDefaults: false,
       error: null
     }
 
@@ -27,121 +24,39 @@ class ChallengeReviewerField extends Component {
 
   componentDidMount () {
     this.loadScorecards()
-    this.loadDefaultReviewers()
+    this.isLoadingDefaultReviewers()
   }
 
-  async loadScorecards () {
-    this.setState({ isLoadingScorecards: true, error: null })
-    try {
-      const { challenge } = this.props
-      // Build query parameters for the scorecard API
-      const params = {
-        perPage: 100, // Get more scorecards to ensure we have enough
-        page: 1
-      }
+  loadScorecards () {
+    const { challenge, loadScorecards } = this.props
+    // Build query parameters for the scorecard API
+    const filters = {}
 
-      // Add challenge track if available
-      if (challenge.trackId) {
-        // Map track ID to track name for the API
-        const trackMapping = {
-          '1': 'DEVELOPMENT',
-          '2': 'DESIGN',
-          '3': 'DATA_SCIENCE',
-          '4': 'QA'
-        }
-        const trackName = trackMapping[challenge.trackId] || 'DEVELOPMENT'
-        params.challengeTrack = trackName
-      }
-
-      // Fetch scorecards from review-api-v6
-      const response = await axios.get('https://api.topcoder-dev.com/v6/scorecards', {
-        params
-      })
-
-      if (response.status === 200) {
-        const data = response.data
-        const scorecards = data.scoreCards || []
-        this.setState({ scorecards })
-      } else {
-        throw new Error('Failed to load scorecards')
-      }
-    } catch (error) {
-      console.error('Error loading scorecards:', error)
-      // Use mock data for development/testing
-      // const mockScorecards = [
-      //   { id: 'scorecard-1', name: 'Standard Development Review' },
-      //   { id: 'scorecard-2', name: 'Design Review' },
-      //   { id: 'scorecard-3', name: 'Data Science Review' },
-      //   { id: 'scorecard-4', name: 'QA Review' }
-      // ]
-      this.setState({ scorecards: [] })
-    } finally {
-      this.setState({ isLoadingScorecards: false })
+    // Add challenge track if available
+    if (challenge.track) {
+      filters.challengeTrack = challenge.track.toUpperCase()
     }
+
+    loadScorecards(filters)
   }
 
-  async loadDefaultReviewers () {
-    this.setState({ isLoadingDefaults: true, error: null })
-    try {
-      const { challenge } = this.props
+  isLoadingDefaultReviewers () {
+    const { challenge, loadDefaultReviewers } = this.props
 
-      // only load default reviewers if we have typeId and trackId
-      if (!challenge.typeId || !challenge.trackId) {
-        console.log('Cannot load default reviewers: missing typeId or trackId')
-        this.setState({ defaultReviewer: [] })
-        return
-      }
-      const response = await axios.get('https://api.topcoder-dev.com/v6/challenges/default-reviewers', {
-        params: {
-          typeId: challenge.typeId,
-          trackId: challenge.trackId
-        }
-      })
-      if (response.status === 200) {
-        const data = response.data
-        this.setState({ defaultReviewers: data })
-      } else {
-        throw new Error('Failed to load default reviewers')
-      }
-    } catch (error) {
-      console.error('Error loading default reviewers:', error)
-      // Use mock data for development/testing
-      const mockDefaultReviewers = [
-        {
-          id: 'default-1',
-          typeId: '1',
-          trackId: '1',
-          scorecardId: 'scorecard-1',
-          isMemberReview: true,
-          memberReviewerCount: 2,
-          phaseId: 'aa5a3f78-79e0-4bf7-93ff-b11e8f5b398b',
-          basePayment: 100,
-          incrementalPayment: 50,
-          opportunityType: 'REGULAR_REVIEW',
-          isAIReviewer: false
-        },
-        {
-          id: 'default-2',
-          typeId: '2',
-          trackId: '1',
-          scorecardId: 'scorecard-1',
-          isMemberReview: true,
-          memberReviewerCount: 1,
-          phaseId: '003a4b14-de5d-43fc-9e35-835dbeb6af1f',
-          basePayment: 75,
-          incrementalPayment: 25,
-          opportunityType: 'REGULAR_REVIEW',
-          isAIReviewer: false
-        }
-      ]
-      this.setState({ defaultReviewers: mockDefaultReviewers })
-    } finally {
-      this.setState({ isLoadingDefaults: false })
+    // only load default reviewers if we have typeId and trackId
+    if (!challenge.typeId || !challenge.trackId) {
+      console.log('Cannot load default reviewers: missing typeId or trackId')
+      return
     }
+
+    loadDefaultReviewers({
+      typeId: challenge.typeId,
+      trackId: challenge.trackId
+    })
   }
 
   addReviewer () {
-    const { challenge, onUpdateOthers } = this.props
+    const { challenge, onUpdateReviewers } = this.props
     const currentReviewers = challenge.reviewers || []
 
     // Create a new default reviewer based on track and type
@@ -151,7 +66,6 @@ class ChallengeReviewerField extends Component {
     const firstPhase = challenge.phases && challenge.phases.length > 0 ? challenge.phases[0] : null
 
     const newReviewer = {
-      id: 'temp-' + Date.now(),
       scorecardId: (defaultReviewer && defaultReviewer.scorecardId) || '',
       isMemberReview: true,
       memberReviewerCount: (defaultReviewer && defaultReviewer.memberReviewerCount) || 1,
@@ -163,29 +77,29 @@ class ChallengeReviewerField extends Component {
     }
 
     const updatedReviewers = currentReviewers.concat([newReviewer])
-    onUpdateOthers({ field: 'reviewers', value: updatedReviewers })
+    onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
   }
 
   removeReviewer (index) {
-    const { challenge, onUpdateOthers } = this.props
+    const { challenge, onUpdateReviewers } = this.props
     const currentReviewers = challenge.reviewers || []
     const updatedReviewers = currentReviewers.filter((_, i) => i !== index)
-    onUpdateOthers({ field: 'reviewers', value: updatedReviewers })
+    onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
   }
 
   updateReviewer (index, field, value) {
-    const { challenge, onUpdateOthers } = this.props
+    const { challenge, onUpdateReviewers } = this.props
     const currentReviewers = challenge.reviewers || []
     const updatedReviewers = currentReviewers.slice()
     const fieldUpdate = {}
     fieldUpdate[field] = value
     updatedReviewers[index] = Object.assign({}, updatedReviewers[index], fieldUpdate)
-    onUpdateOthers({ field: 'reviewers', value: updatedReviewers })
+    onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
   }
 
   findDefaultReviewer () {
-    const { challenge } = this.props
-    const { defaultReviewers } = this.state
+    const { challenge, metadata } = this.props
+    const { defaultReviewers = [] } = metadata
 
     if (!challenge || !challenge.trackId || !challenge.typeId) {
       return null
@@ -226,12 +140,12 @@ class ChallengeReviewerField extends Component {
   }
 
   renderReviewerForm (reviewer, index) {
-    const { challenge } = this.props
-    const { scorecards } = this.state
+    const { challenge, metadata } = this.props
+    const { scorecards = [] } = metadata
     const validationErrors = this.validateReviewer(reviewer)
 
     return (
-      <div key={reviewer.id} className={styles.reviewerForm}>
+      <div key={`reviewer-${index}`} className={styles.reviewerForm}>
         <div className={styles.reviewerHeader}>
           <h4>Reviewer {index + 1}</h4>
           <OutlineButton
@@ -256,8 +170,25 @@ class ChallengeReviewerField extends Component {
               value={reviewer.isAIReviewer ? 'ai' : 'member'}
               onChange={(e) => {
                 const isAI = e.target.value === 'ai'
-                this.updateReviewer(index, 'isAIReviewer', isAI)
-                this.updateReviewer(index, 'isMemberReview', !isAI)
+                const { challenge, onUpdateReviewers } = this.props
+                const currentReviewers = challenge.reviewers || []
+                const updatedReviewers = currentReviewers.slice()
+
+                // Update both fields atomically to ensure XOR constraint is satisfied
+                // Maintain correct field order as expected by API schema
+                const currentReviewer = updatedReviewers[index]
+                updatedReviewers[index] = {
+                  scorecardId: currentReviewer.scorecardId,
+                  isMemberReview: !isAI,
+                  memberReviewerCount: currentReviewer.memberReviewerCount,
+                  phaseId: currentReviewer.phaseId,
+                  basePayment: currentReviewer.basePayment,
+                  incrementalPayment: currentReviewer.incrementalPayment,
+                  type: currentReviewer.type,
+                  isAIReviewer: isAI
+                }
+
+                onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
               }}
             >
               <option value='member'>Member Reviewer</option>
@@ -357,11 +288,12 @@ class ChallengeReviewerField extends Component {
   }
 
   render () {
-    const { challenge } = this.props
-    const { isLoadingScorecards, isLoadingDefaults, error } = this.state
+    const { challenge, metadata, isLoading } = this.props
+    const { error } = this.state
+    const { scorecards = [], defaultReviewers = [] } = metadata
     const reviewers = challenge.reviewers || []
 
-    if (isLoadingScorecards || isLoadingDefaults) {
+    if (isLoading) {
       return (
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)}>
@@ -375,7 +307,7 @@ class ChallengeReviewerField extends Component {
     }
 
     // Only show error if there's a real error, not just missing data
-    if (error && !this.state.scorecards.length && !this.state.defaultReviewers.length) {
+    if (error && !scorecards.length && !defaultReviewers.length) {
       return (
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)}>
@@ -434,9 +366,8 @@ class ChallengeReviewerField extends Component {
                   <span>Total Review Cost:</span>
                   <span>${reviewers.filter(r => !r.isAIReviewer).reduce((sum, r) => {
                     const base = r.basePayment || 0
-                    const incremental = r.incrementalPayment || 0
                     const count = r.memberReviewerCount || 1
-                    return sum + base + (incremental * (count - 1))
+                    return sum + (base * count)
                   }, 0).toFixed(2)}</span>
                 </div>
               </div>
@@ -458,7 +389,24 @@ class ChallengeReviewerField extends Component {
 
 ChallengeReviewerField.propTypes = {
   challenge: PropTypes.object.isRequired,
-  onUpdateOthers: PropTypes.func.isRequired
+  onUpdateReviewers: PropTypes.func.isRequired,
+  metadata: PropTypes.shape({
+    scorecards: PropTypes.array,
+    defaultReviewers: PropTypes.array
+  }),
+  isLoading: PropTypes.bool,
+  loadScorecards: PropTypes.func.isRequired,
+  loadDefaultReviewers: PropTypes.func.isRequired
 }
 
-export default ChallengeReviewerField
+const mapStateToProps = (state) => ({
+  metadata: state.challenges.metadata,
+  isLoading: state.challenges.isLoading
+})
+
+const mapDispatchToProps = {
+  loadScorecards,
+  loadDefaultReviewers
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ChallengeReviewerField)

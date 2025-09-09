@@ -1043,7 +1043,7 @@ class ChallengeEditor extends Component {
       groups: [],
       milestoneId,
       tags,
-      reviewer: []
+      reviewers: []
       // prizeSets: this.getDefaultPrizeSets()
     }
     if (isTask) {

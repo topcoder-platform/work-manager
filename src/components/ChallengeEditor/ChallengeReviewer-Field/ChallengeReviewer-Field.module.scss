@@ -1,9 +1,5 @@
 @import '../../../styles/includes';
 
-.error {
-  color: $tc-red;
-}
-
 .row {
   box-sizing: border-box;
   display: flex;
@@ -189,7 +185,7 @@
 }
 
 .error {
-  color: #d32f2f;
+  color: $tc-red;
   background-color: #ffebee;
   padding: 15px;
   border-radius: 4px;

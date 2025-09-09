@@ -37,7 +37,8 @@ class TextEditorField extends Component {
       onUpdateMultiSelect,
       shouldShowPrivateDescription,
       onUpdateMetadata,
-      readOnly
+      readOnly,
+      showReviewerField
     } = this.props
     const { addedNewPrivateDescription } = this.state
     const showShowPrivateDescriptionField = addedNewPrivateDescription || (challenge.privateDescription !== null && challenge.privateDescription !== undefined)
@@ -79,10 +80,10 @@ class TextEditorField extends Component {
             />
           </div>
         )}
-        {this.props.showReviewerField && (
+        {showReviewerField && (
           <ChallengeReviewerField
             challenge={challenge}
-            onUpdateOthers={this.props.onUpdateOthers}
+            onUpdateReviewers={this.props.onUpdateOthers}
           />
         )}
         <SpecialChallengeField
