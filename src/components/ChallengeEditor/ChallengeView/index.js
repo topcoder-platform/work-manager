@@ -241,6 +241,7 @@ const ChallengeView = ({
             <TextEditorField
               challenge={challenge}
               readOnly
+              showReviewerField
             />
             {/* hide until challenge API change is pushed to PROD https://github.com/topcoder-platform/challenge-api/issues/348 */}
             {false && <AttachmentField

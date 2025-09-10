@@ -140,7 +140,7 @@ class ChallengeReviewerField extends Component {
   }
 
   renderReviewerForm (reviewer, index) {
-    const { challenge, metadata } = this.props
+    const { challenge, metadata, readOnly = false } = this.props
     const { scorecards = [] } = metadata
     const validationErrors = this.validateReviewer(reviewer)
 
@@ -148,11 +148,13 @@ class ChallengeReviewerField extends Component {
       <div key={`reviewer-${index}`} className={styles.reviewerForm}>
         <div className={styles.reviewerHeader}>
           <h4>Reviewer {index + 1}</h4>
-          <OutlineButton
-            text='Remove'
-            type='danger'
-            onClick={() => this.removeReviewer(index)}
-          />
+          {!readOnly && (
+            <OutlineButton
+              text='Remove'
+              type='danger'
+              onClick={() => this.removeReviewer(index)}
+            />
+          )}
         </div>
 
         {validationErrors.length > 0 && (
@@ -166,69 +168,91 @@ class ChallengeReviewerField extends Component {
         <div className={styles.formRow}>
           <div className={styles.formGroup}>
             <label>Reviewer Type:</label>
-            <select
-              value={reviewer.isAIReviewer ? 'ai' : 'member'}
-              onChange={(e) => {
-                const isAI = e.target.value === 'ai'
-                const { challenge, onUpdateReviewers } = this.props
-                const currentReviewers = challenge.reviewers || []
-                const updatedReviewers = currentReviewers.slice()
+            {readOnly ? (
+              <span>{reviewer.isAIReviewer ? 'AI Reviewer' : 'Member Reviewer'}</span>
+            ) : (
+              <select
+                value={reviewer.isAIReviewer ? 'ai' : 'member'}
+                onChange={(e) => {
+                  const isAI = e.target.value === 'ai'
+                  const { challenge, onUpdateReviewers } = this.props
+                  const currentReviewers = challenge.reviewers || []
+                  const updatedReviewers = currentReviewers.slice()
 
-                // Update both fields atomically to ensure XOR constraint is satisfied
-                // Maintain correct field order as expected by API schema
-                const currentReviewer = updatedReviewers[index]
-                updatedReviewers[index] = {
-                  scorecardId: currentReviewer.scorecardId,
-                  isMemberReview: !isAI,
-                  memberReviewerCount: currentReviewer.memberReviewerCount,
-                  phaseId: currentReviewer.phaseId,
-                  basePayment: currentReviewer.basePayment,
-                  incrementalPayment: currentReviewer.incrementalPayment,
-                  type: currentReviewer.type,
-                  isAIReviewer: isAI
-                }
+                  // Update both fields atomically to ensure XOR constraint is satisfied
+                  // Maintain correct field order as expected by API schema
+                  const currentReviewer = updatedReviewers[index]
+                  updatedReviewers[index] = {
+                    scorecardId: currentReviewer.scorecardId,
+                    isMemberReview: !isAI,
+                    memberReviewerCount: currentReviewer.memberReviewerCount,
+                    phaseId: currentReviewer.phaseId,
+                    basePayment: currentReviewer.basePayment,
+                    incrementalPayment: currentReviewer.incrementalPayment,
+                    type: currentReviewer.type,
+                    isAIReviewer: isAI
+                  }
 
-                onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
-              }}
-            >
-              <option value='member'>Member Reviewer</option>
-              <option value='ai'>AI Reviewer</option>
-            </select>
+                  onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
+                }}
+              >
+                <option value='member'>Member Reviewer</option>
+                <option value='ai'>AI Reviewer</option>
+              </select>
+            )}
           </div>
 
           <div className={styles.formGroup}>
             <label>Scorecard:</label>
-            <select
-              value={reviewer.scorecardId}
-              onChange={(e) => this.updateReviewer(index, 'scorecardId', e.target.value)}
-            >
-              <option value=''>Select Scorecard</option>
-              {scorecards.map(scorecard => (
-                <option key={scorecard.id} value={scorecard.id}>
-                  {scorecard.name} - {scorecard.type} ({scorecard.challengeTrack}) v{scorecard.version}
-                </option>
-              ))}
-            </select>
+            {readOnly ? (
+              <span>
+                {(() => {
+                  const scorecard = scorecards.find(s => s.id === reviewer.scorecardId)
+                  return scorecard ? `${scorecard.name} - ${scorecard.type} (${scorecard.challengeTrack}) v${scorecard.version}` : 'Not selected'
+                })()}
+              </span>
+            ) : (
+              <select
+                value={reviewer.scorecardId}
+                onChange={(e) => this.updateReviewer(index, 'scorecardId', e.target.value)}
+              >
+                <option value=''>Select Scorecard</option>
+                {scorecards.map(scorecard => (
+                  <option key={scorecard.id} value={scorecard.id}>
+                    {scorecard.name} - {scorecard.type} ({scorecard.challengeTrack}) v{scorecard.version}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div className={styles.formGroup}>
             <label>Phase:</label>
-            <select
-              value={reviewer.phaseId}
-              onChange={(e) => this.updateReviewer(index, 'phaseId', e.target.value)}
-            >
-              <option value=''>Select Phase</option>
-              {challenge.phases && challenge.phases
-                .filter(phase =>
-                  phase.name &&
-                  phase.name.toLowerCase().includes('review')
-                )
-                .map(phase => (
-                  <option key={phase.id} value={phase.id}>
-                    {phase.name || `Phase ${phase.phaseId || phase.id}`}
-                  </option>
-                ))}
-            </select>
+            {readOnly ? (
+              <span>
+                {(() => {
+                  const phase = challenge.phases && challenge.phases.find(p => p.id === reviewer.phaseId)
+                  return phase ? (phase.name || `Phase ${phase.phaseId || phase.id}`) : 'Not selected'
+                })()}
+              </span>
+            ) : (
+              <select
+                value={reviewer.phaseId}
+                onChange={(e) => this.updateReviewer(index, 'phaseId', e.target.value)}
+              >
+                <option value=''>Select Phase</option>
+                {challenge.phases && challenge.phases
+                  .filter(phase =>
+                    phase.name &&
+                    phase.name.toLowerCase().includes('review')
+                  )
+                  .map(phase => (
+                    <option key={phase.id} value={phase.id}>
+                      {phase.name || `Phase ${phase.phaseId || phase.id}`}
+                    </option>
+                  ))}
+              </select>
+            )}
           </div>
         </div>
 
@@ -236,34 +260,46 @@ class ChallengeReviewerField extends Component {
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label>Number of Reviewers:</label>
-              <input
-                type='number'
-                min='1'
-                value={reviewer.memberReviewerCount || 1}
-                onChange={(e) => this.updateReviewer(index, 'memberReviewerCount', parseInt(e.target.value))}
-              />
+              {readOnly ? (
+                <span>{reviewer.memberReviewerCount || 1}</span>
+              ) : (
+                <input
+                  type='number'
+                  min='1'
+                  value={reviewer.memberReviewerCount || 1}
+                  onChange={(e) => this.updateReviewer(index, 'memberReviewerCount', parseInt(e.target.value))}
+                />
+              )}
             </div>
 
             <div className={styles.formGroup}>
               <label>Base Payment ($):</label>
-              <input
-                type='number'
-                min='0'
-                step='0.01'
-                value={reviewer.basePayment || 0}
-                onChange={(e) => this.updateReviewer(index, 'basePayment', parseFloat(e.target.value))}
-              />
+              {readOnly ? (
+                <span>${reviewer.basePayment || 0}</span>
+              ) : (
+                <input
+                  type='number'
+                  min='0'
+                  step='0.01'
+                  value={reviewer.basePayment || 0}
+                  onChange={(e) => this.updateReviewer(index, 'basePayment', parseFloat(e.target.value))}
+                />
+              )}
             </div>
 
             <div className={styles.formGroup}>
               <label>Incremental Payment ($):</label>
-              <input
-                type='number'
-                min='0'
-                step='0.01'
-                value={reviewer.incrementalPayment || 0}
-                onChange={(e) => this.updateReviewer(index, 'incrementalPayment', parseFloat(e.target.value))}
-              />
+              {readOnly ? (
+                <span>${reviewer.incrementalPayment || 0}</span>
+              ) : (
+                <input
+                  type='number'
+                  min='0'
+                  step='0.01'
+                  value={reviewer.incrementalPayment || 0}
+                  onChange={(e) => this.updateReviewer(index, 'incrementalPayment', parseFloat(e.target.value))}
+                />
+              )}
             </div>
           </div>
         )}
@@ -271,16 +307,31 @@ class ChallengeReviewerField extends Component {
         <div className={styles.formRow}>
           <div className={styles.formGroup}>
             <label>Review Type:</label>
-            <select
-              value={reviewer.type || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW}
-              onChange={(e) => this.updateReviewer(index, 'type', e.target.value)}
-            >
-              <option value={REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW}>Regular Review</option>
-              <option value={REVIEW_OPPORTUNITY_TYPES.COMPONENT_DEV_REVIEW}>Component Dev Review</option>
-              <option value={REVIEW_OPPORTUNITY_TYPES.SPEC_REVIEW}>Spec Review</option>
-              <option value={REVIEW_OPPORTUNITY_TYPES.ITERATIVE_REVIEW}>Iterative Review</option>
-              <option value={REVIEW_OPPORTUNITY_TYPES.SCENARIOS_REVIEW}>Scenarios Review</option>
-            </select>
+            {readOnly ? (
+              <span>
+                {(() => {
+                  const typeMap = {
+                    [REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW]: 'Regular Review',
+                    [REVIEW_OPPORTUNITY_TYPES.COMPONENT_DEV_REVIEW]: 'Component Dev Review',
+                    [REVIEW_OPPORTUNITY_TYPES.SPEC_REVIEW]: 'Spec Review',
+                    [REVIEW_OPPORTUNITY_TYPES.ITERATIVE_REVIEW]: 'Iterative Review',
+                    [REVIEW_OPPORTUNITY_TYPES.SCENARIOS_REVIEW]: 'Scenarios Review'
+                  }
+                  return typeMap[reviewer.type] || 'Regular Review'
+                })()}
+              </span>
+            ) : (
+              <select
+                value={reviewer.type || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW}
+                onChange={(e) => this.updateReviewer(index, 'type', e.target.value)}
+              >
+                <option value={REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW}>Regular Review</option>
+                <option value={REVIEW_OPPORTUNITY_TYPES.COMPONENT_DEV_REVIEW}>Component Dev Review</option>
+                <option value={REVIEW_OPPORTUNITY_TYPES.SPEC_REVIEW}>Spec Review</option>
+                <option value={REVIEW_OPPORTUNITY_TYPES.ITERATIVE_REVIEW}>Iterative Review</option>
+                <option value={REVIEW_OPPORTUNITY_TYPES.SCENARIOS_REVIEW}>Scenarios Review</option>
+              </select>
+            )}
           </div>
         </div>
       </div>
@@ -288,7 +339,7 @@ class ChallengeReviewerField extends Component {
   }
 
   render () {
-    const { challenge, metadata, isLoading } = this.props
+    const { challenge, metadata, isLoading, readOnly = false } = this.props
     const { error } = this.state
     const { scorecards = [], defaultReviewers = [] } = metadata
     const reviewers = challenge.reviewers || []
@@ -327,11 +378,13 @@ class ChallengeReviewerField extends Component {
             <label>Review Configuration :</label>
           </div>
           <div className={cn(styles.field, styles.col2)}>
-            <div className={styles.description}>
-              Configure how this challenge will be reviewed. You can add multiple reviewers including AI and member reviewers.
-            </div>
+            {!readOnly && (
+              <div className={styles.description}>
+                Configure how this challenge will be reviewed. You can add multiple reviewers including AI and member reviewers.
+              </div>
+            )}
 
-            {reviewers.length === 0 && (
+            {!readOnly && reviewers.length === 0 && (
               <div className={styles.noReviewers}>
                 <p>No reviewers configured. Click "Add Reviewer" to get started.</p>
                 {this.findDefaultReviewer() && (
@@ -344,6 +397,12 @@ class ChallengeReviewerField extends Component {
                     />
                   </div>
                 )}
+              </div>
+            )}
+
+            {readOnly && reviewers.length === 0 && (
+              <div className={styles.noReviewers}>
+                <p>No reviewers configured for this challenge.</p>
               </div>
             )}
 
@@ -373,13 +432,15 @@ class ChallengeReviewerField extends Component {
               </div>
             )}
 
-            <div className={styles.addButton}>
-              <PrimaryButton
-                text='Add Reviewer'
-                type='info'
-                onClick={this.addReviewer}
-              />
-            </div>
+            {!readOnly && (
+              <div className={styles.addButton}>
+                <PrimaryButton
+                  text='Add Reviewer'
+                  type='info'
+                  onClick={this.addReviewer}
+                />
+              </div>
+            )}
           </div>
         </div>
       </>
@@ -395,6 +456,7 @@ ChallengeReviewerField.propTypes = {
     defaultReviewers: PropTypes.array
   }),
   isLoading: PropTypes.bool,
+  readOnly: PropTypes.bool,
   loadScorecards: PropTypes.func.isRequired,
   loadDefaultReviewers: PropTypes.func.isRequired
 }

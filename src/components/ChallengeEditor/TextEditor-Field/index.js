@@ -84,6 +84,7 @@ class TextEditorField extends Component {
           <ChallengeReviewerField
             challenge={challenge}
             onUpdateReviewers={this.props.onUpdateOthers}
+            readOnly={readOnly}
           />
         )}
         <SpecialChallengeField
