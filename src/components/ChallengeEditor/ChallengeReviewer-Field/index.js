@@ -294,7 +294,6 @@ class ChallengeReviewerField extends Component {
                 <input
                   type='number'
                   min='0'
-                  step='0.01'
                   value={reviewer.basePayment || '0'}
                   onChange={(e) => {
                     const validatedValue = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER)
