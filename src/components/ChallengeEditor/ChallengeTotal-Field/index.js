@@ -14,7 +14,6 @@ const ChallengeTotalField = ({ challenge }) => {
       .reduce((prev, next) => prev + next, 0)
   }
 
-  // Calculate total reviewer costs
   let reviewerTotal = 0
   if (challenge.reviewers) {
     reviewerTotal = challenge.reviewers
@@ -26,7 +25,6 @@ const ChallengeTotalField = ({ challenge }) => {
       }, 0)
   }
 
-  // Add reviewer costs to the total challenge total
   const totalChallengeCost = (challengeTotal || 0) + reviewerTotal
   return (
     <div className={styles.row}>

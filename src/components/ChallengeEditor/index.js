@@ -1860,7 +1860,7 @@ class ChallengeEditor extends Component {
               onUpdateMultiSelect={this.onUpdateMultiSelect}
               onUpdateMetadata={this.onUpdateMetadata}
               showReviewerField
-              onUpdateOthers={this.onUpdateOthers}
+              onUpdateReviewers={this.onUpdateOthers}
             />
             {/* hide until challenge API change is pushed to PROD https://github.com/topcoder-platform/challenge-api/issues/348 */}
             {false && <AttachmentField

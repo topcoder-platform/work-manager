@@ -24,7 +24,7 @@ class ChallengeReviewerField extends Component {
 
   componentDidMount () {
     this.loadScorecards()
-    this.isLoadingDefaultReviewers()
+    this.loadDefaultReviewers()
   }
 
   loadScorecards () {
@@ -40,7 +40,7 @@ class ChallengeReviewerField extends Component {
     loadScorecards(filters)
   }
 
-  isLoadingDefaultReviewers () {
+  loadDefaultReviewers () {
     const { challenge, loadDefaultReviewers } = this.props
 
     // only load default reviewers if we have typeId and trackId
