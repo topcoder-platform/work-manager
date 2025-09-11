@@ -15,12 +15,12 @@ const ChallengeTotalField = ({ challenge }) => {
   }
 
   let reviewerTotal = 0
-  if (challenge.reviewers) {
+  if (challenge.reviewers && Array.isArray(challenge.reviewers)) {
     reviewerTotal = challenge.reviewers
-      .filter(r => !r.isAIReviewer)
+      .filter(r => Boolean(r.isAIReviewer) === false)
       .reduce((sum, r) => {
-        const base = r.basePayment || 0
-        const count = r.memberReviewerCount || 1
+        const base = convertDollarToInteger(r.basePayment, '')
+        const count = parseInt(r.memberReviewerCount) || 1
         return sum + (base * count)
       }, 0)
   }

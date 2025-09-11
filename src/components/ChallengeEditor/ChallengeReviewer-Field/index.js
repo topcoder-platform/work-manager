@@ -3,9 +3,10 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import cn from 'classnames'
 import { PrimaryButton, OutlineButton } from '../../Buttons'
-import { REVIEW_OPPORTUNITY_TYPES } from '../../../config/constants'
+import { REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE } from '../../../config/constants'
 import { loadScorecards, loadDefaultReviewers } from '../../../actions/challenges'
 import styles from './ChallengeReviewer-Field.module.scss'
+import { convertDollarToInteger, validateValue } from '../../../util/input-check'
 
 class ChallengeReviewerField extends Component {
   constructor (props) {
@@ -69,11 +70,11 @@ class ChallengeReviewerField extends Component {
       scorecardId: (defaultReviewer && defaultReviewer.scorecardId) || '',
       isMemberReview: true,
       memberReviewerCount: (defaultReviewer && defaultReviewer.memberReviewerCount) || 1,
-      phaseId: (defaultReviewer && defaultReviewer.phaseId) || (firstPhase ? firstPhase.id : ''),
-      basePayment: (defaultReviewer && defaultReviewer.basePayment) || 0,
+      phaseId: (defaultReviewer && defaultReviewer.phaseId) || (firstPhase ? (firstPhase.id || firstPhase.phaseId) : ''),
+      basePayment: (defaultReviewer && defaultReviewer.basePayment) || '0',
       incrementalPayment: (defaultReviewer && defaultReviewer.incrementalPayment) || 0,
       type: (defaultReviewer && defaultReviewer.opportunityType) || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW,
-      isAIReviewer: false
+      isAIReviewer: Boolean((defaultReviewer && defaultReviewer.isAIReviewer) || false)
     }
 
     const updatedReviewers = currentReviewers.concat([newReviewer])
@@ -98,7 +99,7 @@ class ChallengeReviewerField extends Component {
   }
 
   findDefaultReviewer () {
-    const { challenge, metadata } = this.props
+    const { challenge, metadata = {} } = this.props
     const { defaultReviewers = [] } = metadata
 
     if (!challenge || !challenge.trackId || !challenge.typeId) {
@@ -113,6 +114,10 @@ class ChallengeReviewerField extends Component {
   validateReviewer (reviewer) {
     const errors = []
 
+    if (typeof reviewer.isAIReviewer !== 'boolean') {
+      errors.push('Reviewer type must be specified')
+    }
+
     if (!reviewer.scorecardId) {
       errors.push('Scorecard is required')
     }
@@ -121,11 +126,13 @@ class ChallengeReviewerField extends Component {
       errors.push('Phase is required')
     }
 
-    if (!reviewer.isAIReviewer && (!reviewer.memberReviewerCount || reviewer.memberReviewerCount < 1)) {
-      errors.push('Number of reviewers must be at least 1')
+    const memberCount = parseInt(reviewer.memberReviewerCount) || 1
+    if (!reviewer.isAIReviewer && (memberCount < 1 || !Number.isInteger(memberCount))) {
+      errors.push('Number of reviewers must be a positive integer')
     }
 
-    if (!reviewer.isAIReviewer && (!reviewer.basePayment || reviewer.basePayment < 0)) {
+    const basePayment = convertDollarToInteger(reviewer.basePayment, '')
+    if (!reviewer.isAIReviewer && (basePayment < 0)) {
       errors.push('Base payment must be non-negative')
     }
 
@@ -140,14 +147,14 @@ class ChallengeReviewerField extends Component {
   }
 
   renderReviewerForm (reviewer, index) {
-    const { challenge, metadata, readOnly = false } = this.props
+    const { challenge, metadata = {}, readOnly = false } = this.props
     const { scorecards = [] } = metadata
     const validationErrors = this.validateReviewer(reviewer)
 
     return (
       <div key={`reviewer-${index}`} className={styles.reviewerForm}>
         <div className={styles.reviewerHeader}>
-          <h4>Reviewer {index + 1}</h4>
+          {index > 0 && <h4>Reviewer {index + 1}</h4>}
           {!readOnly && (
             <OutlineButton
               text='Remove'
@@ -160,7 +167,7 @@ class ChallengeReviewerField extends Component {
         {validationErrors.length > 0 && (
           <div className={styles.validationErrors}>
             {validationErrors.map((error, i) => (
-              <div key={i} className={styles.validationError}>{error}</div>
+              <div key={`error-${index}-${i}-${error}`} className={styles.validationError}>{error}</div>
             ))}
           </div>
         )}
@@ -185,12 +192,12 @@ class ChallengeReviewerField extends Component {
                   updatedReviewers[index] = {
                     scorecardId: currentReviewer.scorecardId,
                     isMemberReview: !isAI,
-                    memberReviewerCount: currentReviewer.memberReviewerCount,
+                    memberReviewerCount: currentReviewer.memberReviewerCount || 1,
                     phaseId: currentReviewer.phaseId,
-                    basePayment: currentReviewer.basePayment,
-                    incrementalPayment: currentReviewer.incrementalPayment,
+                    basePayment: currentReviewer.basePayment || '0',
+                    incrementalPayment: currentReviewer.incrementalPayment || 0,
                     type: currentReviewer.type,
-                    isAIReviewer: isAI
+                    isAIReviewer: Boolean(isAI)
                   }
 
                   onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
@@ -231,7 +238,9 @@ class ChallengeReviewerField extends Component {
             {readOnly ? (
               <span>
                 {(() => {
-                  const phase = challenge.phases && challenge.phases.find(p => p.id === reviewer.phaseId)
+                  const phase = challenge.phases && challenge.phases.find(p =>
+                    (p.id === reviewer.phaseId) || (p.phaseId === reviewer.phaseId)
+                  )
                   return phase ? (phase.name || `Phase ${phase.phaseId || phase.id}`) : 'Not selected'
                 })()}
               </span>
@@ -242,12 +251,13 @@ class ChallengeReviewerField extends Component {
               >
                 <option value=''>Select Phase</option>
                 {challenge.phases && challenge.phases
-                  .filter(phase =>
-                    phase.name &&
-                    phase.name.toLowerCase().includes('review')
-                  )
+                  .filter(phase => {
+                    const isReviewPhase = phase.name && phase.name.toLowerCase().includes('review')
+                    const isCurrentlySelected = (phase.id === reviewer.phaseId) || (phase.phaseId === reviewer.phaseId)
+                    return isReviewPhase || isCurrentlySelected
+                  })
                   .map(phase => (
-                    <option key={phase.id} value={phase.id}>
+                    <option key={phase.id || phase.phaseId} value={phase.phaseId || phase.id}>
                       {phase.name || `Phase ${phase.phaseId || phase.id}`}
                     </option>
                   ))}
@@ -267,7 +277,11 @@ class ChallengeReviewerField extends Component {
                   type='number'
                   min='1'
                   value={reviewer.memberReviewerCount || 1}
-                  onChange={(e) => this.updateReviewer(index, 'memberReviewerCount', parseInt(e.target.value))}
+                  onChange={(e) => {
+                    const validatedValue = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER)
+                    const parsedValue = parseInt(validatedValue) || 1
+                    this.updateReviewer(index, 'memberReviewerCount', Math.max(1, parsedValue))
+                  }}
                 />
               )}
             </div>
@@ -275,14 +289,17 @@ class ChallengeReviewerField extends Component {
             <div className={styles.formGroup}>
               <label>Base Payment ($):</label>
               {readOnly ? (
-                <span>${reviewer.basePayment || 0}</span>
+                <span>${reviewer.basePayment || '0'}</span>
               ) : (
                 <input
                   type='number'
                   min='0'
                   step='0.01'
-                  value={reviewer.basePayment || 0}
-                  onChange={(e) => this.updateReviewer(index, 'basePayment', parseFloat(e.target.value))}
+                  value={reviewer.basePayment || '0'}
+                  onChange={(e) => {
+                    const validatedValue = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER)
+                    this.updateReviewer(index, 'basePayment', validatedValue)
+                  }}
                 />
               )}
             </div>
@@ -339,7 +356,7 @@ class ChallengeReviewerField extends Component {
   }
 
   render () {
-    const { challenge, metadata, isLoading, readOnly = false } = this.props
+    const { challenge, metadata = {}, isLoading, readOnly = false } = this.props
     const { error } = this.state
     const { scorecards = [], defaultReviewers = [] } = metadata
     const reviewers = challenge.reviewers || []
@@ -384,7 +401,7 @@ class ChallengeReviewerField extends Component {
               </div>
             )}
 
-            {!readOnly && reviewers.length === 0 && (
+            {!readOnly && reviewers && reviewers.length === 0 && (
               <div className={styles.noReviewers}>
                 <p>No reviewers configured. Click "Add Reviewer" to get started.</p>
                 {this.findDefaultReviewer() && (
@@ -400,34 +417,34 @@ class ChallengeReviewerField extends Component {
               </div>
             )}
 
-            {readOnly && reviewers.length === 0 && (
+            {readOnly && reviewers && reviewers.length === 0 && (
               <div className={styles.noReviewers}>
                 <p>No reviewers configured for this challenge.</p>
               </div>
             )}
 
-            {reviewers.map((reviewer, index) =>
+            {reviewers && reviewers.map((reviewer, index) =>
               this.renderReviewerForm(reviewer, index)
             )}
 
-            {reviewers.length > 0 && (
+            {reviewers && reviewers.length > 0 && (
               <div className={styles.summary}>
                 <h4>Review Summary</h4>
                 <div className={styles.summaryRow}>
                   <span>Total Member Reviewers:</span>
-                  <span>{reviewers.filter(r => !r.isAIReviewer).reduce((sum, r) => sum + (r.memberReviewerCount || 0), 0)}</span>
+                  <span>{reviewers.filter(r => Boolean(r.isAIReviewer) === false).reduce((sum, r) => sum + (parseInt(r.memberReviewerCount) || 0), 0)}</span>
                 </div>
                 <div className={styles.summaryRow}>
                   <span>Total AI Reviewers:</span>
-                  <span>{reviewers.filter(r => r.isAIReviewer).length}</span>
+                  <span>{reviewers.filter(r => Boolean(r.isAIReviewer) === true).length}</span>
                 </div>
                 <div className={styles.summaryRow}>
                   <span>Total Review Cost:</span>
-                  <span>${reviewers.filter(r => !r.isAIReviewer).reduce((sum, r) => {
-                    const base = r.basePayment || 0
-                    const count = r.memberReviewerCount || 1
+                  <span>${reviewers.filter(r => Boolean(r.isAIReviewer) === false).reduce((sum, r) => {
+                    const base = convertDollarToInteger(r.basePayment, '')
+                    const count = parseInt(r.memberReviewerCount) || 1
                     return sum + (base * count)
-                  }, 0).toFixed(2)}</span>
+                  }, 0)}</span>
                 </div>
               </div>
             )}
@@ -462,7 +479,7 @@ ChallengeReviewerField.propTypes = {
 }
 
 const mapStateToProps = (state) => ({
-  metadata: state.challenges.metadata,
+  metadata: state.challenges.metadata || {},
   isLoading: state.challenges.isLoading
 })
 
