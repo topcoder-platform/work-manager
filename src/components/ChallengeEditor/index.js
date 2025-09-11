@@ -239,8 +239,8 @@ class ChallengeEditor extends Component {
         const challengeDetail = { ...challengeData }
         const isRequiredNda = challengeDetail.terms && _.some(challengeDetail.terms, { id: DEFAULT_NDA_UUID })
         const isOpenAdvanceSettings = challengeDetail.groups.length > 0 || isRequiredNda
-        if (!challengeDetail.reviewer) {
-          challengeDetail.reviewer = []
+        if (!challengeDetail.reviewers) {
+          challengeDetail.reviewers = []
         }
         setState({
           challenge: challengeDetail,
