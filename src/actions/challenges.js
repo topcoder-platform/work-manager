@@ -172,11 +172,11 @@ export function loadChallengesByPage (
     }
 
     if (status !== 'all') {
-      filters['status'] = !status ? undefined : _.startCase(status.toLowerCase())
+      filters['status'] = !status ? undefined : status
     }
 
     if (!dashboard && !filters['status'] && !(_.isInteger(projectId) && projectId > 0)) {
-      filters['status'] = 'Active'
+      filters['status'] = 'ACTIVE'
     }
     if (selfService) {
       filters.selfService = true
@@ -240,7 +240,7 @@ export function loadChallenges (
     if (!_.isEmpty(status)) {
       filters['status'] = status === '' ? undefined : _.startCase(status.toLowerCase())
     } else if (!(_.isInteger(projectId) && projectId > 0)) {
-      filters['status'] = 'Active'
+      filters['status'] = 'ACTIVE'
     }
 
     let fetchedChallenges = []
