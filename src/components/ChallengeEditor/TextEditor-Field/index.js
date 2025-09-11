@@ -83,7 +83,7 @@ class TextEditorField extends Component {
         {showReviewerField && (
           <ChallengeReviewerField
             challenge={challenge}
-            onUpdateReviewers={this.props.onUpdateOthers}
+            onUpdateReviewers={this.props.onUpdateReviewers}
             readOnly={readOnly}
           />
         )}
@@ -143,7 +143,7 @@ TextEditorField.defaultProps = {
   onUpdateMultiSelect: () => {},
   readOnly: false,
   showReviewerField: false,
-  onUpdateOthers: () => {}
+  onUpdateReviewers: () => {}
 }
 
 TextEditorField.propTypes = {
@@ -158,7 +158,7 @@ TextEditorField.propTypes = {
   shouldShowPrivateDescription: PropTypes.bool,
   readOnly: PropTypes.bool,
   showReviewerField: PropTypes.bool,
-  onUpdateOthers: PropTypes.func
+  onUpdateReviewers: PropTypes.func
 }
 
 export default TextEditorField
