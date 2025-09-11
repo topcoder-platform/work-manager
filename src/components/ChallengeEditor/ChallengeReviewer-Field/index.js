@@ -63,18 +63,21 @@ class ChallengeReviewerField extends Component {
     // Create a new default reviewer based on track and type
     const defaultReviewer = this.findDefaultReviewer()
 
-    // Get the first available phase if phases exist
-    const firstPhase = challenge.phases && challenge.phases.length > 0 ? challenge.phases[0] : null
+    // Get the first available review phase if phases exist
+    const reviewPhases = challenge.phases && challenge.phases.filter(phase =>
+      phase.name && phase.name.toLowerCase().includes('review')
+    )
+    const firstReviewPhase = reviewPhases && reviewPhases.length > 0 ? reviewPhases[0] : null
 
     const newReviewer = {
       scorecardId: (defaultReviewer && defaultReviewer.scorecardId) || '',
       isMemberReview: true,
       memberReviewerCount: (defaultReviewer && defaultReviewer.memberReviewerCount) || 1,
-      phaseId: (defaultReviewer && defaultReviewer.phaseId) || (firstPhase ? (firstPhase.id || firstPhase.phaseId) : ''),
+      phaseId: (defaultReviewer && defaultReviewer.phaseId) || (firstReviewPhase ? (firstReviewPhase.id || firstReviewPhase.phaseId) : ''),
       basePayment: (defaultReviewer && defaultReviewer.basePayment) || '0',
       incrementalPayment: (defaultReviewer && defaultReviewer.incrementalPayment) || 0,
       type: (defaultReviewer && defaultReviewer.opportunityType) || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW,
-      isAIReviewer: Boolean((defaultReviewer && defaultReviewer.isAIReviewer) || false)
+      isAIReviewer: (defaultReviewer && defaultReviewer.isAIReviewer) || false
     }
 
     const updatedReviewers = currentReviewers.concat([newReviewer])
@@ -131,7 +134,7 @@ class ChallengeReviewerField extends Component {
       errors.push('Number of reviewers must be a positive integer')
     }
 
-    const basePayment = convertDollarToInteger(reviewer.basePayment, '')
+    const basePayment = convertDollarToInteger(reviewer.basePayment || '0', '')
     if (!reviewer.isAIReviewer && (basePayment < 0)) {
       errors.push('Base payment must be non-negative')
     }
@@ -197,7 +200,7 @@ class ChallengeReviewerField extends Component {
                     basePayment: currentReviewer.basePayment || '0',
                     incrementalPayment: currentReviewer.incrementalPayment || 0,
                     type: currentReviewer.type,
-                    isAIReviewer: Boolean(isAI)
+                    isAIReviewer: isAI
                   }
 
                   onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
@@ -253,7 +256,7 @@ class ChallengeReviewerField extends Component {
                 {challenge.phases && challenge.phases
                   .filter(phase => {
                     const isReviewPhase = phase.name && phase.name.toLowerCase().includes('review')
-                    const isCurrentlySelected = (phase.id === reviewer.phaseId) || (phase.phaseId === reviewer.phaseId)
+                    const isCurrentlySelected = reviewer.phaseId && ((phase.id === reviewer.phaseId) || (phase.phaseId === reviewer.phaseId))
                     return isReviewPhase || isCurrentlySelected
                   })
                   .map(phase => (
@@ -431,19 +434,19 @@ class ChallengeReviewerField extends Component {
                 <h4>Review Summary</h4>
                 <div className={styles.summaryRow}>
                   <span>Total Member Reviewers:</span>
-                  <span>{reviewers.filter(r => Boolean(r.isAIReviewer) === false).reduce((sum, r) => sum + (parseInt(r.memberReviewerCount) || 0), 0)}</span>
+                  <span>{reviewers.filter(r => !r.isAIReviewer).reduce((sum, r) => sum + (parseInt(r.memberReviewerCount) || 0), 0)}</span>
                 </div>
                 <div className={styles.summaryRow}>
                   <span>Total AI Reviewers:</span>
-                  <span>{reviewers.filter(r => Boolean(r.isAIReviewer) === true).length}</span>
+                  <span>{reviewers.filter(r => r.isAIReviewer).length}</span>
                 </div>
                 <div className={styles.summaryRow}>
                   <span>Total Review Cost:</span>
-                  <span>${reviewers.filter(r => Boolean(r.isAIReviewer) === false).reduce((sum, r) => {
-                    const base = convertDollarToInteger(r.basePayment, '')
+                  <span>${reviewers.filter(r => !r.isAIReviewer).reduce((sum, r) => {
+                    const base = convertDollarToInteger(r.basePayment || '0', '')
                     const count = parseInt(r.memberReviewerCount) || 1
                     return sum + (base * count)
-                  }, 0)}</span>
+                  }, 0).toFixed(2)}</span>
                 </div>
               </div>
             )}

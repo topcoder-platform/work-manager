@@ -17,9 +17,9 @@ const ChallengeTotalField = ({ challenge }) => {
   let reviewerTotal = 0
   if (challenge.reviewers && Array.isArray(challenge.reviewers)) {
     reviewerTotal = challenge.reviewers
-      .filter(r => Boolean(r.isAIReviewer) === false)
+      .filter(r => !r.isAIReviewer)
       .reduce((sum, r) => {
-        const base = convertDollarToInteger(r.basePayment, '')
+        const base = convertDollarToInteger(r.basePayment || '0', '')
         const count = parseInt(r.memberReviewerCount) || 1
         return sum + (base * count)
       }, 0)
