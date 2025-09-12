@@ -30,7 +30,9 @@ import {
   replaceResourceInRole,
   updateChallengeSkills,
   createResource,
-  deleteResource
+  deleteResource,
+  loadScorecards,
+  loadDefaultReviewers
 } from '../../actions/challenges'
 
 import { loadSubmissions } from '../../actions/challengeSubmissions'
@@ -97,6 +99,8 @@ class ChallengeEditor extends Component {
       loadSubmissions,
       loadChallengeDetails,
       loadResources,
+      loadScorecards,
+      loadDefaultReviewers,
       submissionsPerPage
     } = this.props
     loadTimelineTemplates()
@@ -107,6 +111,8 @@ class ChallengeEditor extends Component {
     // loadChallengeTerms()
     loadGroups()
     loadResourceRoles()
+    loadScorecards()
+    loadDefaultReviewers()
     this.fetchChallengeDetails(
       match,
       loadChallengeDetails,
@@ -665,6 +671,8 @@ ChallengeEditor.propTypes = {
   loadResources: PropTypes.func,
   loadResourceRoles: PropTypes.func,
   loadSubmissions: PropTypes.func,
+  loadScorecards: PropTypes.func,
+  loadDefaultReviewers: PropTypes.func,
   challengeResources: PropTypes.arrayOf(PropTypes.object),
   challengeSubmissions: PropTypes.arrayOf(PropTypes.object),
   challengeDetails: PropTypes.object,
@@ -763,7 +771,9 @@ const mapDispatchToProps = {
   updateChallengeSkills,
   loadProject,
   createResource,
-  deleteResource
+  deleteResource,
+  loadScorecards,
+  loadDefaultReviewers
 }
 
 export default withRouter(

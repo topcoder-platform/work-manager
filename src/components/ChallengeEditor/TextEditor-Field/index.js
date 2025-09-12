@@ -11,6 +11,7 @@ import styles from './TextEditor-Field.module.scss'
 import PropTypes from 'prop-types'
 import DescriptionField from '../Description-Field'
 import { PrimaryButton } from '../../Buttons'
+import ChallengeReviewerField from '../ChallengeReviewer-Field'
 
 class TextEditorField extends Component {
   constructor (props) {
@@ -36,7 +37,8 @@ class TextEditorField extends Component {
       onUpdateMultiSelect,
       shouldShowPrivateDescription,
       onUpdateMetadata,
-      readOnly
+      readOnly,
+      showReviewerField
     } = this.props
     const { addedNewPrivateDescription } = this.state
     const showShowPrivateDescriptionField = addedNewPrivateDescription || (challenge.privateDescription !== null && challenge.privateDescription !== undefined)
@@ -77,6 +79,13 @@ class TextEditorField extends Component {
               readOnly={readOnly}
             />
           </div>
+        )}
+        {showReviewerField && (
+          <ChallengeReviewerField
+            challenge={challenge}
+            onUpdateReviewers={this.props.onUpdateReviewers}
+            readOnly={readOnly}
+          />
         )}
         <SpecialChallengeField
           challenge={challenge}
@@ -132,7 +141,9 @@ TextEditorField.defaultProps = {
   onUpdateDescription: () => {},
   onUpdateSkills: () => {},
   onUpdateMultiSelect: () => {},
-  readOnly: false
+  readOnly: false,
+  showReviewerField: false,
+  onUpdateReviewers: () => {}
 }
 
 TextEditorField.propTypes = {
@@ -145,7 +156,9 @@ TextEditorField.propTypes = {
   onUpdateSkills: PropTypes.func,
   onUpdateMultiSelect: PropTypes.func,
   shouldShowPrivateDescription: PropTypes.bool,
-  readOnly: PropTypes.bool
+  readOnly: PropTypes.bool,
+  showReviewerField: PropTypes.bool,
+  onUpdateReviewers: PropTypes.func
 }
 
 export default TextEditorField

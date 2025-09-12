@@ -13,13 +13,26 @@ const ChallengeTotalField = ({ challenge }) => {
       .map(v => convertDollarToInteger(v, '$'))
       .reduce((prev, next) => prev + next, 0)
   }
+
+  let reviewerTotal = 0
+  if (challenge.reviewers && Array.isArray(challenge.reviewers)) {
+    reviewerTotal = challenge.reviewers
+      .filter(r => !r.isAIReviewer)
+      .reduce((sum, r) => {
+        const base = convertDollarToInteger(r.basePayment || '0', '')
+        const count = parseInt(r.memberReviewerCount) || 1
+        return sum + (base * count)
+      }, 0)
+  }
+
+  const totalChallengeCost = (challengeTotal || 0) + reviewerTotal
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
         <label htmlFor='challengeTotal'>Estimated Challenge Total :</label>
       </div>
       <div className={cn(styles.field, styles.col2)}>
-        <span>$ {challengeTotal || 0}</span>
+        <span>$ {totalChallengeCost}</span>
       </div>
     </div>
   )

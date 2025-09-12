@@ -13,6 +13,7 @@ const {
   CHALLENGE_TIMELINES_URL,
   SUBMISSIONS_API_URL,
   REVIEW_TYPE_API_URL,
+  SCORECARDS_API_URL,
   GROUPS_API_URL,
   TERMS_API_URL,
   RESOURCES_API_URL,
@@ -306,4 +307,29 @@ export async function deleteResource (resource) {
 export async function updateChallengeSkillsApi (challengeId, skills) {
   const resp = await axiosInstance.post(`${UPDATE_SKILLS_V5_API_URL}/${challengeId}`, skills)
   return _.get(resp, 'data', {})
+}
+
+/**
+ * Api request for fetching scorecards
+ * @param {Object} filters filters for scorecards
+ * @returns {Promise<*>}
+ */
+export async function fetchScorecards (filters = {}) {
+  const query = {
+    perPage: 100,
+    page: 1,
+    ...filters
+  }
+  const response = await axiosInstance.get(`${SCORECARDS_API_URL}?${qs.stringify(query, { encode: false })}`)
+  return _.get(response, 'data', {})
+}
+/**
+ * Api request for fetching default reviewers
+ * @param {Object} filters filters for default reviewers
+ * @returns {Promise<*>}
+ */
+export async function fetchDefaultReviewers (filters = {}) {
+  // Use CHALLENGE_API_URL directly for default reviewers endpoint
+  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/default-reviewers?${qs.stringify(filters, { encode: false })}`)
+  return _.get(response, 'data', [])
 }
