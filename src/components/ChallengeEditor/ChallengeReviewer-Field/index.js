@@ -28,6 +28,23 @@ class ChallengeReviewerField extends Component {
     this.loadDefaultReviewers()
   }
 
+  componentDidUpdate (prevProps) {
+    const { challenge } = this.props
+    const prevChallenge = prevProps.challenge
+
+    // Reload scorecards if challenge type or track changed
+    if (challenge && prevChallenge && 
+        (challenge.type !== prevChallenge.type || challenge.track !== prevChallenge.track)) {
+      this.loadScorecards()
+    }
+
+    // Reload default reviewers if challenge type or track changed
+    if (challenge && prevChallenge && 
+        (challenge.typeId !== prevChallenge.typeId || challenge.trackId !== prevChallenge.trackId)) {
+      this.loadDefaultReviewers()
+    }
+  }
+
   loadScorecards () {
     const { challenge, loadScorecards } = this.props
     // Build query parameters for the scorecard API
@@ -36,6 +53,11 @@ class ChallengeReviewerField extends Component {
     // Add challenge track if available
     if (challenge.track) {
       filters.challengeTrack = challenge.track.toUpperCase()
+    }
+
+    // Add challenge type if available
+    if (challenge.type) {
+      filters.challengeType = challenge.type
     }
 
     loadScorecards(filters)
@@ -69,15 +91,21 @@ class ChallengeReviewerField extends Component {
     )
     const firstReviewPhase = reviewPhases && reviewPhases.length > 0 ? reviewPhases[0] : null
 
+    const isAIReviewer = (defaultReviewer && defaultReviewer.isAIReviewer) || false
+    
     const newReviewer = {
       scorecardId: (defaultReviewer && defaultReviewer.scorecardId) || '',
-      isMemberReview: true,
-      memberReviewerCount: (defaultReviewer && defaultReviewer.memberReviewerCount) || 1,
+      isMemberReview: !isAIReviewer,
       phaseId: (defaultReviewer && defaultReviewer.phaseId) || (firstReviewPhase ? (firstReviewPhase.id || firstReviewPhase.phaseId) : ''),
       basePayment: (defaultReviewer && defaultReviewer.basePayment) || '0',
       incrementalPayment: (defaultReviewer && defaultReviewer.incrementalPayment) || 0,
       type: (defaultReviewer && defaultReviewer.opportunityType) || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW,
-      isAIReviewer: (defaultReviewer && defaultReviewer.isAIReviewer) || false
+      isAIReviewer: isAIReviewer
+    }
+
+    // Only include memberReviewerCount for member reviewers
+    if (!isAIReviewer) {
+      newReviewer.memberReviewerCount = (defaultReviewer && defaultReviewer.memberReviewerCount) || 1
     }
 
     const updatedReviewers = currentReviewers.concat([newReviewer])
@@ -157,7 +185,7 @@ class ChallengeReviewerField extends Component {
     return (
       <div key={`reviewer-${index}`} className={styles.reviewerForm}>
         <div className={styles.reviewerHeader}>
-          {index > 0 && <h4>Reviewer {index + 1}</h4>}
+          <h4>Reviewer Type {index + 1}</h4>
           {!readOnly && (
             <OutlineButton
               text='Remove'
@@ -192,16 +220,22 @@ class ChallengeReviewerField extends Component {
                   // Update both fields atomically to ensure XOR constraint is satisfied
                   // Maintain correct field order as expected by API schema
                   const currentReviewer = updatedReviewers[index]
-                  updatedReviewers[index] = {
+                  const updatedReviewer = {
                     scorecardId: currentReviewer.scorecardId,
                     isMemberReview: !isAI,
-                    memberReviewerCount: currentReviewer.memberReviewerCount || 1,
                     phaseId: currentReviewer.phaseId,
                     basePayment: currentReviewer.basePayment || '0',
                     incrementalPayment: currentReviewer.incrementalPayment || 0,
                     type: currentReviewer.type,
                     isAIReviewer: isAI
                   }
+
+                  // Only include memberReviewerCount for member reviewers
+                  if (!isAI) {
+                    updatedReviewer.memberReviewerCount = currentReviewer.memberReviewerCount || 1
+                  }
+
+                  updatedReviewers[index] = updatedReviewer
 
                   onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
                 }}
@@ -255,9 +289,18 @@ class ChallengeReviewerField extends Component {
                 <option value=''>Select Phase</option>
                 {challenge.phases && challenge.phases
                   .filter(phase => {
-                    const isReviewPhase = phase.name && phase.name.toLowerCase().includes('review')
+                    const phaseName = phase.name ? phase.name.toLowerCase() : ''
+                    const isReviewPhase = phaseName.includes('review')
+                    const isSubmissionPhase = phaseName.includes('submission')
                     const isCurrentlySelected = reviewer.phaseId && ((phase.id === reviewer.phaseId) || (phase.phaseId === reviewer.phaseId))
-                    return isReviewPhase || isCurrentlySelected
+
+                    // For AI reviewers, allow both review and submission phases
+                    // For member reviewers, only allow review phases
+                    if (reviewer.isAIReviewer) {
+                      return (isReviewPhase || isSubmissionPhase) || isCurrentlySelected
+                    } else {
+                      return isReviewPhase || isCurrentlySelected
+                    }
                   })
                   .map(phase => (
                     <option key={phase.id || phase.phaseId} value={phase.phaseId || phase.id}>
