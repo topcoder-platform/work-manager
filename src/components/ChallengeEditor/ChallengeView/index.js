@@ -22,7 +22,8 @@ import {
   REVIEW_TYPES,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
   MULTI_ROUND_CHALLENGE_TEMPLATE_ID,
-  DS_TRACK_ID
+  DS_TRACK_ID,
+  COMMUNITY_APP_URL
 } from '../../../config/constants'
 import PhaseInput from '../../PhaseInput'
 import CheckpointPrizesField from '../CheckpointPrizes-Field'
@@ -137,7 +138,9 @@ const ChallengeView = ({
 
             <div className={cn(styles.row, styles.topRow)}>
               <div className={styles.col}>
-                <span><span className={styles.fieldTitle}>Challenge Name:</span> {challenge.name}</span>
+                <span><span className={styles.fieldTitle}>Challenge Name:</span> <a href={`${COMMUNITY_APP_URL}/challenges/${challenge.id}`} target='_blank' rel='noopener noreferrer'>
+                  {challenge.name}
+                </a></span>
               </div>
             </div>
             {isDataScience && (
