@@ -7,14 +7,13 @@ import { PrimaryButton } from '../../Buttons'
 import CopilotCard from '../../CopilotCard'
 
 import styles from './Copilot-Field.module.scss'
-import { PRIZE_SETS_TYPE } from '../../../config/constants'
 
 const CopilotField = ({ copilots, challenge, onUpdateOthers, readOnly, assignYourselfCopilot, loggedInUser }) => {
   let errMessage = 'Please set a copilot'
   const handleProperty = copilots.handle ? 'handle' : 'memberHandle'
   const selectedCopilot = _.find(copilots, { [handleProperty]: challenge.copilot })
   const selectedCopilotHandle = selectedCopilot ? selectedCopilot[handleProperty] : undefined
-  const copilotFee = _.find(challenge.prizeSets, p => p.type === PRIZE_SETS_TYPE.COPILOT_PAYMENT, [])
+  const copilotFee = _.find(challenge.prizeSets, p => p.type === 'copilot', [])
   const selfService = challenge.selfService
   const copilotIsSelf = loggedInUser && selectedCopilotHandle === loggedInUser.handle
   const assignButtonText = `${selectedCopilot && copilotIsSelf ? 'Una' : 'A'}ssign Yourself`

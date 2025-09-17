@@ -55,6 +55,9 @@ export default {
     paddingRight: '6px',
     paddingLeft: '10px',
     border: 'none',
+    width: '100%',
+    display: 'grid',
+    gridTemplateColumns: '1fr',
     input: {
       width: '100% !important',
       height: 'auto !important',
