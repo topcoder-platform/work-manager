@@ -1492,7 +1492,7 @@ class ChallengeEditor extends Component {
       Closing Task Confirmation Modal and Error Modal
     */
     if (isCloseTask && !isConfirm) {
-      const taskPrize = _.get(_.find(challenge.prizeSets, { type: 'placement' }), 'prizes[0].value')
+      const taskPrize = _.get(_.find(challenge.prizeSets, { type: 'PLACEMENT' }), 'prizes[0].value')
       const assignedMemberId = _.get(assignedMemberDetails, 'userId')
       const assignedMember = _.get(assignedMemberDetails, 'handle', `User Id: ${assignedMemberId}`)
 
