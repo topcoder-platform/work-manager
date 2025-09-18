@@ -59,7 +59,7 @@ export const FILE_PICKER_PROGRESS_INTERVAL = 100
 export const FILE_PICKER_UPLOAD_RETRY = 2
 export const FILE_PICKER_UPLOAD_TIMEOUT = 30 * 60 * 1000 // 30 minutes
 export const SPECIFICATION_ATTACHMENTS_FOLDER = 'SPECIFICATION_ATTACHMENTS'
-export const MEMBERS_API_URL = process.env.MEMBERS_API_URL
+export const MEMBERS_API_URL = process.env.MEMBER_API_URL
 
 export const getAWSContainerFileURL = (key) => `https://${FILE_PICKER_CONTAINER_NAME}.s3.amazonaws.com/${key}`
 
@@ -227,10 +227,10 @@ export const PHASE_STATUS = {
 
 // List of prize sets types
 export const PRIZE_SETS_TYPE = {
-  CHALLENGE_PRIZES: 'PLACEMENT',
-  COPILOT_PAYMENT: 'COPILOT',
-  REVIEWER_PAYMENT: 'REVIEWER',
-  CHECKPOINT_PRIZES: 'CHECKPOINT'
+  CHALLENGE_PRIZES: 'placement',
+  COPILOT_PAYMENT: 'copilot',
+  REVIEWER_PAYMENT: 'reviewer',
+  CHECKPOINT_PRIZES: 'checkpoint'
 }
 
 export const REVIEW_TYPES = {
@@ -368,7 +368,7 @@ export const GROUPS_DROPDOWN_PER_PAGE = 1000000 // make sure we are getting all 
 /**
  * The list of challenge types which can have multiple prizes
  */
-export const CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES = ['CHALLENGE']
+export const CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES = ['Challenge', 'Marathon Match']
 
 /**
  * All the repeating messages.

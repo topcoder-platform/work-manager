@@ -7,7 +7,7 @@ import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import { Link } from 'react-router-dom'
 import ProjectStatus from './ProjectStatus'
-import { PROJECT_ROLES, PROJECT_STATUS, COPILOTS_URL } from '../../config/constants'
+import { PROJECT_ROLES, PROJECT_STATUS, COPILOTS_URL, CHALLENGE_STATUS } from '../../config/constants'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
@@ -53,6 +53,12 @@ const ChallengesComponent = ({
   const isReadOnly = checkReadOnlyRoles(auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
   const isAdminOrCopilot = checkAdminOrCopilot(auth.token, activeProject)
 
+  const projectStatus = activeProject && activeProject.status
+    ? activeProject.status.toUpperCase()
+    : ''
+  const isCompletedOrCancelled =
+  projectStatus === CHALLENGE_STATUS.CANCELLED || projectStatus === CHALLENGE_STATUS.COMPLETED
+
   useEffect(() => {
     const loggedInUser = auth.user
     const projectMembers = activeProject.members
@@ -85,6 +91,16 @@ const ChallengesComponent = ({
         </div>
         {activeProject && activeProject.id && !isReadOnly ? (
           <div className={styles.projectActionButtonWrapper}>
+            <OutlineButton
+              text={'Users'}
+              type='info'
+              submit
+              link={{
+                pathname: '/users',
+                state: { projectId: activeProjectId, projectName: activeProject.name }
+              }}
+              className={styles.btnOutline}
+            />
             {isAdminOrCopilot && (
               <OutlineButton
                 text={'Assets Library'}
@@ -94,11 +110,11 @@ const ChallengesComponent = ({
                 className={styles.btnOutline}
               />
             )}
-            {(checkAdmin(auth.token) || checkManager(auth.token)) && (
+            {(checkAdmin(auth.token) || checkManager(auth.token)) && !isCompletedOrCancelled && (
               <OutlineButton
                 text='Request Copilot'
                 type={'info'}
-                url={`${COPILOTS_URL}/requests/new`}
+                url={`${COPILOTS_URL}/requests/new?projectId=${activeProject.id}`}
                 target={'_blank'}
               />
             )}
