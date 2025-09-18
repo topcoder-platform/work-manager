@@ -22,7 +22,8 @@ import {
   deleteResource as deleteResourceAPI,
   updateChallengeSkillsApi,
   fetchDefaultReviewers,
-  fetchScorecards
+  fetchScorecards,
+  fetchWorkflows
 } from '../services/challenges'
 import { searchProfilesByUserIds } from '../services/user'
 import {
@@ -812,6 +813,30 @@ export function loadDefaultReviewers (filters = {}) {
       dispatch({
         type: LOAD_CHALLENGE_METADATA_SUCCESS,
         metadataKey: 'defaultReviewers',
+        metadataValue: []
+      })
+    }
+  }
+}
+
+/**
+ * Load workflows
+ */
+export function loadWorkflows () {
+  return async (dispatch) => {
+    try {
+      const workflows = await fetchWorkflows()
+      dispatch({
+        type: LOAD_CHALLENGE_METADATA_SUCCESS,
+        metadataKey: 'workflows',
+        metadataValue: workflows || []
+      })
+    } catch (error) {
+      console.error('Error loading workflows:', error)
+      // Return empty array on error to maintain consistency
+      dispatch({
+        type: LOAD_CHALLENGE_METADATA_SUCCESS,
+        metadataKey: 'workflows',
         metadataValue: []
       })
     }

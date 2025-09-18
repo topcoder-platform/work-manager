@@ -15,6 +15,7 @@ const {
   SUBMISSIONS_API_URL,
   REVIEW_TYPE_API_URL,
   SCORECARDS_API_URL,
+  WORKFLOWS_API_URL,
   GROUPS_API_URL,
   TERMS_API_URL,
   RESOURCES_API_URL,
@@ -342,4 +343,13 @@ export async function fetchDefaultReviewers (filters = {}) {
   const baseUrl = CHALLENGE_DEFAULT_REVIEWERS_URL || `${CHALLENGE_API_URL.replace(/\/challenges$/, '')}/challenge/default-reviewers`
   const response = await axiosInstance.get(`${baseUrl}?${query}`)
   return _.get(response, 'data', [])
+}
+
+/**
+ * Api request for fetching workflows
+ * @returns {Promise<*>}
+ */
+export async function fetchWorkflows () {
+  const response = await axiosInstance.get(`${WORKFLOWS_API_URL}`)
+  return _.get(response, 'data', {})
 }
