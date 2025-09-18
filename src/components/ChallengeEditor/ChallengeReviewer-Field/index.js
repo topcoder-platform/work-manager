@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import cn from 'classnames'
 import { PrimaryButton, OutlineButton } from '../../Buttons'
 import { REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE } from '../../../config/constants'
-import { loadScorecards, loadDefaultReviewers } from '../../../actions/challenges'
+import { loadScorecards, loadDefaultReviewers, loadWorkflows } from '../../../actions/challenges'
 import styles from './ChallengeReviewer-Field.module.scss'
 import { convertDollarToInteger, validateValue } from '../../../util/input-check'
 
@@ -15,27 +15,55 @@ class ChallengeReviewerField extends Component {
       error: null
     }
 
-    // Bind methods
     this.addReviewer = this.addReviewer.bind(this)
     this.removeReviewer = this.removeReviewer.bind(this)
     this.updateReviewer = this.updateReviewer.bind(this)
     this.renderReviewerForm = this.renderReviewerForm.bind(this)
     this.handleApplyDefault = this.handleApplyDefault.bind(this)
+    this.isAIReviewer = this.isAIReviewer.bind(this)
+  }
+
+  isAIReviewer (reviewer) {
+    return reviewer && (
+      (reviewer.aiWorkflowId && reviewer.aiWorkflowId.trim() !== '') ||
+      (reviewer.isMemberReview === false)
+    )
   }
 
   componentDidMount () {
     this.loadScorecards()
     this.loadDefaultReviewers()
+    this.loadWorkflows()
+  }
+
+  componentDidUpdate (prevProps) {
+    const { challenge } = this.props
+    const prevChallenge = prevProps.challenge
+
+    if (challenge && prevChallenge &&
+        (challenge.type !== prevChallenge.type || challenge.track !== prevChallenge.track)) {
+      this.loadScorecards()
+    }
+
+    if (challenge && prevChallenge &&
+        (challenge.typeId !== prevChallenge.typeId || challenge.trackId !== prevChallenge.trackId)) {
+      this.loadDefaultReviewers()
+    }
   }
 
   loadScorecards () {
     const { challenge, loadScorecards } = this.props
-    // Build query parameters for the scorecard API
+
     const filters = {}
 
     // Add challenge track if available
     if (challenge.track) {
       filters.challengeTrack = challenge.track.toUpperCase()
+    }
+
+    // Add challenge type if available
+    if (challenge.type) {
+      filters.challengeType = challenge.type
     }
 
     loadScorecards(filters)
@@ -56,6 +84,11 @@ class ChallengeReviewerField extends Component {
     })
   }
 
+  loadWorkflows () {
+    const { loadWorkflows } = this.props
+    loadWorkflows()
+  }
+
   addReviewer () {
     const { challenge, onUpdateReviewers } = this.props
     const currentReviewers = challenge.reviewers || []
@@ -69,15 +102,40 @@ class ChallengeReviewerField extends Component {
     )
     const firstReviewPhase = reviewPhases && reviewPhases.length > 0 ? reviewPhases[0] : null
 
+    const isAIReviewer = this.isAIReviewer(defaultReviewer)
+
+    // For AI reviewers, get scorecardId from the workflow if available
+    let scorecardId = ''
+    if (isAIReviewer) {
+      const { metadata = {} } = this.props
+      const { workflows = [] } = metadata
+      const defaultWorkflowId = defaultReviewer && defaultReviewer.aiWorkflowId
+      if (defaultWorkflowId) {
+        const workflow = workflows.find(w => w.id === defaultWorkflowId)
+        scorecardId = workflow && workflow.scorecardId ? workflow.scorecardId : undefined
+      } else {
+        scorecardId = undefined
+      }
+    } else {
+      scorecardId = (defaultReviewer && defaultReviewer.scorecardId) || ''
+    }
+
     const newReviewer = {
-      scorecardId: (defaultReviewer && defaultReviewer.scorecardId) || '',
-      isMemberReview: true,
-      memberReviewerCount: (defaultReviewer && defaultReviewer.memberReviewerCount) || 1,
+      scorecardId,
+      isMemberReview: !isAIReviewer,
       phaseId: (defaultReviewer && defaultReviewer.phaseId) || (firstReviewPhase ? (firstReviewPhase.id || firstReviewPhase.phaseId) : ''),
       basePayment: (defaultReviewer && defaultReviewer.basePayment) || '0',
       incrementalPayment: (defaultReviewer && defaultReviewer.incrementalPayment) || 0,
-      type: (defaultReviewer && defaultReviewer.opportunityType) || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW,
-      isAIReviewer: (defaultReviewer && defaultReviewer.isAIReviewer) || false
+      type: isAIReviewer ? null : ((defaultReviewer && defaultReviewer.opportunityType) || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW)
+    }
+
+    if (isAIReviewer) {
+      newReviewer.aiWorkflowId = (defaultReviewer && defaultReviewer.aiWorkflowId) || ''
+    }
+
+    // Set member-specific fields for member reviewers
+    if (!isAIReviewer) {
+      newReviewer.memberReviewerCount = (defaultReviewer && defaultReviewer.memberReviewerCount) || 1
     }
 
     const updatedReviewers = currentReviewers.concat([newReviewer])
@@ -97,6 +155,18 @@ class ChallengeReviewerField extends Component {
     const updatedReviewers = currentReviewers.slice()
     const fieldUpdate = {}
     fieldUpdate[field] = value
+
+    if (field === 'aiWorkflowId') {
+      const { metadata = {} } = this.props
+      const { workflows = [] } = metadata
+      const workflow = workflows.find(w => w.id === value)
+      if (workflow && workflow.scorecardId) {
+        fieldUpdate.scorecardId = workflow.scorecardId
+      } else {
+        fieldUpdate.scorecardId = undefined
+      }
+    }
+
     updatedReviewers[index] = Object.assign({}, updatedReviewers[index], fieldUpdate)
     onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
   }
@@ -116,27 +186,30 @@ class ChallengeReviewerField extends Component {
 
   validateReviewer (reviewer) {
     const errors = []
+    const isAI = this.isAIReviewer(reviewer)
 
-    if (typeof reviewer.isAIReviewer !== 'boolean') {
-      errors.push('Reviewer type must be specified')
-    }
+    if (isAI) {
+      if (!reviewer.aiWorkflowId || reviewer.aiWorkflowId.trim() === '') {
+        errors.push('AI Workflow is required')
+      }
+    } else {
+      if (!reviewer.scorecardId) {
+        errors.push('Scorecard is required')
+      }
 
-    if (!reviewer.scorecardId) {
-      errors.push('Scorecard is required')
+      const memberCount = parseInt(reviewer.memberReviewerCount) || 1
+      if (memberCount < 1 || !Number.isInteger(memberCount)) {
+        errors.push('Number of reviewers must be a positive integer')
+      }
+
+      const basePayment = convertDollarToInteger(reviewer.basePayment || '0', '')
+      if (basePayment < 0) {
+        errors.push('Base payment must be non-negative')
+      }
     }
 
     if (!reviewer.phaseId) {
       errors.push('Phase is required')
-    }
-
-    const memberCount = parseInt(reviewer.memberReviewerCount) || 1
-    if (!reviewer.isAIReviewer && (memberCount < 1 || !Number.isInteger(memberCount))) {
-      errors.push('Number of reviewers must be a positive integer')
-    }
-
-    const basePayment = convertDollarToInteger(reviewer.basePayment || '0', '')
-    if (!reviewer.isAIReviewer && (basePayment < 0)) {
-      errors.push('Base payment must be non-negative')
     }
 
     return errors
@@ -151,13 +224,13 @@ class ChallengeReviewerField extends Component {
 
   renderReviewerForm (reviewer, index) {
     const { challenge, metadata = {}, readOnly = false } = this.props
-    const { scorecards = [] } = metadata
+    const { scorecards = [], workflows = [] } = metadata
     const validationErrors = this.validateReviewer(reviewer)
 
     return (
       <div key={`reviewer-${index}`} className={styles.reviewerForm}>
         <div className={styles.reviewerHeader}>
-          {index > 0 && <h4>Reviewer {index + 1}</h4>}
+          <h4>Reviewer Type {index + 1}</h4>
           {!readOnly && (
             <OutlineButton
               text='Remove'
@@ -179,29 +252,51 @@ class ChallengeReviewerField extends Component {
           <div className={styles.formGroup}>
             <label>Reviewer Type:</label>
             {readOnly ? (
-              <span>{reviewer.isAIReviewer ? 'AI Reviewer' : 'Member Reviewer'}</span>
+              <span>{this.isAIReviewer(reviewer) ? 'AI Reviewer' : 'Member Reviewer'}</span>
             ) : (
               <select
-                value={reviewer.isAIReviewer ? 'ai' : 'member'}
+                value={this.isAIReviewer(reviewer) ? 'ai' : 'member'}
                 onChange={(e) => {
                   const isAI = e.target.value === 'ai'
                   const { challenge, onUpdateReviewers } = this.props
                   const currentReviewers = challenge.reviewers || []
                   const updatedReviewers = currentReviewers.slice()
 
-                  // Update both fields atomically to ensure XOR constraint is satisfied
-                  // Maintain correct field order as expected by API schema
+                  // Update reviewer type by setting/clearing aiWorkflowId
                   const currentReviewer = updatedReviewers[index]
-                  updatedReviewers[index] = {
-                    scorecardId: currentReviewer.scorecardId,
+
+                  // For AI reviewers, get scorecardId from the selected workflow if available
+                  let scorecardId = currentReviewer.scorecardId
+                  if (isAI) {
+                    const { metadata = {} } = this.props
+                    const { workflows = [] } = metadata
+                    const workflowId = currentReviewer.aiWorkflowId
+                    if (workflowId) {
+                      const workflow = workflows.find(w => w.id === workflowId)
+                      scorecardId = workflow && workflow.scorecardId ? workflow.scorecardId : undefined
+                    } else {
+                      scorecardId = undefined
+                    }
+                  }
+
+                  const updatedReviewer = {
+                    scorecardId,
                     isMemberReview: !isAI,
-                    memberReviewerCount: currentReviewer.memberReviewerCount || 1,
                     phaseId: currentReviewer.phaseId,
                     basePayment: currentReviewer.basePayment || '0',
                     incrementalPayment: currentReviewer.incrementalPayment || 0,
-                    type: currentReviewer.type,
-                    isAIReviewer: isAI
+                    type: isAI ? null : (currentReviewer.type || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW)
                   }
+
+                  if (isAI) {
+                    updatedReviewer.aiWorkflowId = currentReviewer.aiWorkflowId || ''
+                  }
+
+                  if (!isAI) {
+                    updatedReviewer.memberReviewerCount = currentReviewer.memberReviewerCount || 1
+                  }
+
+                  updatedReviewers[index] = updatedReviewer
 
                   onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
                 }}
@@ -212,29 +307,55 @@ class ChallengeReviewerField extends Component {
             )}
           </div>
 
-          <div className={styles.formGroup}>
-            <label>Scorecard:</label>
-            {readOnly ? (
-              <span>
-                {(() => {
-                  const scorecard = scorecards.find(s => s.id === reviewer.scorecardId)
-                  return scorecard ? `${scorecard.name} - ${scorecard.type} (${scorecard.challengeTrack}) v${scorecard.version}` : 'Not selected'
-                })()}
-              </span>
-            ) : (
-              <select
-                value={reviewer.scorecardId}
-                onChange={(e) => this.updateReviewer(index, 'scorecardId', e.target.value)}
-              >
-                <option value=''>Select Scorecard</option>
-                {scorecards.map(scorecard => (
-                  <option key={scorecard.id} value={scorecard.id}>
-                    {scorecard.name} - {scorecard.type} ({scorecard.challengeTrack}) v{scorecard.version}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
+          {this.isAIReviewer(reviewer) ? (
+            <div className={styles.formGroup}>
+              <label>AI Workflow:</label>
+              {readOnly ? (
+                <span>
+                  {(() => {
+                    const workflow = workflows.find(w => w.id === reviewer.aiWorkflowId)
+                    return workflow ? workflow.name : 'Not selected'
+                  })()}
+                </span>
+              ) : (
+                <select
+                  value={reviewer.aiWorkflowId || ''}
+                  onChange={(e) => this.updateReviewer(index, 'aiWorkflowId', e.target.value)}
+                >
+                  <option value=''>Select AI Workflow</option>
+                  {workflows.map(workflow => (
+                    <option key={workflow.id} value={workflow.id}>
+                      {workflow.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          ) : (
+            <div className={styles.formGroup}>
+              <label>Scorecard:</label>
+              {readOnly ? (
+                <span>
+                  {(() => {
+                    const scorecard = scorecards.find(s => s.id === reviewer.scorecardId)
+                    return scorecard ? `${scorecard.name} - ${scorecard.type} (${scorecard.challengeTrack}) v${scorecard.version}` : 'Not selected'
+                  })()}
+                </span>
+              ) : (
+                <select
+                  value={reviewer.scorecardId}
+                  onChange={(e) => this.updateReviewer(index, 'scorecardId', e.target.value)}
+                >
+                  <option value=''>Select Scorecard</option>
+                  {scorecards.map(scorecard => (
+                    <option key={scorecard.id} value={scorecard.id}>
+                      {scorecard.name} - {scorecard.type} ({scorecard.challengeTrack}) v{scorecard.version}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+          )}
 
           <div className={styles.formGroup}>
             <label>Phase:</label>
@@ -255,9 +376,18 @@ class ChallengeReviewerField extends Component {
                 <option value=''>Select Phase</option>
                 {challenge.phases && challenge.phases
                   .filter(phase => {
-                    const isReviewPhase = phase.name && phase.name.toLowerCase().includes('review')
-                    const isCurrentlySelected = reviewer.phaseId && ((phase.id === reviewer.phaseId) || (phase.phaseId === reviewer.phaseId))
-                    return isReviewPhase || isCurrentlySelected
+                    const phaseName = phase.name ? phase.name.toLowerCase() : ''
+                    const isReviewPhase = phaseName.includes('review')
+                    const isSubmissionPhase = phaseName.includes('submission')
+                    const isCurrentlySelected = reviewer.phaseId && ((phase.id === reviewer.phaseId) || (phase.phaseId === reviewer.phaseId)) && !isSubmissionPhase
+
+                    // For AI reviewers, allow both review and submission phases
+                    // For member reviewers, only allow review phases even after changing the reviewer type
+                    if (this.isAIReviewer(reviewer)) {
+                      return (isReviewPhase || isSubmissionPhase) || isCurrentlySelected
+                    } else {
+                      return isReviewPhase || isCurrentlySelected
+                    }
                   })
                   .map(phase => (
                     <option key={phase.id || phase.phaseId} value={phase.phaseId || phase.id}>
@@ -269,7 +399,7 @@ class ChallengeReviewerField extends Component {
           </div>
         </div>
 
-        {!reviewer.isAIReviewer && (
+        {!this.isAIReviewer(reviewer) && (
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label>Number of Reviewers:</label>
@@ -323,36 +453,38 @@ class ChallengeReviewerField extends Component {
           </div>
         )}
 
-        <div className={styles.formRow}>
-          <div className={styles.formGroup}>
-            <label>Review Type:</label>
-            {readOnly ? (
-              <span>
-                {(() => {
-                  const typeMap = {
-                    [REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW]: 'Regular Review',
-                    [REVIEW_OPPORTUNITY_TYPES.COMPONENT_DEV_REVIEW]: 'Component Dev Review',
-                    [REVIEW_OPPORTUNITY_TYPES.SPEC_REVIEW]: 'Spec Review',
-                    [REVIEW_OPPORTUNITY_TYPES.ITERATIVE_REVIEW]: 'Iterative Review',
-                    [REVIEW_OPPORTUNITY_TYPES.SCENARIOS_REVIEW]: 'Scenarios Review'
-                  }
-                  return typeMap[reviewer.type] || 'Regular Review'
-                })()}
-              </span>
-            ) : (
-              <select
-                value={reviewer.type || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW}
-                onChange={(e) => this.updateReviewer(index, 'type', e.target.value)}
-              >
-                <option value={REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW}>Regular Review</option>
-                <option value={REVIEW_OPPORTUNITY_TYPES.COMPONENT_DEV_REVIEW}>Component Dev Review</option>
-                <option value={REVIEW_OPPORTUNITY_TYPES.SPEC_REVIEW}>Spec Review</option>
-                <option value={REVIEW_OPPORTUNITY_TYPES.ITERATIVE_REVIEW}>Iterative Review</option>
-                <option value={REVIEW_OPPORTUNITY_TYPES.SCENARIOS_REVIEW}>Scenarios Review</option>
-              </select>
-            )}
+        {!this.isAIReviewer(reviewer) && (
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label>Review Type:</label>
+              {readOnly ? (
+                <span>
+                  {(() => {
+                    const typeMap = {
+                      [REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW]: 'Regular Review',
+                      [REVIEW_OPPORTUNITY_TYPES.COMPONENT_DEV_REVIEW]: 'Component Dev Review',
+                      [REVIEW_OPPORTUNITY_TYPES.SPEC_REVIEW]: 'Spec Review',
+                      [REVIEW_OPPORTUNITY_TYPES.ITERATIVE_REVIEW]: 'Iterative Review',
+                      [REVIEW_OPPORTUNITY_TYPES.SCENARIOS_REVIEW]: 'Scenarios Review'
+                    }
+                    return typeMap[reviewer.type] || 'Regular Review'
+                  })()}
+                </span>
+              ) : (
+                <select
+                  value={reviewer.type || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW}
+                  onChange={(e) => this.updateReviewer(index, 'type', e.target.value)}
+                >
+                  <option value={REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW}>Regular Review</option>
+                  <option value={REVIEW_OPPORTUNITY_TYPES.COMPONENT_DEV_REVIEW}>Component Dev Review</option>
+                  <option value={REVIEW_OPPORTUNITY_TYPES.SPEC_REVIEW}>Spec Review</option>
+                  <option value={REVIEW_OPPORTUNITY_TYPES.ITERATIVE_REVIEW}>Iterative Review</option>
+                  <option value={REVIEW_OPPORTUNITY_TYPES.SCENARIOS_REVIEW}>Scenarios Review</option>
+                </select>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     )
   }
@@ -360,7 +492,7 @@ class ChallengeReviewerField extends Component {
   render () {
     const { challenge, metadata = {}, isLoading, readOnly = false } = this.props
     const { error } = this.state
-    const { scorecards = [], defaultReviewers = [] } = metadata
+    const { scorecards = [], defaultReviewers = [], workflows = [] } = metadata
     const reviewers = challenge.reviewers || []
 
     if (isLoading) {
@@ -376,8 +508,7 @@ class ChallengeReviewerField extends Component {
       )
     }
 
-    // Only show error if there's a real error, not just missing data
-    if (error && !scorecards.length && !defaultReviewers.length) {
+    if (error && !scorecards.length && !defaultReviewers.length && !workflows.length) {
       return (
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)}>
@@ -434,15 +565,15 @@ class ChallengeReviewerField extends Component {
                 <h4>Review Summary</h4>
                 <div className={styles.summaryRow}>
                   <span>Total Member Reviewers:</span>
-                  <span>{reviewers.filter(r => !r.isAIReviewer).reduce((sum, r) => sum + (parseInt(r.memberReviewerCount) || 0), 0)}</span>
+                  <span>{reviewers.filter(r => !this.isAIReviewer(r)).reduce((sum, r) => sum + (parseInt(r.memberReviewerCount) || 0), 0)}</span>
                 </div>
                 <div className={styles.summaryRow}>
                   <span>Total AI Reviewers:</span>
-                  <span>{reviewers.filter(r => r.isAIReviewer).length}</span>
+                  <span>{reviewers.filter(r => this.isAIReviewer(r)).length}</span>
                 </div>
                 <div className={styles.summaryRow}>
                   <span>Total Review Cost:</span>
-                  <span>${reviewers.filter(r => !r.isAIReviewer).reduce((sum, r) => {
+                  <span>${reviewers.filter(r => !this.isAIReviewer(r)).reduce((sum, r) => {
                     const base = convertDollarToInteger(r.basePayment || '0', '')
                     const count = parseInt(r.memberReviewerCount) || 1
                     return sum + (base * count)
@@ -472,12 +603,14 @@ ChallengeReviewerField.propTypes = {
   onUpdateReviewers: PropTypes.func.isRequired,
   metadata: PropTypes.shape({
     scorecards: PropTypes.array,
-    defaultReviewers: PropTypes.array
+    defaultReviewers: PropTypes.array,
+    workflows: PropTypes.array
   }),
   isLoading: PropTypes.bool,
   readOnly: PropTypes.bool,
   loadScorecards: PropTypes.func.isRequired,
-  loadDefaultReviewers: PropTypes.func.isRequired
+  loadDefaultReviewers: PropTypes.func.isRequired,
+  loadWorkflows: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
@@ -487,7 +620,8 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = {
   loadScorecards,
-  loadDefaultReviewers
+  loadDefaultReviewers,
+  loadWorkflows
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ChallengeReviewerField)
