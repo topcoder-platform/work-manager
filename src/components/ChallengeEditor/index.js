@@ -1595,13 +1595,10 @@ class ChallengeEditor extends Component {
                   !preventCopilotFromActivatingTask
                 ) && (
                   <div className={styles.button}>
-                    {(challenge.legacyId || isTask) && !this.state.hasValidationErrors ? (
+                    {!this.state.hasValidationErrors ? (
                       <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
                     ) : (
-                      <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-                        {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
-                        <PrimaryButton text={'Launch as Active'} type={'disabled'} />
-                      </Tooltip>
+                      <PrimaryButton text={'Launch as Active'} type={'disabled'} />
                     )}
                   </div>
                 )

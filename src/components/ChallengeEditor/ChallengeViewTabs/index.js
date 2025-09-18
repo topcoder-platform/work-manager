@@ -210,18 +210,11 @@ const ChallengeViewTabs = ({
             (<div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>)}
           {canLaunch && (
             <div className={styles.button}>
-              {challenge.legacyId || isTask ? (
-                <PrimaryButton
-                  text='Launch'
-                  type='info'
-                  onClick={onLaunchChallenge}
-                />
-              ) : (
-                <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-                  {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
-                  <PrimaryButton text={'Launch'} type={'disabled'} />
-                </Tooltip>
-              )}
+              <PrimaryButton
+                text='Launch'
+                type='info'
+                onClick={onLaunchChallenge}
+              />
             </div>
           )}
           {canApprove && (

@@ -4,7 +4,6 @@
 import _ from 'lodash'
 import React from 'react'
 import PropTypes from 'prop-types'
-import cn from 'classnames'
 import { withRouter, Link } from 'react-router-dom'
 import moment from 'moment'
 import 'moment-duration-format'
@@ -12,12 +11,11 @@ import ChallengeStatus from '../ChallengeStatus'
 import ChallengeTag from '../ChallengeTag'
 import styles from './ChallengeCard.module.scss'
 import { formatDate } from '../../../util/date'
-import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, MESSAGE, ONLINE_REVIEW_URL, PROJECT_ROLES } from '../../../config/constants'
+import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, ONLINE_REVIEW_URL, PROJECT_ROLES } from '../../../config/constants'
 import ConfirmationModal from '../../Modal/ConfirmationModal'
 import { checkChallengeEditPermission, checkReadOnlyRoles } from '../../../util/tc'
 import { getCurrentPhase } from '../../../util/phase'
 import AlertModal from '../../Modal/AlertModal'
-import Tooltip from '../../Tooltip'
 
 const theme = {
   container: styles.modalContainer
@@ -47,11 +45,13 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
     )
   }
 
-  return challenge.legacyId || isTask ? (
+  const showLegacyLinks = Boolean(challenge.legacyId) && !isTask
+
+  return (
     <div className={styles.linkGroup}>
       <div className={styles.linkGroupLeft}>
         <a className={styles.link} href={communityAppUrl} target='_blank'>View Challenge</a>
-        {!isTask && (
+        {showLegacyLinks && (
           <div className={styles.linkGroupLeftBottom}>
             <a className={styles.link} href={directUrl} target='_blank'>Direct</a>
             <span className={styles.linkDivider}>|</span>
@@ -64,33 +64,6 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
           <span>Activate</span>
         </button>
       )}
-    </div>
-  ) : (
-    <div className={styles.linkGroup}>
-      <div className={styles.linkGroupLeft}>
-        <a className={styles.link} href={communityAppUrl}>View Challenge</a>
-        {!isTask && (
-          <div className={styles.linkGroupLeftBottom}>
-            <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-              <span className={styles.link}>Direct</span>
-            </Tooltip>
-            <span className={styles.linkDivider}>|</span>
-            <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-              <span className={styles.link}>OR</span>
-            </Tooltip>
-          </div>
-        )}
-      </div>
-      {
-        challenge.status === 'Draft' && (
-          <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-            {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
-            <button className={cn(styles.activateButton, styles.activateButtonDisabled)}>
-              <span>Activate</span>
-            </button>
-          </Tooltip>
-        )
-      }
     </div>
   )
 }
