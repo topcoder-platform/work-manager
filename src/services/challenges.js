@@ -6,6 +6,7 @@ import { GROUPS_DROPDOWN_PER_PAGE, UPDATE_SKILLS_V5_API_URL } from '../config/co
 const {
   CHALLENGE_API_URL,
   CHALLENGE_API_VERSION,
+  CHALLENGE_DEFAULT_REVIEWERS_URL,
   CHALLENGE_TYPES_URL,
   CHALLENGE_TRACKS_URL,
   CHALLENGE_TIMELINE_TEMPLATES_URL,
@@ -329,7 +330,9 @@ export async function fetchScorecards (filters = {}) {
  * @returns {Promise<*>}
  */
 export async function fetchDefaultReviewers (filters = {}) {
-  // Use CHALLENGE_API_URL directly for default reviewers endpoint
-  const response = await axiosInstance.get(`${CHALLENGE_API_URL}/default-reviewers?${qs.stringify(filters, { encode: false })}`)
+  const { typeId, trackId } = filters
+  const query = qs.stringify({ typeId, trackId }, { encode: false })
+  const baseUrl = CHALLENGE_DEFAULT_REVIEWERS_URL || `${CHALLENGE_API_URL.replace(/\/challenges$/, '')}/challenge/default-reviewers`
+  const response = await axiosInstance.get(`${baseUrl}?${query}`)
   return _.get(response, 'data', [])
 }
