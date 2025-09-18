@@ -17,7 +17,13 @@ const ChallengeTotalField = ({ challenge }) => {
   let reviewerTotal = 0
   if (challenge.reviewers && Array.isArray(challenge.reviewers)) {
     reviewerTotal = challenge.reviewers
-      .filter(r => !r.isAIReviewer)
+      .filter(r => {
+        const isAI = r && (
+          (r.aiWorkflowId && r.aiWorkflowId.trim() !== '') ||
+          (r.isMemberReview === false)
+        )
+        return !isAI
+      })
       .reduce((sum, r) => {
         const base = convertDollarToInteger(r.basePayment || '0', '')
         const count = parseInt(r.memberReviewerCount) || 1
