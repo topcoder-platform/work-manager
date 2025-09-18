@@ -184,29 +184,53 @@ export const sortChallengePhases = (phases) => {
  * @param {Object} challengeDetail challenge detail
  */
 export const updateChallengePhaseBeforeSendRequest = (challengeDetail) => {
-  if (challengeDetail.phases) {
-    const challengeDetailTmp = _.cloneDeep(challengeDetail)
-    challengeDetailTmp.startDate = moment(challengeDetail.phases[0].scheduledStartDate)
-    // challengeDetailTmp.registrationStartDate = moment(challengeDetail.phases[0].scheduledStartDate)
-    // challengeDetailTmp.registrationEndDate = moment(challengeDetail.phases[0].scheduledEndDate)
-    // challengeDetailTmp.submissionStartDate = moment(challengeDetail.phases[1].scheduledStartDate)
-    // challengeDetailTmp.submissionEndDate = moment(challengeDetail.phases[1].scheduledEndDate)
+  if (!challengeDetail) {
+    return challengeDetail
+  }
+
+  const challengeDetailTmp = _.cloneDeep(challengeDetail)
+
+  if (challengeDetailTmp.status && _.isString(challengeDetailTmp.status)) {
+    challengeDetailTmp.status = challengeDetailTmp.status.toUpperCase()
+  }
+
+  if (challengeDetailTmp.discussions && challengeDetailTmp.discussions.length > 0) {
+    challengeDetailTmp.discussions = challengeDetailTmp.discussions.map(discussion => {
+      if (discussion && _.isString(discussion.type)) {
+        return {
+          ...discussion,
+          type: discussion.type.toUpperCase()
+        }
+      }
+      return discussion
+    })
+  }
+
+  if (challengeDetailTmp.metadata && challengeDetailTmp.metadata.length > 0) {
+    challengeDetailTmp.metadata = challengeDetailTmp.metadata.map(m => {
+      const metadata = { ...m }
+
+      // check if value is boolean and convert to string
+      if (typeof metadata.value === 'boolean') {
+        metadata.value = metadata.value.toString()
+      }
+
+      return metadata
+    })
+  }
+
+  if (challengeDetailTmp.phases) {
+    challengeDetailTmp.startDate = moment(challengeDetailTmp.phases[0].scheduledStartDate)
+    // challengeDetailTmp.registrationStartDate = moment(challengeDetailTmp.phases[0].scheduledStartDate)
+    // challengeDetailTmp.registrationEndDate = moment(challengeDetailTmp.phases[0].scheduledEndDate)
+    // challengeDetailTmp.submissionStartDate = moment(challengeDetailTmp.phases[1].scheduledStartDate)
+    // challengeDetailTmp.submissionEndDate = moment(challengeDetailTmp.phases[1].scheduledEndDate)
     challengeDetailTmp.phases = challengeDetailTmp.phases.map((p) => ({
       duration: p.duration * minuteToSecond,
       phaseId: p.phaseId,
       scheduledStartDate: p.scheduledStartDate
     }))
-    return challengeDetailTmp
   }
-  if (challengeDetail.metadata && challengeDetail.metadata.length > 0) {
-    challengeDetail.metadata = challengeDetail.metadata.map(m => {
-      // check if value is boolean and convert to string
-      if (typeof m.value === 'boolean') {
-        m.value = m.value.toString()
-      }
 
-      return m
-    })
-  }
-  return challengeDetail
+  return challengeDetailTmp
 }

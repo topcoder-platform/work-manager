@@ -182,6 +182,13 @@ export function fetchChallenges (filters, params) {
     ...filters,
     ...params
   }
+  if (query.status) {
+    if (_.isArray(query.status)) {
+      query.status = query.status.map(statusValue => _.isString(statusValue) ? statusValue.toUpperCase() : statusValue)
+    } else if (_.isString(query.status)) {
+      query.status = query.status.toUpperCase()
+    }
+  }
   return axiosInstance.get(`${CHALLENGE_API_URL}?${qs.stringify(query, { encode: false })}`, {
     headers: {
       'app-version': CHALLENGE_API_VERSION

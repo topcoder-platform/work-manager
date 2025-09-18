@@ -1100,7 +1100,7 @@ class ChallengeEditor extends Component {
       return ([
         {
           name: `${challenge.name} Discussion`,
-          type: 'challenge',
+          type: 'CHALLENGE',
           provider: 'vanilla'
         }
       ])
