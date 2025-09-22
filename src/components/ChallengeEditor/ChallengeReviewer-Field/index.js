@@ -384,7 +384,7 @@ class ChallengeReviewerField extends Component {
                     // For AI reviewers, allow both review and submission phases
                     // For member reviewers, only allow review phases even after changing the reviewer type
                     if (this.isAIReviewer(reviewer)) {
-                      return (isReviewPhase || isSubmissionPhase) || isCurrentlySelected
+                      return isReviewPhase || isSubmissionPhase || isCurrentlySelected
                     } else {
                       return isReviewPhase || isCurrentlySelected
                     }
