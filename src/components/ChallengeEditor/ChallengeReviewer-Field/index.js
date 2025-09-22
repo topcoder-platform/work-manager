@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import cn from 'classnames'
 import { PrimaryButton, OutlineButton } from '../../Buttons'
-import { REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE } from '../../../config/constants'
+import { REVIEW_OPPORTUNITY_TYPE_LABELS, REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE } from '../../../config/constants'
 import { loadScorecards, loadDefaultReviewers, loadWorkflows } from '../../../actions/challenges'
 import styles from './ChallengeReviewer-Field.module.scss'
 import { convertDollarToInteger, validateValue } from '../../../util/input-check'
@@ -126,7 +126,7 @@ class ChallengeReviewerField extends Component {
       phaseId: (defaultReviewer && defaultReviewer.phaseId) || (firstReviewPhase ? (firstReviewPhase.id || firstReviewPhase.phaseId) : ''),
       basePayment: (defaultReviewer && defaultReviewer.basePayment) || '0',
       incrementalPayment: (defaultReviewer && defaultReviewer.incrementalPayment) || 0,
-      type: isAIReviewer ? null : ((defaultReviewer && defaultReviewer.opportunityType) || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW)
+      type: isAIReviewer ? undefined : ((defaultReviewer && defaultReviewer.opportunityType) || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW)
     }
 
     if (isAIReviewer) {
@@ -285,7 +285,7 @@ class ChallengeReviewerField extends Component {
                     phaseId: currentReviewer.phaseId,
                     basePayment: currentReviewer.basePayment || '0',
                     incrementalPayment: currentReviewer.incrementalPayment || 0,
-                    type: isAI ? null : (currentReviewer.type || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW)
+                    type: isAI ? undefined : (currentReviewer.type || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW)
                   }
 
                   if (isAI) {
@@ -459,16 +459,7 @@ class ChallengeReviewerField extends Component {
               <label>Review Type:</label>
               {readOnly ? (
                 <span>
-                  {(() => {
-                    const typeMap = {
-                      [REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW]: 'Regular Review',
-                      [REVIEW_OPPORTUNITY_TYPES.COMPONENT_DEV_REVIEW]: 'Component Dev Review',
-                      [REVIEW_OPPORTUNITY_TYPES.SPEC_REVIEW]: 'Spec Review',
-                      [REVIEW_OPPORTUNITY_TYPES.ITERATIVE_REVIEW]: 'Iterative Review',
-                      [REVIEW_OPPORTUNITY_TYPES.SCENARIOS_REVIEW]: 'Scenarios Review'
-                    }
-                    return typeMap[reviewer.type] || 'Regular Review'
-                  })()}
+                  { REVIEW_OPPORTUNITY_TYPE_LABELS[reviewer.type] || 'Regular Review'}
                 </span>
               ) : (
                 <select
