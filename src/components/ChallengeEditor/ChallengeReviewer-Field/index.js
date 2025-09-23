@@ -58,7 +58,7 @@ class ChallengeReviewerField extends Component {
 
     // Add challenge track if available
     if (challenge.track) {
-      filters.challengeTrack = challenge.track.toUpperCase()
+      filters.challengeTrack = challenge.track.toUpperCase().replace(' ', '_')
     }
 
     // Add challenge type if available
