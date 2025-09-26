@@ -69,14 +69,20 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
 }
 
 const renderStatus = (status, getStatusText) => {
-  const statusMessage = status.split(' ')[0]
+  const normalizedStatus = (status || '').toUpperCase()
+  const statusMessage = normalizedStatus.split(' ')[0]
+  const isCancelledStatus = statusMessage.startsWith(CHALLENGE_STATUS.CANCELLED)
+
+  if (isCancelledStatus) {
+    return (<ChallengeStatus status={statusMessage} statusText='Cancelled' />)
+  }
+
   switch (statusMessage) {
     case CHALLENGE_STATUS.ACTIVE:
     case CHALLENGE_STATUS.APPROVED:
     case CHALLENGE_STATUS.NEW:
     case CHALLENGE_STATUS.DRAFT:
     case CHALLENGE_STATUS.COMPLETED:
-    case CHALLENGE_STATUS.CANCELLED:
       const statusText = getStatusText ? getStatusText(statusMessage) : statusMessage
       return (<ChallengeStatus status={statusMessage} statusText={statusText} />)
     default:
