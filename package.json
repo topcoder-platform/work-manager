@@ -125,7 +125,7 @@
   },
   "scripts": {
     "start": "node server.js",
-    "dev": "node scripts/start.js",
+    "start:dev": "node scripts/start.js",
     "build": "node scripts/build.js",
     "lint": "eslint ./src",
     "lint:fix": "eslint --fix ./src",

@@ -15,21 +15,18 @@ const statuses = {
   [CHALLENGE_STATUS.APPROVED]: styles.yellow,
   [CHALLENGE_STATUS.NEW]: styles.yellow,
   [CHALLENGE_STATUS.DRAFT]: styles.gray,
-  [CHALLENGE_STATUS.COMPLETED]: styles.blue,
-  [CHALLENGE_STATUS.CANCELLED]: styles.red,
-  [CHALLENGE_STATUS.CANCELLED_CLIENT_REQUEST]: styles.red,
-  [CHALLENGE_STATUS.CANCELLED_FAILED_REVIEW]: styles.red,
-  [CHALLENGE_STATUS.CANCELLED_FAILED_SCREENING]: styles.red,
-  [CHALLENGE_STATUS.CANCELLED_REQUIREMENTS_INFEASIBLE]: styles.red,
-  [CHALLENGE_STATUS.CANCELLED_WINNER_UNRESPONSIVE]: styles.red,
-  [CHALLENGE_STATUS.CANCELLED_ZERO_REGISTRATIONS]: styles.red,
-  [CHALLENGE_STATUS.CANCELLED_ZERO_SUBMISSIONS]: styles.red
+  [CHALLENGE_STATUS.COMPLETED]: styles.blue
 }
 
 const ChallengeStatus = ({ status, statusText }) => {
+  const normalizedStatus = (status || '').toUpperCase()
+  const isCancelledStatus = normalizedStatus.startsWith(CHALLENGE_STATUS.CANCELLED)
+  const containerClass = cn(styles.container, isCancelledStatus ? styles.red : statuses[normalizedStatus])
+  const displayText = isCancelledStatus ? 'Cancelled' : _.startCase(_.toLower(statusText || normalizedStatus))
+
   return (
-    <div className={cn(styles.container, statuses[status])}>
-      <span>{_.startCase(_.toLower(statusText))}</span>
+    <div className={containerClass}>
+      <span>{displayText}</span>
     </div>
   )
 }

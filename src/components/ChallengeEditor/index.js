@@ -860,14 +860,22 @@ class ChallengeEditor extends Component {
       const is2RoundDesignChallenge = isDesignChallenge && is2RoundChallenge
 
       for (let index = 0; index < phases.length; ++index) {
-        newChallenge.phases[index].isDurationActive = canChangeDuration(newChallenge.phases[index])
-        if ((newChallenge.phases[index].name === 'Submission' && !is2RoundDesignChallenge) || newChallenge.phases[index].name === 'Checkpoint Submission') {
-          newChallenge.phases[index].isStartTimeActive = true
-        } else {
-          newChallenge.phases[index].isStartTimeActive = index <= 0
-        }
-        newChallenge.phases[index].isOpen =
-          newChallenge.phases[index].isDurationActive
+        const currentPhase = newChallenge.phases[index]
+        const phaseName = _.get(currentPhase, 'name', '')
+        const normalizedPhaseName = _.toLower(phaseName)
+        const isRegistrationPhase = normalizedPhaseName === 'registration'
+        const isSubmissionPhase = normalizedPhaseName === 'submission'
+        const isCheckpointSubmissionPhase = normalizedPhaseName === 'checkpoint submission'
+
+        currentPhase.isDurationActive = canChangeDuration(currentPhase)
+        // Allow editing registration start time even when it aligns with submission so dates can be staggered later.
+        currentPhase.isStartTimeActive = (
+          (isSubmissionPhase && !is2RoundDesignChallenge) ||
+          isCheckpointSubmissionPhase ||
+          isRegistrationPhase ||
+          index <= 0
+        )
+        currentPhase.isOpen = currentPhase.isDurationActive
       }
       this.setState({ challenge: newChallenge })
     }
