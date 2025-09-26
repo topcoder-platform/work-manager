@@ -15,7 +15,7 @@ module.exports = {
   CHALLENGE_DEFAULT_REVIEWERS_URL: `${PROD_API_HOSTNAME}/v6/challenge/default-reviewers`,
   CHALLENGE_API_VERSION: '1.1.0',
   CHALLENGE_TIMELINE_TEMPLATES_URL: `${PROD_API_HOSTNAME}/v5/timeline-templates`,
-  CHALLENGE_TYPES_URL: `${PROD_API_HOSTNAME}/v5/challenge-types`,
+  CHALLENGE_TYPES_URL: `${PROD_API_HOSTNAME}/v6/challenge-types`,
   CHALLENGE_TRACKS_URL: `${PROD_API_HOSTNAME}/v5/challenge-tracks`,
   CHALLENGE_PHASES_URL: `${PROD_API_HOSTNAME}/v5/challenge-phases`,
   CHALLENGE_TIMELINES_URL: `${PROD_API_HOSTNAME}/v5/challenge-timelines`,
