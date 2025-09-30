@@ -20,13 +20,18 @@ const initialState = {
 export default function (state = initialState, action) {
   switch (action.type) {
     case LOAD_CHALLENGE_SUBMISSIONS_SUCCESS:
+      const headerTotal = action.payload.headers && action.payload.headers['x-total']
+      const totalCount = action.payload.totalCount
+      const totalSubmissions = totalCount != null
+        ? totalCount
+        : (headerTotal != null ? Number(headerTotal) : 0)
       return {
         ...state,
         challengeSubmissions: action.payload.data,
         isLoading: false,
         loadingId: null,
         challengeId: state.loadingId,
-        totalSubmissions: action.payload.headers['x-total'],
+        totalSubmissions,
         page: action.payload.page,
         submissionsPerPage: action.payload.perPage
       }
