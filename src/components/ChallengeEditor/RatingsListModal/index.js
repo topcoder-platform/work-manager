@@ -7,6 +7,7 @@ import { getTopcoderReactLib } from '../../../util/topcoder-react-lib'
 import Loader from '../../Loader'
 import { getReviewTypes } from '../../../services/challenges'
 import { SystemReviewers } from '../../../config/constants'
+import { getSubmissionsService } from '../../../services/submissions'
 
 export const RatingsListModal = ({ onClose, theme, token, submissionId, challengeId }) => {
   const [reviews, setReviews] = useState([])
@@ -38,9 +39,7 @@ export const RatingsListModal = ({ onClose, theme, token, submissionId, challeng
   }, [token])
 
   const getSubmission = useCallback(async () => {
-    const reactLib = getTopcoderReactLib()
-    const { getService } = reactLib.services.submissions
-    const submissionsService = getService(token)
+    const submissionsService = getSubmissionsService(token)
     const submissionInfo = await submissionsService.getSubmissionInformation(submissionId)
     setReviews(await enrichSources(submissionInfo.review, submissionInfo.reviewSummation[0]))
     setLoading(false)

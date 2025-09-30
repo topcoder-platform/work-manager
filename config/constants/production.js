@@ -26,7 +26,7 @@ module.exports = {
   MEMBERS_API_URL: `${PROD_API_HOSTNAME}/v5/members`,
   RESOURCES_API_URL: `${PROD_API_HOSTNAME}/v5/resources`,
   RESOURCE_ROLES_API_URL: `${PROD_API_HOSTNAME}/v5/resource-roles`,
-  SUBMISSIONS_API_URL: `${PROD_API_HOSTNAME}/v5/submissions`,
+  SUBMISSIONS_API_URL: `${PROD_API_HOSTNAME}/v6/submissions`,
   REVIEW_TYPE_API_URL: `${PROD_API_HOSTNAME}/v5/reviewTypes`,
   SCORECARDS_API_URL: `${PROD_API_HOSTNAME}/v5/scorecards`, // update to use v6
    WORKFLOWS_API_URL: `${DEV_API_HOSTNAME}/v5/workflows`, // update to use v6

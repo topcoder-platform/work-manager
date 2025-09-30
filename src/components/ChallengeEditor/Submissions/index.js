@@ -18,7 +18,6 @@ import {
   checkAdmin
 } from '../../../util/tc'
 import {
-  getTopcoderReactLib,
   isValidDownloadFile
 } from '../../../util/topcoder-react-lib'
 import {
@@ -31,6 +30,8 @@ import Tooltip from '../../Tooltip'
 import { RatingsListModal } from '../RatingsListModal'
 import Select from '../../Select'
 import Pagination from 'react-js-pagination'
+import { getSubmissionsService } from '../../../services/submissions'
+import { searchProfilesByUserIds } from '../../../services/user'
 const assets = require.context('../../../assets/images', false, /svg/)
 const Lock = './lock.svg'
 const Download = './IconSquareDownload.svg'
@@ -56,14 +57,33 @@ class SubmissionsComponent extends React.Component {
       alertMessage: '',
       selectedSubmissionId: '',
       showArtifactsListModal: false,
-      showRatingsListModal: false
+      showRatingsListModal: false,
+      memberDetails: {}
     }
+    this.pendingMemberIds = new Set()
+    this._isMounted = false
     this.checkIsReviewPhaseComplete = this.checkIsReviewPhaseComplete.bind(
       this
     )
     this.downloadSubmission = this.downloadSubmission.bind(this)
     this.handlePageChange = this.handlePageChange.bind(this)
     this.handlePerPageChange = this.handlePerPageChange.bind(this)
+    this.loadMemberDetails = this.loadMemberDetails.bind(this)
+  }
+
+  componentDidMount () {
+    this._isMounted = true
+    this.loadMemberDetails(this.props.submissions)
+  }
+
+  componentDidUpdate (prevProps) {
+    if (!_.isEqual(prevProps.submissions, this.props.submissions)) {
+      this.loadMemberDetails(this.props.submissions)
+    }
+  }
+
+  componentWillUnmount () {
+    this._isMounted = false
   }
 
   /**
@@ -96,9 +116,7 @@ class SubmissionsComponent extends React.Component {
 
   async downloadSubmission (submission) {
     // download submission
-    const reactLib = getTopcoderReactLib()
-    const { getService } = reactLib.services.submissions
-    const submissionsService = getService(this.props.token)
+    const submissionsService = getSubmissionsService(this.props.token)
     submissionsService.downloadSubmission(submission.id)
       .then((blob) => {
         isValidDownloadFile(blob).then((isValidFile) => {
@@ -147,6 +165,65 @@ class SubmissionsComponent extends React.Component {
     }
   }
 
+  async loadMemberDetails (submissions = []) {
+    const memberIds = []
+    submissions.forEach(submission => {
+      const submissionMemberId = submission.memberId || _.get(submission, 'registrant.memberId') || _.get(submission, 'registrant.userId')
+      if (!_.isNil(submissionMemberId)) {
+        memberIds.push(String(submissionMemberId))
+      }
+    })
+
+    const uniqueMemberIds = _.uniq(memberIds)
+    const { memberDetails } = this.state
+
+    const missingMemberIds = uniqueMemberIds.filter(memberId => (
+      _.isUndefined(memberDetails[memberId]) && !this.pendingMemberIds.has(memberId)
+    ))
+
+    if (!missingMemberIds.length) {
+      return
+    }
+
+    missingMemberIds.forEach(memberId => this.pendingMemberIds.add(memberId))
+
+    try {
+      const members = await searchProfilesByUserIds(missingMemberIds, 'userId,handle,email,maxRating')
+      const updatedMemberDetails = { ...memberDetails }
+
+      members.forEach(member => {
+        if (member && !_.isNil(member.userId)) {
+          const memberIdKey = String(member.userId)
+          updatedMemberDetails[memberIdKey] = member
+          this.pendingMemberIds.delete(memberIdKey)
+        }
+      })
+
+      missingMemberIds.forEach(memberId => {
+        if (!Object.prototype.hasOwnProperty.call(updatedMemberDetails, memberId)) {
+          updatedMemberDetails[memberId] = null
+        }
+        this.pendingMemberIds.delete(memberId)
+      })
+
+      if (this._isMounted) {
+        this.setState({ memberDetails: updatedMemberDetails })
+      }
+    } catch (error) {
+      const updatedMemberDetails = { ...memberDetails }
+      missingMemberIds.forEach(memberId => {
+        if (!Object.prototype.hasOwnProperty.call(updatedMemberDetails, memberId)) {
+          updatedMemberDetails[memberId] = null
+        }
+        this.pendingMemberIds.delete(memberId)
+      })
+
+      if (this._isMounted) {
+        this.setState({ memberDetails: updatedMemberDetails })
+      }
+    }
+  }
+
   /**
    * Update filter for getting project by pagination
    * @param {Number} pageNumber page number
@@ -176,7 +253,7 @@ class SubmissionsComponent extends React.Component {
       (loggedInUserResource && checkDownloadSubmissionRoles(loggedInUserResource.roles)) ||
       checkAdmin(token)
 
-    const { downloadingAll, alertMessage } = this.state
+    const { downloadingAll, alertMessage, memberDetails } = this.state
 
     const renderSubmission = s => (
       <div className={styles.submission} key={s.id}>
@@ -307,11 +384,6 @@ class SubmissionsComponent extends React.Component {
                   >
                     <span>Submission ID (UUID)</span>
                   </th>
-                  <th
-                    className={cn(styles['col-7Table'])}
-                  >
-                    <span>Legacy submission ID</span>
-                  </th>
                   {canDownloadSubmission ? (<th
                     className={cn(styles['col-8Table'])}
                   >
@@ -321,41 +393,50 @@ class SubmissionsComponent extends React.Component {
               </thead>
               <tbody>
                 {submissions.map(s => {
-                  const rating = s.registrant && !_.isNil(s.registrant.rating)
-                    ? s.registrant.rating
-                    : '-'
-                  const memberHandle = _.get(s.registrant, 'memberHandle', '')
-                  const email = _.get(s.registrant, 'email', '')
+                  const memberId = s.memberId || _.get(s, 'registrant.memberId') || _.get(s, 'registrant.userId')
+                  const memberInfo = memberId ? memberDetails[String(memberId)] : undefined
+                  const ratingFromMemberInfo = _.get(memberInfo, 'maxRating.rating')
+                  const fallbackRating = !_.isNil(s.rating) ? s.rating : _.get(s, 'registrant.rating')
+                  const rawRating = !_.isNil(ratingFromMemberInfo) ? ratingFromMemberInfo : fallbackRating
+                  const parsedRating = _.isNil(rawRating) || rawRating === '' ? null : Number(rawRating)
+                  const hasValidRating = !_.isNil(parsedRating) && !Number.isNaN(parsedRating)
+                  const ratingDisplay = hasValidRating ? parsedRating : '-'
+                  const ratingLevel = getRatingLevel(hasValidRating ? parsedRating : 0)
+                  const memberHandle = _.get(memberInfo, 'handle', _.get(s, 'registrant.memberHandle', ''))
+                  const email = _.get(memberInfo, 'email', _.get(s, 'registrant.email', ''))
                   const submissionDate = moment(s.created).format('MMM DD, YYYY HH:mm')
+                  const reviewScore = !_.isEmpty(s.review) && !_.isNil(_.get(s.review, '0.score'))
+                    ? parseFloat(_.get(s.review, '0.score')).toFixed(2)
+                    : 'N/A'
+                  const reviewSummations = Array.isArray(s.reviewSummation) ? s.reviewSummation : []
+                  const aggregateScore = !_.isEmpty(reviewSummations) && !_.isNil(_.get(reviewSummations, '0.aggregateScore'))
+                    ? parseFloat(_.get(reviewSummations, '0.aggregateScore')).toFixed(2)
+                    : 'N/A'
                   return (
                     <tr
-                      key={_.get(s.registrant, 'memberHandle', '') + s.created}
+                      key={s.id}
                       className={styles.rowTable}
                     >
                       {!isF2F && !isBugHunt && (
                         <td
-                          className={cn(styles['col-2Table'], styles['col-bodyTable'], styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`])}
+                          className={cn(styles['col-2Table'], styles['col-bodyTable'], styles[`level-${ratingLevel}`])}
                         >
-                          <span title={rating}>
-                            {rating}
+                          <span title={ratingDisplay}>
+                            {ratingDisplay}
                           </span>
                         </td>
                       )}
                       <td className={cn(styles['col-3Table'], styles['col-bodyTable'])}>
                         <a
                           title={memberHandle}
-                          href={`${window.origin}/members/${_.get(
-                            s.registrant,
-                            'memberHandle',
-                            ''
-                          )}`}
+                          href={`${window.origin}/members/${memberHandle}`}
                           target={`${
                             _.includes(window.origin, 'www') ? '_self' : '_blank'
                           }`}
                           rel='noopener noreferrer'
                           className={cn(
                             styles['handle'],
-                            styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`]
+                            styles[`level-${ratingLevel}`]
                           )}
                         >
                           {memberHandle}
@@ -372,24 +453,15 @@ class SubmissionsComponent extends React.Component {
                         </span>
                       </td>
                       <td className={cn(styles['col-5Table'], styles['col-bodyTable'])}>
-                        <a href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.legacyId}/submissions/${s.id} `} target='_blank'>
-                          {!_.isEmpty(s.review) && s.review[0].score
-                            ? parseFloat(s.review[0].score).toFixed(2)
-                            : 'N/A'}
+                        <a href={`${SUBMISSION_REVIEW_APP_URL}/${challenge.id}/submissions/${s.id}`} target='_blank'>
+                          {reviewScore}
                           &zwnj; &zwnj;/ &zwnj;
-                          {s.reviewSummation && s.reviewSummation[0].aggregateScore
-                            ? parseFloat(s.reviewSummation[0].aggregateScore).toFixed(2)
-                            : 'N/A'}
+                          {aggregateScore}
                         </a>
                       </td>
                       <td className={cn(styles['col-6Table'], styles['col-bodyTable'])}>
                         <span title={s.id}>
                           {s.id}
-                        </span>
-                      </td>
-                      <td className={cn(styles['col-7Table'], styles['col-bodyTable'])}>
-                        <span title={s.legacySubmissionId}>
-                          {s.legacySubmissionId}
                         </span>
                       </td>
                       {canDownloadSubmission ? (<td className={cn(styles['col-8Table'], styles['col-bodyTable'])}>
@@ -471,13 +543,11 @@ class SubmissionsComponent extends React.Component {
                 type='info'
                 disabled={downloadingAll}
                 onClick={async () => {
-                  const reactLib = getTopcoderReactLib()
-                  const { getService } = reactLib.services.submissions
                   // download submission
                   this.setState({
                     downloadingAll: true
                   })
-                  const submissionsService = getService(token)
+                  const submissionsService = getSubmissionsService(token)
                   const allFiles = []
                   let downloadedFile = 0
                   const checkToCompressFiles = () => {

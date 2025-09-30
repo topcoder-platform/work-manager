@@ -4,8 +4,9 @@ import Modal from '../../Modal'
 import styles from './ArtifactsListModal.module.scss'
 import PropTypes from 'prop-types'
 import ReactSVG from 'react-svg'
-import { getTopcoderReactLib, isValidDownloadFile } from '../../../util/topcoder-react-lib'
+import { isValidDownloadFile } from '../../../util/topcoder-react-lib'
 import Loader from '../../Loader'
+import { getSubmissionsService } from '../../../services/submissions'
 const assets = require.context('../../../assets/images', false, /svg/)
 
 export const ArtifactsListModal = ({ onClose, submissionId, token, theme }) => {
@@ -13,9 +14,7 @@ export const ArtifactsListModal = ({ onClose, submissionId, token, theme }) => {
   const [loading, setLoading] = useState(false)
 
   const getArtifacts = useCallback(async () => {
-    const reactLib = getTopcoderReactLib()
-    const { getService } = reactLib.services.submissions
-    const submissionsService = getService(token)
+    const submissionsService = getSubmissionsService(token)
     const { artifacts: resp } = await submissionsService.getSubmissionArtifacts(submissionId)
     setArtifacts(resp)
     setLoading(false)
@@ -39,9 +38,7 @@ export const ArtifactsListModal = ({ onClose, submissionId, token, theme }) => {
 
   const onDownloadArtifact = useCallback((item) => {
     // download submission
-    const reactLib = getTopcoderReactLib()
-    const { getService } = reactLib.services.submissions
-    const submissionsService = getService(token)
+    const submissionsService = getSubmissionsService(token)
     submissionsService.downloadSubmissionArtifact(submissionId, item)
       .then((blob) => {
         isValidDownloadFile(blob).then((isValidFile) => {
