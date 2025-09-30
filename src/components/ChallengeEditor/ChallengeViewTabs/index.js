@@ -123,7 +123,9 @@ const ChallengeViewTabs = ({
   const isTask = _.get(challenge, 'task.isTask', false)
 
   const isSelfService = challenge.legacy.selfService
-  const isDraft = challenge.status.toUpperCase() === CHALLENGE_STATUS.DRAFT
+  const normalizedStatus = challenge.status ? challenge.status.toUpperCase() : ''
+  const isDraft = normalizedStatus === CHALLENGE_STATUS.DRAFT
+  const isNew = normalizedStatus === CHALLENGE_STATUS.NEW
   const isSelfServiceCopilot = challenge.legacy.selfServiceCopilot === loggedInUser.handle
   const isAdmin = checkAdmin(token)
 
@@ -164,7 +166,7 @@ const ChallengeViewTabs = ({
             isSelfServiceCopilot ||
             isAdmin
           ) &&
-          challenge.status.toUpperCase() === CHALLENGE_STATUS.APPROVED
+          normalizedStatus === CHALLENGE_STATUS.APPROVED
         )
       )
   }, [
@@ -175,7 +177,7 @@ const ChallengeViewTabs = ({
     isDraft,
     isSelfServiceCopilot,
     isAdmin,
-    challenge.status,
+    normalizedStatus,
     preventCopilotFromActivatingTask
   ])
 
@@ -206,7 +208,7 @@ const ChallengeViewTabs = ({
             styles.actionButtonsRight
           )}
         >
-          {enableEdit && (isDraft || challenge.status === 'New') && !isReadOnly && !isSelfService &&
+          {enableEdit && (isDraft || isNew) && !isReadOnly && !isSelfService &&
             (<div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>)}
           {canLaunch && (
             <div className={styles.button}>

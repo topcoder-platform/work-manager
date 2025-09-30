@@ -308,7 +308,7 @@ class ChallengeEditor extends Component {
       this.setState({
         challenge: newChallenge
       }, () => {
-        this.updateAllChallengeInfo('Completed')
+        this.updateAllChallengeInfo(CHALLENGE_STATUS.COMPLETED)
       })
     })
   }
@@ -968,7 +968,7 @@ class ChallengeEditor extends Component {
       return { ...p, prizes }
     })
     challenge.status = status
-    if (status === 'Active' && isTask) {
+    if (status === CHALLENGE_STATUS.ACTIVE && isTask) {
       challenge.startDate = moment().format()
     }
 
@@ -1036,7 +1036,7 @@ class ChallengeEditor extends Component {
     }
 
     const newChallenge = {
-      status: 'New',
+      status: CHALLENGE_STATUS.NEW,
       projectId: this.props.projectId,
       name,
       typeId,
@@ -1303,11 +1303,11 @@ class ChallengeEditor extends Component {
   }
 
   async onActiveChallenge () {
-    this.updateAllChallengeInfo('Active')
+    this.updateAllChallengeInfo(CHALLENGE_STATUS.ACTIVE)
   }
 
   async saveDraft () {
-    this.updateAllChallengeInfo('Draft')
+    this.updateAllChallengeInfo(CHALLENGE_STATUS.DRAFT)
   }
 
   async onlySave () {
@@ -1401,7 +1401,8 @@ class ChallengeEditor extends Component {
       challengeId,
       assignYourselfCopilot,
       challengeResources,
-      loggedInUser
+      loggedInUser,
+      challengeDetails
     } = this.props
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
@@ -1412,10 +1413,13 @@ class ChallengeEditor extends Component {
     let isActive = false
     let isDraft = false
     let isCompleted = false
+    let isNewStatus = false
     if (challenge.status) {
-      isDraft = challenge.status.toUpperCase() === CHALLENGE_STATUS.DRAFT
-      isActive = challenge.status.toUpperCase() === CHALLENGE_STATUS.ACTIVE
-      isCompleted = challenge.status.toUpperCase() === CHALLENGE_STATUS.COMPLETED
+      const normalizedStatus = challenge.status.toUpperCase()
+      isDraft = normalizedStatus === CHALLENGE_STATUS.DRAFT
+      isActive = normalizedStatus === CHALLENGE_STATUS.ACTIVE
+      isCompleted = normalizedStatus === CHALLENGE_STATUS.COMPLETED
+      isNewStatus = normalizedStatus === CHALLENGE_STATUS.NEW
     }
     if (isLoading || _.isEmpty(metadata.challengePhases)) return <Loader />
     if (failedToLoad) {
@@ -1543,12 +1547,12 @@ class ChallengeEditor extends Component {
         )
       }
     }
-    if (!isNew && challenge.status !== 'New' && isLaunch && isConfirm) {
+    if (!isNew && !isNewStatus && isLaunch && isConfirm) {
       draftModal = (
         <AlertModal
           title='Success'
           message={
-            challenge.status === 'Draft'
+            isDraft
               ? 'Your challenge is saved as draft'
               : 'We have scheduled your challenge and processed the payment'
           }
@@ -1573,6 +1577,10 @@ class ChallengeEditor extends Component {
       assignedMemberDetails &&
       loggedInUser &&
       `${loggedInUser.userId}` === `${assignedMemberDetails.userId}`
+
+    const challengeDetailsStatus = _.get(challengeDetails, 'status', '')
+    const normalizedChallengeDetailsStatus = challengeDetailsStatus ? challengeDetailsStatus.toUpperCase() : ''
+    const canDeleteChallenge = !isNew && [CHALLENGE_STATUS.NEW, CHALLENGE_STATUS.DRAFT].includes(normalizedChallengeDetailsStatus)
 
     const actionButtons = <React.Fragment>
       {!isLoading && this.state.hasValidationErrors && <div className={styles.error}>Please fix the errors before saving</div>}
@@ -1899,7 +1907,7 @@ class ChallengeEditor extends Component {
             {!isNew && <LegacyLinks challenge={challenge} />}
           </div>
           <div className={cn(styles.actionButtons, styles.actionButtonsRight)}>
-            {!isNew && this.props.challengeDetails.status === 'New' && <PrimaryButton text={'Delete'} type={'danger'} onClick={this.deleteModalLaunch} />}
+            {canDeleteChallenge && <PrimaryButton text={'Delete'} type={'danger'} onClick={this.deleteModalLaunch} />}
             <PrimaryButton text={'Back'} type={'info'} submit link={`/projects/${projectDetail.id}/challenges`} />
           </div>
         </div>
