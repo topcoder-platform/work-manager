@@ -112,7 +112,7 @@ class ChallengeEditor extends Component {
     loadGroups()
     loadResourceRoles()
     loadScorecards()
-    loadDefaultReviewers()
+    this.fetchDefaultReviewersForChallenge(this.props.challengeDetails, loadDefaultReviewers)
     this.fetchChallengeDetails(
       match,
       loadChallengeDetails,
@@ -127,6 +127,15 @@ class ChallengeEditor extends Component {
     //     this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources)
     //   }
     // })
+  }
+
+  fetchDefaultReviewersForChallenge (challengeDetails, loadDefaultReviewersFn) {
+    const typeId = _.get(challengeDetails, 'typeId')
+    const trackId = _.get(challengeDetails, 'trackId')
+
+    if (typeId && trackId && typeof loadDefaultReviewersFn === 'function') {
+      loadDefaultReviewersFn({ typeId, trackId })
+    }
   }
 
   componentWillUnmount () {
@@ -145,6 +154,19 @@ class ChallengeEditor extends Component {
       this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources, loadSubmissions)
     } else {
       this.setState({ challengeDetails: nextProps.challengeDetails })
+    }
+
+    const prevTypeId = _.get(this.props.challengeDetails, 'typeId')
+    const prevTrackId = _.get(this.props.challengeDetails, 'trackId')
+    const nextTypeId = _.get(nextProps.challengeDetails, 'typeId')
+    const nextTrackId = _.get(nextProps.challengeDetails, 'trackId')
+
+    if (
+      nextTypeId &&
+      nextTrackId &&
+      (nextTypeId !== prevTypeId || nextTrackId !== prevTrackId)
+    ) {
+      this.fetchDefaultReviewersForChallenge(nextProps.challengeDetails, nextProps.loadDefaultReviewers)
     }
     if (projectDetail && loggedInUser) {
       const projectMembers = projectDetail.members
