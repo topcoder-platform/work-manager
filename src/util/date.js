@@ -176,7 +176,22 @@ export const normalizeChallengeDataFromAPI = (apiChallengeData) => {
  * @param {Array} phases challenge phases that are to be sorte3d
  */
 export const sortChallengePhases = (phases) => {
-  return _.sortBy(phases, phase => phase.actualStartDate || phase.scheduledStartDate)
+  return _.sortBy(phases, [
+    phase => phase.actualStartDate || phase.scheduledStartDate,
+    phase => {
+      const phaseName = (phase.name || '').toLowerCase()
+
+      if (phaseName === 'registration') {
+        return 0
+      }
+
+      if (phaseName === 'submission') {
+        return 1
+      }
+
+      return 2
+    }
+  ])
 }
 
 /**
