@@ -1580,7 +1580,7 @@ class ChallengeEditor extends Component {
 
     const challengeDetailsStatus = _.get(challengeDetails, 'status', '')
     const normalizedChallengeDetailsStatus = challengeDetailsStatus ? challengeDetailsStatus.toUpperCase() : ''
-    const canDeleteChallenge = !isNew && [CHALLENGE_STATUS.NEW, CHALLENGE_STATUS.DRAFT].includes(normalizedChallengeDetailsStatus)
+    const canDeleteChallenge = !isNew && normalizedChallengeDetailsStatus === CHALLENGE_STATUS.NEW
 
     const actionButtons = <React.Fragment>
       {!isLoading && this.state.hasValidationErrors && <div className={styles.error}>Please fix the errors before saving</div>}
