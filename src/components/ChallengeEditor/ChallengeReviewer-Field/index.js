@@ -102,6 +102,11 @@ class ChallengeReviewerField extends Component {
     )
     const firstReviewPhase = reviewPhases && reviewPhases.length > 0 ? reviewPhases[0] : null
 
+    // If no review phases, get the first available phase as fallback
+    const fallbackPhase = !firstReviewPhase && challenge.phases && challenge.phases.length > 0
+      ? challenge.phases[0]
+      : null
+
     const isAIReviewer = this.isAIReviewer(defaultReviewer)
 
     // For AI reviewers, get scorecardId from the workflow if available
@@ -120,10 +125,20 @@ class ChallengeReviewerField extends Component {
       scorecardId = (defaultReviewer && defaultReviewer.scorecardId) || ''
     }
 
+    // Determine the default phase ID
+    let defaultPhaseId = ''
+    if (defaultReviewer && defaultReviewer.phaseId) {
+      defaultPhaseId = defaultReviewer.phaseId
+    } else if (firstReviewPhase) {
+      defaultPhaseId = firstReviewPhase.phaseId || firstReviewPhase.id
+    } else if (fallbackPhase) {
+      defaultPhaseId = fallbackPhase.phaseId || fallbackPhase.id
+    }
+
     const newReviewer = {
       scorecardId,
       isMemberReview: !isAIReviewer,
-      phaseId: (defaultReviewer && defaultReviewer.phaseId) || (firstReviewPhase ? (firstReviewPhase.id || firstReviewPhase.phaseId) : ''),
+      phaseId: defaultPhaseId,
       basePayment: (defaultReviewer && defaultReviewer.basePayment) || '0',
       incrementalPayment: (defaultReviewer && defaultReviewer.incrementalPayment) || 0,
       type: isAIReviewer ? undefined : ((defaultReviewer && defaultReviewer.opportunityType) || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW)
@@ -185,31 +200,31 @@ class ChallengeReviewerField extends Component {
   }
 
   validateReviewer (reviewer) {
-    const errors = []
+    const errors = {}
     const isAI = this.isAIReviewer(reviewer)
 
     if (isAI) {
       if (!reviewer.aiWorkflowId || reviewer.aiWorkflowId.trim() === '') {
-        errors.push('AI Workflow is required')
+        errors.aiWorkflowId = 'AI Workflow is required'
       }
     } else {
       if (!reviewer.scorecardId) {
-        errors.push('Scorecard is required')
+        errors.scorecardId = 'Scorecard is required'
       }
 
       const memberCount = parseInt(reviewer.memberReviewerCount) || 1
       if (memberCount < 1 || !Number.isInteger(memberCount)) {
-        errors.push('Number of reviewers must be a positive integer')
+        errors.memberReviewerCount = 'Number of reviewers must be a positive integer'
       }
 
       const basePayment = convertDollarToInteger(reviewer.basePayment || '0', '')
       if (basePayment < 0) {
-        errors.push('Base payment must be non-negative')
+        errors.basePayment = 'Base payment must be non-negative'
       }
     }
 
     if (!reviewer.phaseId) {
-      errors.push('Phase is required')
+      errors.phaseId = 'Phase is required'
     }
 
     return errors
@@ -239,14 +254,6 @@ class ChallengeReviewerField extends Component {
             />
           )}
         </div>
-
-        {validationErrors.length > 0 && (
-          <div className={styles.validationErrors}>
-            {validationErrors.map((error, i) => (
-              <div key={`error-${index}-${i}-${error}`} className={styles.validationError}>{error}</div>
-            ))}
-          </div>
-        )}
 
         <div className={styles.formRow}>
           <div className={styles.formGroup}>
@@ -330,6 +337,9 @@ class ChallengeReviewerField extends Component {
                   ))}
                 </select>
               )}
+              {validationErrors.aiWorkflowId && (
+                <div className={styles.fieldError}>{validationErrors.aiWorkflowId}</div>
+              )}
             </div>
           ) : (
             <div className={styles.formGroup}>
@@ -354,6 +364,9 @@ class ChallengeReviewerField extends Component {
                   ))}
                 </select>
               )}
+              {validationErrors.scorecardId && (
+                <div className={styles.fieldError}>{validationErrors.scorecardId}</div>
+              )}
             </div>
           )}
 
@@ -370,7 +383,7 @@ class ChallengeReviewerField extends Component {
               </span>
             ) : (
               <select
-                value={reviewer.phaseId}
+                value={reviewer.phaseId || ''}
                 onChange={(e) => this.updateReviewer(index, 'phaseId', e.target.value)}
               >
                 <option value=''>Select Phase</option>
@@ -396,6 +409,9 @@ class ChallengeReviewerField extends Component {
                   ))}
               </select>
             )}
+            {validationErrors.phaseId && (
+              <div className={styles.fieldError}>{validationErrors.phaseId}</div>
+            )}
           </div>
         </div>
 
@@ -417,6 +433,9 @@ class ChallengeReviewerField extends Component {
                   }}
                 />
               )}
+              {validationErrors.memberReviewerCount && (
+                <div className={styles.fieldError}>{validationErrors.memberReviewerCount}</div>
+              )}
             </div>
 
             <div className={styles.formGroup}>
@@ -433,6 +452,9 @@ class ChallengeReviewerField extends Component {
                     this.updateReviewer(index, 'basePayment', validatedValue)
                   }}
                 />
+              )}
+              {validationErrors.basePayment && (
+                <div className={styles.fieldError}>{validationErrors.basePayment}</div>
               )}
             </div>
 
