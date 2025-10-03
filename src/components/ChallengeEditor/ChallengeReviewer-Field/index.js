@@ -380,18 +380,15 @@ class ChallengeReviewerField extends Component {
               {readOnly ? (
                 <span>
                   {(() => {
-                    // In read-only mode, try to get the specific scorecard first
-                    if (this.props.readOnly) {
-                      const { metadata = {} } = this.props
-                      const specificScorecard = metadata.scorecardById
-                      if (specificScorecard && specificScorecard.id === reviewer.scorecardId) {
-                        return `${specificScorecard.name} - ${specificScorecard.type} (${specificScorecard.challengeTrack}) v${specificScorecard.version}`
-                      }
+                    const { metadata = {} } = this.props
+                    const specificScorecard = metadata.scorecardById
+                    if (specificScorecard && specificScorecard.id === reviewer.scorecardId) {
+                      return `${specificScorecard.name || 'Unknown'} - ${specificScorecard.type || 'Unknown'} (${specificScorecard.challengeTrack || 'Unknown'}) v${specificScorecard.version || 'Unknown'}`
                     }
 
                     // Fallback to searching in the general scorecards array
                     const scorecard = scorecards.find(s => s.id === reviewer.scorecardId)
-                    return scorecard ? `${scorecard.name} - ${scorecard.type} (${scorecard.challengeTrack}) v${scorecard.version}` : 'Not selected'
+                    return scorecard ? `${scorecard.name || 'Unknown'} - ${scorecard.type || 'Unknown'} (${scorecard.challengeTrack || 'Unknown'}) v${scorecard.version || 'Unknown'}` : 'Not selected'
                   })()}
                 </span>
               ) : (
@@ -402,7 +399,7 @@ class ChallengeReviewerField extends Component {
                   <option value=''>Select Scorecard</option>
                   {scorecards.map(scorecard => (
                     <option key={scorecard.id} value={scorecard.id}>
-                      {scorecard.name} - {scorecard.type} ({scorecard.challengeTrack}) v{scorecard.version}
+                      {scorecard.name || 'Unknown'} - {scorecard.type || 'Unknown'} ({scorecard.challengeTrack || 'Unknown'}) v{scorecard.version || 'Unknown'}
                     </option>
                   ))}
                 </select>

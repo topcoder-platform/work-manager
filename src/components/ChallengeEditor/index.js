@@ -779,7 +779,7 @@ class ChallengeEditor extends Component {
 
     // Validate each reviewer
     for (const reviewer of reviewers) {
-      const isAI = (reviewer.aiWorkflowId && reviewer.aiWorkflowId.trim() !== '') || (reviewer.isMemberReview === false)
+      const isAI = (reviewer.aiWorkflowId && reviewer.aiWorkflowId.trim() !== '') || !reviewer.isMemberReview
 
       if (isAI) {
         if (!reviewer.aiWorkflowId || reviewer.aiWorkflowId.trim() === '') {
