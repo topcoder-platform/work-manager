@@ -5,19 +5,19 @@ import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
 import styles from './LegacyLinks.module.scss'
-import { ONLINE_REVIEW_URL } from '../../config/constants'
+import { REVIEW_APP_URL } from '../../config/constants'
 
 const LegacyLinks = ({ challenge, challengeView }) => {
   const onClick = useCallback((e) => {
     e.stopPropagation()
   }, [])
 
-  const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
+  const reviewUrl = `${REVIEW_APP_URL}/active-challenges/${challenge.id}/challenge-details`
   return (
     <div className={styles.container}>
       {challenge.legacyId && (
         <>
-          (<a href={orUrl} target={'_blank'} onClick={onClick}>Online Review</a>)
+          (<a href={reviewUrl} target={'_blank'} onClick={onClick}>Review</a>)
         </>
       )}
       <div>

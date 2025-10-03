@@ -11,7 +11,7 @@ import ChallengeStatus from '../ChallengeStatus'
 import ChallengeTag from '../ChallengeTag'
 import styles from './ChallengeCard.module.scss'
 import { formatDate } from '../../../util/date'
-import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, ONLINE_REVIEW_URL, PROJECT_ROLES } from '../../../config/constants'
+import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, REVIEW_APP_URL, PROJECT_ROLES } from '../../../config/constants'
 import ConfirmationModal from '../../Modal/ConfirmationModal'
 import { checkChallengeEditPermission, checkReadOnlyRoles } from '../../../util/tc'
 import { getCurrentPhase } from '../../../util/phase'
@@ -33,7 +33,7 @@ const PERMISSION_DELETE_MESSAGE_ERROR =
 const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
   const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.id}`
   const directUrl = `${DIRECT_PROJECT_URL}/contest/detail?projectId=${challenge.legacyId}`
-  const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
+  const reviewUrl = `${REVIEW_APP_URL}/active-challenges/${challenge.id}/challenge-details`
   const isTask = _.get(challenge, 'task.isTask', false)
 
   // NEW projects never have Legacy challenge created, so don't show links and "Activate" button for them at all
@@ -55,7 +55,7 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
           <div className={styles.linkGroupLeftBottom}>
             <a className={styles.link} href={directUrl} target='_blank'>Direct</a>
             <span className={styles.linkDivider}>|</span>
-            <a className={styles.link} href={orUrl} target='_blank'>OR</a>
+            <a className={styles.link} href={reviewUrl} target='_blank'>Review</a>
           </div>
         )}
       </div>
@@ -210,7 +210,7 @@ class ChallengeCard extends React.Component {
     const deleteMessage = isCheckChalengePermission
       ? 'Checking permissions...'
       : `Do you want to delete "${challenge.name}"?`
-    const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
+    const reviewUrl = `${REVIEW_APP_URL}/active-challenges/${challenge.id}/challenge-details`
     const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.id}`
     const isReadOnly = checkReadOnlyRoles(this.props.auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
 
@@ -293,7 +293,7 @@ class ChallengeCard extends React.Component {
           )
         }
         <div className={styles.col6}>
-          <a className={styles.link} href={orUrl} target='_blank'>OR</a>
+          <a className={styles.link} href={reviewUrl} target='_blank'>Review</a>
         </div>
         <div className={styles.col6}>
           <a className={styles.link} href={communityAppUrl} target='_blank'>CA</a>
