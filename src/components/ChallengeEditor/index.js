@@ -769,6 +769,46 @@ class ChallengeEditor extends Component {
     return true
   }
 
+  isValidReviewers () {
+    const { challenge } = this.state
+    const reviewers = challenge.reviewers || []
+
+    if (reviewers.length === 0) {
+      return true
+    }
+
+    // Validate each reviewer
+    for (const reviewer of reviewers) {
+      const isAI = (reviewer.aiWorkflowId && reviewer.aiWorkflowId.trim() !== '') || (reviewer.isMemberReview === false)
+
+      if (isAI) {
+        if (!reviewer.aiWorkflowId || reviewer.aiWorkflowId.trim() === '') {
+          return false
+        }
+      } else {
+        if (!reviewer.scorecardId) {
+          return false
+        }
+
+        const memberCount = parseInt(reviewer.memberReviewerCount) || 1
+        if (memberCount < 1 || !Number.isInteger(memberCount)) {
+          return false
+        }
+
+        const basePayment = convertDollarToInteger(reviewer.basePayment || '0', '')
+        if (basePayment < 0) {
+          return false
+        }
+      }
+
+      if (!reviewer.phaseId) {
+        return false
+      }
+    }
+
+    return true
+  }
+
   isValidChallenge () {
     const { challenge } = this.state
     if (this.props.isNew) {
@@ -787,6 +827,10 @@ class ChallengeEditor extends Component {
     }
 
     if (!this.checkValidCopilot()) {
+      return false
+    }
+
+    if (!this.isValidReviewers()) {
       return false
     }
 

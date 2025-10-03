@@ -240,7 +240,7 @@ class ChallengeReviewerField extends Component {
   renderReviewerForm (reviewer, index) {
     const { challenge, metadata = {}, readOnly = false } = this.props
     const { scorecards = [], workflows = [] } = metadata
-    const validationErrors = this.validateReviewer(reviewer)
+    const validationErrors = challenge.submitTriggered ? this.validateReviewer(reviewer) : {}
 
     return (
       <div key={`reviewer-${index}`} className={styles.reviewerForm}>
@@ -337,8 +337,10 @@ class ChallengeReviewerField extends Component {
                   ))}
                 </select>
               )}
-              {validationErrors.aiWorkflowId && (
-                <div className={styles.fieldError}>{validationErrors.aiWorkflowId}</div>
+              {!readOnly && challenge.submitTriggered && validationErrors.aiWorkflowId && (
+                <div className={styles.error}>
+                  {validationErrors.aiWorkflowId}
+                </div>
               )}
             </div>
           ) : (
@@ -364,8 +366,10 @@ class ChallengeReviewerField extends Component {
                   ))}
                 </select>
               )}
-              {validationErrors.scorecardId && (
-                <div className={styles.fieldError}>{validationErrors.scorecardId}</div>
+              {!readOnly && challenge.submitTriggered && validationErrors.scorecardId && (
+                <div className={styles.error}>
+                  {validationErrors.scorecardId}
+                </div>
               )}
             </div>
           )}
@@ -409,8 +413,10 @@ class ChallengeReviewerField extends Component {
                   ))}
               </select>
             )}
-            {validationErrors.phaseId && (
-              <div className={styles.fieldError}>{validationErrors.phaseId}</div>
+            {!readOnly && challenge.submitTriggered && validationErrors.phaseId && (
+              <div className={styles.error}>
+                {validationErrors.phaseId}
+              </div>
             )}
           </div>
         </div>
@@ -433,8 +439,10 @@ class ChallengeReviewerField extends Component {
                   }}
                 />
               )}
-              {validationErrors.memberReviewerCount && (
-                <div className={styles.fieldError}>{validationErrors.memberReviewerCount}</div>
+              {!readOnly && challenge.submitTriggered && validationErrors.memberReviewerCount && (
+                <div className={styles.error}>
+                  {validationErrors.memberReviewerCount}
+                </div>
               )}
             </div>
 
@@ -453,8 +461,10 @@ class ChallengeReviewerField extends Component {
                   }}
                 />
               )}
-              {validationErrors.basePayment && (
-                <div className={styles.fieldError}>{validationErrors.basePayment}</div>
+              {!readOnly && challenge.submitTriggered && validationErrors.basePayment && (
+                <div className={styles.error}>
+                  {validationErrors.basePayment}
+                </div>
               )}
             </div>
 
