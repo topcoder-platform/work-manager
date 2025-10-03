@@ -186,11 +186,7 @@
 
 .error {
   color: $tc-red;
-  background-color: #ffebee;
-  padding: 15px;
-  border-radius: 4px;
-  border: 1px solid #ffcdd2;
-  margin-bottom: 20px;
+  padding: 5px;
 }
 
 .validationErrors {
@@ -209,13 +205,6 @@
 
 .validationError:last-child {
   margin-bottom: 0;
-}
-
-.fieldError {
-  color: #DC3545;
-  font-size: 12px;
-  margin-top: 4px;
-  display: block;
 }
 
 // Responsive adjustments

@@ -23,6 +23,7 @@ import {
   updateChallengeSkillsApi,
   fetchDefaultReviewers,
   fetchScorecards,
+  fetchScorecardById,
   fetchWorkflows
 } from '../services/challenges'
 import { searchProfilesByUserIds } from '../services/user'
@@ -789,6 +790,34 @@ export function loadScorecards (filters = {}) {
         type: LOAD_CHALLENGE_METADATA_SUCCESS,
         metadataKey: 'scorecards',
         metadataValue: []
+      })
+    }
+  }
+}
+
+/**
+ * Load a specific scorecard by ID
+ * @param {string} scorecardId the scorecard ID
+ */
+export function loadScorecardById (scorecardId) {
+  return async (dispatch) => {
+    try {
+      const scorecard = await fetchScorecardById(scorecardId)
+      dispatch({
+        type: LOAD_CHALLENGE_METADATA_SUCCESS,
+        metadataKey: 'scorecardById',
+        metadataValue: {
+          ...scorecard,
+          id: scorecardId
+        }
+      })
+    } catch (error) {
+      console.error('Error loading scorecard by ID:', error)
+      // Return null on error
+      dispatch({
+        type: LOAD_CHALLENGE_METADATA_SUCCESS,
+        metadataKey: 'scorecardById',
+        metadataValue: null
       })
     }
   }
