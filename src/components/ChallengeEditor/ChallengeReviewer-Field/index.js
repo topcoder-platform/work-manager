@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import cn from 'classnames'
 import { PrimaryButton, OutlineButton } from '../../Buttons'
 import { REVIEW_OPPORTUNITY_TYPE_LABELS, REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE } from '../../../config/constants'
-import { loadScorecards, loadDefaultReviewers, loadWorkflows } from '../../../actions/challenges'
+import { loadScorecards, loadDefaultReviewers, loadWorkflows, loadScorecardById } from '../../../actions/challenges'
 import styles from './ChallengeReviewer-Field.module.scss'
 import { convertDollarToInteger, validateValue } from '../../../util/input-check'
 
@@ -31,18 +31,28 @@ class ChallengeReviewerField extends Component {
   }
 
   componentDidMount () {
-    this.loadScorecards()
+    if (this.props.readOnly) {
+      // In read-only mode, only load specific scorecards for existing reviewers
+      this.loadSpecificScorecards()
+    } else {
+      // In edit mode, load all scorecards for dropdown
+      this.loadScorecards()
+    }
     this.loadDefaultReviewers()
     this.loadWorkflows()
   }
 
   componentDidUpdate (prevProps) {
-    const { challenge } = this.props
+    const { challenge, readOnly } = this.props
     const prevChallenge = prevProps.challenge
 
     if (challenge && prevChallenge &&
         (challenge.type !== prevChallenge.type || challenge.track !== prevChallenge.track)) {
-      this.loadScorecards()
+      if (readOnly) {
+        this.loadSpecificScorecards()
+      } else {
+        this.loadScorecards()
+      }
     }
 
     if (challenge && prevChallenge &&
@@ -67,6 +77,27 @@ class ChallengeReviewerField extends Component {
     }
 
     loadScorecards(filters)
+  }
+
+  loadSpecificScorecards () {
+    const { challenge, loadScorecardById } = this.props
+    const reviewers = challenge.reviewers || []
+
+    // Get unique scorecard IDs from reviewers
+    const scorecardIds = [...new Set(
+      reviewers
+        .filter(reviewer => reviewer.scorecardId)
+        .map(reviewer => reviewer.scorecardId)
+    )]
+
+    if (scorecardIds.length === 0) {
+      return
+    }
+
+    // Load each scorecard individually
+    scorecardIds.forEach(scorecardId => {
+      loadScorecardById(scorecardId)
+    })
   }
 
   loadDefaultReviewers () {
@@ -102,6 +133,11 @@ class ChallengeReviewerField extends Component {
     )
     const firstReviewPhase = reviewPhases && reviewPhases.length > 0 ? reviewPhases[0] : null
 
+    // If no review phases, get the first available phase as fallback
+    const fallbackPhase = !firstReviewPhase && challenge.phases && challenge.phases.length > 0
+      ? challenge.phases[0]
+      : null
+
     const isAIReviewer = this.isAIReviewer(defaultReviewer)
 
     // For AI reviewers, get scorecardId from the workflow if available
@@ -120,10 +156,20 @@ class ChallengeReviewerField extends Component {
       scorecardId = (defaultReviewer && defaultReviewer.scorecardId) || ''
     }
 
+    // Determine the default phase ID
+    let defaultPhaseId = ''
+    if (defaultReviewer && defaultReviewer.phaseId) {
+      defaultPhaseId = defaultReviewer.phaseId
+    } else if (firstReviewPhase) {
+      defaultPhaseId = firstReviewPhase.phaseId || firstReviewPhase.id
+    } else if (fallbackPhase) {
+      defaultPhaseId = fallbackPhase.phaseId || fallbackPhase.id
+    }
+
     const newReviewer = {
       scorecardId,
       isMemberReview: !isAIReviewer,
-      phaseId: (defaultReviewer && defaultReviewer.phaseId) || (firstReviewPhase ? (firstReviewPhase.id || firstReviewPhase.phaseId) : ''),
+      phaseId: defaultPhaseId,
       basePayment: (defaultReviewer && defaultReviewer.basePayment) || '0',
       incrementalPayment: (defaultReviewer && defaultReviewer.incrementalPayment) || 0,
       type: isAIReviewer ? undefined : ((defaultReviewer && defaultReviewer.opportunityType) || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW)
@@ -185,31 +231,31 @@ class ChallengeReviewerField extends Component {
   }
 
   validateReviewer (reviewer) {
-    const errors = []
+    const errors = {}
     const isAI = this.isAIReviewer(reviewer)
 
     if (isAI) {
       if (!reviewer.aiWorkflowId || reviewer.aiWorkflowId.trim() === '') {
-        errors.push('AI Workflow is required')
+        errors.aiWorkflowId = 'AI Workflow is required'
       }
     } else {
       if (!reviewer.scorecardId) {
-        errors.push('Scorecard is required')
+        errors.scorecardId = 'Scorecard is required'
       }
 
       const memberCount = parseInt(reviewer.memberReviewerCount) || 1
       if (memberCount < 1 || !Number.isInteger(memberCount)) {
-        errors.push('Number of reviewers must be a positive integer')
+        errors.memberReviewerCount = 'Number of reviewers must be a positive integer'
       }
 
       const basePayment = convertDollarToInteger(reviewer.basePayment || '0', '')
       if (basePayment < 0) {
-        errors.push('Base payment must be non-negative')
+        errors.basePayment = 'Base payment must be non-negative'
       }
     }
 
     if (!reviewer.phaseId) {
-      errors.push('Phase is required')
+      errors.phaseId = 'Phase is required'
     }
 
     return errors
@@ -225,7 +271,7 @@ class ChallengeReviewerField extends Component {
   renderReviewerForm (reviewer, index) {
     const { challenge, metadata = {}, readOnly = false } = this.props
     const { scorecards = [], workflows = [] } = metadata
-    const validationErrors = this.validateReviewer(reviewer)
+    const validationErrors = challenge.submitTriggered ? this.validateReviewer(reviewer) : {}
 
     return (
       <div key={`reviewer-${index}`} className={styles.reviewerForm}>
@@ -239,14 +285,6 @@ class ChallengeReviewerField extends Component {
             />
           )}
         </div>
-
-        {validationErrors.length > 0 && (
-          <div className={styles.validationErrors}>
-            {validationErrors.map((error, i) => (
-              <div key={`error-${index}-${i}-${error}`} className={styles.validationError}>{error}</div>
-            ))}
-          </div>
-        )}
 
         <div className={styles.formRow}>
           <div className={styles.formGroup}>
@@ -330,6 +368,11 @@ class ChallengeReviewerField extends Component {
                   ))}
                 </select>
               )}
+              {!readOnly && challenge.submitTriggered && validationErrors.aiWorkflowId && (
+                <div className={styles.error}>
+                  {validationErrors.aiWorkflowId}
+                </div>
+              )}
             </div>
           ) : (
             <div className={styles.formGroup}>
@@ -337,8 +380,15 @@ class ChallengeReviewerField extends Component {
               {readOnly ? (
                 <span>
                   {(() => {
+                    const { metadata = {} } = this.props
+                    const specificScorecard = metadata.scorecardById
+                    if (specificScorecard && specificScorecard.id === reviewer.scorecardId) {
+                      return `${specificScorecard.name || 'Unknown'} - ${specificScorecard.type || 'Unknown'} (${specificScorecard.challengeTrack || 'Unknown'}) v${specificScorecard.version || 'Unknown'}`
+                    }
+
+                    // Fallback to searching in the general scorecards array
                     const scorecard = scorecards.find(s => s.id === reviewer.scorecardId)
-                    return scorecard ? `${scorecard.name} - ${scorecard.type} (${scorecard.challengeTrack}) v${scorecard.version}` : 'Not selected'
+                    return scorecard ? `${scorecard.name || 'Unknown'} - ${scorecard.type || 'Unknown'} (${scorecard.challengeTrack || 'Unknown'}) v${scorecard.version || 'Unknown'}` : 'Not selected'
                   })()}
                 </span>
               ) : (
@@ -349,10 +399,15 @@ class ChallengeReviewerField extends Component {
                   <option value=''>Select Scorecard</option>
                   {scorecards.map(scorecard => (
                     <option key={scorecard.id} value={scorecard.id}>
-                      {scorecard.name} - {scorecard.type} ({scorecard.challengeTrack}) v{scorecard.version}
+                      {scorecard.name || 'Unknown'} - {scorecard.type || 'Unknown'} ({scorecard.challengeTrack || 'Unknown'}) v{scorecard.version || 'Unknown'}
                     </option>
                   ))}
                 </select>
+              )}
+              {!readOnly && challenge.submitTriggered && validationErrors.scorecardId && (
+                <div className={styles.error}>
+                  {validationErrors.scorecardId}
+                </div>
               )}
             </div>
           )}
@@ -370,7 +425,7 @@ class ChallengeReviewerField extends Component {
               </span>
             ) : (
               <select
-                value={reviewer.phaseId}
+                value={reviewer.phaseId || ''}
                 onChange={(e) => this.updateReviewer(index, 'phaseId', e.target.value)}
               >
                 <option value=''>Select Phase</option>
@@ -396,6 +451,11 @@ class ChallengeReviewerField extends Component {
                   ))}
               </select>
             )}
+            {!readOnly && challenge.submitTriggered && validationErrors.phaseId && (
+              <div className={styles.error}>
+                {validationErrors.phaseId}
+              </div>
+            )}
           </div>
         </div>
 
@@ -417,6 +477,11 @@ class ChallengeReviewerField extends Component {
                   }}
                 />
               )}
+              {!readOnly && challenge.submitTriggered && validationErrors.memberReviewerCount && (
+                <div className={styles.error}>
+                  {validationErrors.memberReviewerCount}
+                </div>
+              )}
             </div>
 
             <div className={styles.formGroup}>
@@ -433,6 +498,11 @@ class ChallengeReviewerField extends Component {
                     this.updateReviewer(index, 'basePayment', validatedValue)
                   }}
                 />
+              )}
+              {!readOnly && challenge.submitTriggered && validationErrors.basePayment && (
+                <div className={styles.error}>
+                  {validationErrors.basePayment}
+                </div>
               )}
             </div>
 
@@ -595,13 +665,15 @@ ChallengeReviewerField.propTypes = {
   metadata: PropTypes.shape({
     scorecards: PropTypes.array,
     defaultReviewers: PropTypes.array,
-    workflows: PropTypes.array
+    workflows: PropTypes.array,
+    scorecardById: PropTypes.object
   }),
   isLoading: PropTypes.bool,
   readOnly: PropTypes.bool,
   loadScorecards: PropTypes.func.isRequired,
   loadDefaultReviewers: PropTypes.func.isRequired,
-  loadWorkflows: PropTypes.func.isRequired
+  loadWorkflows: PropTypes.func.isRequired,
+  loadScorecardById: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
@@ -612,7 +684,8 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
   loadScorecards,
   loadDefaultReviewers,
-  loadWorkflows
+  loadWorkflows,
+  loadScorecardById
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ChallengeReviewerField)
