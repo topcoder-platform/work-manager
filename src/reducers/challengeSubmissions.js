@@ -42,6 +42,7 @@ export default function (state = initialState, action) {
         loadingId: action.challengeId,
         challengeId: null,
         challengeSubmissions: [],
+        totalSubmissions: 0,
         totalPages: 0
       }
     case LOAD_CHALLENGE_SUBMISSIONS_FAILURE:
@@ -51,6 +52,7 @@ export default function (state = initialState, action) {
         loadingId: null,
         challengeId: null,
         challengeSubmissions: [],
+        totalSubmissions: 0,
         totalPages: 0
       }
     default:

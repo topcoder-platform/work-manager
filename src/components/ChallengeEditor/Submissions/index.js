@@ -255,41 +255,45 @@ class SubmissionsComponent extends React.Component {
 
     const { downloadingAll, alertMessage, memberDetails } = this.state
 
-    const renderSubmission = s => (
-      <div className={styles.submission} key={s.id}>
-        <a
-          href={`${STUDIO_URL}?module=DownloadSubmission&sbmid=${s.id}`}
-          target='_blank'
-          rel='noopener noreferrer'
-        >
-          <img
-            alt=''
-            src={`${STUDIO_URL}/studio.jpg?module=DownloadSubmission&sbmid=${s.id}&sbt=small&sfi=1`}
-          />
-        </a>
-        <div className={styles['bottom-info']}>
-          <div className={styles['links']}>
-            <a
-              href={`${STUDIO_URL}?module=DownloadSubmission&sbmid=${s.id}`}
-              target='_blank'
-              rel='noopener noreferrer'
-            >
-              {`#${s.id}`}
-            </a>
-            <a
-              href={getTCMemberURL(_.get(s.registrant, 'memberHandle', ''))}
-              target={`${
-                _.includes(window.origin, 'www') ? '_self' : '_blank'
-              }`}
-              rel='noopener noreferrer'
-              className={cn(styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`])} >
-              {_.get(s.registrant, 'memberHandle', '')}
-            </a>
+    const renderSubmission = s => {
+      const createdAt = s.createdAt || s.created || s.submissionTime
+      const createdAtDisplay = createdAt ? moment(createdAt).format('MMM DD, YYYY HH:mm') : 'N/A'
+      return (
+        <div className={styles.submission} key={s.id}>
+          <a
+            href={`${STUDIO_URL}?module=DownloadSubmission&sbmid=${s.id}`}
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            <img
+              alt=''
+              src={`${STUDIO_URL}/studio.jpg?module=DownloadSubmission&sbmid=${s.id}&sbt=small&sfi=1`}
+            />
+          </a>
+          <div className={styles['bottom-info']}>
+            <div className={styles['links']}>
+              <a
+                href={`${STUDIO_URL}?module=DownloadSubmission&sbmid=${s.id}`}
+                target='_blank'
+                rel='noopener noreferrer'
+              >
+                {`#${s.id}`}
+              </a>
+              <a
+                href={getTCMemberURL(_.get(s.registrant, 'memberHandle', ''))}
+                target={`${
+                  _.includes(window.origin, 'www') ? '_self' : '_blank'
+                }`}
+                rel='noopener noreferrer'
+                className={cn(styles[`level-${getRatingLevel(_.get(s.registrant, 'rating', 0))}`])} >
+                {_.get(s.registrant, 'memberHandle', '')}
+              </a>
+            </div>
+            <div>{createdAtDisplay}</div>
           </div>
-          <div>{moment(s.submissionTime).format('MMM DD,YYYY HH:mm')}</div>
         </div>
-      </div>
-    )
+      )
+    }
 
     const isF2F = type === 'First2Finish'
     const isBugHunt = _.includes(tags, 'Bug Hunt')
@@ -404,7 +408,8 @@ class SubmissionsComponent extends React.Component {
                   const ratingLevel = getRatingLevel(hasValidRating ? parsedRating : 0)
                   const memberHandle = _.get(memberInfo, 'handle', _.get(s, 'registrant.memberHandle', ''))
                   const email = _.get(memberInfo, 'email', _.get(s, 'registrant.email', ''))
-                  const submissionDate = moment(s.created).format('MMM DD, YYYY HH:mm')
+                  const createdAt = s.createdAt || s.created || s.submissionTime
+                  const submissionDate = createdAt ? moment(createdAt).format('MMM DD, YYYY HH:mm') : 'N/A'
                   const reviewScore = !_.isEmpty(s.review) && !_.isNil(_.get(s.review, '0.score'))
                     ? parseFloat(_.get(s.review, '0.score')).toFixed(2)
                     : 'N/A'
