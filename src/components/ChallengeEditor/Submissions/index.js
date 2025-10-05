@@ -396,7 +396,16 @@ class SubmissionsComponent extends React.Component {
                 </tr>
               </thead>
               <tbody>
-                {submissions.map(s => {
+                {submissions.length === 0 ? (
+                  <tr>
+                    <td
+                      className={cn(styles['col-bodyTable'])}
+                      colSpan={5 + (!isF2F && !isBugHunt ? 1 : 0) + (canDownloadSubmission ? 1 : 0)}
+                    >
+                      No submissions received for this challenge yet
+                    </td>
+                  </tr>
+                ) : submissions.map(s => {
                   const memberId = s.memberId || _.get(s, 'registrant.memberId') || _.get(s, 'registrant.userId')
                   const memberInfo = memberId ? memberDetails[String(memberId)] : undefined
                   const ratingFromMemberInfo = _.get(memberInfo, 'maxRating.rating')

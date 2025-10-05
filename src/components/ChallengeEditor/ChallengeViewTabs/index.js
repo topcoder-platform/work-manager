@@ -297,22 +297,20 @@ const ChallengeViewTabs = ({
         >
           RESOURCES
         </a>
-        {totalSubmissions ? (
-          <a
-            tabIndex='2'
-            role='tab'
-            aria-selected={selectedTab === 2}
-            onClick={e => {
-              setSelectedTab(2)
-            }}
-            onKeyPress={e => {
-              setSelectedTab(2)
-            }}
-            className={getSelectorStyle(selectedTab, 2)}
-          >
-            SUBMISSIONS ({totalSubmissions})
-          </a>
-        ) : null}
+        <a
+          tabIndex='2'
+          role='tab'
+          aria-selected={selectedTab === 2}
+          onClick={e => {
+            setSelectedTab(2)
+          }}
+          onKeyPress={e => {
+            setSelectedTab(2)
+          }}
+          className={getSelectorStyle(selectedTab, 2)}
+        >
+          SUBMISSIONS ({totalSubmissions || 0})
+        </a>
       </div>
       {selectedTab === 0 && (
         <ChallengeViewComponent
