@@ -89,6 +89,17 @@ module.exports = function (proxy, allowedHost) {
         console.log('[wm-debug] DevServer before() – host:', host, 'https:', protocol === 'https')
         /* eslint-enable no-console */
       }
+      // Add /health endpoint in dev to mirror production server.js
+      try {
+        const healthCheck = require('topcoder-healthcheck-dropin')
+        const check = () => true
+        app.get('/health', healthCheck.middleware([check]))
+      } catch (e) {
+        if (WM_DEBUG) {
+          // eslint-disable-next-line no-console
+          console.warn('[wm-debug] Failed to register /health endpoint:', e && e.message)
+        }
+      }
       if (fs.existsSync(paths.proxySetup)) {
         // This registers user provided middleware for proxy reasons
         require(paths.proxySetup)(app)

@@ -15,6 +15,8 @@ const app = express()
 function check () {
   return true
 }
+// Explicitly register /health in addition to generic middleware
+app.get('/health', healthCheck.middleware([check]))
 app.use(healthCheck.middleware([check]))
 app.use((req, res, next) => {
   res.header('Referrer-Policy', 'strict-origin-when-cross-origin')
