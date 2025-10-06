@@ -1,7 +1,7 @@
 const DOMAIN = 'topcoder.com'
 const PROD_API_HOSTNAME = `https://api.${DOMAIN}`
 const API_V5 = `${PROD_API_HOSTNAME}/v5`
-const API_V6 = `${PROD_API_HOSTNAME}/v5`
+const API_V6 = `${PROD_API_HOSTNAME}/v6`
 
 module.exports = {
   API_V2: `${PROD_API_HOSTNAME}/v2`,
