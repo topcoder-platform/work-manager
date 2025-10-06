@@ -20,10 +20,11 @@ COPY . /challenge-engine-ui-v6
 WORKDIR /challenge-engine-ui-v6
 
 RUN chown -R appuser:appuser /challenge-engine-ui-v6
-USER appuser
 
-# Enable corepack and prepare pnpm for installs
+# Enable corepack and prepare pnpm for installs (run as root)
 RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
+
+USER appuser
 
 # Install the dependencies from package.json using pnpm
 RUN echo "NODE ENV in Docker: $NODE_ENV"
