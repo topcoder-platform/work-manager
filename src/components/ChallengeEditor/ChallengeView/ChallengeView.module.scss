@@ -1,4 +1,4 @@
-@import "../../../styles/includes";
+@use '../../../styles/includes' as *;
 
 .wrapper {
   box-sizing: border-box;
@@ -296,4 +296,3 @@
   justify-content: space-between;
   align-items: center;
 }
-

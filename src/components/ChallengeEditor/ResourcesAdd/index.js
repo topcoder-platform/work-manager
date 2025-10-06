@@ -15,6 +15,7 @@ const roles = [
   'Reviewer',
   'Iterative Reviewer',
   'Observer',
+  'Approver',
   'Client Manager',
   'Primary Screener',
   'Final Reviewer',

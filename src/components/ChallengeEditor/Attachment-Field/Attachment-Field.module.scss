@@ -1,4 +1,4 @@
-@import "../../../styles/includes";
+@use '../../../styles/includes' as *;
 
 .container {
   margin-top: 30px;
@@ -99,4 +99,3 @@
     }
   }
 }
-

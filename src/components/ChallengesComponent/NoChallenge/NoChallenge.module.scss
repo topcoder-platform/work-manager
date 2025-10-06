@@ -1,4 +1,4 @@
-@import '../../../styles/includes';
+@use '../../../styles/includes' as *;
 
 .noChallenge {
   justify-content: center;
@@ -44,4 +44,3 @@
 .blue {
   background-color: $light-blue;
 }
-

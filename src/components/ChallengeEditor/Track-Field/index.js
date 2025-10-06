@@ -41,7 +41,8 @@ TrackField.defaultProps = {
 TrackField.propTypes = {
   challenge: PropTypes.shape().isRequired,
   onUpdateOthers: PropTypes.func.isRequired,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  tracks: PropTypes.arrayOf(PropTypes.shape()).isRequired
 }
 
 export default TrackField

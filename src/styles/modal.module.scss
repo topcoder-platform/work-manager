@@ -1,4 +1,4 @@
-@import "./includes.scss";
+@use "./includes" as *;
 
 .modalContainer {
   padding: 0;

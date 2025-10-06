@@ -20,7 +20,7 @@ This is the frontend application for creating and managing challenges.
 - [Resource ES Processor](https://github.com/topcoder-platform/resource-processor-es) - Updates resource data in Elasticsearch
 
 ## Prerequisites
--  [NodeJS](https://nodejs.org/en/) (v10.15+)
+-  [NodeJS](https://nodejs.org/en/) (v22+)
 -  [Docker](https://www.docker.com/)
 -  [Docker Compose](https://docs.docker.com/compose/)
 
@@ -31,10 +31,10 @@ Development configuration is in `config/constants/development.js`
 
 ## Local Deployment Instructions
 
-1. First install dependancies
+1. First install dependencies
 
 ```bash
-npm install
+pnpm install
 ```
 
 1. copy the environment file in docs/dev.env to /.env
@@ -45,10 +45,10 @@ npm install
 1. Run the app in development mode
 
 ```bash
-npm run dev
+pnpm run start:dev
 ```
 
-You can access the app from [http://localhost:3000/](http://localhost:3000/)
+You can access the app from [http://localhost:5000/](http://localhost:5000/)
 
 The page will reload if you make edits.
 
@@ -59,7 +59,7 @@ You will also see any lint errors in the console.
 To test the app for lint errors
 
 ```bash
-npm run lint
+pnpm run lint
 ```
 
 *Use the `--fix` flag to automatically fix errors.*
@@ -69,7 +69,7 @@ npm run lint
 To build the app for production
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 Builds the app for production to the `build` folder.

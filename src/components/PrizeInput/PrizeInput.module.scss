@@ -1,4 +1,4 @@
-@import "../../styles/includes";
+@use '../../styles/includes' as *;
 
 .container {
   box-sizing: border-box;
@@ -25,5 +25,4 @@
   height: 21.68px;
   color: $tc-black;
 }
-
 

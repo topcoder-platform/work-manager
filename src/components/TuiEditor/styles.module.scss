@@ -1,7 +1,7 @@
-@import "../../styles/includes";
+@use '../../styles/includes' as *;
+
 
 .editor {
-  background: red;
 
   > div {
     h1 {

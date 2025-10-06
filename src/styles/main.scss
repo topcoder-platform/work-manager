@@ -1,11 +1,14 @@
-@import "forms";
+@use "forms";
+@use "includes" as *;
 
 body {
   margin: 0;
   padding: 0;
   @include roboto;
   color: $text-color;
-  background-color: $white-text;
+  // Keep page background consistent even if third‑party styles (e.g., bootstrap from date pickers)
+  // load after our globals.
+  background-color: $white-text !important;
 }
 
 .inline-block {

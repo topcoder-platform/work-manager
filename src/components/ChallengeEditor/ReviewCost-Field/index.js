@@ -5,27 +5,38 @@ import cn from 'classnames'
 import { validateValue } from '../../../util/input-check'
 import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE, CHALLENGE_PRIZE_TYPE } from '../../../config/constants'
 
-const ReviewCostField = ({ challenge, onUpdateOthers }) => {
-  const type = PRIZE_SETS_TYPE.REVIEWER_PAYMENT
-  const reviewCost = challenge.prizeSets.find(p => p.type === type) || { type, prizes: [{ type: CHALLENGE_PRIZE_TYPE.USD, value: 0 }] }
-  const value = reviewCost.prizes[0].value
+class ReviewCostField extends React.Component {
+  constructor (props) {
+    super(props)
+    this.onChange = this.onChange.bind(this)
+  }
 
-  function onChange (e) {
+  onChange (e) {
+    const { challenge, onUpdateOthers } = this.props
+    const type = PRIZE_SETS_TYPE.REVIEWER_PAYMENT
+    const reviewCost = challenge.prizeSets.find(p => p.type === type) || { type, prizes: [{ type: CHALLENGE_PRIZE_TYPE.USD, value: 0 }] }
     const value = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER, '$')
     reviewCost.prizes = [{ type: CHALLENGE_PRIZE_TYPE.USD, value }]
     onUpdateOthers({ field: 'prizeSets', value: [...challenge.prizeSets.filter(p => p.type !== type), reviewCost] })
   }
 
-  return (
-    <div className={styles.row}>
-      <div className={cn(styles.field, styles.col1)}>
-        <label htmlFor='reviewCost'>Review Cost :</label>
+  render () {
+    const { challenge } = this.props
+    const type = PRIZE_SETS_TYPE.REVIEWER_PAYMENT
+    const reviewCost = challenge.prizeSets.find(p => p.type === type) || { type, prizes: [{ type: CHALLENGE_PRIZE_TYPE.USD, value: 0 }] }
+    const value = reviewCost.prizes[0].value
+
+    return (
+      <div className={styles.row}>
+        <div className={cn(styles.field, styles.col1)}>
+          <label htmlFor='reviewCost'>Review Cost :</label>
+        </div>
+        <div className={cn(styles.field, styles.col2)}>
+          <input id='reviewCost' name='reviewCost' type='text' placeholder='' value={value} maxLength='200' onChange={this.onChange} />
+        </div>
       </div>
-      <div className={cn(styles.field, styles.col2)}>
-        <input id='reviewCost' name='reviewCost' type='text' placeholder='' value={value} maxLength='200' onChange={onChange} />
-      </div>
-    </div>
-  )
+    )
+  }
 }
 
 ReviewCostField.propTypes = {

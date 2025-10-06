@@ -1,6 +1,5 @@
-@import "fonts";
-@import "colors";
-@import "mixins";
+@use "fonts";
+@use "includes" as *;
 
 
 
@@ -43,7 +42,9 @@ input {
   }
 }
 
-input:not([type="checkbox"]):not(:global(.fsp-url-source__input)) {
+/* Use plain class selector here – :global() is a CSS Modules escape and
+   breaks in global stylesheets; keep the exclusion for filestack input. */
+input:not([type="checkbox"]):not(.fsp-url-source__input) {
   box-sizing: border-box;
   height: 40px;
   width: 100%;
@@ -68,6 +69,6 @@ input:not([type="checkbox"]):not(:global(.fsp-url-source__input)) {
     line-height: 40px;
   }
 }
-input:not([type="checkbox"]):not(:global(.fsp-url-source__input)):focus {
+input:not([type="checkbox"]):not(.fsp-url-source__input):focus {
   border: 1px solid $tc-blue-20;
 }

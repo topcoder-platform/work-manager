@@ -1,4 +1,4 @@
-@import '../../../styles/includes';
+@use '../../../styles/includes' as *;
 
 $base-unit: 5px;
 $track-space-10: $base-unit * 2;

@@ -488,7 +488,9 @@ Resources.propTypes = {
     round1Introduction: PT.string,
     round2Introduction: PT.string,
     type: PT.string,
-    track: PT.string
+    track: PT.string,
+    status: PT.string,
+    createdBy: PT.string
   }).isRequired,
   submissions: PT.arrayOf(PT.shape()),
   resources: PT.arrayOf(PT.shape()),

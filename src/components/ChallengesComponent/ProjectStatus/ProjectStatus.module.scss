@@ -1,5 +1,4 @@
-
-@import "../../../styles/includes";
+@use '../../../styles/includes' as *;
 .container {
     min-height: 22px;
     width: 86px;

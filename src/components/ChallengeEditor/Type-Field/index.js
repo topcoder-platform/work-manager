@@ -41,7 +41,6 @@ TypeField.defaultProps = {
 
 TypeField.propTypes = {
   // currentType: PropTypes.string.isRequired,
-  track: PropTypes.string,
   types: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,
   onUpdateSelect: PropTypes.func.isRequired,

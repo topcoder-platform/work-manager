@@ -106,7 +106,8 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
 ProjectInvitations.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
-      projectId: PropTypes.string
+      projectId: PropTypes.string,
+      action: PropTypes.string
     })
   }).isRequired,
   auth: PropTypes.object.isRequired,
