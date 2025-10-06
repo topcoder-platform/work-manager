@@ -15,11 +15,10 @@ const LegacyLinks = ({ challenge, challengeView }) => {
   const reviewUrl = `${REVIEW_APP_URL}/active-challenges/${challenge.id}/challenge-details`
   return (
     <div className={styles.container}>
-      {challenge.legacyId && (
-        <>
-          (<a href={reviewUrl} target={'_blank'} onClick={onClick}>Review</a>)
-        </>
-      )}
+      {/* Always show Review link for v5 challenges using v5 ID */}
+      <>
+        <a href={reviewUrl} target={'_blank'} rel='noopener noreferrer' onClick={onClick}>Review</a>
+      </>
       <div>
         { challengeView && challenge.discussions && challenge.discussions.map(d => (
           <div key={d.id} className={cn(styles.row, styles.topRow)}>
