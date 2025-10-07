@@ -79,7 +79,7 @@ const theme = {
 
 const getTitle = (isNew, challenge) => {
   if (isNew) {
-    return 'Create New Work'
+    return 'Create New Challenge'
   }
 
   return challenge.name || 'Set-Up Work'
