@@ -259,7 +259,10 @@ class ChallengeCard extends React.Component {
         )}
 
         <div className={styles.col5}>
-          <ChallengeTag type={challenge.type} challengeTypes={challengeTypes} />
+          <ChallengeTag
+            type={typeof challenge.type === 'string' ? challenge.type : (challenge.type && challenge.type.name)}
+            challengeTypes={challengeTypes}
+          />
         </div>
 
         <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`} onClick={() => setActiveProject(parseInt(challenge.projectId))}>

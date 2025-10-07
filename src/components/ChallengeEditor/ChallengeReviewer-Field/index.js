@@ -90,12 +90,18 @@ class ChallengeReviewerField extends Component {
     const { challenge, readOnly } = this.props
     const prevChallenge = prevProps.challenge
 
-    if (challenge && prevChallenge &&
-        (challenge.type !== prevChallenge.type || challenge.track !== prevChallenge.track)) {
-      if (readOnly) {
-        this.loadSpecificScorecards()
-      } else {
-        this.loadScorecards()
+    if (challenge && prevChallenge) {
+      const currTypeName = typeof challenge.type === 'string' ? challenge.type : (challenge.type && challenge.type.name)
+      const prevTypeName = typeof prevChallenge.type === 'string' ? prevChallenge.type : (prevChallenge.type && prevChallenge.type.name)
+      const currTrackName = typeof challenge.track === 'string' ? challenge.track : (challenge.track && challenge.track.name)
+      const prevTrackName = typeof prevChallenge.track === 'string' ? prevChallenge.track : (prevChallenge.track && prevChallenge.track.name)
+
+      if (currTypeName !== prevTypeName || currTrackName !== prevTrackName) {
+        if (readOnly) {
+          this.loadSpecificScorecards()
+        } else {
+          this.loadScorecards()
+        }
       }
     }
 
@@ -110,14 +116,20 @@ class ChallengeReviewerField extends Component {
 
     const filters = {}
 
-    // Add challenge track if available
+    // Add challenge track if available (supports either string or object)
     if (challenge.track) {
-      filters.challengeTrack = challenge.track.toUpperCase().replace(' ', '_')
+      if (typeof challenge.track === 'object') {
+        const enumVal = challenge.track.track
+        const nameVal = challenge.track.name
+        filters.challengeTrack = enumVal || (nameVal ? String(nameVal).toUpperCase().replace(/\s+/g, '_') : undefined)
+      } else if (typeof challenge.track === 'string') {
+        filters.challengeTrack = challenge.track.toUpperCase().replace(/\s+/g, '_')
+      }
     }
 
-    // Add challenge type if available
+    // Add challenge type if available (supports either string or object)
     if (challenge.type) {
-      filters.challengeType = challenge.type
+      filters.challengeType = typeof challenge.type === 'string' ? challenge.type : (challenge.type && challenge.type.name)
     }
 
     loadScorecards(filters)
