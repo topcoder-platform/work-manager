@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import cn from 'classnames'
 import { PrimaryButton, OutlineButton } from '../../Buttons'
 import { REVIEW_OPPORTUNITY_TYPE_LABELS, REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE } from '../../../config/constants'
-import { loadScorecards, loadDefaultReviewers, loadWorkflows, loadScorecardById } from '../../../actions/challenges'
+import { loadScorecards, loadDefaultReviewers, loadWorkflows } from '../../../actions/challenges'
 import styles from './ChallengeReviewer-Field.module.scss'
 import { convertDollarToInteger, validateValue } from '../../../util/input-check'
 
@@ -75,13 +75,7 @@ class ChallengeReviewerField extends Component {
   }
 
   componentDidMount () {
-    if (this.props.readOnly) {
-      // In read-only mode, only load specific scorecards for existing reviewers
-      this.loadSpecificScorecards()
-    } else {
-      // In edit mode, load all scorecards for dropdown
-      this.loadScorecards()
-    }
+    this.loadScorecards()
     this.loadDefaultReviewers()
     this.loadWorkflows()
   }
@@ -121,27 +115,6 @@ class ChallengeReviewerField extends Component {
     }
 
     loadScorecards(filters)
-  }
-
-  loadSpecificScorecards () {
-    const { challenge, loadScorecardById } = this.props
-    const reviewers = challenge.reviewers || []
-
-    // Get unique scorecard IDs from reviewers
-    const scorecardIds = [...new Set(
-      reviewers
-        .filter(reviewer => reviewer.scorecardId)
-        .map(reviewer => reviewer.scorecardId)
-    )]
-
-    if (scorecardIds.length === 0) {
-      return
-    }
-
-    // Load each scorecard individually
-    scorecardIds.forEach(scorecardId => {
-      loadScorecardById(scorecardId)
-    })
   }
 
   loadDefaultReviewers () {
@@ -424,13 +397,6 @@ class ChallengeReviewerField extends Component {
               {readOnly ? (
                 <span>
                   {(() => {
-                    const { metadata = {} } = this.props
-                    const specificScorecard = metadata.scorecardById
-                    if (specificScorecard && specificScorecard.id === reviewer.scorecardId) {
-                      return `${specificScorecard.name || 'Unknown'} - ${specificScorecard.type || 'Unknown'} (${specificScorecard.challengeTrack || 'Unknown'}) v${specificScorecard.version || 'Unknown'}`
-                    }
-
-                    // Fallback to searching in the general scorecards array
                     const scorecard = scorecards.find(s => s.id === reviewer.scorecardId)
                     return scorecard ? `${scorecard.name || 'Unknown'} - ${scorecard.type || 'Unknown'} (${scorecard.challengeTrack || 'Unknown'}) v${scorecard.version || 'Unknown'}` : 'Not selected'
                   })()}
@@ -745,8 +711,7 @@ ChallengeReviewerField.propTypes = {
   readOnly: PropTypes.bool,
   loadScorecards: PropTypes.func.isRequired,
   loadDefaultReviewers: PropTypes.func.isRequired,
-  loadWorkflows: PropTypes.func.isRequired,
-  loadScorecardById: PropTypes.func.isRequired
+  loadWorkflows: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
@@ -757,8 +722,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
   loadScorecards,
   loadDefaultReviewers,
-  loadWorkflows,
-  loadScorecardById
+  loadWorkflows
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ChallengeReviewerField)
