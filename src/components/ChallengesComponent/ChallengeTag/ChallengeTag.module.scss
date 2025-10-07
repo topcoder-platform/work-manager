@@ -61,6 +61,10 @@ $corner-radius: 2px;
       background: $track-code-grey;
     }
 
+    &.TGT {
+      background: $orange;
+    }
+
     &.withTco {
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;
