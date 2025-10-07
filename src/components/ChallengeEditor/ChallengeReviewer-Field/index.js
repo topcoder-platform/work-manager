@@ -106,12 +106,21 @@ class ChallengeReviewerField extends Component {
 
     // Add challenge track if available
     if (challenge.track) {
-      filters.challengeTrack = challenge.track.toUpperCase().replace(' ', '_')
+      
+      if (typeof challenge.track === 'string') {
+        filters.challengeTrack = challenge.track.toUpperCase().replace(' ', '_')
+      } else if (challenge.track.track) {
+        filters.challengeTrack = challenge.track.track
+      }
     }
 
     // Add challenge type if available
     if (challenge.type) {
-      filters.challengeType = challenge.type
+      if (typeof challenge.type === 'string') {
+        filters.challengeType = challenge.type
+      } else if (challenge.type.name) {
+        filters.challengeType = challenge.type.name
+      }
     }
 
     loadScorecards(filters)
