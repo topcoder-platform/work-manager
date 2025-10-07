@@ -273,7 +273,13 @@ export default class Resources extends React.Component {
 
     const { field, sort } = this.getResourcesSortParam()
     const revertSort = sort === 'desc' ? 'asc' : 'desc'
-    const isDesign = track.toLowerCase() === 'design'
+    // Normalize track to a string before comparison; handle objects or missing values gracefully
+    const normalizedTrack = (
+      typeof track === 'string'
+        ? track
+        : (track && (track.track || track.name || track.abbreviation)) || ''
+    ).toString()
+    const isDesign = normalizedTrack.toLowerCase() === 'design'
 
     return (
       <div>
@@ -488,7 +494,10 @@ Resources.propTypes = {
     round1Introduction: PT.string,
     round2Introduction: PT.string,
     type: PT.string,
-    track: PT.string,
+    track: PT.oneOfType([
+      PT.string,
+      PT.shape({ track: PT.string, name: PT.string, abbreviation: PT.string })
+    ]),
     status: PT.string,
     createdBy: PT.string
   }).isRequired,

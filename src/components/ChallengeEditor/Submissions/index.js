@@ -318,7 +318,13 @@ class SubmissionsComponent extends React.Component {
     })
 
     let checkpointsUI = null
-    if (track.toLowerCase() === 'design') {
+    // Normalize track to a string before comparison; handle objects or missing values gracefully
+    const normalizedTrack = (
+      typeof track === 'string'
+        ? track
+        : (track && (track.track || track.name || track.abbreviation)) || ''
+    ).toString()
+    if (normalizedTrack.toLowerCase() === 'design') {
       if (challenge.submissionViewable === 'true') {
         checkpointsUI = (
           <div className={cn(styles.container, styles.view)}>
@@ -661,7 +667,10 @@ SubmissionsComponent.propTypes = {
     checkpoints: PT.arrayOf(PT.object),
     submissions: PT.arrayOf(PT.object),
     submissionViewable: PT.string,
-    track: PT.string.isRequired,
+    track: PT.oneOfType([
+      PT.string,
+      PT.shape({ track: PT.string, name: PT.string, abbreviation: PT.string })
+    ]).isRequired,
     type: PT.string.isRequired,
     tags: PT.arrayOf(PT.string),
     registrants: PT.any,
