@@ -335,15 +335,7 @@ export async function fetchScorecards (filters = {}) {
   const response = await axiosInstance.get(`${SCORECARDS_API_URL}?${qs.stringify(query, { encode: false })}`)
   return _.get(response, 'data', {})
 }
-/**
- * Api request for fetching a specific scorecard by ID
- * @param {string} scorecardId the scorecard ID
- * @returns {Promise<*>}
- */
-export async function fetchScorecardById (scorecardId) {
-  const response = await axiosInstance.get(`${SCORECARDS_API_URL}/${scorecardId}`)
-  return _.get(response, 'data', {})
-}
+
 /**
  * Api request for fetching default reviewers
  * @param {Object} filters filters for default reviewers
