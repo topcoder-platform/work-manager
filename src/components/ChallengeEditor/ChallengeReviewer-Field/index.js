@@ -75,20 +75,20 @@ class ChallengeReviewerField extends Component {
   }
 
   componentDidMount () {
-    this.loadScorecards()
+    if (this.props.challenge.track || this.props.challenge.type) {
+      this.loadScorecards()
+    }
     this.loadDefaultReviewers()
     this.loadWorkflows()
   }
 
   componentDidUpdate (prevProps) {
-    const { challenge, readOnly } = this.props
+    const { challenge } = this.props
     const prevChallenge = prevProps.challenge
 
     if (challenge && prevChallenge &&
         (challenge.type !== prevChallenge.type || challenge.track !== prevChallenge.track)) {
-      if (readOnly) {
-        this.loadSpecificScorecards()
-      } else {
+      if (challenge.track || challenge.type) {
         this.loadScorecards()
       }
     }
@@ -704,8 +704,7 @@ ChallengeReviewerField.propTypes = {
   metadata: PropTypes.shape({
     scorecards: PropTypes.array,
     defaultReviewers: PropTypes.array,
-    workflows: PropTypes.array,
-    scorecardById: PropTypes.object
+    workflows: PropTypes.array
   }),
   isLoading: PropTypes.bool,
   readOnly: PropTypes.bool,

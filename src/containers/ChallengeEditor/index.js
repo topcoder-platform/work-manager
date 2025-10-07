@@ -666,8 +666,6 @@ ChallengeEditor.propTypes = {
   loadResources: PropTypes.func,
   loadResourceRoles: PropTypes.func,
   loadSubmissions: PropTypes.func,
-  loadScorecards: PropTypes.func,
-  loadDefaultReviewers: PropTypes.func,
   challengeResources: PropTypes.arrayOf(PropTypes.object),
   challengeSubmissions: PropTypes.arrayOf(PropTypes.object),
   challengeDetails: PropTypes.object,
@@ -767,9 +765,7 @@ const mapDispatchToProps = {
   updateChallengeSkills,
   loadProject,
   createResource,
-  deleteResource,
-  loadScorecards,
-  loadDefaultReviewers
+  deleteResource
 }
 
 export default withRouter(
