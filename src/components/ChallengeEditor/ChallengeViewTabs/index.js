@@ -125,8 +125,11 @@ const ChallengeViewTabs = ({
   const normalizedStatus = challenge.status ? challenge.status.toUpperCase() : ''
   const isDraft = normalizedStatus === CHALLENGE_STATUS.DRAFT
   const isNew = normalizedStatus === CHALLENGE_STATUS.NEW
+  const isActive = normalizedStatus === CHALLENGE_STATUS.ACTIVE
+  const isCancelled = normalizedStatus.startsWith('CANCELLED')
   const isSelfServiceCopilot = challenge.legacy.selfServiceCopilot === loggedInUser.handle
   const isAdmin = checkAdmin(token)
+  const isCopilot = checkCopilot(token)
 
   // Make sure that the Launch and Mark as completed buttons are hidden
   // for tasks that are assigned to the current logged in user, if that user has the copilot role.
@@ -205,8 +208,18 @@ const ChallengeViewTabs = ({
             styles.actionButtonsRight
           )}
         >
-          {enableEdit && (isDraft || isNew) && !isReadOnly && !isSelfService &&
-            (<div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>)}
+          {(
+            !isCancelled && !isReadOnly && (
+              // Existing behavior: allow for NEW/DRAFT when editing and not self-service
+              (enableEdit && (isDraft || isNew) && !isSelfService) ||
+              // New behavior: allow for NEW/DRAFT/ACTIVE when user is copilot or admin
+              ((isNew || isDraft || isActive) && (isAdmin || isCopilot))
+            )
+          ) && (
+            <div className={styles['cancel-button']}>
+              <CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} />
+            </div>
+          )}
           {canLaunch && (
             <div className={styles.button}>
               <PrimaryButton
