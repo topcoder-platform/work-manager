@@ -1,12 +1,14 @@
 const DOMAIN = 'topcoder.com'
 const PROD_API_HOSTNAME = `https://api.${DOMAIN}`
 const API_V5 = `${PROD_API_HOSTNAME}/v5`
+const API_V6 = `${PROD_API_HOSTNAME}/v6`
 
 module.exports = {
   API_V2: `${PROD_API_HOSTNAME}/v2`,
   API_V3: `${PROD_API_HOSTNAME}/v3`,
   API_V4: `${PROD_API_HOSTNAME}/v4`,
   API_V5,
+  API_V6,
   ACCOUNTS_APP_CONNECTOR_URL: process.env.ACCOUNTS_APP_CONNECTOR_URL || `https://accounts-auth0.${DOMAIN}`,
   ACCOUNTS_APP_LOGIN_URL: `https://accounts-auth0.${DOMAIN}`,
   COMMUNITY_APP_URL: `https://www.${DOMAIN}`,

@@ -1,4 +1,4 @@
-import { API_V2, API_V3, API_V4, API_V5 } from '../config/constants'
+import { API_V2, API_V3, API_V4, API_V5, API_V6 } from '../config/constants'
 
 export const getTopcoderReactLib = () => {
   window.CONFIG = {
@@ -7,6 +7,7 @@ export const getTopcoderReactLib = () => {
       V3: API_V3,
       V4: API_V4,
       V5: API_V5,
+      V6: API_V6,
       MM_BROKER: '/api'
     }
   }
