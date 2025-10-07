@@ -30,9 +30,7 @@ import {
   replaceResourceInRole,
   updateChallengeSkills,
   createResource,
-  deleteResource,
-  loadScorecards,
-  loadDefaultReviewers
+  deleteResource
 } from '../../actions/challenges'
 
 import { loadSubmissions } from '../../actions/challengeSubmissions'
@@ -99,8 +97,6 @@ class ChallengeEditor extends Component {
       loadSubmissions,
       loadChallengeDetails,
       loadResources,
-      loadScorecards,
-      loadDefaultReviewers,
       submissionsPerPage
     } = this.props
     loadTimelineTemplates()
@@ -111,8 +107,6 @@ class ChallengeEditor extends Component {
     // loadChallengeTerms()
     loadGroups()
     loadResourceRoles()
-    loadScorecards()
-    this.fetchDefaultReviewersForChallenge(this.props.challengeDetails, loadDefaultReviewers)
     this.fetchChallengeDetails(
       match,
       loadChallengeDetails,
@@ -127,15 +121,6 @@ class ChallengeEditor extends Component {
     //     this.fetchChallengeDetails(newMatch, loadChallengeDetails, loadResources)
     //   }
     // })
-  }
-
-  fetchDefaultReviewersForChallenge (challengeDetails, loadDefaultReviewersFn) {
-    const typeId = _.get(challengeDetails, 'typeId')
-    const trackId = _.get(challengeDetails, 'trackId')
-
-    if (typeId && trackId && typeof loadDefaultReviewersFn === 'function') {
-      loadDefaultReviewersFn({ typeId, trackId })
-    }
   }
 
   componentWillUnmount () {
@@ -156,18 +141,6 @@ class ChallengeEditor extends Component {
       this.setState({ challengeDetails: nextProps.challengeDetails })
     }
 
-    const prevTypeId = _.get(this.props.challengeDetails, 'typeId')
-    const prevTrackId = _.get(this.props.challengeDetails, 'trackId')
-    const nextTypeId = _.get(nextProps.challengeDetails, 'typeId')
-    const nextTrackId = _.get(nextProps.challengeDetails, 'trackId')
-
-    if (
-      nextTypeId &&
-      nextTrackId &&
-      (nextTypeId !== prevTypeId || nextTrackId !== prevTrackId)
-    ) {
-      this.fetchDefaultReviewersForChallenge(nextProps.challengeDetails, nextProps.loadDefaultReviewers)
-    }
     if (projectDetail && loggedInUser) {
       const projectMembers = projectDetail.members
       const loginUserProjectInfo = _.find(projectMembers, { userId: loggedInUser.userId })
@@ -693,8 +666,6 @@ ChallengeEditor.propTypes = {
   loadResources: PropTypes.func,
   loadResourceRoles: PropTypes.func,
   loadSubmissions: PropTypes.func,
-  loadScorecards: PropTypes.func,
-  loadDefaultReviewers: PropTypes.func,
   challengeResources: PropTypes.arrayOf(PropTypes.object),
   challengeSubmissions: PropTypes.arrayOf(PropTypes.object),
   challengeDetails: PropTypes.object,
@@ -794,9 +765,7 @@ const mapDispatchToProps = {
   updateChallengeSkills,
   loadProject,
   createResource,
-  deleteResource,
-  loadScorecards,
-  loadDefaultReviewers
+  deleteResource
 }
 
 export default withRouter(
