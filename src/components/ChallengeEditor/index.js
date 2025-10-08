@@ -772,32 +772,6 @@ class ChallengeEditor extends Component {
   isValidReviewers () {
     const { challenge } = this.state
     const reviewers = challenge.reviewers || []
-    const requiredPhaseNames = [
-      'Screening',
-      'Review',
-      'Post-mortem',
-      'Approval',
-      'Checkpoint Screening',
-      'Iterative Review'
-    ]
-    const normalize = (name) => (name || '')
-      .toString()
-      .toLowerCase()
-      .replace(/[-\s]/g, '')
-    const requiredNormalized = new Set(requiredPhaseNames.map(normalize))
-    const challengePhases = Array.isArray(challenge.phases) ? challenge.phases : []
-    const requiredPhaseIds = []
-    for (const phase of challengePhases) {
-      const phaseNameNorm = normalize(phase.name)
-      if (requiredNormalized.has(phaseNameNorm)) {
-        requiredPhaseIds.push(phase.phaseId || phase.id)
-      }
-    }
-
-    // If any required phase exists and no reviewers configured, it's invalid
-    if (reviewers.length === 0 && requiredPhaseIds.length > 0) {
-      return false
-    }
 
     // Validate each reviewer
     for (const reviewer of reviewers) {
@@ -827,21 +801,6 @@ class ChallengeEditor extends Component {
         return false
       }
     }
-
-    // Enforce coverage: if the challenge has any of the required phases,
-    // then there must be at least one reviewer with a scorecard for that phase.
-    // If any required phase exists, ensure at least one reviewer with scorecard configured for it
-    for (const phaseId of requiredPhaseIds) {
-      const hasReviewerForPhase = reviewers.some(r => {
-        const rPhaseId = r.phaseId
-        const hasScorecard = !!r.scorecardId
-        return rPhaseId === phaseId && hasScorecard
-      })
-      if (!hasReviewerForPhase) {
-        return false
-      }
-    }
-
     return true
   }
 

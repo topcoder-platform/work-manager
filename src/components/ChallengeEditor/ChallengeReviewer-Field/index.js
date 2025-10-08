@@ -21,7 +21,6 @@ class ChallengeReviewerField extends Component {
     this.renderReviewerForm = this.renderReviewerForm.bind(this)
     this.handleApplyDefault = this.handleApplyDefault.bind(this)
     this.isAIReviewer = this.isAIReviewer.bind(this)
-    this.getMissingRequiredPhases = this.getMissingRequiredPhases.bind(this)
   }
 
   isAIReviewer (reviewer) {
@@ -29,49 +28,6 @@ class ChallengeReviewerField extends Component {
       (reviewer.aiWorkflowId && reviewer.aiWorkflowId.trim() !== '') ||
       (reviewer.isMemberReview === false)
     )
-  }
-
-  getMissingRequiredPhases () {
-    const { challenge } = this.props
-    const reviewers = challenge.reviewers || []
-    const phases = Array.isArray(challenge.phases) ? challenge.phases : []
-
-    const requiredPhaseNames = [
-      'Screening',
-      'Review',
-      'Post-mortem',
-      'Approval',
-      'Checkpoint Screening',
-      'Iterative Review'
-    ]
-
-    const normalize = (name) => (name || '')
-      .toString()
-      .toLowerCase()
-      .replace(/[-\s]/g, '')
-
-    const requiredNormalized = new Set(requiredPhaseNames.map(normalize))
-
-    // Map challenge phases by normalized name to phase ids (only those we care about)
-    const requiredPhaseEntries = phases
-      .filter(p => requiredNormalized.has(normalize(p.name)))
-      .map(p => ({ name: p.name, id: p.phaseId || p.id }))
-
-    const missing = []
-    for (const entry of requiredPhaseEntries) {
-      const hasReviewerWithScorecard = reviewers.some(r => {
-        const rPhaseId = r.phaseId
-        const hasScorecard = !!r.scorecardId
-        return rPhaseId === entry.id && hasScorecard
-      })
-      if (!hasReviewerWithScorecard) {
-        // Use the canonical capitalization from requiredPhaseNames when possible
-        const canonical = requiredPhaseNames.find(n => normalize(n) === normalize(entry.name)) || entry.name
-        missing.push(canonical)
-      }
-    }
-
-    return missing
   }
 
   componentDidMount () {
@@ -130,7 +86,6 @@ class ChallengeReviewerField extends Component {
 
     // only load default reviewers if we have typeId and trackId
     if (!challenge.typeId || !challenge.trackId) {
-      console.log('Cannot load default reviewers: missing typeId or trackId')
       return
     }
 
@@ -625,17 +580,6 @@ class ChallengeReviewerField extends Component {
             <label>Review Configuration :</label>
           </div>
           <div className={cn(styles.field, styles.col2)}>
-            {(!readOnly && challenge.submitTriggered) && (() => {
-              const missing = this.getMissingRequiredPhases()
-              if (missing.length > 0) {
-                return (
-                  <div className={styles.error}>
-                    {`Please configure a scorecard for: ${missing.join(', ')}`}
-                  </div>
-                )
-              }
-              return null
-            })()}
             {!readOnly && (
               <div className={styles.description}>
                 Configure how this challenge will be reviewed. You can add multiple reviewers including AI and member reviewers.
