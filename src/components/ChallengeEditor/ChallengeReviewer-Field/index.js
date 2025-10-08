@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import cn from 'classnames'
 import { PrimaryButton, OutlineButton } from '../../Buttons'
-import { REVIEW_OPPORTUNITY_TYPE_LABELS, REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE } from '../../../config/constants'
+import { REVIEW_OPPORTUNITY_TYPE_LABELS, REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE, MARATHON_TYPE_ID } from '../../../config/constants'
 import { loadScorecards, loadDefaultReviewers, loadWorkflows } from '../../../actions/challenges'
 import styles from './ChallengeReviewer-Field.module.scss'
 import { convertDollarToInteger, validateValue } from '../../../util/input-check'
@@ -33,6 +33,10 @@ class ChallengeReviewerField extends Component {
 
   getMissingRequiredPhases () {
     const { challenge } = this.props
+    // Marathon Match does not require review configuration
+    if (challenge && challenge.typeId === MARATHON_TYPE_ID) {
+      return []
+    }
     const reviewers = challenge.reviewers || []
     const phases = Array.isArray(challenge.phases) ? challenge.phases : []
 

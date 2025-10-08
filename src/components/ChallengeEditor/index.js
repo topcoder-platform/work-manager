@@ -772,6 +772,7 @@ class ChallengeEditor extends Component {
   isValidReviewers () {
     const { challenge } = this.state
     const reviewers = challenge.reviewers || []
+    const isMM = challenge.typeId === MARATHON_TYPE_ID
     const requiredPhaseNames = [
       'Screening',
       'Review',
@@ -795,7 +796,8 @@ class ChallengeEditor extends Component {
     }
 
     // If any required phase exists and no reviewers configured, it's invalid
-    if (reviewers.length === 0 && requiredPhaseIds.length > 0) {
+    // Exception: Marathon Match does not require review configuration
+    if (!isMM && reviewers.length === 0 && requiredPhaseIds.length > 0) {
       return false
     }
 
@@ -831,14 +833,16 @@ class ChallengeEditor extends Component {
     // Enforce coverage: if the challenge has any of the required phases,
     // then there must be at least one reviewer with a scorecard for that phase.
     // If any required phase exists, ensure at least one reviewer with scorecard configured for it
-    for (const phaseId of requiredPhaseIds) {
-      const hasReviewerForPhase = reviewers.some(r => {
-        const rPhaseId = r.phaseId
-        const hasScorecard = !!r.scorecardId
-        return rPhaseId === phaseId && hasScorecard
-      })
-      if (!hasReviewerForPhase) {
-        return false
+    if (!isMM) {
+      for (const phaseId of requiredPhaseIds) {
+        const hasReviewerForPhase = reviewers.some(r => {
+          const rPhaseId = r.phaseId
+          const hasScorecard = !!r.scorecardId
+          return rPhaseId === phaseId && hasScorecard
+        })
+        if (!hasReviewerForPhase) {
+          return false
+        }
       }
     }
 
