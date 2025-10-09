@@ -4,15 +4,19 @@ import { connect } from 'react-redux'
 import cn from 'classnames'
 import { PrimaryButton, OutlineButton } from '../../Buttons'
 import { REVIEW_OPPORTUNITY_TYPE_LABELS, REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE, MARATHON_TYPE_ID } from '../../../config/constants'
-import { loadScorecards, loadDefaultReviewers, loadWorkflows } from '../../../actions/challenges'
+import { loadScorecards, loadDefaultReviewers, loadWorkflows, replaceResourceInRole, createResource, deleteResource } from '../../../actions/challenges'
 import styles from './ChallengeReviewer-Field.module.scss'
 import { convertDollarToInteger, validateValue } from '../../../util/input-check'
+import AssignedMemberField from '../AssignedMember-Field'
+import { getResourceRoleByName } from '../../../util/tc'
 
 class ChallengeReviewerField extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      error: null
+      error: null,
+      // Map reviewer index -> array of assigned member details { handle, userId }
+      assignedMembers: {}
     }
 
     this.addReviewer = this.addReviewer.bind(this)
@@ -22,6 +26,11 @@ class ChallengeReviewerField extends Component {
     this.handleApplyDefault = this.handleApplyDefault.bind(this)
     this.isAIReviewer = this.isAIReviewer.bind(this)
     this.getMissingRequiredPhases = this.getMissingRequiredPhases.bind(this)
+    this.getRoleNameForReviewer = this.getRoleNameForReviewer.bind(this)
+    this.onAssignmentChange = this.onAssignmentChange.bind(this)
+    this.syncAssignmentsOnCountChange = this.syncAssignmentsOnCountChange.bind(this)
+    this.handlePhaseChangeWithReassign = this.handlePhaseChangeWithReassign.bind(this)
+    this.handleToggleShouldOpen = this.handleToggleShouldOpen.bind(this)
   }
 
   isAIReviewer (reviewer) {
@@ -100,6 +109,137 @@ class ChallengeReviewerField extends Component {
     if (challenge && prevChallenge &&
         (challenge.typeId !== prevChallenge.typeId || challenge.trackId !== prevChallenge.trackId)) {
       this.loadDefaultReviewers()
+    }
+  }
+
+  getRoleNameForReviewer (reviewer) {
+    const { challenge } = this.props
+    const phase = (challenge.phases || []).find(p => (p.id === reviewer.phaseId) || (p.phaseId === reviewer.phaseId))
+    const name = (phase && phase.name) ? phase.name.toLowerCase() : ''
+
+    // Normalize for matching
+    const norm = name.replace(/[-\s]/g, '')
+
+    if (name.includes('iterative review') || norm === 'iterativereview') return 'Iterative Reviewer'
+    if (norm === 'approval') return 'Approver'
+    if (norm === 'checkpointscreening') return 'Checkpoint Screener'
+    if (norm === 'checkpointreview') return 'Checkpoint Reviewer'
+    if (norm === 'screening') return 'Primary Screener'
+    // default to Reviewer for any kind of review
+    return 'Reviewer'
+  }
+
+  async onAssignmentChange (reviewerIndex, slotIndex, option) {
+    const { challenge, metadata = {}, replaceResourceInRole } = this.props
+    if (!challenge || !challenge.id) return
+
+    const roleName = this.getRoleNameForReviewer((challenge.reviewers || [])[reviewerIndex] || {})
+    const role = getResourceRoleByName(metadata.resourceRoles || [], roleName)
+    if (!role) return
+
+    this.setState(prev => {
+      const prevHandles = prev.assignedMembers[reviewerIndex] || []
+      const prevMember = prevHandles[slotIndex] || null
+      const newHandles = [...prevHandles]
+
+      let newMemberHandle = null
+      if (option && option.value) {
+        newHandles[slotIndex] = {
+          handle: option.label,
+          userId: parseInt(option.value, 10)
+        }
+        newMemberHandle = option.label
+      } else {
+        newHandles[slotIndex] = null
+      }
+
+      // fire resource update
+      const oldHandle = prevMember && prevMember.handle
+      // replaceResourceInRole gracefully handles deletion when newMember is falsy
+      replaceResourceInRole(challenge.id, role.id, newMemberHandle, oldHandle)
+
+      return {
+        assignedMembers: {
+          ...prev.assignedMembers,
+          [reviewerIndex]: newHandles
+        }
+      }
+    })
+  }
+
+  async syncAssignmentsOnCountChange (reviewerIndex, newCount) {
+    const { challenge, metadata = {}, deleteResource } = this.props
+    const roleName = this.getRoleNameForReviewer((challenge.reviewers || [])[reviewerIndex] || {})
+    const role = getResourceRoleByName(metadata.resourceRoles || [], roleName)
+    if (!role) return
+    this.setState(prev => {
+      const current = prev.assignedMembers[reviewerIndex] || []
+      const toRemove = current.slice(newCount).filter(Boolean)
+      // remove extra assigned resources
+      toRemove.forEach(m => {
+        if (challenge && challenge.id && m && m.handle) {
+          deleteResource(challenge.id, role.id, m.handle)
+        }
+      })
+      const next = current.slice(0, newCount)
+      return {
+        assignedMembers: {
+          ...prev.assignedMembers,
+          [reviewerIndex]: next
+        }
+      }
+    })
+  }
+
+  async handlePhaseChangeWithReassign (reviewerIndex, newPhaseId) {
+    const { challenge, metadata = {}, createResource, deleteResource } = this.props
+    const reviewers = challenge.reviewers || []
+    const currentReviewer = reviewers[reviewerIndex]
+    if (!currentReviewer) return
+
+    const oldRoleName = this.getRoleNameForReviewer(currentReviewer)
+    const newReviewer = { ...currentReviewer, phaseId: newPhaseId }
+    const newRoleName = this.getRoleNameForReviewer(newReviewer)
+
+    if (oldRoleName === newRoleName) return
+
+    const oldRole = getResourceRoleByName(metadata.resourceRoles || [], oldRoleName)
+    const newRole = getResourceRoleByName(metadata.resourceRoles || [], newRoleName)
+    if (!oldRole || !newRole) return
+
+    const assigned = (this.state.assignedMembers[reviewerIndex] || []).filter(Boolean)
+    // move any existing assigned members from old role to new role
+    for (const m of assigned) {
+      try {
+        if (challenge && challenge.id && m && m.handle) {
+          await deleteResource(challenge.id, oldRole.id, m.handle)
+          await createResource(challenge.id, newRole.id, m.handle)
+        }
+      } catch (e) {}
+    }
+  }
+
+  async handleToggleShouldOpen (reviewerIndex, nextValue) {
+    // If toggling to open public opportunity, remove any existing assigned members for this reviewer
+    if (nextValue) {
+      const { challenge, metadata = {}, deleteResource } = this.props
+      const roleName = this.getRoleNameForReviewer((challenge.reviewers || [])[reviewerIndex] || {})
+      const role = getResourceRoleByName(metadata.resourceRoles || [], roleName)
+      if (!role) return
+      const assigned = (this.state.assignedMembers[reviewerIndex] || []).filter(Boolean)
+      for (const m of assigned) {
+        try {
+          if (challenge && challenge.id && m && m.handle) {
+            await deleteResource(challenge.id, role.id, m.handle)
+          }
+        } catch (e) {}
+      }
+      this.setState(prev => ({
+        assignedMembers: {
+          ...prev.assignedMembers,
+          [reviewerIndex]: []
+        }
+      }))
     }
   }
 
@@ -242,6 +382,16 @@ class ChallengeReviewerField extends Component {
       }
     }
 
+    // Special handling for phase and count changes
+    if (field === 'phaseId') {
+      this.handlePhaseChangeWithReassign(index, value)
+    }
+
+    if (field === 'memberReviewerCount') {
+      const newCount = parseInt(value) || 1
+      this.syncAssignmentsOnCountChange(index, Math.max(1, newCount))
+    }
+
     updatedReviewers[index] = Object.assign({}, updatedReviewers[index], fieldUpdate)
     onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
   }
@@ -364,6 +514,11 @@ class ChallengeReviewerField extends Component {
                   }
 
                   updatedReviewers[index] = updatedReviewer
+
+                  // If switching to AI, clear any assigned members for this reviewer
+                  if (isAI) {
+                    this.handleToggleShouldOpen(index, true)
+                  }
 
                   onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
                 }}
@@ -584,6 +739,47 @@ class ChallengeReviewerField extends Component {
                 </select>
               )}
             </div>
+
+            <div className={styles.formGroup}>
+              <label>
+                <input
+                  type='checkbox'
+                  disabled={readOnly}
+                  checked={reviewer.shouldOpenOpportunity !== false}
+                  onChange={(e) => {
+                    const next = !!e.target.checked
+                    this.handleToggleShouldOpen(index, next)
+                    this.updateReviewer(index, 'shouldOpenOpportunity', next)
+                  }}
+                  style={{ marginRight: '8px' }}
+                />
+                Open public review opportunity
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* Assignment controls when public opportunity is OFF */}
+        {!this.isAIReviewer(reviewer) && (reviewer.shouldOpenOpportunity === false) && (
+          <div className={styles.formRow}>
+            <div className={styles.formGroup}>
+              <label>Assign member(s):</label>
+              {Array.from({ length: parseInt(reviewer.memberReviewerCount || 1) }, (_, i) => {
+                const assigned = (this.state.assignedMembers[index] || [])[i] || null
+                return (
+                  <div key={`assign-${index}-${i}`} style={{ marginBottom: '10px' }}>
+                    <AssignedMemberField
+                      challenge={challenge}
+                      readOnly={readOnly}
+                      showAssignToMe={false}
+                      label={`Member ${i + 1}`}
+                      assignedMemberDetails={assigned}
+                      onChange={(option) => this.onAssignmentChange(index, i, option)}
+                    />
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
       </div>
@@ -716,13 +912,17 @@ ChallengeReviewerField.propTypes = {
   metadata: PropTypes.shape({
     scorecards: PropTypes.array,
     defaultReviewers: PropTypes.array,
-    workflows: PropTypes.array
+    workflows: PropTypes.array,
+    resourceRoles: PropTypes.array
   }),
   isLoading: PropTypes.bool,
   readOnly: PropTypes.bool,
   loadScorecards: PropTypes.func.isRequired,
   loadDefaultReviewers: PropTypes.func.isRequired,
-  loadWorkflows: PropTypes.func.isRequired
+  loadWorkflows: PropTypes.func.isRequired,
+  replaceResourceInRole: PropTypes.func.isRequired,
+  createResource: PropTypes.func.isRequired,
+  deleteResource: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
@@ -733,7 +933,10 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
   loadScorecards,
   loadDefaultReviewers,
-  loadWorkflows
+  loadWorkflows,
+  replaceResourceInRole,
+  createResource,
+  deleteResource
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ChallengeReviewerField)
