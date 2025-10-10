@@ -27,19 +27,12 @@ import {
   checkAdmin,
   checkCopilot
 } from './util/tc'
-import IdleTimer from 'react-idle-timer'
-import modalStyles from './styles/modal.module.scss'
-import ConfirmationModal from './components/Modal/ConfirmationModal'
 import Users from './containers/Users'
 import { isBetaMode, removeFromLocalStorage, saveToLocalStorage } from './util/localstorage'
 import ProjectEditor from './containers/ProjectEditor'
 import ProjectInvitations from './containers/ProjectInvitations'
 
-const { ACCOUNTS_APP_LOGIN_URL, IDLE_TIMEOUT_MINUTES, IDLE_TIMEOUT_GRACE_MINUTES, COMMUNITY_APP_URL } = process.env
-
-const theme = {
-  container: modalStyles.modalContainer
-}
+const { ACCOUNTS_APP_LOGIN_URL } = process.env
 
 class RedirectToChallenge extends React.Component {
   componentWillMount () {
@@ -84,19 +77,6 @@ RedirectToChallenge.propTypes = {
 const ConnectRedirectToChallenge = connect(mapStateToProps, mapDispatchToProps)(RedirectToChallenge)
 
 class Routes extends React.Component {
-  constructor (props) {
-    super(props)
-    this.idleTimer = null
-    this.handleOnIdle = this.handleOnIdle.bind(this)
-
-    this.logoutIntervalRef = null
-    this.state = {
-      showIdleModal: false,
-      logsoutIn: IDLE_TIMEOUT_GRACE_MINUTES * 60, // convert to seconds
-      logoutIntervalRef: null
-    }
-  }
-
   componentWillMount () {
     this.checkAuth()
   }
@@ -129,20 +109,6 @@ class Routes extends React.Component {
     }
   }
 
-  handleOnIdle () {
-    this.idleTimer.pause()
-    const intervalId = setInterval(() => {
-      const remaining = this.state.logsoutIn
-      if (remaining > 0) {
-        this.setState(state => ({ ...state, logsoutIn: remaining - 1 }))
-      } else {
-        window.location = `${COMMUNITY_APP_URL}/logout`
-      }
-    }, 1000)
-
-    this.setState(state => ({ ...state, showIdleModal: true, logoutIntervalRef: intervalId }))
-  }
-
   render () {
     if (!this.props.isLoggedIn) {
       return null
@@ -152,29 +118,9 @@ class Routes extends React.Component {
     const isReadOnly = checkReadOnlyRoles(this.props.token)
     const isCopilot = checkCopilot(this.props.token)
     const isAdmin = checkAdmin(this.props.token)
-    const modal = (<ConfirmationModal
-      theme={theme}
-      title='Session Timeout'
-      message={`You've been idle for quite sometime. You'll be automatically logged out in ${this.state.logsoutIn >= 60 ? Math.ceil(this.state.logsoutIn / 60) + ' minute(s).' : this.state.logsoutIn + ' second(s)'}`}
-      confirmText='Logout Now'
-      cancelText='Resume Session'
-      onCancel={() => {
-        clearInterval(this.state.logoutIntervalRef)
-        if (this.idleTimer.isIdle()) {
-          this.idleTimer.resume()
-          this.idleTimer.reset()
-          this.setState(state => ({
-            ...state, showIdleModal: false, logsoutIn: IDLE_TIMEOUT_GRACE_MINUTES * 60
-          }))
-        }
-      }}
-      onConfirm={() => {
-        window.location = `${COMMUNITY_APP_URL}/logout`
-      }}
-    />)
 
     return (
-      <IdleTimer ref={ref => { this.idleTimer = ref }} timeout={1000 * 60 * IDLE_TIMEOUT_MINUTES} onIdle={this.handleOnIdle} debounce={250}>
+      <React.Fragment>
         {!isAllowed && <Switch>
           <Route exact path='/'
             render={() => renderApp(
@@ -327,8 +273,7 @@ class Routes extends React.Component {
           {/* If path is not defined redirect to landing page */}
           <Redirect to='/' />
         </Switch>}
-        {this.state.showIdleModal && modal}
-      </IdleTimer>
+      </React.Fragment>
     )
   }
 }

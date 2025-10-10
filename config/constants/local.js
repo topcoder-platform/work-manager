@@ -82,11 +82,6 @@ module.exports = {
   FILE_PICKER_REGION: 'us-east-1',
   FILE_PICKER_CNAME: 'fs.topcoder.com',
   FILE_PICKER_LOCATION: 's3',
-
-  // Idle/logout prompts
-  IDLE_TIMEOUT_MINUTES: 10,
-  IDLE_TIMEOUT_GRACE_MINUTES: 5,
-
   MULTI_ROUND_CHALLENGE_TEMPLATE_ID: 'd4201ca4-8437-4d63-9957-3f7708184b07',
   UNIVERSAL_NAV_URL: 'https://uni-nav.topcoder-dev.com/v1/tc-universal-nav.js',
   HEADER_AUTH_URLS_HREF: `https://accounts-auth0.${DOMAIN}?utm_source=community-app-main`,
@@ -99,4 +94,3 @@ module.exports = {
   SALESFORCE_BILLING_ACCOUNT_LINK: 'https://c.cs18.visual.force.com/apex/baredirect?id=',
   PROFILE_URL: 'https://profiles.topcoder-dev.com/'
 }
-

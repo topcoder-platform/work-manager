@@ -260,9 +260,6 @@ importers:
       react-hot-loader:
         specifier: ^4.13.1
         version: 4.13.1(@types/react@16.14.66)(react-dom@16.14.0(react@16.14.0))(react@16.14.0)
-      react-idle-timer:
-        specifier: ^4.6.4
-        version: 4.6.4(prop-types@15.8.1)(react-dom@16.14.0(react@16.14.0))(react@16.14.0)
       react-js-pagination:
         specifier: ^3.0.3
         version: 3.0.3
@@ -6742,13 +6739,6 @@ packages:
     peerDependenciesMeta:
       '@types/react':
         optional: true
-
-  react-idle-timer@4.6.4:
-    resolution: {integrity: sha512-iq61dPud8fgj7l1KOJEY5pyiD532fW0KcIe/5XUe/0lB/4Vytoy4tZBlLGSiYodPzKxTL6HyKoOmG6tyzjD7OQ==}
-    peerDependencies:
-      prop-types: '>=15'
-      react: '>=16'
-      react-dom: '>=16'
 
   react-input-autosize@3.0.0:
     resolution: {integrity: sha512-nL9uS7jEs/zu8sqwFE5MAPx6pPkNAriACQ2rGLlqmKr2sPGtN7TXTyDdQt4lbNXVx7Uzadb40x8qotIuru6Rhg==}
@@ -16734,12 +16724,6 @@ snapshots:
       source-map: 0.7.6
     optionalDependencies:
       '@types/react': 16.14.66
-
-  react-idle-timer@4.6.4(prop-types@15.8.1)(react-dom@16.14.0(react@16.14.0))(react@16.14.0):
-    dependencies:
-      prop-types: 15.8.1
-      react: 16.14.0
-      react-dom: 16.14.0(react@16.14.0)
 
   react-input-autosize@3.0.0(react@16.14.0):
     dependencies:
