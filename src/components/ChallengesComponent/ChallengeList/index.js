@@ -814,6 +814,7 @@ class ChallengeList extends Component {
                           challengeTypes={challengeTypes}
                           loginUserRoleInProject={loginUserRoleInProject}
                           auth={this.props.auth}
+                          resetFilter={this.resetFilter}
                         />
                       </li>
                     )
