@@ -856,12 +856,6 @@ class ChallengeEditor extends Component {
       return !!name && !!trackId && !!typeId
     }
 
-    const reviewType = challenge.reviewType ? challenge.reviewType.toUpperCase() : REVIEW_TYPES.COMMUNITY
-    const isInternal = reviewType === REVIEW_TYPES.INTERNAL
-    if (isInternal && !challenge.reviewer) {
-      return false
-    }
-
     if (!this.isValidChallengePrizes()) {
       return false
     }
@@ -1849,10 +1843,8 @@ class ChallengeEditor extends Component {
             {projectDetail.version === 'v4' && <MilestoneField milestones={activeProjectMilestones} onUpdateSelect={this.onUpdateSelect} projectId={projectDetail.id} selectedMilestoneId={selectedMilestoneId} />}
             <CopilotField challenge={challenge} copilots={copilotResources} onUpdateOthers={this.onUpdateOthers} assignYourselfCopilot={assignYourselfCopilot} loggedInUser={loggedInUser} />
             <ReviewTypeField
-              reviewers={metadata.members}
               challenge={challenge}
               onUpdateOthers={this.onUpdateOthers}
-              onUpdateSelect={this.onUpdateSelect}
             />
             <div className={styles.row}>
               <div className={styles.tcCheckbox}>

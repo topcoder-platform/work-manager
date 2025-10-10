@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import cn from 'classnames'
 import { PrimaryButton, OutlineButton } from '../../Buttons'
-import { REVIEW_OPPORTUNITY_TYPE_LABELS, REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE, MARATHON_TYPE_ID } from '../../../config/constants'
+import { REVIEW_OPPORTUNITY_TYPE_LABELS, REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE, MARATHON_TYPE_ID, DES_TRACK_ID } from '../../../config/constants'
 import { loadScorecards, loadDefaultReviewers, loadWorkflows, replaceResourceInRole, createResource, deleteResource } from '../../../actions/challenges'
 import styles from './ChallengeReviewer-Field.module.scss'
 import { convertDollarToInteger, validateValue } from '../../../util/input-check'
@@ -451,6 +451,7 @@ class ChallengeReviewerField extends Component {
     const { challenge, metadata = {}, readOnly = false } = this.props
     const { scorecards = [], workflows = [] } = metadata
     const validationErrors = challenge.submitTriggered ? this.validateReviewer(reviewer) : {}
+    const isDesignChallenge = challenge && challenge.trackId === DES_TRACK_ID
 
     return (
       <div key={`reviewer-${index}`} className={styles.reviewerForm}>
@@ -739,23 +740,24 @@ class ChallengeReviewerField extends Component {
                 </select>
               )}
             </div>
-
-            <div className={styles.formGroup}>
-              <label>
-                <input
-                  type='checkbox'
-                  disabled={readOnly}
-                  checked={reviewer.shouldOpenOpportunity !== false}
-                  onChange={(e) => {
-                    const next = !!e.target.checked
-                    this.handleToggleShouldOpen(index, next)
-                    this.updateReviewer(index, 'shouldOpenOpportunity', next)
-                  }}
-                  style={{ marginRight: '8px' }}
-                />
-                Open public review opportunity
-              </label>
-            </div>
+            {!isDesignChallenge && (
+              <div className={styles.formGroup}>
+                <label>
+                  <input
+                    type='checkbox'
+                    disabled={readOnly}
+                    checked={reviewer.shouldOpenOpportunity !== false}
+                    onChange={(e) => {
+                      const next = !!e.target.checked
+                      this.handleToggleShouldOpen(index, next)
+                      this.updateReviewer(index, 'shouldOpenOpportunity', next)
+                    }}
+                    style={{ marginRight: '8px' }}
+                  />
+                  Open public review opportunity
+                </label>
+              </div>
+            )}
           </div>
         )}
 
