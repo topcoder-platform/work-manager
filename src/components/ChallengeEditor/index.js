@@ -771,6 +771,10 @@ class ChallengeEditor extends Component {
 
   isValidReviewers () {
     const { challenge } = this.state
+    const isTask = _.get(challenge, 'task.isTask', false)
+    if (isTask) {
+      return true
+    }
     const reviewers = challenge.reviewers || []
     const isMM = challenge.typeId === MARATHON_TYPE_ID
     const requiredPhaseNames = [
@@ -1948,7 +1952,7 @@ class ChallengeEditor extends Component {
               onUpdateSkills={this.onUpdateSkills}
               onUpdateMultiSelect={this.onUpdateMultiSelect}
               onUpdateMetadata={this.onUpdateMetadata}
-              showReviewerField
+              showReviewerField={!isTask}
               onUpdateReviewers={this.onUpdateOthers}
             />
             {/* hide until challenge API change is pushed to PROD https://github.com/topcoder-platform/challenge-api/issues/348 */}
