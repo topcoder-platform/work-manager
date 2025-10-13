@@ -12,6 +12,7 @@ import { getTCMemberURL, CHALLENGE_STATUS } from '../../../config/constants'
 import ReactSVG from 'react-svg'
 import { getRatingLevel, sortList } from '../../../util/tc'
 import { getCurrentPhase } from '../../../util/phase'
+import { fetchReviews } from '../../../services/challenges'
 import styles from './styles.module.scss'
 import ResourcesDeleteModal from '../ResourcesDeleteModal'
 
@@ -151,7 +152,7 @@ export default class Resources extends React.Component {
   /**
    * Update exception handles delete
    */
-  updateExceptionHandlesDelete () {
+  async updateExceptionHandlesDelete () {
     const {
       submissions,
       challenge,
@@ -165,6 +166,27 @@ export default class Resources extends React.Component {
       // do not allow to delete submitters who submitted
       exceptionHandlesDeleteList[s.createdBy] = true
     })
+
+    // Fetch reviews to check which reviewers have actually submitted reviews
+    let resourceIdsWithSubmittedReviews = new Set()
+    try {
+      if (challenge && challenge.id) {
+        const reviews = await fetchReviews({ challengeId: challenge.id })
+        // Build a set of resource IDs who have submitted reviews
+        // Only count reviews that are actually submitted (committed or completed)
+        // Filter out PENDING reviews that haven't been submitted yet
+        const submittedReviews = reviews.filter(review => 
+          review.committed === true || 
+          (review.status && review.status.toUpperCase() === 'COMPLETED')
+        )
+        resourceIdsWithSubmittedReviews = new Set(
+          submittedReviews.map(review => review.resourceId).filter(Boolean)
+        )
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error)
+      // If we can't fetch reviews, fall back to original behavior for safety
+    }
 
     const exceptionResourceIdDeleteList = {}
     _.forEach(resources, (resourceItem) => {
@@ -202,11 +224,21 @@ export default class Resources extends React.Component {
         exceptionResourceIdDeleteList[resourceItem.id] = true
       } else if (
         // If the current phase is not submission or registration
-        // then we will disable removing reviewers and copilots.
-        _.some(['reviewer', 'copilot'], (role) => `${resourceItem.role}`.toLowerCase().indexOf(role) >= 0) &&
+        // Only protect reviewers who have actually submitted a review
+        // Copilots are still protected to maintain existing behavior
         isCurrentPhasesNotSubmissionOrRegistration
       ) {
-        exceptionResourceIdDeleteList[resourceItem.id] = true
+        const isReviewer = `${resourceItem.role}`.toLowerCase().indexOf('reviewer') >= 0
+        const isCopilot = `${resourceItem.role}`.toLowerCase().indexOf('copilot') >= 0
+        
+        if (isCopilot) {
+          // Copilots are still protected (original behavior)
+          exceptionResourceIdDeleteList[resourceItem.id] = true
+        } else if (isReviewer && resourceIdsWithSubmittedReviews.has(resourceItem.id)) {
+          // Only protect reviewers who have submitted a review
+          // This allows removal of reviewers who haven't submitted yet, even if other reviewers have
+          exceptionResourceIdDeleteList[resourceItem.id] = true
+        }
       }
     })
     this.setState({ exceptionResourceIdDeleteList })

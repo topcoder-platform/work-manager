@@ -14,6 +14,7 @@ const {
   CHALLENGE_TIMELINES_URL,
   SUBMISSIONS_API_URL,
   REVIEW_TYPE_API_URL,
+  REVIEWS_API_URL,
   SCORECARDS_API_URL,
   WORKFLOWS_API_URL,
   GROUPS_API_URL,
@@ -290,6 +291,17 @@ export async function fetchSubmissions (challengeId, pageObj) {
 export async function getReviewTypes () {
   const response = await axiosInstance.get(`${REVIEW_TYPE_API_URL}?perPage=500&page=1`)
   return _.get(response, 'data', [])
+}
+
+/**
+ * Api request for fetching reviews by challengeId or submissionId
+ * @param {Object} filters filters for reviews (e.g., { challengeId, submissionId })
+ * @returns {Promise<*>}
+ */
+export async function fetchReviews (filters = {}) {
+  const query = qs.stringify(filters, { encode: false })
+  const response = await axiosInstance.get(`${REVIEWS_API_URL}?${query}`)
+  return _.get(response, 'data.data', [])
 }
 
 /**
