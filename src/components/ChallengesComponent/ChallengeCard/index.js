@@ -110,6 +110,7 @@ class ChallengeCard extends React.Component {
     this.deleteModalLaunch = this.deleteModalLaunch.bind(this)
     this.resetModal = this.resetModal.bind(this)
     this.onLaunchChallenge = this.onLaunchChallenge.bind(this)
+    this.openChallengeView = this.openChallengeView.bind(this)
   }
 
   getForumLink (challenge) {
@@ -204,9 +205,14 @@ class ChallengeCard extends React.Component {
     }
   }
 
+  openChallengeView (challenge) {
+    this.props.setActiveProject(parseInt(challenge.projectId))
+    this.props.resetFilter()
+  }
+
   render () {
     const { isLaunch, isConfirm, isSaving, isDeleteLaunch, isCheckChalengePermission, hasEditChallengePermission, currentPhase, forumLink } = this.state
-    const { setActiveProject, challenge, reloadChallengeList, isBillingAccountExpired, disableHover, getStatusText, challengeTypes, loginUserRoleInProject } = this.props
+    const { challenge, reloadChallengeList, isBillingAccountExpired, disableHover, getStatusText, challengeTypes, loginUserRoleInProject } = this.props
     const deleteMessage = isCheckChalengePermission
       ? 'Checking permissions...'
       : `Do you want to delete "${challenge.name}"?`
@@ -265,7 +271,7 @@ class ChallengeCard extends React.Component {
           />
         </div>
 
-        <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`} onClick={() => setActiveProject(parseInt(challenge.projectId))}>
+        <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`} onClick={() => this.openChallengeView(challenge)}>
           <div className={styles.name}>
             <span className={styles.link}>{challenge.name}</span>
           </div>
@@ -291,7 +297,7 @@ class ChallengeCard extends React.Component {
         {
           !isReadOnly && (
             <div className={styles.col6}>
-              {(disableHover ? <Link className={styles.link} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`}>Edit</Link> : hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch))}
+              {(disableHover ? <Link className={styles.link} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`} onClick={() => this.props.resetFilter()}>Edit</Link> : hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch))}
             </div>
           )
         }
@@ -328,7 +334,8 @@ ChallengeCard.propTypes = {
   getStatusText: PropTypes.func,
   challengeTypes: PropTypes.arrayOf(PropTypes.shape()),
   auth: PropTypes.object.isRequired,
-  loginUserRoleInProject: PropTypes.string
+  loginUserRoleInProject: PropTypes.string,
+  resetFilter: PropTypes.func
 }
 
 export default withRouter(ChallengeCard)
