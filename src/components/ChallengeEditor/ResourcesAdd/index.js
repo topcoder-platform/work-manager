@@ -19,6 +19,7 @@ const roles = [
   'Client Manager',
   'Primary Screener',
   'Final Reviewer',
+  'Post-Mortem Reviewer',
   'Manager',
   'Copilot',
   'Checkpoint Screener',
