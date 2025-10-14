@@ -12,8 +12,10 @@ import { getTCMemberURL, CHALLENGE_STATUS } from '../../../config/constants'
 import ReactSVG from 'react-svg'
 import { getRatingLevel, sortList } from '../../../util/tc'
 import { getCurrentPhase } from '../../../util/phase'
+import { fetchReviews } from '../../../services/challenges'
 import styles from './styles.module.scss'
 import ResourcesDeleteModal from '../ResourcesDeleteModal'
+import Loader from '../../Loader'
 
 const assets = require.context('../../../assets/images', false, /svg/)
 const ArrowDown = './arrow-down.svg'
@@ -64,7 +66,8 @@ export default class Resources extends React.Component {
       },
       selectedTab: 0,
       showDeleteResourceModal: null,
-      exceptionResourceIdDeleteList: {}
+      exceptionResourceIdDeleteList: {},
+      isLoadingResourceDeletionRules: true
     }
 
     this.sortResources = this.sortResources.bind(this)
@@ -151,7 +154,9 @@ export default class Resources extends React.Component {
   /**
    * Update exception handles delete
    */
-  updateExceptionHandlesDelete () {
+  async updateExceptionHandlesDelete () {
+    this.setState({ isLoadingResourceDeletionRules: true })
+    
     const {
       submissions,
       challenge,
@@ -165,6 +170,33 @@ export default class Resources extends React.Component {
       // do not allow to delete submitters who submitted
       exceptionHandlesDeleteList[s.createdBy] = true
     })
+
+    // Fetch reviews to check which reviewers have actually submitted reviews
+    let resourceIdsWithSubmittedReviews = new Set()
+    try {
+      if (challenge && challenge.id) {
+        const reviews = await fetchReviews({ challengeId: challenge.id })
+        // Build a set of resource IDs who have submitted reviews
+        // Only count reviews that are actually submitted (committed or completed)
+        // Filter out PENDING reviews that haven't been submitted yet
+        const submittedReviews = reviews.filter(review => 
+          review.committed === true || 
+          (review.status && review.status.toUpperCase() === 'COMPLETED')
+        )
+        resourceIdsWithSubmittedReviews = new Set(
+          submittedReviews.map(review => review.resourceId).filter(Boolean)
+        )
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error)
+      // Safe fallback: If we can't fetch reviews, protect ALL reviewers
+      // This prevents accidental deletion of reviewers who may have submitted work
+      resources.forEach(resourceItem => {
+        if (`${resourceItem.role}`.toLowerCase().indexOf('reviewer') >= 0) {
+          resourceIdsWithSubmittedReviews.add(resourceItem.id)
+        }
+      })
+    }
 
     const exceptionResourceIdDeleteList = {}
     _.forEach(resources, (resourceItem) => {
@@ -202,14 +234,27 @@ export default class Resources extends React.Component {
         exceptionResourceIdDeleteList[resourceItem.id] = true
       } else if (
         // If the current phase is not submission or registration
-        // then we will disable removing reviewers and copilots.
-        _.some(['reviewer', 'copilot'], (role) => `${resourceItem.role}`.toLowerCase().indexOf(role) >= 0) &&
+        // Only protect reviewers who have actually submitted a review
+        // Copilots are still protected to maintain existing behavior
         isCurrentPhasesNotSubmissionOrRegistration
       ) {
-        exceptionResourceIdDeleteList[resourceItem.id] = true
+        const isReviewer = `${resourceItem.role}`.toLowerCase().indexOf('reviewer') >= 0
+        const isCopilot = `${resourceItem.role}`.toLowerCase().indexOf('copilot') >= 0
+        
+        if (isCopilot) {
+          // Copilots are still protected (original behavior)
+          exceptionResourceIdDeleteList[resourceItem.id] = true
+        } else if (isReviewer && resourceIdsWithSubmittedReviews.has(resourceItem.id)) {
+          // Only protect reviewers who have submitted a review
+          // This allows removal of reviewers who haven't submitted yet, even if other reviewers have
+          exceptionResourceIdDeleteList[resourceItem.id] = true
+        }
       }
     })
-    this.setState({ exceptionResourceIdDeleteList })
+    this.setState({ 
+      exceptionResourceIdDeleteList,
+      isLoadingResourceDeletionRules: false 
+    })
   }
 
   /**
@@ -269,7 +314,7 @@ export default class Resources extends React.Component {
     const { challenge, canEditResource, deleteResource } = this.props
     const { track } = challenge
 
-    const { sortedResources, selectedTab, showDeleteResourceModal, exceptionResourceIdDeleteList } = this.state
+    const { sortedResources, selectedTab, showDeleteResourceModal, exceptionResourceIdDeleteList, isLoadingResourceDeletionRules } = this.state
 
     const { field, sort } = this.getResourcesSortParam()
     const revertSort = sort === 'desc' ? 'asc' : 'desc'
@@ -442,18 +487,23 @@ export default class Resources extends React.Component {
                       <span role='cell'>{formatDate(r.created)}</span>
                     </td>
 
-                    {(canEditResource && !exceptionResourceIdDeleteList[r.id]) ? (
+                    {canEditResource && (
                       <td className={cn(styles['col-8Table'], styles['col-bodyTable'])}>
-                        <button
-                          onClick={() => {
-                            this.setState({
-                              showDeleteResourceModal: r
-                            })
-                          }}
-                        >
-                          <ReactSVG path={assets(`${Trash}`)} />
-                        </button>
-                      </td>) : null}
+                        {isLoadingResourceDeletionRules ? (
+                          <Loader />
+                        ) : !exceptionResourceIdDeleteList[r.id] ? (
+                          <button
+                            onClick={() => {
+                              this.setState({
+                                showDeleteResourceModal: r
+                              })
+                            }}
+                          >
+                            <ReactSVG path={assets(`${Trash}`)} />
+                          </button>
+                        ) : null}
+                      </td>
+                    )}
                   </tr>
                 )
               })}

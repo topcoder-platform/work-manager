@@ -30,6 +30,7 @@ module.exports = {
   RESOURCE_ROLES_API_URL: `${PROD_API_HOSTNAME}/v5/resource-roles`,
   SUBMISSIONS_API_URL: `${PROD_API_HOSTNAME}/v6/submissions`,
   REVIEW_TYPE_API_URL: `${PROD_API_HOSTNAME}/v5/reviewTypes`,
+  REVIEWS_API_URL: `${PROD_API_HOSTNAME}/v5/reviews`, //update to use v6
   SCORECARDS_API_URL: `${PROD_API_HOSTNAME}/v5/scorecards`, // update to use v6
   WORKFLOWS_API_URL: `${PROD_API_HOSTNAME}/v5/workflows`, // update to use v6
   SUBMISSION_REVIEW_APP_URL: `https://submission-review.${DOMAIN}/challenges`,

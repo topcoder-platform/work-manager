@@ -51,6 +51,7 @@ module.exports = {
   RESOURCE_ROLES_API_URL: `${LOCAL_RESOURCE_API}/resource-roles`,
   SUBMISSIONS_API_URL: `${LOCAL_REVIEW_API}/submissions`,
   REVIEW_TYPE_API_URL: `${LOCAL_REVIEW_API}/reviewTypes`,
+  REVIEWS_API_URL: `${LOCAL_REVIEW_API}/reviews`,
   SCORECARDS_API_URL: `${LOCAL_REVIEW_API}/scorecards`,
   WORKFLOWS_API_URL: `${LOCAL_REVIEW_API}/workflows`,
 
