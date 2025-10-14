@@ -156,7 +156,7 @@ export default class Resources extends React.Component {
    */
   async updateExceptionHandlesDelete () {
     this.setState({ isLoadingResourceDeletionRules: true })
-    
+
     const {
       submissions,
       challenge,
@@ -179,8 +179,8 @@ export default class Resources extends React.Component {
         // Build a set of resource IDs who have submitted reviews
         // Only count reviews that are actually submitted (committed or completed)
         // Filter out PENDING reviews that haven't been submitted yet
-        const submittedReviews = reviews.filter(review => 
-          review.committed === true || 
+        const submittedReviews = reviews.filter(review =>
+          review.committed === true ||
           (review.status && review.status.toUpperCase() === 'COMPLETED')
         )
         resourceIdsWithSubmittedReviews = new Set(
@@ -240,7 +240,7 @@ export default class Resources extends React.Component {
       ) {
         const isReviewer = `${resourceItem.role}`.toLowerCase().indexOf('reviewer') >= 0
         const isCopilot = `${resourceItem.role}`.toLowerCase().indexOf('copilot') >= 0
-        
+
         if (isCopilot) {
           // Copilots are still protected (original behavior)
           exceptionResourceIdDeleteList[resourceItem.id] = true
@@ -251,9 +251,9 @@ export default class Resources extends React.Component {
         }
       }
     })
-    this.setState({ 
+    this.setState({
       exceptionResourceIdDeleteList,
-      isLoadingResourceDeletionRules: false 
+      isLoadingResourceDeletionRules: false
     })
   }
 
