@@ -65,7 +65,8 @@ export default class Resources extends React.Component {
       },
       selectedTab: 0,
       showDeleteResourceModal: null,
-      exceptionResourceIdDeleteList: {}
+      exceptionResourceIdDeleteList: {},
+      isLoadingResourceDeletionRules: true
     }
 
     this.sortResources = this.sortResources.bind(this)
@@ -153,6 +154,9 @@ export default class Resources extends React.Component {
    * Update exception handles delete
    */
   async updateExceptionHandlesDelete () {
+    // Set loading to true to hide delete icons while fetching reviews
+    this.setState({ isLoadingResourceDeletionRules: true })
+    
     const {
       submissions,
       challenge,
@@ -185,7 +189,13 @@ export default class Resources extends React.Component {
       }
     } catch (error) {
       console.error('Error fetching reviews:', error)
-      // If we can't fetch reviews, fall back to original behavior for safety
+      // Safe fallback: If we can't fetch reviews, protect ALL reviewers
+      // This prevents accidental deletion of reviewers who may have submitted work
+      resources.forEach(resourceItem => {
+        if (`${resourceItem.role}`.toLowerCase().indexOf('reviewer') >= 0) {
+          resourceIdsWithSubmittedReviews.add(resourceItem.id)
+        }
+      })
     }
 
     const exceptionResourceIdDeleteList = {}
@@ -241,7 +251,10 @@ export default class Resources extends React.Component {
         }
       }
     })
-    this.setState({ exceptionResourceIdDeleteList })
+    this.setState({ 
+      exceptionResourceIdDeleteList,
+      isLoadingResourceDeletionRules: false 
+    })
   }
 
   /**
@@ -301,7 +314,7 @@ export default class Resources extends React.Component {
     const { challenge, canEditResource, deleteResource } = this.props
     const { track } = challenge
 
-    const { sortedResources, selectedTab, showDeleteResourceModal, exceptionResourceIdDeleteList } = this.state
+    const { sortedResources, selectedTab, showDeleteResourceModal, exceptionResourceIdDeleteList, isLoadingResourceDeletionRules } = this.state
 
     const { field, sort } = this.getResourcesSortParam()
     const revertSort = sort === 'desc' ? 'asc' : 'desc'
@@ -474,7 +487,7 @@ export default class Resources extends React.Component {
                       <span role='cell'>{formatDate(r.created)}</span>
                     </td>
 
-                    {(canEditResource && !exceptionResourceIdDeleteList[r.id]) ? (
+                    {(canEditResource && !exceptionResourceIdDeleteList[r.id] && !isLoadingResourceDeletionRules) ? (
                       <td className={cn(styles['col-8Table'], styles['col-bodyTable'])}>
                         <button
                           onClick={() => {
