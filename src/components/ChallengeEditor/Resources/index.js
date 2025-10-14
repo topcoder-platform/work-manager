@@ -15,6 +15,7 @@ import { getCurrentPhase } from '../../../util/phase'
 import { fetchReviews } from '../../../services/challenges'
 import styles from './styles.module.scss'
 import ResourcesDeleteModal from '../ResourcesDeleteModal'
+import Loader from '../../Loader'
 
 const assets = require.context('../../../assets/images', false, /svg/)
 const ArrowDown = './arrow-down.svg'
@@ -154,7 +155,6 @@ export default class Resources extends React.Component {
    * Update exception handles delete
    */
   async updateExceptionHandlesDelete () {
-    // Set loading to true to hide delete icons while fetching reviews
     this.setState({ isLoadingResourceDeletionRules: true })
     
     const {
@@ -487,18 +487,23 @@ export default class Resources extends React.Component {
                       <span role='cell'>{formatDate(r.created)}</span>
                     </td>
 
-                    {(canEditResource && !exceptionResourceIdDeleteList[r.id] && !isLoadingResourceDeletionRules) ? (
+                    {canEditResource && (
                       <td className={cn(styles['col-8Table'], styles['col-bodyTable'])}>
-                        <button
-                          onClick={() => {
-                            this.setState({
-                              showDeleteResourceModal: r
-                            })
-                          }}
-                        >
-                          <ReactSVG path={assets(`${Trash}`)} />
-                        </button>
-                      </td>) : null}
+                        {isLoadingResourceDeletionRules ? (
+                          <Loader />
+                        ) : !exceptionResourceIdDeleteList[r.id] ? (
+                          <button
+                            onClick={() => {
+                              this.setState({
+                                showDeleteResourceModal: r
+                              })
+                            }}
+                          >
+                            <ReactSVG path={assets(`${Trash}`)} />
+                          </button>
+                        ) : null}
+                      </td>
+                    )}
                   </tr>
                 )
               })}
