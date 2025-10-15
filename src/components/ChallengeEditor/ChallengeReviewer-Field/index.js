@@ -124,7 +124,7 @@ class ChallengeReviewerField extends Component {
     if (norm === 'approval') return 'Approver'
     if (norm === 'checkpointscreening') return 'Checkpoint Screener'
     if (norm === 'checkpointreview') return 'Checkpoint Reviewer'
-    if (norm === 'screening') return 'Primary Screener'
+    if (norm === 'screening') return 'Screener'
     // default to Reviewer for any kind of review
     return 'Reviewer'
   }
