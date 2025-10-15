@@ -13,7 +13,8 @@ const ChallengeTotalField = ({ challenge }) => {
       .map(v => convertDollarToInteger(v, '$'))
       .reduce((prev, next) => prev + next, 0)
   }
-
+  const placementPrizeSet = challenge.prizeSets.find(set => set.type === 'PLACEMENT')
+  const firstPlacePrize = (placementPrizeSet && placementPrizeSet.prizes && placementPrizeSet.prizes[0] && placementPrizeSet.prizes[0].value) || 0
   let reviewerTotal = 0
   if (challenge.reviewers && Array.isArray(challenge.reviewers)) {
     reviewerTotal = challenge.reviewers
@@ -25,9 +26,11 @@ const ChallengeTotalField = ({ challenge }) => {
         return !isAI
       })
       .reduce((sum, r) => {
-        const base = convertDollarToInteger(r.basePayment || '0', '')
+        const basePayment = firstPlacePrize * parseFloat(r.baseCoefficient || 0)
+        const incrementalPayment = parseFloat(r.incrementalCoefficient || 0) * firstPlacePrize
+
         const count = parseInt(r.memberReviewerCount) || 1
-        return sum + (base * count)
+        return sum + (basePayment + incrementalPayment) * count
       }, 0)
   }
 
