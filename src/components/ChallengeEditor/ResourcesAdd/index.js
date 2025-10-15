@@ -17,7 +17,7 @@ const roles = [
   'Observer',
   'Approver',
   'Client Manager',
-  'Primary Screener',
+  'Screener',
   'Final Reviewer',
   'Post-Mortem Reviewer',
   'Manager',
