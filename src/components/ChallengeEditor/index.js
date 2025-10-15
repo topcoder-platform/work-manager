@@ -822,11 +822,6 @@ class ChallengeEditor extends Component {
         if (memberCount < 1 || !Number.isInteger(memberCount)) {
           return false
         }
-
-        const basePayment = convertDollarToInteger(reviewer.basePayment || '0', '')
-        if (basePayment < 0) {
-          return false
-        }
       }
 
       if (!reviewer.phaseId) {
