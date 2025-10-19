@@ -34,14 +34,15 @@ const ChallengeTotalField = ({ challenge }) => {
       }, 0)
   }
 
-  const totalChallengeCost = (challengeTotal || 0) + reviewerTotal
+  const totalChallengeCost = ((challengeTotal || 0) + reviewerTotal) || 0
+  const formattedTotalChallengeCost = Number.isFinite(totalChallengeCost) ? totalChallengeCost.toFixed(2) : '0.00'
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
         <label htmlFor='challengeTotal'>Estimated Challenge Total :</label>
       </div>
       <div className={cn(styles.field, styles.col2)}>
-        <span>$ {totalChallengeCost}</span>
+        <span>$ {formattedTotalChallengeCost}</span>
       </div>
     </div>
   )
