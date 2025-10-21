@@ -9,6 +9,13 @@ import styles from './ChallengeReviewer-Field.module.scss'
 import { validateValue } from '../../../util/input-check'
 import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
+import { isEmpty, isEqual } from 'lodash'
+
+const ResourceToPhaseNameMap = {
+  Reviewer: 'Review',
+  Approver: 'Approval',
+  Screener: 'Screening'
+}
 
 class ChallengeReviewerField extends Component {
   constructor (props) {
@@ -16,7 +23,8 @@ class ChallengeReviewerField extends Component {
     this.state = {
       error: null,
       // Map reviewer index -> array of assigned member details { handle, userId }
-      assignedMembers: {}
+      assignedMembers: {},
+      isAssignedMembersUpdated: false
     }
 
     this.addReviewer = this.addReviewer.bind(this)
@@ -31,6 +39,7 @@ class ChallengeReviewerField extends Component {
     this.syncAssignmentsOnCountChange = this.syncAssignmentsOnCountChange.bind(this)
     this.handlePhaseChangeWithReassign = this.handlePhaseChangeWithReassign.bind(this)
     this.handleToggleShouldOpen = this.handleToggleShouldOpen.bind(this)
+    this.updateAssignedMembers = this.updateAssignedMembers.bind(this)
   }
 
   isAIReviewer (reviewer) {
@@ -95,8 +104,57 @@ class ChallengeReviewerField extends Component {
     this.loadWorkflows()
   }
 
+  updateAssignedMembers(challengeResources, challenge) {
+    const reviewersWithPhaseName = challenge.reviewers.map(item => {
+      const phase = challenge.phases && challenge.phases.find(p => p.phaseId === item.phaseId);
+      return {
+        ...item,
+        name: phase.name,
+      }
+    })
+
+    const reviewerIndex = {}
+    reviewersWithPhaseName.forEach((reviewer, index) => {
+      if (!reviewerIndex[reviewer.name]) {
+        reviewerIndex[reviewer.name] = index
+        return
+      }
+    })
+
+    const assignedMembers = {}
+
+    challengeResources.forEach((resource) => {
+      const index = reviewerIndex[ResourceToPhaseNameMap[resource.roleName]]
+
+      if (!assignedMembers[index]) {
+        assignedMembers[index] = [{
+          handle: resource.memberHandle,
+          userId: resource.memberId
+        }]
+        return
+      }
+
+      assignedMembers[index].push({
+        handle: resource.memberHandle,
+        userId: resource.memberId
+      })
+    })
+
+    console.log(assignedMembers, 'asldk77nk')
+    this.setState({
+      assignedMembers,
+      isAssignedMembersUpdated: true
+    })
+  }
+
+  componentWillUnmount () {
+    this.setState({
+      isAssignedMembersUpdated: false
+    })
+  }
+
   componentDidUpdate (prevProps) {
-    const { challenge } = this.props
+    const { challenge, challengeResources, readOnly, isLoading } = this.props
     const prevChallenge = prevProps.challenge
 
     if (challenge && prevChallenge &&
@@ -104,6 +162,12 @@ class ChallengeReviewerField extends Component {
       if (challenge.track || challenge.type) {
         this.loadScorecards()
       }
+    }
+
+    console.log(readOnly, challengeResources, prevProps.challengeResources)
+
+    if (challenge) {
+      this.updateAssignedMembers(challengeResources, challenge)
     }
 
     if (challenge && prevChallenge &&
@@ -728,6 +792,7 @@ class ChallengeReviewerField extends Component {
               <label>Assign member(s):</label>
               {Array.from({ length: parseInt(reviewer.memberReviewerCount || 1) }, (_, i) => {
                 const assigned = (this.state.assignedMembers[index] || [])[i] || null
+                console.log(assigned, 'assignedasjdkasd')
                 return (
                   <div key={`assign-${index}-${i}`} style={{ marginBottom: '10px' }}>
                     <AssignedMemberField
@@ -901,12 +966,14 @@ ChallengeReviewerField.propTypes = {
   loadWorkflows: PropTypes.func.isRequired,
   replaceResourceInRole: PropTypes.func.isRequired,
   createResource: PropTypes.func.isRequired,
-  deleteResource: PropTypes.func.isRequired
+  deleteResource: PropTypes.func.isRequired,
+  challengeResources: PropTypes.object.isRequired,
 }
 
 const mapStateToProps = (state) => ({
   metadata: state.challenges.metadata || {},
-  isLoading: state.challenges.isLoading
+  isLoading: state.challenges.isLoading,
+  challengeResources: state.challenges.challengeResources
 })
 
 const mapDispatchToProps = {
