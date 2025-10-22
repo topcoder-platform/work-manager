@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 import cn from 'classnames'
 import { PrimaryButton, OutlineButton } from '../../Buttons'
 import { REVIEW_OPPORTUNITY_TYPE_LABELS, REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE, MARATHON_TYPE_ID, DES_TRACK_ID } from '../../../config/constants'
-import { loadScorecards, loadDefaultReviewers, loadWorkflows, replaceResourceInRole, createResource, deleteResource } from '../../../actions/challenges'
+import { loadScorecards, loadDefaultReviewers, loadWorkflows, replaceResourceInRole, createResource, deleteResource, loadResources } from '../../../actions/challenges'
 import styles from './ChallengeReviewer-Field.module.scss'
 import { validateValue } from '../../../util/input-check'
 import AssignedMemberField from '../AssignedMember-Field'
@@ -18,13 +18,13 @@ const ResourceToPhaseNameMap = {
 }
 
 class ChallengeReviewerField extends Component {
+  doUpdateAssignedMembers = true
   constructor (props) {
     super(props)
     this.state = {
       error: null,
       // Map reviewer index -> array of assigned member details { handle, userId }
       assignedMembers: {},
-      isAssignedMembersUpdated: false
     }
 
     this.addReviewer = this.addReviewer.bind(this)
@@ -140,17 +140,11 @@ class ChallengeReviewerField extends Component {
       })
     })
 
-    console.log(assignedMembers, 'asldk77nk')
-    this.setState({
-      assignedMembers,
-      isAssignedMembersUpdated: true
-    })
-  }
-
-  componentWillUnmount () {
-    this.setState({
-      isAssignedMembersUpdated: false
-    })
+    if (!_.isEqual(this.state.assignedMembers, assignedMembers)) {
+      this.setState({
+        assignedMembers,
+      })
+    }
   }
 
   componentDidUpdate (prevProps) {
@@ -164,9 +158,7 @@ class ChallengeReviewerField extends Component {
       }
     }
 
-    console.log(readOnly, challengeResources, prevProps.challengeResources)
-
-    if (challenge) {
+    if (challenge && this.doUpdateAssignedMembers) {
       this.updateAssignedMembers(challengeResources, challenge)
     }
 
@@ -221,13 +213,18 @@ class ChallengeReviewerField extends Component {
       const oldHandle = prevMember && prevMember.handle
       // replaceResourceInRole gracefully handles deletion when newMember is falsy
       replaceResourceInRole(challenge.id, role.id, newMemberHandle, oldHandle)
-
+      this.doUpdateAssignedMembers = false
       return {
         assignedMembers: {
           ...prev.assignedMembers,
           [reviewerIndex]: newHandles
         }
       }
+    }, () => {
+      const n = this;
+      setTimeout(() => {
+        n.doUpdateAssignedMembers = true
+      }, 1000)
     })
   }
 
@@ -792,7 +789,6 @@ class ChallengeReviewerField extends Component {
               <label>Assign member(s):</label>
               {Array.from({ length: parseInt(reviewer.memberReviewerCount || 1) }, (_, i) => {
                 const assigned = (this.state.assignedMembers[index] || [])[i] || null
-                console.log(assigned, 'assignedasjdkasd')
                 return (
                   <div key={`assign-${index}-${i}`} style={{ marginBottom: '10px' }}>
                     <AssignedMemberField
@@ -964,6 +960,7 @@ ChallengeReviewerField.propTypes = {
   loadScorecards: PropTypes.func.isRequired,
   loadDefaultReviewers: PropTypes.func.isRequired,
   loadWorkflows: PropTypes.func.isRequired,
+  loadResources: PropTypes.func.isRequired,
   replaceResourceInRole: PropTypes.func.isRequired,
   createResource: PropTypes.func.isRequired,
   deleteResource: PropTypes.func.isRequired,
@@ -982,7 +979,8 @@ const mapDispatchToProps = {
   loadWorkflows,
   replaceResourceInRole,
   createResource,
-  deleteResource
+  deleteResource,
+  loadResources,
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ChallengeReviewerField)
