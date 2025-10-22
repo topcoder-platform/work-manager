@@ -9,6 +9,14 @@ import styles from './ChallengeReviewer-Field.module.scss'
 import { validateValue } from '../../../util/input-check'
 import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
+import { isEqual } from 'lodash'
+
+const ResourceToPhaseNameMap = {
+  Reviewer: 'Review',
+  Approver: 'Approval',
+  Screener: 'Screening',
+  'Iterative Reviewer': 'Iterative Review'
+}
 
 class ChallengeReviewerField extends Component {
   constructor (props) {
@@ -31,6 +39,8 @@ class ChallengeReviewerField extends Component {
     this.syncAssignmentsOnCountChange = this.syncAssignmentsOnCountChange.bind(this)
     this.handlePhaseChangeWithReassign = this.handlePhaseChangeWithReassign.bind(this)
     this.handleToggleShouldOpen = this.handleToggleShouldOpen.bind(this)
+    this.updateAssignedMembers = this.updateAssignedMembers.bind(this)
+    this.doUpdateAssignedMembers = true
   }
 
   isAIReviewer (reviewer) {
@@ -95,8 +105,50 @@ class ChallengeReviewerField extends Component {
     this.loadWorkflows()
   }
 
+  updateAssignedMembers (challengeResources, challenge) {
+    const reviewersWithPhaseName = challenge.reviewers.map(item => {
+      const phase = challenge.phases && challenge.phases.find(p => p.phaseId === item.phaseId)
+      return {
+        ...item,
+        name: phase.name
+      }
+    })
+
+    const reviewerIndex = {}
+    reviewersWithPhaseName.forEach((reviewer, index) => {
+      if (!reviewerIndex[reviewer.name]) {
+        reviewerIndex[reviewer.name] = index
+      }
+    })
+
+    const assignedMembers = {}
+
+    challengeResources.forEach((resource) => {
+      const index = reviewerIndex[ResourceToPhaseNameMap[resource.roleName]]
+
+      if (!assignedMembers[index]) {
+        assignedMembers[index] = [{
+          handle: resource.memberHandle,
+          userId: resource.memberId
+        }]
+        return
+      }
+
+      assignedMembers[index].push({
+        handle: resource.memberHandle,
+        userId: resource.memberId
+      })
+    })
+
+    if (!isEqual(this.state.assignedMembers, assignedMembers)) {
+      this.setState({
+        assignedMembers
+      })
+    }
+  }
+
   componentDidUpdate (prevProps) {
-    const { challenge } = this.props
+    const { challenge, challengeResources } = this.props
     const prevChallenge = prevProps.challenge
 
     if (challenge && prevChallenge &&
@@ -104,6 +156,10 @@ class ChallengeReviewerField extends Component {
       if (challenge.track || challenge.type) {
         this.loadScorecards()
       }
+    }
+
+    if (challenge && this.doUpdateAssignedMembers) {
+      this.updateAssignedMembers(challengeResources, challenge)
     }
 
     if (challenge && prevChallenge &&
@@ -157,13 +213,18 @@ class ChallengeReviewerField extends Component {
       const oldHandle = prevMember && prevMember.handle
       // replaceResourceInRole gracefully handles deletion when newMember is falsy
       replaceResourceInRole(challenge.id, role.id, newMemberHandle, oldHandle)
-
+      this.doUpdateAssignedMembers = false
       return {
         assignedMembers: {
           ...prev.assignedMembers,
           [reviewerIndex]: newHandles
         }
       }
+    }, () => {
+      const n = this
+      setTimeout(() => {
+        n.doUpdateAssignedMembers = true
+      }, 1000)
     })
   }
 
@@ -343,7 +404,8 @@ class ChallengeReviewerField extends Component {
       incrementalCoefficient: (defaultReviewer && defaultReviewer.incrementalCoefficient) || 0,
       type: isAIReviewer
         ? undefined
-        : (defaultReviewer && defaultReviewer.opportunityType) || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW
+        : (defaultReviewer && defaultReviewer.opportunityType) || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW,
+      shouldOpenOpportunity: false
     }
 
     if (isAIReviewer) {
@@ -901,12 +963,14 @@ ChallengeReviewerField.propTypes = {
   loadWorkflows: PropTypes.func.isRequired,
   replaceResourceInRole: PropTypes.func.isRequired,
   createResource: PropTypes.func.isRequired,
-  deleteResource: PropTypes.func.isRequired
+  deleteResource: PropTypes.func.isRequired,
+  challengeResources: PropTypes.array.isRequired
 }
 
 const mapStateToProps = (state) => ({
   metadata: state.challenges.metadata || {},
-  isLoading: state.challenges.isLoading
+  isLoading: state.challenges.isLoading,
+  challengeResources: state.challenges.challengeResources
 })
 
 const mapDispatchToProps = {
