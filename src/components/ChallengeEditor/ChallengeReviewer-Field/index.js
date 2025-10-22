@@ -962,7 +962,7 @@ ChallengeReviewerField.propTypes = {
   replaceResourceInRole: PropTypes.func.isRequired,
   createResource: PropTypes.func.isRequired,
   deleteResource: PropTypes.func.isRequired,
-  challengeResources: PropTypes.object.isRequired
+  challengeResources: PropTypes.array.isRequired
 }
 
 const mapStateToProps = (state) => ({
