@@ -403,7 +403,8 @@ class ChallengeReviewerField extends Component {
       incrementalCoefficient: (defaultReviewer && defaultReviewer.incrementalCoefficient) || 0,
       type: isAIReviewer
         ? undefined
-        : (defaultReviewer && defaultReviewer.opportunityType) || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW
+        : (defaultReviewer && defaultReviewer.opportunityType) || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW,
+      shouldOpenOpportunity: false
     }
 
     if (isAIReviewer) {
