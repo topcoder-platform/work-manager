@@ -14,7 +14,8 @@ import { isEqual } from 'lodash'
 const ResourceToPhaseNameMap = {
   Reviewer: 'Review',
   Approver: 'Approval',
-  Screener: 'Screening'
+  Screener: 'Screening',
+  'Iterative Reviewer': 'Iterative Review'
 }
 
 class ChallengeReviewerField extends Component {
