@@ -4,12 +4,12 @@ import { connect } from 'react-redux'
 import cn from 'classnames'
 import { PrimaryButton, OutlineButton } from '../../Buttons'
 import { REVIEW_OPPORTUNITY_TYPE_LABELS, REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE, MARATHON_TYPE_ID, DES_TRACK_ID } from '../../../config/constants'
-import { loadScorecards, loadDefaultReviewers, loadWorkflows, replaceResourceInRole, createResource, deleteResource, loadResources } from '../../../actions/challenges'
+import { loadScorecards, loadDefaultReviewers, loadWorkflows, replaceResourceInRole, createResource, deleteResource } from '../../../actions/challenges'
 import styles from './ChallengeReviewer-Field.module.scss'
 import { validateValue } from '../../../util/input-check'
 import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
-import { isEmpty, isEqual } from 'lodash'
+import { isEqual } from 'lodash'
 
 const ResourceToPhaseNameMap = {
   Reviewer: 'Review',
@@ -18,13 +18,12 @@ const ResourceToPhaseNameMap = {
 }
 
 class ChallengeReviewerField extends Component {
-  doUpdateAssignedMembers = true
   constructor (props) {
     super(props)
     this.state = {
       error: null,
       // Map reviewer index -> array of assigned member details { handle, userId }
-      assignedMembers: {},
+      assignedMembers: {}
     }
 
     this.addReviewer = this.addReviewer.bind(this)
@@ -40,6 +39,7 @@ class ChallengeReviewerField extends Component {
     this.handlePhaseChangeWithReassign = this.handlePhaseChangeWithReassign.bind(this)
     this.handleToggleShouldOpen = this.handleToggleShouldOpen.bind(this)
     this.updateAssignedMembers = this.updateAssignedMembers.bind(this)
+    this.doUpdateAssignedMembers = true
   }
 
   isAIReviewer (reviewer) {
@@ -104,12 +104,12 @@ class ChallengeReviewerField extends Component {
     this.loadWorkflows()
   }
 
-  updateAssignedMembers(challengeResources, challenge) {
+  updateAssignedMembers (challengeResources, challenge) {
     const reviewersWithPhaseName = challenge.reviewers.map(item => {
-      const phase = challenge.phases && challenge.phases.find(p => p.phaseId === item.phaseId);
+      const phase = challenge.phases && challenge.phases.find(p => p.phaseId === item.phaseId)
       return {
         ...item,
-        name: phase.name,
+        name: phase.name
       }
     })
 
@@ -117,7 +117,6 @@ class ChallengeReviewerField extends Component {
     reviewersWithPhaseName.forEach((reviewer, index) => {
       if (!reviewerIndex[reviewer.name]) {
         reviewerIndex[reviewer.name] = index
-        return
       }
     })
 
@@ -140,15 +139,15 @@ class ChallengeReviewerField extends Component {
       })
     })
 
-    if (!_.isEqual(this.state.assignedMembers, assignedMembers)) {
+    if (!isEqual(this.state.assignedMembers, assignedMembers)) {
       this.setState({
-        assignedMembers,
+        assignedMembers
       })
     }
   }
 
   componentDidUpdate (prevProps) {
-    const { challenge, challengeResources, readOnly, isLoading } = this.props
+    const { challenge, challengeResources } = this.props
     const prevChallenge = prevProps.challenge
 
     if (challenge && prevChallenge &&
@@ -221,7 +220,7 @@ class ChallengeReviewerField extends Component {
         }
       }
     }, () => {
-      const n = this;
+      const n = this
       setTimeout(() => {
         n.doUpdateAssignedMembers = true
       }, 1000)
@@ -960,11 +959,10 @@ ChallengeReviewerField.propTypes = {
   loadScorecards: PropTypes.func.isRequired,
   loadDefaultReviewers: PropTypes.func.isRequired,
   loadWorkflows: PropTypes.func.isRequired,
-  loadResources: PropTypes.func.isRequired,
   replaceResourceInRole: PropTypes.func.isRequired,
   createResource: PropTypes.func.isRequired,
   deleteResource: PropTypes.func.isRequired,
-  challengeResources: PropTypes.object.isRequired,
+  challengeResources: PropTypes.object.isRequired
 }
 
 const mapStateToProps = (state) => ({
@@ -979,8 +977,7 @@ const mapDispatchToProps = {
   loadWorkflows,
   replaceResourceInRole,
   createResource,
-  deleteResource,
-  loadResources,
+  deleteResource
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ChallengeReviewerField)
