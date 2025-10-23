@@ -110,7 +110,7 @@ class ChallengeReviewerField extends Component {
       const phase = challenge.phases && challenge.phases.find(p => p.phaseId === item.phaseId)
       return {
         ...item,
-        name: phase?.name
+        name: phase && phase.name
       }
     })
 
@@ -378,7 +378,7 @@ class ChallengeReviewerField extends Component {
       defaultPhaseId = fallbackPhase.phaseId || fallbackPhase.id
     }
 
-    const defaultReviewer = this.findDefaultReviewer(defaultPhaseId) ?? defaultTrackReviewer;
+    const defaultReviewer = this.findDefaultReviewer(defaultPhaseId) || defaultTrackReviewer
 
     const isAIReviewer = this.isAIReviewer(defaultTrackReviewer)
 
@@ -454,11 +454,11 @@ class ChallengeReviewerField extends Component {
       this.handlePhaseChangeWithReassign(index, value)
 
       // update payment based on default reviewer
-      const defaultReviewer = this.findDefaultReviewer(value) ?? updatedReviewers[index];
+      const defaultReviewer = this.findDefaultReviewer(value) || updatedReviewers[index]
       Object.assign(fieldUpdate, {
         fixedAmount: defaultReviewer.fixedAmount,
         baseCoefficient: defaultReviewer.baseCoefficient,
-        incrementalCoefficient: defaultReviewer.incrementalCoefficient,
+        incrementalCoefficient: defaultReviewer.incrementalCoefficient
       })
     }
 
@@ -479,7 +479,7 @@ class ChallengeReviewerField extends Component {
       return null
     }
 
-    return phaseId ? defaultReviewers.find(dr => dr.phaseId === phaseId) : defaultReviewers[0];
+    return phaseId ? defaultReviewers.find(dr => dr.phaseId === phaseId) : defaultReviewers[0]
   }
 
   validateReviewer (reviewer) {
