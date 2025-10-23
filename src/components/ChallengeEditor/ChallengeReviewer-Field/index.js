@@ -119,29 +119,29 @@ class ChallengeReviewerField extends Component {
     const reviewerIndex = {}
     reviewersWithPhaseName.forEach((reviewer, index) => {
       if (!reviewerIndex[reviewer.name]) {
-        reviewerIndex[reviewer.name] = index
+        reviewerIndex[reviewer.name] = []
       }
+      reviewerIndex[reviewer.name].push(index)
     })
 
     const assignedMembers = {}
 
     challengeResources.forEach((resource) => {
-      const index = reviewerIndex[ResourceToPhaseNameMap[resource.roleName]]
+      const indices = reviewerIndex[ResourceToPhaseNameMap[resource.roleName]] || []
 
-      if (!assignedMembers[index]) {
-        assignedMembers[index] = [{
+      // Distribute resources across all reviewers with the same phase name
+      indices.forEach((index) => {
+        if (!assignedMembers[index]) {
+          assignedMembers[index] = []
+        }
+        assignedMembers[index].push({
           handle: resource.memberHandle,
           userId: resource.memberId
-        }]
-        return
-      }
-
-      assignedMembers[index].push({
-        handle: resource.memberHandle,
-        userId: resource.memberId
+        })
       })
     })
 
+    console.log(this.state.assignedMembers, assignedMembers, 'this.state.assignedMembers, assignedMembers')
     if (!isEqual(this.state.assignedMembers, assignedMembers)) {
       this.setState({
         assignedMembers
