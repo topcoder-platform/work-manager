@@ -1748,7 +1748,16 @@ class ChallengeEditor extends Component {
       (_.isBoolean(useDashboardData.value) && useDashboardData.value) : false
 
     const workTypes = getDomainTypes(challenge.trackId)
-    const filteredTypes = metadata.challengeTypes.filter(type => workTypes.includes(type.abbreviation))
+    let filteredTypes = metadata.challengeTypes.filter(type => workTypes.includes(type.abbreviation))
+
+    if (challenge.trackId === DEV_TRACK_ID) {
+      const topgearTypes = metadata.challengeTypes.filter(type => type.name && type.name.toLowerCase() === 'topgear task')
+      filteredTypes = _.uniqBy([...filteredTypes, ...topgearTypes], 'id')
+    }
+
+    if (selectedType && !filteredTypes.find(type => type.id === selectedType.id)) {
+      filteredTypes = [...filteredTypes, selectedType]
+    }
 
     const challengeForm = isNew
       ? (
