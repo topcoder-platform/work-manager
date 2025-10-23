@@ -110,7 +110,7 @@ class ChallengeReviewerField extends Component {
       const phase = challenge.phases && challenge.phases.find(p => p.phaseId === item.phaseId)
       return {
         ...item,
-        name: phase.name
+        name: phase?.name
       }
     })
 
@@ -355,7 +355,7 @@ class ChallengeReviewerField extends Component {
     const currentReviewers = challenge.reviewers || []
 
     // Create a new default reviewer based on track and type
-    const defaultReviewer = this.findDefaultReviewer()
+    const defaultTrackReviewer = this.findDefaultReviewer()
 
     // Get the first available review phase if phases exist
     const reviewPhases = challenge.phases && challenge.phases.filter(phase =>
@@ -368,7 +368,19 @@ class ChallengeReviewerField extends Component {
       ? challenge.phases[0]
       : null
 
-    const isAIReviewer = this.isAIReviewer(defaultReviewer)
+    const isAIReviewer = this.isAIReviewer(defaultTrackReviewer)
+
+    // Determine the default phase ID
+    let defaultPhaseId = ''
+    if (defaultTrackReviewer && defaultTrackReviewer.phaseId) {
+      defaultPhaseId = defaultTrackReviewer.phaseId
+    } else if (firstReviewPhase) {
+      defaultPhaseId = firstReviewPhase.phaseId || firstReviewPhase.id
+    } else if (fallbackPhase) {
+      defaultPhaseId = fallbackPhase.phaseId || fallbackPhase.id
+    }
+
+    const defaultReviewer = this.findDefaultReviewer(defaultPhaseId) ?? defaultTrackReviewer;
 
     // For AI reviewers, get scorecardId from the workflow if available
     let scorecardId = ''
@@ -386,22 +398,13 @@ class ChallengeReviewerField extends Component {
       scorecardId = (defaultReviewer && defaultReviewer.scorecardId) || ''
     }
 
-    // Determine the default phase ID
-    let defaultPhaseId = ''
-    if (defaultReviewer && defaultReviewer.phaseId) {
-      defaultPhaseId = defaultReviewer.phaseId
-    } else if (firstReviewPhase) {
-      defaultPhaseId = firstReviewPhase.phaseId || firstReviewPhase.id
-    } else if (fallbackPhase) {
-      defaultPhaseId = fallbackPhase.phaseId || fallbackPhase.id
-    }
-
     const newReviewer = {
       scorecardId,
       isMemberReview: !isAIReviewer,
       phaseId: defaultPhaseId,
-      baseCoefficient: (defaultReviewer && defaultReviewer.baseCoefficient) || '0',
-      incrementalCoefficient: (defaultReviewer && defaultReviewer.incrementalCoefficient) || 0,
+      fixedAmount: (defaultReviewer && defaultReviewer.fixedAmount) || 0,
+      baseCoefficient: (defaultReviewer && defaultReviewer.baseCoefficient) || '0.13',
+      incrementalCoefficient: (defaultReviewer && defaultReviewer.incrementalCoefficient) || 0.05,
       type: isAIReviewer
         ? undefined
         : (defaultReviewer && defaultReviewer.opportunityType) || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW,
@@ -449,6 +452,14 @@ class ChallengeReviewerField extends Component {
     // Special handling for phase and count changes
     if (field === 'phaseId') {
       this.handlePhaseChangeWithReassign(index, value)
+
+      // update payment based on default reviewer
+      const defaultReviewer = this.findDefaultReviewer(value) ?? updatedReviewers[index];
+      Object.assign(fieldUpdate, {
+        fixedAmount: defaultReviewer.fixedAmount,
+        baseCoefficient: defaultReviewer.baseCoefficient,
+        incrementalCoefficient: defaultReviewer.incrementalCoefficient,
+      })
     }
 
     if (field === 'memberReviewerCount') {
@@ -460,7 +471,7 @@ class ChallengeReviewerField extends Component {
     onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
   }
 
-  findDefaultReviewer () {
+  findDefaultReviewer (phaseId) {
     const { challenge, metadata = {} } = this.props
     const { defaultReviewers = [] } = metadata
 
@@ -468,9 +479,7 @@ class ChallengeReviewerField extends Component {
       return null
     }
 
-    return defaultReviewers.find(dr =>
-      dr.trackId === challenge.trackId && dr.typeId === challenge.typeId
-    )
+    return phaseId ? defaultReviewers.find(dr => dr.phaseId === phaseId) : defaultReviewers[0];
   }
 
   validateReviewer (reviewer) {
@@ -560,6 +569,7 @@ class ChallengeReviewerField extends Component {
                     scorecardId,
                     isMemberReview: !isAI,
                     phaseId: currentReviewer.phaseId,
+                    fixedAmount: currentReviewer.fixedAmount || 0,
                     baseCoefficient: currentReviewer.baseCoefficient || '0',
                     incrementalCoefficient: currentReviewer.incrementalCoefficient || 0,
                     type: isAI ? undefined : (currentReviewer.type || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW)
@@ -827,11 +837,12 @@ class ChallengeReviewerField extends Component {
     const reviewersCost = reviewers
       .filter((r) => !this.isAIReviewer(r))
       .reduce((sum, r) => {
+        const fixedAmount = r.fixedAmount || 0
         const basePayment = firstPlacePrize * parseFloat(r.baseCoefficient || 0)
         const incrementalPayment = parseFloat(r.incrementalCoefficient || 0) * firstPlacePrize
 
         const count = parseInt(r.memberReviewerCount) || 1
-        return sum + (basePayment + incrementalPayment) * count
+        return sum + (fixedAmount + basePayment + incrementalPayment) * count
       }, 0)
       .toFixed(2)
 
