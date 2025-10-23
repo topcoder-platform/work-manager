@@ -15,7 +15,9 @@ const ResourceToPhaseNameMap = {
   Reviewer: 'Review',
   Approver: 'Approval',
   Screener: 'Screening',
-  'Iterative Reviewer': 'Iterative Review'
+  'Iterative Reviewer': 'Iterative Review',
+  'Checkpoint Reviewer': 'Checkpoint Review',
+  'Checkpoint Screener': 'Checkpoint Screening'
 }
 
 class ChallengeReviewerField extends Component {
