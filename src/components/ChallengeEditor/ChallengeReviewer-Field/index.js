@@ -368,8 +368,6 @@ class ChallengeReviewerField extends Component {
       ? challenge.phases[0]
       : null
 
-    const isAIReviewer = this.isAIReviewer(defaultTrackReviewer)
-
     // Determine the default phase ID
     let defaultPhaseId = ''
     if (defaultTrackReviewer && defaultTrackReviewer.phaseId) {
@@ -381,6 +379,8 @@ class ChallengeReviewerField extends Component {
     }
 
     const defaultReviewer = this.findDefaultReviewer(defaultPhaseId) ?? defaultTrackReviewer;
+
+    const isAIReviewer = this.isAIReviewer(defaultTrackReviewer)
 
     // For AI reviewers, get scorecardId from the workflow if available
     let scorecardId = ''
