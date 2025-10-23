@@ -100,6 +100,10 @@ class ChallengeReviewerField extends Component {
   }
 
   componentDidMount () {
+    const { challenge, challengeResources } = this.props
+    if (challenge && challenge.id && challengeResources) {
+      this.updateAssignedMembers(challengeResources, challenge)
+    }
     if (this.props.challenge.track || this.props.challenge.type) {
       this.loadScorecards()
     }
@@ -160,7 +164,24 @@ class ChallengeReviewerField extends Component {
       }
     }
 
-    if (challenge && this.doUpdateAssignedMembers) {
+    const reviewersChanged = (() => {
+      if (!challenge || !prevChallenge) return false
+      const currReviewers = challenge.reviewers || []
+      const prevReviewers = prevChallenge.reviewers || []
+      if (currReviewers.length !== prevReviewers.length) return true
+      for (let i = 0; i < currReviewers.length; i++) {
+        const curr = currReviewers[i]
+        const prev = prevReviewers[i]
+        const { scorecardId: currScorecardId, ...currRest } = curr
+        const { scorecardId: prevScorecardId, ...prevRest } = prev
+        if (JSON.stringify(currRest) !== JSON.stringify(prevRest)) {
+          return true
+        }
+      }
+      return false
+    })()
+
+    if (challenge && this.doUpdateAssignedMembers && reviewersChanged) {
       this.updateAssignedMembers(challengeResources, challenge)
     }
 
