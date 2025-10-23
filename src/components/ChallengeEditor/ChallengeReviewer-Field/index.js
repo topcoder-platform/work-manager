@@ -145,7 +145,6 @@ class ChallengeReviewerField extends Component {
       })
     })
 
-    console.log(this.state.assignedMembers, assignedMembers, 'this.state.assignedMembers, assignedMembers')
     if (!isEqual(this.state.assignedMembers, assignedMembers)) {
       this.setState({
         assignedMembers
