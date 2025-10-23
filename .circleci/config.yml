@@ -160,7 +160,7 @@ workflows:
           context: org-global
           filters: &filters-dev
             branches:
-              only: ["v6"]
+              only: ["v6", "develop"]
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.
