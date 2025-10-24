@@ -834,15 +834,17 @@ class ChallengeReviewerField extends Component {
     const { scorecards = [], defaultReviewers = [], workflows = [] } = metadata
     const reviewers = challenge.reviewers || []
     const firstPlacePrize = this.getFirstPlacePrizeValue(challenge)
+    const estimatedSubmissionsCount = 2 // Estimate assumes two submissions
     const reviewersCost = reviewers
       .filter((r) => !this.isAIReviewer(r))
       .reduce((sum, r) => {
-        const fixedAmount = r.fixedAmount || 0
-        const basePayment = firstPlacePrize * parseFloat(r.baseCoefficient || 0)
-        const incrementalPayment = parseFloat(r.incrementalCoefficient || 0) * firstPlacePrize
+        const fixedAmount = parseFloat(r.fixedAmount || 0)
+        const baseCoefficient = parseFloat(r.baseCoefficient || 0)
+        const incrementalCoefficient = parseFloat(r.incrementalCoefficient || 0)
+        const reviewerCost = fixedAmount + (baseCoefficient + incrementalCoefficient * estimatedSubmissionsCount) * firstPlacePrize
 
         const count = parseInt(r.memberReviewerCount) || 1
-        return sum + (fixedAmount + basePayment + incrementalPayment) * count
+        return sum + reviewerCost * count
       }, 0)
       .toFixed(2)
 
