@@ -15,7 +15,9 @@ const ResourceToPhaseNameMap = {
   Reviewer: 'Review',
   Approver: 'Approval',
   Screener: 'Screening',
-  'Iterative Reviewer': 'Iterative Review'
+  'Iterative Reviewer': 'Iterative Review',
+  'Checkpoint Reviewer': 'Checkpoint Review',
+  'Checkpoint Screener': 'Checkpoint Screening'
 }
 
 class ChallengeReviewerField extends Component {
@@ -98,6 +100,10 @@ class ChallengeReviewerField extends Component {
   }
 
   componentDidMount () {
+    const { challenge, challengeResources } = this.props
+    if (challenge && challenge.id && challengeResources) {
+      this.updateAssignedMembers(challengeResources, challenge)
+    }
     if (this.props.challenge.track || this.props.challenge.type) {
       this.loadScorecards()
     }
@@ -117,26 +123,25 @@ class ChallengeReviewerField extends Component {
     const reviewerIndex = {}
     reviewersWithPhaseName.forEach((reviewer, index) => {
       if (!reviewerIndex[reviewer.name]) {
-        reviewerIndex[reviewer.name] = index
+        reviewerIndex[reviewer.name] = []
       }
+      reviewerIndex[reviewer.name].push(index)
     })
 
     const assignedMembers = {}
 
     challengeResources.forEach((resource) => {
-      const index = reviewerIndex[ResourceToPhaseNameMap[resource.roleName]]
+      const indices = reviewerIndex[ResourceToPhaseNameMap[resource.roleName]] || []
 
-      if (!assignedMembers[index]) {
-        assignedMembers[index] = [{
+      // Distribute resources across all reviewers with the same phase name
+      indices.forEach((index) => {
+        if (!assignedMembers[index]) {
+          assignedMembers[index] = []
+        }
+        assignedMembers[index].push({
           handle: resource.memberHandle,
           userId: resource.memberId
-        }]
-        return
-      }
-
-      assignedMembers[index].push({
-        handle: resource.memberHandle,
-        userId: resource.memberId
+        })
       })
     })
 
@@ -158,7 +163,24 @@ class ChallengeReviewerField extends Component {
       }
     }
 
-    if (challenge && this.doUpdateAssignedMembers) {
+    const reviewersChanged = (() => {
+      if (!challenge || !prevChallenge) return false
+      const currReviewers = challenge.reviewers || []
+      const prevReviewers = prevChallenge.reviewers || []
+      if (currReviewers.length !== prevReviewers.length) return true
+      for (let i = 0; i < currReviewers.length; i++) {
+        const curr = currReviewers[i]
+        const prev = prevReviewers[i]
+        const { scorecardId: currScorecardId, ...currRest } = curr
+        const { scorecardId: prevScorecardId, ...prevRest } = prev
+        if (JSON.stringify(currRest) !== JSON.stringify(prevRest)) {
+          return true
+        }
+      }
+      return false
+    })()
+
+    if (challenge && this.doUpdateAssignedMembers && reviewersChanged) {
       this.updateAssignedMembers(challengeResources, challenge)
     }
 
