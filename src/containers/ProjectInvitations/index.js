@@ -46,12 +46,12 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
   }, [projectId, auth, projectDetail, isProjectLoading, history])
 
   const updateInvite = useCallback(async (status, source) => {
+    if (isUpdateInprogress) {
+      return
+    }
     setIsUpdating(status)
     setIsUpdateInprogress(true)
     try {
-      if (isUpdateInprogress) {
-        return
-      }
       await updateProjectMemberInvite(projectId, invitation.id, status, source)
       // await for the project details to propagate
       await delay(1000)
