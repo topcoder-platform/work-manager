@@ -22,6 +22,7 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
   const projectId = useMemo(() => parseInt(match.params.projectId), [match.params])
   const invitation = useMemo(() => checkIsUserInvitedToProject(auth.token, projectDetail), [auth.token, projectDetail])
   const [isUpdating, setIsUpdating] = useState(automaticAction || false)
+  const [isUpdateInprogress, setIsUpdateInprogress] = useState(false)
   const isAccepting = isUpdating === PROJECT_MEMBER_INVITE_STATUS_ACCEPTED
   const isDeclining = isUpdating === PROJECT_MEMBER_INVITE_STATUS_REFUSED
   const queryParams = new URLSearchParams(window.location.search)
@@ -45,12 +46,16 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
   }, [projectId, auth, projectDetail, isProjectLoading, history])
 
   const updateInvite = useCallback(async (status, source) => {
+    if (isUpdateInprogress) {
+      return
+    }
     setIsUpdating(status)
+    setIsUpdateInprogress(true)
     try {
       await updateProjectMemberInvite(projectId, invitation.id, status, source)
-
       // await for the project details to propagate
       await delay(1000)
+      setIsUpdateInprogress(false)
       await loadProjectInvites(projectId)
       toastr.success('Success', `Successfully ${status} the invitation.`)
 
@@ -62,7 +67,7 @@ const ProjectInvitations = ({ match, auth, isProjectLoading, history, projectDet
       await delay(1000)
       history.push('/projects')
     }
-  }, [projectId, invitation, loadProjectInvites, history])
+  }, [projectId, invitation, loadProjectInvites, history, isUpdateInprogress])
 
   const acceptInvite = useCallback(() => updateInvite(PROJECT_MEMBER_INVITE_STATUS_ACCEPTED, source), [updateInvite, source])
   const declineInvite = useCallback(() => updateInvite(PROJECT_MEMBER_INVITE_STATUS_REFUSED, source), [updateInvite, source])
