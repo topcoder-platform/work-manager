@@ -541,7 +541,9 @@ class ChallengeReviewerField extends Component {
     const { challenge, metadata = {}, readOnly = false } = this.props
     const { scorecards = [], workflows = [] } = metadata
     const validationErrors = challenge.submitTriggered ? this.validateReviewer(reviewer) : {}
+    const selectedPhase = challenge.phases.find(p => p.phaseId === reviewer.phaseId)
     const isDesignChallenge = challenge && challenge.trackId === DES_TRACK_ID
+    const filteredScorecards = scorecards.filter(item => item.type?.toLowerCase() === selectedPhase?.name.toLowerCase());
 
     return (
       <div key={`reviewer-${index}`} className={styles.reviewerForm}>
@@ -666,7 +668,7 @@ class ChallengeReviewerField extends Component {
                   onChange={(e) => this.updateReviewer(index, 'scorecardId', e.target.value)}
                 >
                   <option value=''>Select Scorecard</option>
-                  {scorecards.map(scorecard => (
+                  {filteredScorecards.map(scorecard => (
                     <option key={scorecard.id} value={scorecard.id}>
                       {scorecard.name || 'Unknown'} - {scorecard.type || 'Unknown'} ({scorecard.challengeTrack || 'Unknown'}) v{scorecard.version || 'Unknown'}
                     </option>
