@@ -14,12 +14,12 @@ ENV FORCE_DEV=$FORCE_DEV
 ENV NODE_OPTIONS="--max-old-space-size=6144"
 
 # Copy the current directory into the Docker image
-COPY . /challenge-engine-ui-v6
+COPY . /challenge-engine-ui
 
 # Set working directory for future use
-WORKDIR /challenge-engine-ui-v6
+WORKDIR /challenge-engine-ui
 
-RUN chown -R appuser:appuser /challenge-engine-ui-v6
+RUN chown -R appuser:appuser /challenge-engine-ui
 
 # Enable corepack and prepare pnpm for installs (run as root)
 RUN corepack enable && corepack prepare pnpm@9.12.0 --activate
