@@ -121,7 +121,7 @@ jobs:
       LOGICAL_ENV: "dev"
       NODE_ENV: "development"
       BABEL_ENV: "development"
-      APPNAME: "challenge-engine-ui-v6"
+      APPNAME: "challenge-engine-ui"
     steps: *builddeploy_steps
 
   "build-prod":
@@ -131,7 +131,7 @@ jobs:
       LOGICAL_ENV: "prod"
       NODE_ENV: "production"
       BABEL_ENV: "production"
-      APPNAME: "challenge-engine-ui-v6"
+      APPNAME: "challenge-engine-ui"
     steps: *builddeploy_steps
 
   "smoke-testing-dev":
@@ -139,7 +139,7 @@ jobs:
     environment:
       DEPLOY_ENV: "DEV"
       LOGICAL_ENV: "dev"
-      APPNAME: "challenge-engine-ui-v6"
+      APPNAME: "challenge-engine-ui"
     steps: *smoke_testing
 
   "smoke-testing-prod":
@@ -147,7 +147,7 @@ jobs:
     environment:
       DEPLOY_ENV: "PROD"
       LOGICAL_ENV: "prod"
-      APPNAME: "challenge-engine-ui-v6"
+      APPNAME: "challenge-engine-ui"
     steps: *smoke_testing
 
 workflows:
