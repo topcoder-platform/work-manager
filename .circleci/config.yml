@@ -37,10 +37,11 @@ install_test_dependency: &install_test_dependency
 install_deploysuite: &install_deploysuite
   name: Installation of install_deploysuite.
   command: |
-    git clone --branch v1.4.15 https://github.com/topcoder-platform/tc-deploy-scripts ../buildscript
+    git clone --branch v1.4.17 https://github.com/topcoder-platform/tc-deploy-scripts ../buildscript
     cp ./../buildscript/master_deploy.sh .
     cp ./../buildscript/buildenv.sh .
     cp ./../buildscript/awsconfiguration.sh .
+    cp ../buildscript/psvar-processor.sh .
 
 restore_cache_settings_for_build: &restore_cache_settings_for_build
   key: docker-node-modules-28-10-2020-{{ checksum "package-lock.json" }}
@@ -59,22 +60,27 @@ builddeploy_steps: &builddeploy_steps
       name: "configuring environment"
       command: |
         ./awsconfiguration.sh $DEPLOY_ENV
-        ./buildenv.sh -e $DEPLOY_ENV -b ${LOGICAL_ENV}-${APPNAME}-buildvar
+        #./buildenv.sh -e $DEPLOY_ENV -b ${LOGICAL_ENV}-${APPNAME}-buildvar
+        source awsenvconf
+        ./psvar-processor.sh -t appenv -p /config/${APPNAME}/buildvar
         echo awsenvconf >.dockerignore
-        echo buildenvvar >>.dockerignore
+        echo buildvar_env >>.dockerignore
   - run:
       name: "building image"
       command: |
-        source buildenvvar
+        source buildvar_env
         ./build.sh ${APPNAME}
   - deploy:
       name: Running MasterScript.
       command: |
         #./awsconfiguration.sh $DEPLOY_ENV
         source awsenvconf
-        ./buildenv.sh -e $DEPLOY_ENV -b ${LOGICAL_ENV}-${APPNAME}-deployvar
-        source buildenvvar
-        ./master_deploy.sh -d ECS -e $DEPLOY_ENV -t latest -s ${LOGICAL_ENV}-global-appvar,${LOGICAL_ENV}-${APPNAME}-appvar -i ${APPNAME} -p FARGATE
+        #./buildenv.sh -e $DEPLOY_ENV -b ${LOGICAL_ENV}-${APPNAME}-deployvar
+        #source buildenvvar
+        ./psvar-processor.sh -t appenv -p /config/${APPNAME}/deployvar
+        source deployvar_env
+        #./master_deploy.sh -d ECS -e $DEPLOY_ENV -t latest -s ${LOGICAL_ENV}-global-appvar,${LOGICAL_ENV}-${APPNAME}-appvar -i ${APPNAME} -p FARGATE
+        ./master_deploy.sh -d ECS -e $DEPLOY_ENV -t latest -j /config/common/global-appvar,/config/${APPNAME}/appvar -i ${APPNAME} -p FARGATE
         #curl --request POST \
         #--url https://circleci.com/api/v2/project/github/$CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME/pipeline \
         #--header "Circle-Token: ${CIRCLE_TOKEN}" \
@@ -93,13 +99,15 @@ smoke_testing: &smoke_testing # Initialization.
       name: "configuring environment"
       command: |
         ./awsconfiguration.sh $DEPLOY_ENV
-        ./buildenv.sh -e $DEPLOY_ENV -b ${LOGICAL_ENV}-${APPNAME}-buildvar
+        #./buildenv.sh -e $DEPLOY_ENV -b ${LOGICAL_ENV}-${APPNAME}-buildvar
+        ./psvar-processor.sh -t appenv -p /config/${APPNAME}/buildvar
   - run:
       name: "Run automation"
       no_output_timeout: 20m
       command: |
         source awsenvconf
-        source buildenvvar
+        #source buildenvvar
+        source buildvar_env
         ./test-automation/smoketest.sh
   - store_artifacts:
       path: ./test-automation/test-results
@@ -152,7 +160,7 @@ workflows:
           context: org-global
           filters: &filters-dev
             branches:
-              only: ["develop", "PM-803_wm-regression-fixes", "PM-902_show-all-projects-on-challenge-page", "pm-1365"]
+              only: ["v6", "develop", "pm-2531"]
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.

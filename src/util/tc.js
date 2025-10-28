@@ -333,8 +333,12 @@ export function getFinalScore (submission) {
  * Get challenge type abbreviation
  * @param {Object} challenge challenge info
  */
-export function getChallengeTypeAbbr (track, challengeTypes) {
-  const type = _.find(challengeTypes, { name: track })
+export function getChallengeTypeAbbr (typeOrName, challengeTypes) {
+  const typeName = typeof typeOrName === 'string' ? typeOrName : _.get(typeOrName, 'name')
+  const type = _.find(
+    challengeTypes,
+    (t) => t.name === typeName || t.id === _.get(typeOrName, 'id') || t.abbreviation === _.get(typeOrName, 'abbreviation')
+  )
   if (type) {
     return type.abbreviation
   }

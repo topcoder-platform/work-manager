@@ -1,4 +1,4 @@
-@import '../../../styles/includes';
+@use '../../../styles/includes' as *;
 
 .messageContainer {
   justify-content: center;

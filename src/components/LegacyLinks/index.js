@@ -5,23 +5,20 @@ import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
 import styles from './LegacyLinks.module.scss'
-import Tooltip from '../Tooltip'
-import { MESSAGE, ONLINE_REVIEW_URL } from '../../config/constants'
+import { REVIEW_APP_URL } from '../../config/constants'
 
 const LegacyLinks = ({ challenge, challengeView }) => {
   const onClick = useCallback((e) => {
     e.stopPropagation()
   }, [])
 
-  const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
+  const reviewUrl = `${REVIEW_APP_URL}/active-challenges/${challenge.id}/challenge-details`
   return (
     <div className={styles.container}>
-      (  {challenge.legacyId ? <a href={orUrl} target={'_blank'} onClick={onClick}>Online Review</a>
-        : <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-          {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
-          <a disabled>Online Review</a>
-        </Tooltip>}
-      )
+      {/* Always show Review link for v5 challenges using v5 ID */}
+      <>
+        <a href={reviewUrl} target={'_blank'} rel='noopener noreferrer' onClick={onClick}>Review</a>
+      </>
       <div>
         { challengeView && challenge.discussions && challenge.discussions.map(d => (
           <div key={d.id} className={cn(styles.row, styles.topRow)}>

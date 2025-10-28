@@ -1,3 +1,6 @@
+@use 'colors' as *;
+@use 'media' as *;
+
 /*
 /* Font
 */
@@ -396,5 +399,3 @@ $checkbox-bg-selected: $tc-blue-40;
     border-color: $white;
   }
 }
-
-

@@ -181,7 +181,9 @@ ChallengesComponent.propTypes = {
   fetchNextProjects: PropTypes.func.isRequired,
   activeProject: PropTypes.shape({
     id: PropTypes.number,
-    name: PropTypes.string
+    name: PropTypes.string,
+    status: PropTypes.string,
+    members: PropTypes.arrayOf(PropTypes.shape())
   }),
   isLoading: PropTypes.bool,
   warnMessage: PropTypes.string,

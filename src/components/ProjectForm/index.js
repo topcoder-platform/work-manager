@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import PropTypes from 'prop-types'
 import { useForm, Controller } from 'react-hook-form'
 import cn from 'classnames'
 import { get } from 'lodash'
@@ -283,6 +284,32 @@ const ProjectForm = ({
       </form>
     </div>
   )
+}
+
+ProjectForm.propTypes = {
+  projectTypes: PropTypes.arrayOf(
+    PropTypes.shape({
+      key: PropTypes.string.isRequired,
+      displayName: PropTypes.string.isRequired
+    })
+  ).isRequired,
+  createProject: PropTypes.func.isRequired,
+  updateProject: PropTypes.func.isRequired,
+  setActiveProject: PropTypes.func.isRequired,
+  history: PropTypes.shape({
+    push: PropTypes.func.isRequired
+  }).isRequired,
+  isEdit: PropTypes.bool.isRequired,
+  canManage: PropTypes.bool.isRequired,
+  projectDetail: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    name: PropTypes.string,
+    description: PropTypes.string,
+    status: PropTypes.string,
+    type: PropTypes.string,
+    terms: PropTypes.array,
+    groups: PropTypes.array
+  })
 }
 
 export default ProjectForm

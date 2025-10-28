@@ -140,6 +140,7 @@ class ChallengeEditor extends Component {
     } else {
       this.setState({ challengeDetails: nextProps.challengeDetails })
     }
+
     if (projectDetail && loggedInUser) {
       const projectMembers = projectDetail.members
       const loginUserProjectInfo = _.find(projectMembers, { userId: loggedInUser.userId })
@@ -673,7 +674,8 @@ ChallengeEditor.propTypes = {
   projectDetail: PropTypes.object,
   history: PropTypes.object,
   metadata: PropTypes.shape({
-    challengeTypes: PropTypes.array
+    challengeTypes: PropTypes.array,
+    resourceRoles: PropTypes.array
   }),
   isLoading: PropTypes.bool,
   isBillingAccountExpired: PropTypes.bool,

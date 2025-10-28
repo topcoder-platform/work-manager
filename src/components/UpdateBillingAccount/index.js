@@ -134,11 +134,11 @@ const UpdateBillingAccount = ({
           {(isAdmin || (isManager && isMemberOfActiveProject)) && (
             <span>
               {' '}
-                ({' '}
+              ({' '}
               <a href='javascript:void(0)' onClick={handleEditClick}>
-                  Select Billing Account
+                Select Billing Account
               </a>{' '}
-                )
+              )
             </span>
           )}
         </Fragment>
@@ -158,11 +158,11 @@ const UpdateBillingAccount = ({
           {(isAdmin || (isManager && isMemberOfActiveProject)) && (
             <span>
               {' '}
-                ({' '}
+              ({' '}
               <a href='javascript:void(0)' onClick={handleEditClick}>
-                  Edit Billing Account
+                Edit Billing Account
               </a>{' '}
-                )
+              )
             </span>
           )}
           <div>

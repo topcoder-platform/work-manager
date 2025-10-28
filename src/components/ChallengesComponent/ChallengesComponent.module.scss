@@ -1,9 +1,10 @@
-@import "../../styles/includes";
+@use '../../styles/includes' as *;
 
 .challenges {
   width: 100%;
   box-sizing: border-box;
   padding: 20px 30px 30px 30px;
+  background-color: $light-bg;
 }
 
 .title {

@@ -1,4 +1,4 @@
-@import "../../../styles/includes";
+@use '../../../styles/includes' as *;
 
 .row {
   box-sizing: border-box;
@@ -55,4 +55,3 @@
     padding-top: 6px;
   }
 }
-

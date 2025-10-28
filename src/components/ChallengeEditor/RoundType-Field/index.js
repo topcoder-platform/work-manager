@@ -35,7 +35,7 @@ const RoundTypeField = ({ roundType, onUpdateOthers }) => {
         </div>
       </div>
 
-      </>
+    </>
   )
 }
 

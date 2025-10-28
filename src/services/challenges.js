@@ -6,6 +6,7 @@ import { GROUPS_DROPDOWN_PER_PAGE, UPDATE_SKILLS_V5_API_URL } from '../config/co
 const {
   CHALLENGE_API_URL,
   CHALLENGE_API_VERSION,
+  CHALLENGE_DEFAULT_REVIEWERS_URL,
   CHALLENGE_TYPES_URL,
   CHALLENGE_TRACKS_URL,
   CHALLENGE_TIMELINE_TEMPLATES_URL,
@@ -13,6 +14,9 @@ const {
   CHALLENGE_TIMELINES_URL,
   SUBMISSIONS_API_URL,
   REVIEW_TYPE_API_URL,
+  REVIEWS_API_URL,
+  SCORECARDS_API_URL,
+  WORKFLOWS_API_URL,
   GROUPS_API_URL,
   TERMS_API_URL,
   RESOURCES_API_URL,
@@ -180,6 +184,13 @@ export function fetchChallenges (filters, params) {
     ...filters,
     ...params
   }
+  if (query.status) {
+    if (_.isArray(query.status)) {
+      query.status = query.status.map(statusValue => _.isString(statusValue) ? statusValue.toUpperCase() : statusValue)
+    } else if (_.isString(query.status)) {
+      query.status = query.status.toUpperCase()
+    }
+  }
   return axiosInstance.get(`${CHALLENGE_API_URL}?${qs.stringify(query, { encode: false })}`, {
     headers: {
       'app-version': CHALLENGE_API_VERSION
@@ -266,17 +277,31 @@ export async function fetchResources (challengeId) {
 export async function fetchSubmissions (challengeId, pageObj) {
   const { page, perPage } = pageObj
   const response = await axiosInstance.get(`${SUBMISSIONS_API_URL}?challengeId=${challengeId}&perPage=${perPage}&page=${page}`)
+  const responseData = _.get(response, 'data', {})
+  const meta = _.get(responseData, 'meta', {})
   return {
-    data: _.get(response, 'data', []),
+    data: _.get(responseData, 'data', []),
     headers: _.get(response, 'headers', {}),
-    page,
-    perPage
+    totalCount: _.get(meta, 'totalCount'),
+    page: _.get(meta, 'page', page),
+    perPage: _.get(meta, 'perPage', perPage)
   }
 }
 
 export async function getReviewTypes () {
   const response = await axiosInstance.get(`${REVIEW_TYPE_API_URL}?perPage=500&page=1`)
   return _.get(response, 'data', [])
+}
+
+/**
+ * Api request for fetching reviews by challengeId or submissionId
+ * @param {Object} filters filters for reviews (e.g., { challengeId, submissionId })
+ * @returns {Promise<*>}
+ */
+export async function fetchReviews (filters = {}) {
+  const query = qs.stringify(filters, { encode: false })
+  const response = await axiosInstance.get(`${REVIEWS_API_URL}?${query}`)
+  return _.get(response, 'data.data', [])
 }
 
 /**
@@ -306,4 +331,41 @@ export async function deleteResource (resource) {
 export async function updateChallengeSkillsApi (challengeId, skills) {
   const resp = await axiosInstance.post(`${UPDATE_SKILLS_V5_API_URL}/${challengeId}`, skills)
   return _.get(resp, 'data', {})
+}
+
+/**
+ * Api request for fetching scorecards
+ * @param {Object} filters filters for scorecards
+ * @returns {Promise<*>}
+ */
+export async function fetchScorecards (filters = {}) {
+  const query = {
+    perPage: 100,
+    page: 1,
+    ...filters
+  }
+  const response = await axiosInstance.get(`${SCORECARDS_API_URL}?${qs.stringify(query, { encode: false })}`)
+  return _.get(response, 'data', {})
+}
+
+/**
+ * Api request for fetching default reviewers
+ * @param {Object} filters filters for default reviewers
+ * @returns {Promise<*>}
+ */
+export async function fetchDefaultReviewers (filters = {}) {
+  const { typeId, trackId } = filters
+  const query = qs.stringify({ typeId, trackId }, { encode: false })
+  const baseUrl = CHALLENGE_DEFAULT_REVIEWERS_URL || `${CHALLENGE_API_URL.replace(/\/challenges$/, '')}/challenge/default-reviewers`
+  const response = await axiosInstance.get(`${baseUrl}?${query}`)
+  return _.get(response, 'data', [])
+}
+
+/**
+ * Api request for fetching workflows
+ * @returns {Promise<*>}
+ */
+export async function fetchWorkflows () {
+  const response = await axiosInstance.get(`${WORKFLOWS_API_URL}`)
+  return _.get(response, 'data', {})
 }

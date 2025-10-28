@@ -7,26 +7,27 @@ import { getTopcoderReactLib } from '../../../util/topcoder-react-lib'
 import Loader from '../../Loader'
 import { getReviewTypes } from '../../../services/challenges'
 import { SystemReviewers } from '../../../config/constants'
+import { getSubmissionsService } from '../../../services/submissions'
 
 export const RatingsListModal = ({ onClose, theme, token, submissionId, challengeId }) => {
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(false)
 
-  const enrichSources = useCallback(async (submissionReviews, reviewSummation) => {
+  const enrichSources = useCallback(async (submissionReviews = [], reviewSummation = null) => {
     const reactLib = getTopcoderReactLib()
     const { getService } = reactLib.services.members
     const membersService = getService(token)
     const resources = await membersService.getChallengeResources(challengeId)
     const reviewTypes = await getReviewTypes()
 
-    const finalReview = {
+    const finalReview = reviewSummation ? {
       reviewType: 'Final score',
       reviewer: '',
-      score: reviewSummation ? reviewSummation.aggregateScore : 'N/A',
-      isPassing: reviewSummation ? reviewSummation.isPassing : undefined
-    }
+      score: reviewSummation.aggregateScore,
+      isPassing: reviewSummation.isPassing
+    } : null
 
-    return [...submissionReviews.map(review => {
+    const baseReviews = submissionReviews.map(review => {
       const reviewType = reviewTypes.find(rt => rt.id === review.typeId)
       const reviewer = resources.find(resource => resource.memberHandle === review.reviewerId) || SystemReviewers.Default
       return {
@@ -34,16 +35,30 @@ export const RatingsListModal = ({ onClose, theme, token, submissionId, challeng
         reviewType: reviewType ? reviewType.name : '',
         reviewer
       }
-    }), finalReview]
+    })
+
+    return finalReview ? [...baseReviews, finalReview] : baseReviews
   }, [token])
 
   const getSubmission = useCallback(async () => {
-    const reactLib = getTopcoderReactLib()
-    const { getService } = reactLib.services.submissions
-    const submissionsService = getService(token)
-    const submissionInfo = await submissionsService.getSubmissionInformation(submissionId)
-    setReviews(await enrichSources(submissionInfo.review, submissionInfo.reviewSummation[0]))
-    setLoading(false)
+    try {
+      const submissionsService = getSubmissionsService(token)
+      const submissionInfo = await submissionsService.getSubmissionInformation(submissionId)
+      const submissionReviews = Array.isArray(submissionInfo.review) ? submissionInfo.review : []
+      const reviewSummation = Array.isArray(submissionInfo.reviewSummation) && submissionInfo.reviewSummation.length > 0
+        ? submissionInfo.reviewSummation[0]
+        : null
+
+      if ((!submissionReviews || submissionReviews.length === 0) && !reviewSummation) {
+        setReviews([])
+      } else {
+        setReviews(await enrichSources(submissionReviews, reviewSummation))
+      }
+    } catch (e) {
+      setReviews([])
+    } finally {
+      setLoading(false)
+    }
   }, [submissionId, token])
 
   useEffect(() => {
@@ -85,6 +100,11 @@ export const RatingsListModal = ({ onClose, theme, token, submissionId, challeng
               </div>
             )
           })}
+          {!loading && reviews.length === 0 && (
+            <div className={styles['list-item']}>
+              No review details available
+            </div>
+          )}
         </div>
 
         {

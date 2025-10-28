@@ -1,4 +1,4 @@
-@import "../../styles/includes";
+@use '../../styles/includes' as *;
 
 :global {
   div[data-reach-popover] {
@@ -125,5 +125,4 @@
 .readOnlyValue {
   color: black;
 }
-
 

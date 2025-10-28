@@ -84,9 +84,10 @@ class ChallengePrizesField extends Component {
   renderPrizes () {
     const { currentPrizeIndex } = this.state
     const { readOnly, challenge } = this.props
+    const typeName = typeof challenge.type === 'string' ? challenge.type : (challenge.type && challenge.type.name)
     const allowMultiplePrizes = _.includes(
       CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES,
-      challenge.type
+      typeName
     )
     return _.map(
       this.getChallengePrize().prizes,
@@ -151,9 +152,10 @@ class ChallengePrizesField extends Component {
 
   render () {
     const { readOnly, challenge } = this.props
+    const typeName = typeof challenge.type === 'string' ? challenge.type : (challenge.type && challenge.type.name)
     const allowMultiplePrizes = _.includes(
       CHALLENGE_TYPES_WITH_MULTIPLE_PRIZES,
-      challenge.type
+      typeName
     )
     return (
       <div className={styles.container}>

@@ -11,13 +11,13 @@ const TypeField = ({ types, onUpdateSelect, challenge, disabled }) => {
     <>
       <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)}>
-          <label htmlFor='type'>Work Format <span>*</span> :</label>
+          <label htmlFor='type'>Challenge Type <span>*</span> :</label>
         </div>
         <div className={cn(styles.field, styles.col2, { [styles.disabled]: disabled })}>
           <Select
             name='track'
             options={_.filter(types, t => t.isActive).map(type => ({ label: type.name, value: type.id }))}
-            placeholder='Work Format'
+            placeholder='Challenge Type'
             isClearable={false}
             onChange={(e) => onUpdateSelect(e.value, false, 'typeId')}
             isDisabled={disabled}
@@ -27,7 +27,7 @@ const TypeField = ({ types, onUpdateSelect, challenge, disabled }) => {
       { challenge.submitTriggered && !challenge.typeId && <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)} />
         <div className={cn(styles.field, styles.col2, styles.error)}>
-          Work Format is required field
+          Challenge Type is required field
         </div>
       </div> }
     </>
@@ -41,7 +41,6 @@ TypeField.defaultProps = {
 
 TypeField.propTypes = {
   // currentType: PropTypes.string.isRequired,
-  track: PropTypes.string,
   types: PropTypes.arrayOf(PropTypes.shape()).isRequired,
   challenge: PropTypes.shape().isRequired,
   onUpdateSelect: PropTypes.func.isRequired,

@@ -10,7 +10,6 @@ import _ from 'lodash'
 import ChallengeViewComponent from '../ChallengeView'
 import { PrimaryButton } from '../../Buttons'
 import LegacyLinks from '../../LegacyLinks'
-import ForumLink from '../../ForumLink'
 import ResourcesTab from '../Resources'
 import Submissions from '../Submissions'
 import {
@@ -123,9 +122,14 @@ const ChallengeViewTabs = ({
   const isTask = _.get(challenge, 'task.isTask', false)
 
   const isSelfService = challenge.legacy.selfService
-  const isDraft = challenge.status.toUpperCase() === CHALLENGE_STATUS.DRAFT
+  const normalizedStatus = challenge.status ? challenge.status.toUpperCase() : ''
+  const isDraft = normalizedStatus === CHALLENGE_STATUS.DRAFT
+  const isNew = normalizedStatus === CHALLENGE_STATUS.NEW
+  const isActive = normalizedStatus === CHALLENGE_STATUS.ACTIVE
+  const isCancelled = normalizedStatus.startsWith('CANCELLED')
   const isSelfServiceCopilot = challenge.legacy.selfServiceCopilot === loggedInUser.handle
   const isAdmin = checkAdmin(token)
+  const isCopilot = checkCopilot(token)
 
   // Make sure that the Launch and Mark as completed buttons are hidden
   // for tasks that are assigned to the current logged in user, if that user has the copilot role.
@@ -164,7 +168,7 @@ const ChallengeViewTabs = ({
             isSelfServiceCopilot ||
             isAdmin
           ) &&
-          challenge.status.toUpperCase() === CHALLENGE_STATUS.APPROVED
+          normalizedStatus === CHALLENGE_STATUS.APPROVED
         )
       )
   }, [
@@ -175,7 +179,7 @@ const ChallengeViewTabs = ({
     isDraft,
     isSelfServiceCopilot,
     isAdmin,
-    challenge.status,
+    normalizedStatus,
     preventCopilotFromActivatingTask
   ])
 
@@ -193,9 +197,7 @@ const ChallengeViewTabs = ({
               styles.actionButtonsLeft
             )}
           >
-            {isTask ? (<ForumLink challenge={challenge} />)
-              : (<LegacyLinks challenge={challenge} challengeView />)
-            }
+            <LegacyLinks challenge={challenge} challengeView />
           </div>
 
         </div>
@@ -206,22 +208,25 @@ const ChallengeViewTabs = ({
             styles.actionButtonsRight
           )}
         >
-          {enableEdit && (isDraft || challenge.status === 'New') && !isReadOnly && !isSelfService &&
-            (<div className={styles['cancel-button']}><CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} /></div>)}
+          {(
+            !isCancelled && !isReadOnly && (
+              // Existing behavior: allow for NEW/DRAFT when editing and not self-service
+              (enableEdit && (isDraft || isNew) && !isSelfService) ||
+              // New behavior: allow for NEW/DRAFT/ACTIVE when user is copilot or admin
+              ((isNew || isDraft || isActive) && (isAdmin || isCopilot))
+            )
+          ) && (
+            <div className={styles['cancel-button']}>
+              <CancelDropDown challenge={challenge} onSelectMenu={cancelChallenge} />
+            </div>
+          )}
           {canLaunch && (
             <div className={styles.button}>
-              {challenge.legacyId || isTask ? (
-                <PrimaryButton
-                  text='Launch'
-                  type='info'
-                  onClick={onLaunchChallenge}
-                />
-              ) : (
-                <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-                  {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
-                  <PrimaryButton text={'Launch'} type={'disabled'} />
-                </Tooltip>
-              )}
+              <PrimaryButton
+                text='Launch'
+                type='info'
+                onClick={onLaunchChallenge}
+              />
             </div>
           )}
           {canApprove && (
@@ -236,7 +241,7 @@ const ChallengeViewTabs = ({
           {
             (
               isTask &&
-              challenge.status === 'Active' &&
+              challenge.status === CHALLENGE_STATUS.ACTIVE &&
               !preventCopilotFromActivatingTask
             ) && (
               <div className={styles.button}>
@@ -302,22 +307,20 @@ const ChallengeViewTabs = ({
         >
           RESOURCES
         </a>
-        {totalSubmissions ? (
-          <a
-            tabIndex='2'
-            role='tab'
-            aria-selected={selectedTab === 2}
-            onClick={e => {
-              setSelectedTab(2)
-            }}
-            onKeyPress={e => {
-              setSelectedTab(2)
-            }}
-            className={getSelectorStyle(selectedTab, 2)}
-          >
-            SUBMISSIONS ({totalSubmissions})
-          </a>
-        ) : null}
+        <a
+          tabIndex='2'
+          role='tab'
+          aria-selected={selectedTab === 2}
+          onClick={e => {
+            setSelectedTab(2)
+          }}
+          onKeyPress={e => {
+            setSelectedTab(2)
+          }}
+          className={getSelectorStyle(selectedTab, 2)}
+        >
+          SUBMISSIONS ({totalSubmissions || 0})
+        </a>
       </div>
       {selectedTab === 0 && (
         <ChallengeViewComponent

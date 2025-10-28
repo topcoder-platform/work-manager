@@ -43,7 +43,7 @@ const CheckpointPrizesField = ({ challenge, onUpdateOthers, readOnly }) => {
         {
           readOnly ? (
             <div className={cn(styles.field, styles.col2)}>
-            ${amount} for each submission up to {number} submissions
+              ${amount} for each submission up to {number} submissions
             </div>
           ) : (
             <div className={cn(styles.field, styles.col2)}>

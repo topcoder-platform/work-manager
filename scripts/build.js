@@ -110,6 +110,9 @@ checkBrowsers(paths.appPath, isInteractive)
     err => {
       console.log(chalk.red('Failed to compile.\n'))
       printBuildError(err)
+      if (err && err.stack) {
+        console.error(err.stack)
+      }
       process.exit(1)
     }
   )
@@ -139,9 +142,12 @@ function build (previousFileSizes) {
           warnings: []
         })
       } else {
-        messages = formatWebpackMessages(
-          stats.toJson({ all: false, warnings: true, errors: true })
-        )
+        const json = stats.toJson({ all: false, warnings: true, errors: true })
+        const normalized = {
+          errors: (json.errors || []).map(e => (typeof e === 'string' ? e : e && (e.message || e.stack || String(e)))) ,
+          warnings: (json.warnings || []).map(w => (typeof w === 'string' ? w : w && (w.message || String(w))))
+        }
+        messages = formatWebpackMessages(normalized)
       }
       if (messages.errors.length) {
         // Only keep the first error. Others are often indicative

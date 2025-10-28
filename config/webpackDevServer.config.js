@@ -9,6 +9,7 @@ const fs = require('fs')
 
 const protocol = process.env.HTTPS === 'true' ? 'https' : 'http'
 const host = process.env.HOST || '0.0.0.0'
+const WM_DEBUG = /^(1|true|on|yes)$/i.test(String(process.env.WM_DEBUG || ''))
 
 module.exports = function (proxy, allowedHost) {
   return {
@@ -32,9 +33,9 @@ module.exports = function (proxy, allowedHost) {
       !proxy || process.env.DANGEROUSLY_DISABLE_HOST_CHECK === 'true',
     // Enable gzip compression of generated files.
     compress: true,
-    // Silence WebpackDevServer's own logs since they're generally not useful.
-    // It will still show compile warnings and errors with this setting.
-    clientLogLevel: 'none',
+    // Control client/server verbosity. In debug mode, show more details.
+    // It will still show compile warnings and errors regardless.
+    clientLogLevel: WM_DEBUG ? 'info' : 'none',
     // By default WebpackDevServer serves physical files from current directory
     // in addition to all the virtual build products that it serves from memory.
     // This is confusing because those files won’t automatically be available in
@@ -61,9 +62,8 @@ module.exports = function (proxy, allowedHost) {
     // It is important to tell WebpackDevServer to use the same "root" path
     // as we specified in the config. In development, we always serve from /.
     publicPath: '/',
-    // WebpackDevServer is noisy by default so we emit custom message instead
-    // by listening to the compiler events with `compiler.hooks[...].tap` calls above.
-    quiet: true,
+    // WebpackDevServer is noisy by default. Keep quiet unless debugging.
+    quiet: WM_DEBUG ? false : true,
     // Reportedly, this avoids CPU overload on some systems.
     // https://github.com/facebook/create-react-app/issues/293
     // src/node_modules is not ignored to support absolute imports
@@ -83,6 +83,23 @@ module.exports = function (proxy, allowedHost) {
     public: allowedHost,
     proxy,
     before (app, server) {
+      if (WM_DEBUG) {
+        // Helpful one-time dump of key settings
+        /* eslint-disable no-console */
+        console.log('[wm-debug] DevServer before() – host:', host, 'https:', protocol === 'https')
+        /* eslint-enable no-console */
+      }
+      // Add /health endpoint in dev to mirror production server.js
+      try {
+        const healthCheck = require('topcoder-healthcheck-dropin')
+        const check = () => true
+        app.get('/health', healthCheck.middleware([check]))
+      } catch (e) {
+        if (WM_DEBUG) {
+          // eslint-disable-next-line no-console
+          console.warn('[wm-debug] Failed to register /health endpoint:', e && e.message)
+        }
+      }
       if (fs.existsSync(paths.proxySetup)) {
         // This registers user provided middleware for proxy reasons
         require(paths.proxySetup)(app)

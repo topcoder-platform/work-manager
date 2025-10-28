@@ -20,7 +20,7 @@ const ChallengeNameField = ({ challenge, onUpdateInput }) => {
       <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)}>
           <label htmlFor='challengeName'>
-            Work Name <span>*</span> :
+            Challenge Name <span>*</span> :
           </label>
         </div>
         <div className={cn(styles.field, styles.col2)}>
@@ -29,7 +29,7 @@ const ChallengeNameField = ({ challenge, onUpdateInput }) => {
             id='name'
             name='name'
             type='text'
-            placeholder='Work Name'
+            placeholder='Challenge Name'
             value={challenge.name}
             maxLength='200'
             required
@@ -41,7 +41,7 @@ const ChallengeNameField = ({ challenge, onUpdateInput }) => {
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)} />
           <div className={cn(styles.field, styles.col2, styles.error)}>
-            Work Name is required field
+            Challenge Name is required field
           </div>
         </div>
       )}

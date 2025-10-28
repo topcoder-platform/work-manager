@@ -56,7 +56,7 @@ const Tab = ({
         }}
         role='presentation'
       >
-       All Work
+        All Work
       </li>
       <li
         key='tab-item-past'
@@ -70,7 +70,7 @@ const Tab = ({
         }}
         role='presentation'
       >
-       Projects
+        Projects
       </li>
       <li
         key='tab-item-users'
@@ -84,7 +84,7 @@ const Tab = ({
         }}
         role='presentation'
       >
-          Users
+        Users
       </li>
       <li
         key='tab-item-self-service'
@@ -98,7 +98,7 @@ const Tab = ({
         }}
         role='presentation'
       >
-          Self-Service
+        Self-Service
       </li>
       <li
         key='tab-item-taas'
@@ -112,7 +112,7 @@ const Tab = ({
         }}
         role='presentation'
       >
-          TaaS
+        TaaS
       </li>
     </ul>
   )
