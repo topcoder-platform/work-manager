@@ -25,7 +25,7 @@ module.exports = {
   // Auth and UI URLs (stay on dev domain)
   ACCOUNTS_APP_CONNECTOR_URL: `https://accounts-auth0.${DOMAIN}`,
   ACCOUNTS_APP_LOGIN_URL: `https://accounts-auth0.${DOMAIN}`,
-  COMMUNITY_APP_URL: `https://www-v6.${DOMAIN}`,
+  COMMUNITY_APP_URL: `https://www.${DOMAIN}`,
 
   // Local service URLs
   MEMBER_API_URL: `${LOCAL_MEMBER_API}/members`,
@@ -39,7 +39,7 @@ module.exports = {
   CHALLENGE_TIMELINES_URL: `${LOCAL_CHALLENGE_API}/challenge-timelines`,
 
   // Copilots and other apps remain on dev
-  COPILOTS_URL: 'https://copilots-v6.topcoder-dev.com/copilots',
+  COPILOTS_URL: 'https://copilots.topcoder-dev.com/copilots',
 
   // Projects API: keep dev unless you run projects locally
   PROJECT_API_URL: `${DEV_API_HOSTNAME}/v5/projects`,
