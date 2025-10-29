@@ -39,7 +39,7 @@ module.exports = {
   CHALLENGE_TIMELINES_URL: `${LOCAL_CHALLENGE_API}/challenge-timelines`,
 
   // Copilots and other apps remain on dev
-  COPILOTS_URL: 'https://copilots.topcoder-dev.com/copilots',
+  COPILOTS_URL: 'https://copilots.topcoder-dev.com',
 
   // Projects API: keep dev unless you run projects locally
   PROJECT_API_URL: `${DEV_API_HOSTNAME}/v5/projects`,

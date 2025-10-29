@@ -21,7 +21,7 @@ module.exports = {
   CHALLENGE_TRACKS_URL: `${PROD_API_HOSTNAME}/v5/challenge-tracks`,
   CHALLENGE_PHASES_URL: `${PROD_API_HOSTNAME}/v5/challenge-phases`,
   CHALLENGE_TIMELINES_URL: `${PROD_API_HOSTNAME}/v5/challenge-timelines`,
-  COPILOTS_URL: `https://copilots.${DOMAIN}/copilots`,
+  COPILOTS_URL: `https://copilots.${DOMAIN}`,
   PROJECT_API_URL: `${PROD_API_HOSTNAME}/v5/projects`,
   GROUPS_API_URL: `${PROD_API_HOSTNAME}/v5/groups`,
   TERMS_API_URL: `${PROD_API_HOSTNAME}/v5/terms`,

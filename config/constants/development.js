@@ -22,7 +22,7 @@ module.exports = {
   CHALLENGE_TRACKS_URL: `${DEV_API_HOSTNAME}/v6/challenge-tracks`,
   CHALLENGE_PHASES_URL: `${DEV_API_HOSTNAME}/v6/challenge-phases`,
   CHALLENGE_TIMELINES_URL: `${DEV_API_HOSTNAME}/v6/challenge-timelines`,
-  COPILOTS_URL: 'https://copilots.topcoder-dev.com/copilots',
+  COPILOTS_URL: 'https://copilots.topcoder-dev.com',
   PROJECT_API_URL: `${DEV_API_HOSTNAME}/v5/projects`,
   GROUPS_API_URL: `${DEV_API_HOSTNAME}/v6/groups`,
   TERMS_API_URL: `${DEV_API_HOSTNAME}/v5/terms`,
