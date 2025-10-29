@@ -543,7 +543,27 @@ class ChallengeReviewerField extends Component {
     const validationErrors = challenge.submitTriggered ? this.validateReviewer(reviewer) : {}
     const selectedPhase = challenge.phases.find(p => p.phaseId === reviewer.phaseId)
     const isDesignChallenge = challenge && challenge.trackId === DES_TRACK_ID
-    const filteredScorecards = scorecards.filter(item => (item.type && item.type.toLowerCase()) === (selectedPhase && selectedPhase.name.toLowerCase()))
+    const normalize = (value) => (value || '')
+      .toString()
+      .toLowerCase()
+      .trim()
+      .replace(/\bphase\b$/, '')
+      .replace(/[-_\s]/g, '')
+
+    const filteredScorecards = scorecards.filter(item => {
+      if (!selectedPhase || !selectedPhase.name || !item || !item.type) {
+        return false
+      }
+
+      const normalizedType = normalize(item.type)
+      const normalizedPhaseName = normalize(selectedPhase.name)
+
+      if (!normalizedType || !normalizedPhaseName) {
+        return false
+      }
+
+      return normalizedType === normalizedPhaseName
+    })
 
     return (
       <div key={`reviewer-${index}`} className={styles.reviewerForm}>
