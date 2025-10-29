@@ -340,7 +340,7 @@ export async function updateChallengeSkillsApi (challengeId, skills) {
  */
 export async function fetchScorecards (filters = {}) {
   const query = {
-    perPage: 100,
+    perPage: 200,
     page: 1,
     ...filters
   }
