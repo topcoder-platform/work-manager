@@ -329,7 +329,9 @@ class ChallengeReviewerField extends Component {
   loadScorecards () {
     const { challenge, loadScorecards } = this.props
 
-    const filters = {}
+    const filters = {
+      status: 'ACTIVE'
+    }
 
     // Add challenge track if available
     if (challenge.track) {
