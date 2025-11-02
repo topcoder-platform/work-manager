@@ -79,7 +79,7 @@ const theme = {
 
 const getTitle = (isNew, challenge) => {
   if (isNew) {
-    return 'Create New Work'
+    return 'Create New Challenge'
   }
 
   return challenge.name || 'Set-Up Work'
@@ -239,6 +239,9 @@ class ChallengeEditor extends Component {
         const challengeDetail = { ...challengeData }
         const isRequiredNda = challengeDetail.terms && _.some(challengeDetail.terms, { id: DEFAULT_NDA_UUID })
         const isOpenAdvanceSettings = challengeDetail.groups.length > 0 || isRequiredNda
+        if (!challengeDetail.reviewers) {
+          challengeDetail.reviewers = []
+        }
         setState({
           challenge: challengeDetail,
           assignedMemberDetails,
@@ -305,7 +308,7 @@ class ChallengeEditor extends Component {
       this.setState({
         challenge: newChallenge
       }, () => {
-        this.updateAllChallengeInfo('Completed')
+        this.updateAllChallengeInfo(CHALLENGE_STATUS.COMPLETED)
       })
     })
   }
@@ -766,6 +769,85 @@ class ChallengeEditor extends Component {
     return true
   }
 
+  isValidReviewers () {
+    const { challenge } = this.state
+    const isTask = _.get(challenge, 'task.isTask', false)
+    if (isTask) {
+      return true
+    }
+    const reviewers = challenge.reviewers || []
+    const isMM = challenge.typeId === MARATHON_TYPE_ID
+    const requiredPhaseNames = [
+      'Screening',
+      'Review',
+      'Post-mortem',
+      'Approval',
+      'Checkpoint Screening',
+      'Iterative Review'
+    ]
+    const normalize = (name) => (name || '')
+      .toString()
+      .toLowerCase()
+      .replace(/[-\s]/g, '')
+    const requiredNormalized = new Set(requiredPhaseNames.map(normalize))
+    const challengePhases = Array.isArray(challenge.phases) ? challenge.phases : []
+    const requiredPhaseIds = []
+    for (const phase of challengePhases) {
+      const phaseNameNorm = normalize(phase.name)
+      if (requiredNormalized.has(phaseNameNorm)) {
+        requiredPhaseIds.push(phase.phaseId || phase.id)
+      }
+    }
+
+    // If any required phase exists and no reviewers configured, it's invalid
+    // Exception: Marathon Match does not require review configuration
+    if (!isMM && reviewers.length === 0 && requiredPhaseIds.length > 0) {
+      return false
+    }
+
+    // Validate each reviewer
+    for (const reviewer of reviewers) {
+      const isAI = (reviewer.aiWorkflowId && reviewer.aiWorkflowId.trim() !== '') || !reviewer.isMemberReview
+
+      if (isAI) {
+        if (!reviewer.aiWorkflowId || reviewer.aiWorkflowId.trim() === '') {
+          return false
+        }
+      } else {
+        if (!reviewer.scorecardId) {
+          return false
+        }
+
+        const memberCount = parseInt(reviewer.memberReviewerCount) || 1
+        if (memberCount < 1 || !Number.isInteger(memberCount)) {
+          return false
+        }
+      }
+
+      if (!reviewer.phaseId) {
+        return false
+      }
+    }
+
+    // Enforce coverage: if the challenge has any of the required phases,
+    // then there must be at least one reviewer with a scorecard for that phase.
+    // If any required phase exists, ensure at least one reviewer with scorecard configured for it
+    if (!isMM) {
+      for (const phaseId of requiredPhaseIds) {
+        const hasReviewerForPhase = reviewers.some(r => {
+          const rPhaseId = r.phaseId
+          const hasScorecard = !!r.scorecardId
+          return rPhaseId === phaseId && hasScorecard
+        })
+        if (!hasReviewerForPhase) {
+          return false
+        }
+      }
+    }
+
+    return true
+  }
+
   isValidChallenge () {
     const { challenge } = this.state
     if (this.props.isNew) {
@@ -773,17 +855,15 @@ class ChallengeEditor extends Component {
       return !!name && !!trackId && !!typeId
     }
 
-    const reviewType = challenge.reviewType ? challenge.reviewType.toUpperCase() : REVIEW_TYPES.COMMUNITY
-    const isInternal = reviewType === REVIEW_TYPES.INTERNAL
-    if (isInternal && !challenge.reviewer) {
-      return false
-    }
-
     if (!this.isValidChallengePrizes()) {
       return false
     }
 
     if (!this.checkValidCopilot()) {
+      return false
+    }
+
+    if (!this.isValidReviewers()) {
       return false
     }
 
@@ -857,14 +937,22 @@ class ChallengeEditor extends Component {
       const is2RoundDesignChallenge = isDesignChallenge && is2RoundChallenge
 
       for (let index = 0; index < phases.length; ++index) {
-        newChallenge.phases[index].isDurationActive = canChangeDuration(newChallenge.phases[index])
-        if ((newChallenge.phases[index].name === 'Submission' && !is2RoundDesignChallenge) || newChallenge.phases[index].name === 'Checkpoint Submission') {
-          newChallenge.phases[index].isStartTimeActive = true
-        } else {
-          newChallenge.phases[index].isStartTimeActive = index <= 0
-        }
-        newChallenge.phases[index].isOpen =
-          newChallenge.phases[index].isDurationActive
+        const currentPhase = newChallenge.phases[index]
+        const phaseName = _.get(currentPhase, 'name', '')
+        const normalizedPhaseName = _.toLower(phaseName)
+        const isRegistrationPhase = normalizedPhaseName === 'registration'
+        const isSubmissionPhase = normalizedPhaseName === 'submission'
+        const isCheckpointSubmissionPhase = normalizedPhaseName === 'checkpoint submission'
+
+        currentPhase.isDurationActive = canChangeDuration(currentPhase)
+        // Allow editing registration start time even when it aligns with submission so dates can be staggered later.
+        currentPhase.isStartTimeActive = (
+          (isSubmissionPhase && !is2RoundDesignChallenge) ||
+          isCheckpointSubmissionPhase ||
+          isRegistrationPhase ||
+          index <= 0
+        )
+        currentPhase.isOpen = currentPhase.isDurationActive
       }
       this.setState({ challenge: newChallenge })
     }
@@ -943,7 +1031,8 @@ class ChallengeEditor extends Component {
       'milestoneId',
       'discussions',
       'task',
-      'skills'
+      'skills',
+      'reviewers'
     ], this.state.challenge)
     const isTask = _.find(metadata.challengeTypes, { id: challenge.typeId, isTask: true })
     challenge.legacy = _.assign(this.state.challenge.legacy, {
@@ -956,7 +1045,7 @@ class ChallengeEditor extends Component {
       return { ...p, prizes }
     })
     challenge.status = status
-    if (status === 'Active' && isTask) {
+    if (status === CHALLENGE_STATUS.ACTIVE && isTask) {
       challenge.startDate = moment().format()
     }
 
@@ -1024,7 +1113,7 @@ class ChallengeEditor extends Component {
     }
 
     const newChallenge = {
-      status: 'New',
+      status: CHALLENGE_STATUS.NEW,
       projectId: this.props.projectId,
       name,
       typeId,
@@ -1038,7 +1127,8 @@ class ChallengeEditor extends Component {
       terms: [{ id: DEFAULT_TERM_UUID, roleId: SUBMITTER_ROLE_UUID }],
       groups: [],
       milestoneId,
-      tags
+      tags,
+      reviewers: []
       // prizeSets: this.getDefaultPrizeSets()
     }
     if (isTask) {
@@ -1095,7 +1185,7 @@ class ChallengeEditor extends Component {
       return ([
         {
           name: `${challenge.name} Discussion`,
-          type: 'challenge',
+          type: 'CHALLENGE',
           provider: 'vanilla'
         }
       ])
@@ -1290,11 +1380,11 @@ class ChallengeEditor extends Component {
   }
 
   async onActiveChallenge () {
-    this.updateAllChallengeInfo('Active')
+    this.updateAllChallengeInfo(CHALLENGE_STATUS.ACTIVE)
   }
 
   async saveDraft () {
-    this.updateAllChallengeInfo('Draft')
+    this.updateAllChallengeInfo(CHALLENGE_STATUS.DRAFT)
   }
 
   async onlySave () {
@@ -1388,7 +1478,8 @@ class ChallengeEditor extends Component {
       challengeId,
       assignYourselfCopilot,
       challengeResources,
-      loggedInUser
+      loggedInUser,
+      challengeDetails
     } = this.props
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
@@ -1399,10 +1490,13 @@ class ChallengeEditor extends Component {
     let isActive = false
     let isDraft = false
     let isCompleted = false
+    let isNewStatus = false
     if (challenge.status) {
-      isDraft = challenge.status.toLowerCase() === 'draft'
-      isActive = challenge.status.toLowerCase() === 'active'
-      isCompleted = challenge.status.toLowerCase() === 'completed'
+      const normalizedStatus = challenge.status.toUpperCase()
+      isDraft = normalizedStatus === CHALLENGE_STATUS.DRAFT
+      isActive = normalizedStatus === CHALLENGE_STATUS.ACTIVE
+      isCompleted = normalizedStatus === CHALLENGE_STATUS.COMPLETED
+      isNewStatus = normalizedStatus === CHALLENGE_STATUS.NEW
     }
     if (isLoading || _.isEmpty(metadata.challengePhases)) return <Loader />
     if (failedToLoad) {
@@ -1487,7 +1581,7 @@ class ChallengeEditor extends Component {
       Closing Task Confirmation Modal and Error Modal
     */
     if (isCloseTask && !isConfirm) {
-      const taskPrize = _.get(_.find(challenge.prizeSets, { type: 'placement' }), 'prizes[0].value')
+      const taskPrize = _.get(_.find(challenge.prizeSets, { type: 'PLACEMENT' }), 'prizes[0].value')
       const assignedMemberId = _.get(assignedMemberDetails, 'userId')
       const assignedMember = _.get(assignedMemberDetails, 'handle', `User Id: ${assignedMemberId}`)
 
@@ -1530,12 +1624,12 @@ class ChallengeEditor extends Component {
         )
       }
     }
-    if (!isNew && challenge.status !== 'New' && isLaunch && isConfirm) {
+    if (!isNew && !isNewStatus && isLaunch && isConfirm) {
       draftModal = (
         <AlertModal
           title='Success'
           message={
-            challenge.status === 'Draft'
+            isDraft
               ? 'Your challenge is saved as draft'
               : 'We have scheduled your challenge and processed the payment'
           }
@@ -1560,6 +1654,10 @@ class ChallengeEditor extends Component {
       assignedMemberDetails &&
       loggedInUser &&
       `${loggedInUser.userId}` === `${assignedMemberDetails.userId}`
+
+    const challengeDetailsStatus = _.get(challengeDetails, 'status', '')
+    const normalizedChallengeDetailsStatus = challengeDetailsStatus ? challengeDetailsStatus.toUpperCase() : ''
+    const canDeleteChallenge = !isNew && normalizedChallengeDetailsStatus === CHALLENGE_STATUS.NEW
 
     const actionButtons = <React.Fragment>
       {!isLoading && this.state.hasValidationErrors && <div className={styles.error}>Please fix the errors before saving</div>}
@@ -1590,13 +1688,10 @@ class ChallengeEditor extends Component {
                   !preventCopilotFromActivatingTask
                 ) && (
                   <div className={styles.button}>
-                    {(challenge.legacyId || isTask) && !this.state.hasValidationErrors ? (
+                    {!this.state.hasValidationErrors ? (
                       <PrimaryButton text={'Launch as Active'} type={'info'} onClick={this.toggleLaunch} />
                     ) : (
-                      <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-                        {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
-                        <PrimaryButton text={'Launch as Active'} type={'disabled'} />
-                      </Tooltip>
+                      <PrimaryButton text={'Launch as Active'} type={'disabled'} />
                     )}
                   </div>
                 )
@@ -1653,7 +1748,16 @@ class ChallengeEditor extends Component {
       (_.isBoolean(useDashboardData.value) && useDashboardData.value) : false
 
     const workTypes = getDomainTypes(challenge.trackId)
-    const filteredTypes = metadata.challengeTypes.filter(type => workTypes.includes(type.abbreviation))
+    let filteredTypes = metadata.challengeTypes.filter(type => workTypes.includes(type.abbreviation))
+
+    if (challenge.trackId === DEV_TRACK_ID) {
+      const topgearTypes = metadata.challengeTypes.filter(type => type.name && type.name.toLowerCase() === 'topgear task')
+      filteredTypes = _.uniqBy([...filteredTypes, ...topgearTypes], 'id')
+    }
+
+    if (selectedType && !filteredTypes.find(type => type.id === selectedType.id)) {
+      filteredTypes = [...filteredTypes, selectedType]
+    }
 
     const challengeForm = isNew
       ? (
@@ -1747,10 +1851,8 @@ class ChallengeEditor extends Component {
             {projectDetail.version === 'v4' && <MilestoneField milestones={activeProjectMilestones} onUpdateSelect={this.onUpdateSelect} projectId={projectDetail.id} selectedMilestoneId={selectedMilestoneId} />}
             <CopilotField challenge={challenge} copilots={copilotResources} onUpdateOthers={this.onUpdateOthers} assignYourselfCopilot={assignYourselfCopilot} loggedInUser={loggedInUser} />
             <ReviewTypeField
-              reviewers={metadata.members}
               challenge={challenge}
               onUpdateOthers={this.onUpdateOthers}
-              onUpdateSelect={this.onUpdateSelect}
             />
             <div className={styles.row}>
               <div className={styles.tcCheckbox}>
@@ -1788,28 +1890,28 @@ class ChallengeEditor extends Component {
               </React.Fragment>
             )}
             {!isTask && (
-                <>
-                  <div className={styles.row}>
-                    <div className={styles.col}>
-                      <span className={styles.fieldTitle}>Timezone:</span>
-                      {Intl.DateTimeFormat().resolvedOptions().timeZone}
-                    </div>
-                  </div>
-                  {
-                    phases.map((phase, index) => (
-                      <PhaseInput
-                        phase={phase}
-                        phaseIndex={index}
-                        key={index}
-                        readOnly={false}
-                        onUpdatePhase={(item) => {
-                          this.onUpdatePhaseDate(item, index)
-                        }}
-                      />
-                    )
-                    )
-                  }
-                </>
+            <>
+              <div className={styles.row}>
+                <div className={styles.col}>
+                  <span className={styles.fieldTitle}>Timezone:</span>
+                  {Intl.DateTimeFormat().resolvedOptions().timeZone}
+                </div>
+              </div>
+              {
+                phases.map((phase, index) => (
+                  <PhaseInput
+                    phase={phase}
+                    phaseIndex={index}
+                    key={index}
+                    readOnly={false}
+                    onUpdatePhase={(item) => {
+                      this.onUpdatePhaseDate(item, index)
+                    }}
+                  />
+                )
+                )
+              }
+            </>
             )}
             {
               this.state.isDeleteLaunch && !this.state.isConfirm && (
@@ -1854,6 +1956,8 @@ class ChallengeEditor extends Component {
               onUpdateSkills={this.onUpdateSkills}
               onUpdateMultiSelect={this.onUpdateMultiSelect}
               onUpdateMetadata={this.onUpdateMetadata}
+              showReviewerField={!isTask}
+              onUpdateReviewers={this.onUpdateOthers}
             />
             {/* hide until challenge API change is pushed to PROD https://github.com/topcoder-platform/challenge-api/issues/348 */}
             {false && <AttachmentField
@@ -1887,7 +1991,7 @@ class ChallengeEditor extends Component {
             {!isNew && <LegacyLinks challenge={challenge} />}
           </div>
           <div className={cn(styles.actionButtons, styles.actionButtonsRight)}>
-            {!isNew && this.props.challengeDetails.status === 'New' && <PrimaryButton text={'Delete'} type={'danger'} onClick={this.deleteModalLaunch} />}
+            {canDeleteChallenge && <PrimaryButton text={'Delete'} type={'danger'} onClick={this.deleteModalLaunch} />}
             <PrimaryButton text={'Back'} type={'info'} submit link={`/projects/${projectDetail.id}/challenges`} />
           </div>
         </div>

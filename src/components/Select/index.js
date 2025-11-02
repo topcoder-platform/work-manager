@@ -23,9 +23,15 @@ const menuList = ({ onMenuScrollBottom }) => {
     }
     menuListRef = ref
   }
-  return (props) => (
+  const MenuList = (props) => (
     <components.MenuList key='projects-select--menu-list' {...props} innerRef={onMenuScrollBottom ? (ref) => { setMenuListRef(ref); props.innerRef(ref) } : props.innerRef} />
   )
+
+  MenuList.propTypes = {
+    innerRef: PT.any
+  }
+
+  return MenuList
 }
 
 export default function Select (props) {

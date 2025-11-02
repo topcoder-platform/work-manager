@@ -6,7 +6,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 
 import TuiEditor from '../TuiEditor'
-import styles from './styles.scss'
+import styles from './styles.module.scss'
 
 const FieldDescription = props => (
   <TuiEditor

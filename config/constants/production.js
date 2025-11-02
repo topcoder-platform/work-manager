@@ -1,20 +1,23 @@
 const DOMAIN = 'topcoder.com'
 const PROD_API_HOSTNAME = `https://api.${DOMAIN}`
 const API_V5 = `${PROD_API_HOSTNAME}/v5`
+const API_V6 = `${PROD_API_HOSTNAME}/v6`
 
 module.exports = {
   API_V2: `${PROD_API_HOSTNAME}/v2`,
   API_V3: `${PROD_API_HOSTNAME}/v3`,
   API_V4: `${PROD_API_HOSTNAME}/v4`,
   API_V5,
+  API_V6,
   ACCOUNTS_APP_CONNECTOR_URL: process.env.ACCOUNTS_APP_CONNECTOR_URL || `https://accounts-auth0.${DOMAIN}`,
   ACCOUNTS_APP_LOGIN_URL: `https://accounts-auth0.${DOMAIN}`,
   COMMUNITY_APP_URL: `https://www.${DOMAIN}`,
   MEMBER_API_URL: `${PROD_API_HOSTNAME}/v5/members`,
   CHALLENGE_API_URL: `${PROD_API_HOSTNAME}/v5/challenges`,
+  CHALLENGE_DEFAULT_REVIEWERS_URL: `${PROD_API_HOSTNAME}/v6/challenge/default-reviewers`,
   CHALLENGE_API_VERSION: '1.1.0',
   CHALLENGE_TIMELINE_TEMPLATES_URL: `${PROD_API_HOSTNAME}/v5/timeline-templates`,
-  CHALLENGE_TYPES_URL: `${PROD_API_HOSTNAME}/v5/challenge-types`,
+  CHALLENGE_TYPES_URL: `${PROD_API_HOSTNAME}/v6/challenge-types`,
   CHALLENGE_TRACKS_URL: `${PROD_API_HOSTNAME}/v5/challenge-tracks`,
   CHALLENGE_PHASES_URL: `${PROD_API_HOSTNAME}/v5/challenge-phases`,
   CHALLENGE_TIMELINES_URL: `${PROD_API_HOSTNAME}/v5/challenge-timelines`,
@@ -25,13 +28,17 @@ module.exports = {
   MEMBERS_API_URL: `${PROD_API_HOSTNAME}/v5/members`,
   RESOURCES_API_URL: `${PROD_API_HOSTNAME}/v5/resources`,
   RESOURCE_ROLES_API_URL: `${PROD_API_HOSTNAME}/v5/resource-roles`,
-  SUBMISSIONS_API_URL: `${PROD_API_HOSTNAME}/v5/submissions`,
+  SUBMISSIONS_API_URL: `${PROD_API_HOSTNAME}/v6/submissions`,
   REVIEW_TYPE_API_URL: `${PROD_API_HOSTNAME}/v5/reviewTypes`,
+  REVIEWS_API_URL: `${PROD_API_HOSTNAME}/v5/reviews`, //update to use v6
+  SCORECARDS_API_URL: `${PROD_API_HOSTNAME}/v5/scorecards`, // update to use v6
+  WORKFLOWS_API_URL: `${PROD_API_HOSTNAME}/v5/workflows`, // update to use v6
   SUBMISSION_REVIEW_APP_URL: `https://submission-review.${DOMAIN}/challenges`,
   STUDIO_URL: `https://studio.${DOMAIN}`,
   CONNECT_APP_URL: `https://connect.${DOMAIN}`,
   DIRECT_PROJECT_URL: `https://www.${DOMAIN}/direct`,
   ONLINE_REVIEW_URL: `https://software.${DOMAIN}`,
+  REVIEW_APP_URL: `https://review.${DOMAIN}`,
   DEFAULT_TERM_UUID: '564a981e-6840-4a5c-894e-d5ad22e9cd6f', // Terms & Conditions of Use at TopCoder
   DEFAULT_NDA_UUID: 'c41e90e5-4d0e-4811-bd09-38ff72674490', // Appirio NDA v2.0
   SUBMITTER_ROLE_UUID: '732339e7-8e30-49d7-9198-cccf9451e221',
@@ -50,8 +57,6 @@ module.exports = {
   FILE_PICKER_REGION: 'us-east-1',
   FILE_PICKER_CNAME: 'fs.topcoder.com',
   FILE_PICKER_LOCATION: 's3',
-  IDLE_TIMEOUT_MINUTES: 10,
-  IDLE_TIMEOUT_GRACE_MINUTES: 5,
   MULTI_ROUND_CHALLENGE_TEMPLATE_ID: 'd4201ca4-8437-4d63-9957-3f7708184b07',
   UNIVERSAL_NAV_URL: 'https://uni-nav.topcoder.com/v1/tc-universal-nav.js',
   HEADER_AUTH_URLS_HREF: `https://accounts-auth0.${DOMAIN}?utm_source=community-app-main`,

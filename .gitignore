@@ -27,6 +27,8 @@ yarn-error.log*
 *.env
 *.pem
 *.vscode
+*.pem
+*.vscode
 
 # e2e test case
 test-automation/temp

@@ -20,7 +20,10 @@ import {
   createChallenge as createChallengeAPI,
   createResource as createResourceAPI,
   deleteResource as deleteResourceAPI,
-  updateChallengeSkillsApi
+  updateChallengeSkillsApi,
+  fetchDefaultReviewers,
+  fetchScorecards,
+  fetchWorkflows
 } from '../services/challenges'
 import { searchProfilesByUserIds } from '../services/user'
 import {
@@ -170,11 +173,11 @@ export function loadChallengesByPage (
     }
 
     if (status !== 'all') {
-      filters['status'] = !status ? undefined : _.startCase(status.toLowerCase())
+      filters['status'] = !status ? undefined : status
     }
 
     if (!dashboard && !filters['status'] && !(_.isInteger(projectId) && projectId > 0)) {
-      filters['status'] = 'Active'
+      filters['status'] = 'ACTIVE'
     }
     if (selfService) {
       filters.selfService = true
@@ -238,7 +241,7 @@ export function loadChallenges (
     if (!_.isEmpty(status)) {
       filters['status'] = status === '' ? undefined : _.startCase(status.toLowerCase())
     } else if (!(_.isInteger(projectId) && projectId > 0)) {
-      filters['status'] = 'Active'
+      filters['status'] = 'ACTIVE'
     }
 
     let fetchedChallenges = []
@@ -762,6 +765,80 @@ export function updateChallengeSkills (challengeId, skills) {
       })
     } catch (error) {
       return _.get(error, 'response.data.message', 'Can not save skill')
+    }
+  }
+}
+
+/**
+ * Load scorecards
+ * @param {Object} filters filters for scorecards
+ */
+export function loadScorecards (filters = {}) {
+  return async (dispatch) => {
+    try {
+      const scorecards = await fetchScorecards(filters)
+      dispatch({
+        type: LOAD_CHALLENGE_METADATA_SUCCESS,
+        metadataKey: 'scorecards',
+        metadataValue: scorecards.scoreCards || []
+      })
+    } catch (error) {
+      console.error('Error loading scorecards:', error)
+      // Return empty array on error to maintain consistency
+      dispatch({
+        type: LOAD_CHALLENGE_METADATA_SUCCESS,
+        metadataKey: 'scorecards',
+        metadataValue: []
+      })
+    }
+  }
+}
+
+/**
+ * Load default reviewers
+ * @param {Object} filters filters for default reviewers
+ */
+export function loadDefaultReviewers (filters = {}) {
+  return async (dispatch) => {
+    try {
+      const defaultReviewers = await fetchDefaultReviewers(filters)
+      dispatch({
+        type: LOAD_CHALLENGE_METADATA_SUCCESS,
+        metadataKey: 'defaultReviewers',
+        metadataValue: defaultReviewers
+      })
+    } catch (error) {
+      console.error('Error loading default reviewers:', error)
+      // Return empty array on error to maintain consistency
+      dispatch({
+        type: LOAD_CHALLENGE_METADATA_SUCCESS,
+        metadataKey: 'defaultReviewers',
+        metadataValue: []
+      })
+    }
+  }
+}
+
+/**
+ * Load workflows
+ */
+export function loadWorkflows () {
+  return async (dispatch) => {
+    try {
+      const workflows = await fetchWorkflows()
+      dispatch({
+        type: LOAD_CHALLENGE_METADATA_SUCCESS,
+        metadataKey: 'workflows',
+        metadataValue: workflows || []
+      })
+    } catch (error) {
+      console.error('Error loading workflows:', error)
+      // Return empty array on error to maintain consistency
+      dispatch({
+        type: LOAD_CHALLENGE_METADATA_SUCCESS,
+        metadataKey: 'workflows',
+        metadataValue: []
+      })
     }
   }
 }

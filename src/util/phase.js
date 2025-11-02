@@ -1,10 +1,13 @@
-import moment from 'moment'
-
 export const canChangeDuration = phase => {
   if (!phase) {
     return false
   }
-  return moment(phase.scheduledEndDate).isAfter()
+
+  if (phase.isOpen) {
+    return true
+  }
+
+  return !phase.actualEndDate
 }
 
 export const getCurrentPhase = (challenge) => {

@@ -1,6 +1,6 @@
-@import "colors";
-@import "mixins";
-@import "media";
-
+// Re-export shared tokens so consumers can `@use 'includes' as *;`
+@forward "colors";
+@forward "mixins";
+@forward "media";
 
 

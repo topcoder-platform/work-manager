@@ -66,8 +66,7 @@ PrimaryButton.propTypes = {
   submit: PropTypes.bool,
   disabled: PropTypes.bool,
   onMouseEnter: PropTypes.func,
-  onMouseLeave: PropTypes.func,
-  innerRef: PropTypes.any
+  onMouseLeave: PropTypes.func
 }
 
 export default PrimaryButton

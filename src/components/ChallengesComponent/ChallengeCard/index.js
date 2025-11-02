@@ -4,7 +4,6 @@
 import _ from 'lodash'
 import React from 'react'
 import PropTypes from 'prop-types'
-import cn from 'classnames'
 import { withRouter, Link } from 'react-router-dom'
 import moment from 'moment'
 import 'moment-duration-format'
@@ -12,12 +11,11 @@ import ChallengeStatus from '../ChallengeStatus'
 import ChallengeTag from '../ChallengeTag'
 import styles from './ChallengeCard.module.scss'
 import { formatDate } from '../../../util/date'
-import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, MESSAGE, ONLINE_REVIEW_URL, PROJECT_ROLES } from '../../../config/constants'
+import { CHALLENGE_STATUS, COMMUNITY_APP_URL, DIRECT_PROJECT_URL, REVIEW_APP_URL, PROJECT_ROLES } from '../../../config/constants'
 import ConfirmationModal from '../../Modal/ConfirmationModal'
 import { checkChallengeEditPermission, checkReadOnlyRoles } from '../../../util/tc'
 import { getCurrentPhase } from '../../../util/phase'
 import AlertModal from '../../Modal/AlertModal'
-import Tooltip from '../../Tooltip'
 
 const theme = {
   container: styles.modalContainer
@@ -35,7 +33,7 @@ const PERMISSION_DELETE_MESSAGE_ERROR =
 const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
   const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.id}`
   const directUrl = `${DIRECT_PROJECT_URL}/contest/detail?projectId=${challenge.legacyId}`
-  const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
+  const reviewUrl = `${REVIEW_APP_URL}/active-challenges/${challenge.id}/challenge-details`
   const isTask = _.get(challenge, 'task.isTask', false)
 
   // NEW projects never have Legacy challenge created, so don't show links and "Activate" button for them at all
@@ -47,15 +45,17 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
     )
   }
 
-  return challenge.legacyId || isTask ? (
+  const showLegacyLinks = Boolean(challenge.legacyId) && !isTask
+
+  return (
     <div className={styles.linkGroup}>
       <div className={styles.linkGroupLeft}>
         <a className={styles.link} href={communityAppUrl} target='_blank'>View Challenge</a>
-        {!isTask && (
+        {showLegacyLinks && (
           <div className={styles.linkGroupLeftBottom}>
             <a className={styles.link} href={directUrl} target='_blank'>Direct</a>
             <span className={styles.linkDivider}>|</span>
-            <a className={styles.link} href={orUrl} target='_blank'>OR</a>
+            <a className={styles.link} href={reviewUrl} target='_blank'>Review</a>
           </div>
         )}
       </div>
@@ -65,45 +65,24 @@ const hoverComponents = (challenge, onUpdateLaunch, deleteModalLaunch) => {
         </button>
       )}
     </div>
-  ) : (
-    <div className={styles.linkGroup}>
-      <div className={styles.linkGroupLeft}>
-        <a className={styles.link} href={communityAppUrl}>View Challenge</a>
-        {!isTask && (
-          <div className={styles.linkGroupLeftBottom}>
-            <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-              <span className={styles.link}>Direct</span>
-            </Tooltip>
-            <span className={styles.linkDivider}>|</span>
-            <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-              <span className={styles.link}>OR</span>
-            </Tooltip>
-          </div>
-        )}
-      </div>
-      {
-        challenge.status === 'Draft' && (
-          <Tooltip content={MESSAGE.NO_LEGACY_CHALLENGE}>
-            {/* Don't disable button for real inside tooltip, otherwise mouseEnter/Leave events work not good */}
-            <button className={cn(styles.activateButton, styles.activateButtonDisabled)}>
-              <span>Activate</span>
-            </button>
-          </Tooltip>
-        )
-      }
-    </div>
   )
 }
 
 const renderStatus = (status, getStatusText) => {
-  const statusMessage = status.split(' ')[0]
+  const normalizedStatus = (status || '').toUpperCase()
+  const statusMessage = normalizedStatus.split(' ')[0]
+  const isCancelledStatus = statusMessage.startsWith(CHALLENGE_STATUS.CANCELLED)
+
+  if (isCancelledStatus) {
+    return (<ChallengeStatus status={statusMessage} statusText='Cancelled' />)
+  }
+
   switch (statusMessage) {
     case CHALLENGE_STATUS.ACTIVE:
     case CHALLENGE_STATUS.APPROVED:
     case CHALLENGE_STATUS.NEW:
     case CHALLENGE_STATUS.DRAFT:
     case CHALLENGE_STATUS.COMPLETED:
-    case CHALLENGE_STATUS.CANCELLED:
       const statusText = getStatusText ? getStatusText(statusMessage) : statusMessage
       return (<ChallengeStatus status={statusMessage} statusText={statusText} />)
     default:
@@ -131,6 +110,7 @@ class ChallengeCard extends React.Component {
     this.deleteModalLaunch = this.deleteModalLaunch.bind(this)
     this.resetModal = this.resetModal.bind(this)
     this.onLaunchChallenge = this.onLaunchChallenge.bind(this)
+    this.openChallengeView = this.openChallengeView.bind(this)
   }
 
   getForumLink (challenge) {
@@ -225,13 +205,18 @@ class ChallengeCard extends React.Component {
     }
   }
 
+  openChallengeView (challenge) {
+    this.props.setActiveProject(parseInt(challenge.projectId))
+    this.props.resetFilter()
+  }
+
   render () {
     const { isLaunch, isConfirm, isSaving, isDeleteLaunch, isCheckChalengePermission, hasEditChallengePermission, currentPhase, forumLink } = this.state
-    const { setActiveProject, challenge, reloadChallengeList, isBillingAccountExpired, disableHover, getStatusText, challengeTypes, loginUserRoleInProject } = this.props
+    const { challenge, reloadChallengeList, isBillingAccountExpired, disableHover, getStatusText, challengeTypes, loginUserRoleInProject } = this.props
     const deleteMessage = isCheckChalengePermission
       ? 'Checking permissions...'
       : `Do you want to delete "${challenge.name}"?`
-    const orUrl = `${ONLINE_REVIEW_URL}/review/actions/ViewProjectDetails?pid=${challenge.legacyId}`
+    const reviewUrl = `${REVIEW_APP_URL}/active-challenges/${challenge.id}/challenge-details`
     const communityAppUrl = `${COMMUNITY_APP_URL}/challenges/${challenge.id}`
     const isReadOnly = checkReadOnlyRoles(this.props.auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
 
@@ -280,10 +265,13 @@ class ChallengeCard extends React.Component {
         )}
 
         <div className={styles.col5}>
-          <ChallengeTag type={challenge.type} challengeTypes={challengeTypes} />
+          <ChallengeTag
+            type={typeof challenge.type === 'string' ? challenge.type : (challenge.type && challenge.type.name)}
+            challengeTypes={challengeTypes}
+          />
         </div>
 
-        <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`} onClick={() => setActiveProject(parseInt(challenge.projectId))}>
+        <Link className={styles.col2} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/view`} onClick={() => this.openChallengeView(challenge)}>
           <div className={styles.name}>
             <span className={styles.link}>{challenge.name}</span>
           </div>
@@ -309,12 +297,12 @@ class ChallengeCard extends React.Component {
         {
           !isReadOnly && (
             <div className={styles.col6}>
-              {(disableHover ? <Link className={styles.link} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`}>Edit</Link> : hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch))}
+              {(disableHover ? <Link className={styles.link} to={`/projects/${challenge.projectId}/challenges/${challenge.id}/edit`} onClick={() => this.props.resetFilter()}>Edit</Link> : hoverComponents(challenge, this.onUpdateLaunch, this.deleteModalLaunch))}
             </div>
           )
         }
         <div className={styles.col6}>
-          <a className={styles.link} href={orUrl} target='_blank'>OR</a>
+          <a className={styles.link} href={reviewUrl} target='_blank'>Review</a>
         </div>
         <div className={styles.col6}>
           <a className={styles.link} href={communityAppUrl} target='_blank'>CA</a>
@@ -346,7 +334,8 @@ ChallengeCard.propTypes = {
   getStatusText: PropTypes.func,
   challengeTypes: PropTypes.arrayOf(PropTypes.shape()),
   auth: PropTypes.object.isRequired,
-  loginUserRoleInProject: PropTypes.string
+  loginUserRoleInProject: PropTypes.string,
+  resetFilter: PropTypes.func
 }
 
 export default withRouter(ChallengeCard)

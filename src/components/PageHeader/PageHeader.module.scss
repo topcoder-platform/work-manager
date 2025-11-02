@@ -1,4 +1,4 @@
-@import "../../styles/includes";
+@use '../../styles/includes' as *;
 .container {
   padding: 14px 30px;
   background-color: $white;

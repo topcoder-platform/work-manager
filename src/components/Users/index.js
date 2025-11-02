@@ -277,19 +277,19 @@ class Users extends Component {
             <>
               <div className={styles.header}>
                 <div className={cn(styles.col5)}>
-                User
+                  User
                 </div>
                 <div className={cn(styles.col5)}>
-                Read
+                  Read
                 </div>
                 <div className={cn(styles.col5)}>
-                Write
+                  Write
                 </div>
                 <div className={cn(styles.col5)}>
-                Full Access
+                  Full Access
                 </div>
                 <div className={cn(styles.col5)}>
-                Copilot
+                  Copilot
                 </div>
               </div>
               <ul className={styles.userList}>

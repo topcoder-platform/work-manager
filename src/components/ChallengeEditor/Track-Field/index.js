@@ -16,7 +16,7 @@ const TrackField = ({ challenge, tracks, onUpdateOthers, disabled }) => {
     <>
       <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)}>
-          <label htmlFor='track'>Domain <span>*</span> :</label>
+          <label htmlFor='track'>Challenge Track <span>*</span> :</label>
         </div>
         <div className={cn(styles.field, styles.col2)}>
           {
@@ -27,7 +27,7 @@ const TrackField = ({ challenge, tracks, onUpdateOthers, disabled }) => {
       { challenge.submitTriggered && !challenge.trackId && <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)} />
         <div className={cn(styles.field, styles.col2, styles.error)}>
-          Domain is a required field
+          Challenge Track is a required field
         </div>
       </div> }
     </>
@@ -41,7 +41,8 @@ TrackField.defaultProps = {
 TrackField.propTypes = {
   challenge: PropTypes.shape().isRequired,
   onUpdateOthers: PropTypes.func.isRequired,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  tracks: PropTypes.arrayOf(PropTypes.shape()).isRequired
 }
 
 export default TrackField

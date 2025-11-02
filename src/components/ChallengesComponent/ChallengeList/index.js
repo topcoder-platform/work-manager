@@ -415,8 +415,8 @@ class ChallengeList extends Component {
     }
 
     const statusOptions = _.map(CHALLENGE_STATUS, item => ({
-      label: _.capitalize(item),
-      value: _.capitalize(item)
+      label: item,
+      value: item
     }))
 
     const challengeTypesOptions = challengeTypes.map(item => ({
@@ -717,7 +717,7 @@ class ChallengeList extends Component {
             className={cn(styles.col5)}
           >
             <span className={styles.filterItem}>
-                      Type
+              Type
               {this.renderSortIcon('type')}
             </span>
           </div>
@@ -726,7 +726,7 @@ class ChallengeList extends Component {
             onClick={() => this.updateSort('name')}
           >
             <span className={styles.filterItem}>
-                      Challenge Name
+              Challenge Name
               {this.renderSortIcon('name')}
             </span>
           </div>
@@ -735,7 +735,7 @@ class ChallengeList extends Component {
             onClick={() => this.updateSort('startDate')}
           >
             <span className={styles.filterItem}>
-                      Start Date
+              Start Date
               {this.renderSortIcon('startDate')}
             </span>
           </div>
@@ -744,7 +744,7 @@ class ChallengeList extends Component {
             onClick={() => this.updateSort('endDate')}
           >
             <span className={styles.filterItem}>
-                      End Date
+              End Date
               {this.renderSortIcon('endDate')}
             </span>
           </div>
@@ -770,7 +770,7 @@ class ChallengeList extends Component {
             className={cn(styles.col3)}
           >
             <span className={styles.filterItem}>
-                      Status
+              Status
               {this.renderSortIcon('status')}
             </span>
           </div>
@@ -814,6 +814,7 @@ class ChallengeList extends Component {
                           challengeTypes={challengeTypes}
                           loginUserRoleInProject={loginUserRoleInProject}
                           auth={this.props.auth}
+                          resetFilter={this.resetFilter}
                         />
                       </li>
                     )
@@ -823,7 +824,7 @@ class ChallengeList extends Component {
                 <NoChallenge activeProject={activeProject} selfService={selfService} />
               )
             }
-        </>
+          </>
         }
 
         <div className={styles.footer}>
@@ -866,7 +867,8 @@ ChallengeList.propTypes = {
   projects: PropTypes.arrayOf(PropTypes.object),
   activeProject: PropTypes.shape({
     id: PropTypes.number,
-    name: PropTypes.string
+    name: PropTypes.string,
+    members: PropTypes.arrayOf(PropTypes.shape())
   }),
   warnMessage: PropTypes.string,
   filterChallengeName: PropTypes.string,

@@ -13,13 +13,36 @@ const ChallengeTotalField = ({ challenge }) => {
       .map(v => convertDollarToInteger(v, '$'))
       .reduce((prev, next) => prev + next, 0)
   }
+  const placementPrizeSet = challenge.prizeSets.find(set => set.type === 'PLACEMENT')
+  const firstPlacePrize = (placementPrizeSet && placementPrizeSet.prizes && placementPrizeSet.prizes[0] && placementPrizeSet.prizes[0].value) || 0
+  let reviewerTotal = 0
+  if (challenge.reviewers && Array.isArray(challenge.reviewers)) {
+    reviewerTotal = challenge.reviewers
+      .filter(r => {
+        const isAI = r && (
+          (r.aiWorkflowId && r.aiWorkflowId.trim() !== '') ||
+          (r.isMemberReview === false)
+        )
+        return !isAI
+      })
+      .reduce((sum, r) => {
+        const basePayment = firstPlacePrize * parseFloat(r.baseCoefficient || 0)
+        const incrementalPayment = parseFloat(r.incrementalCoefficient || 0) * firstPlacePrize
+
+        const count = parseInt(r.memberReviewerCount) || 1
+        return sum + (basePayment + incrementalPayment) * count
+      }, 0)
+  }
+
+  const totalChallengeCost = ((challengeTotal || 0) + reviewerTotal) || 0
+  const formattedTotalChallengeCost = Number.isFinite(totalChallengeCost) ? totalChallengeCost.toFixed(2) : '0.00'
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
         <label htmlFor='challengeTotal'>Estimated Challenge Total :</label>
       </div>
       <div className={cn(styles.field, styles.col2)}>
-        <span>$ {challengeTotal || 0}</span>
+        <span>$ {formattedTotalChallengeCost}</span>
       </div>
     </div>
   )

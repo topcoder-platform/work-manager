@@ -6,9 +6,9 @@ import { toastr } from 'react-redux-toastr'
  * @param {string} message
  */
 export const toastFailure = (title, message) => {
-  setImmediate(() => {
+  setTimeout(() => {
     toastr.error(title, message)
-  })
+  }, 0)
 }
 
 /**
@@ -17,7 +17,7 @@ export const toastFailure = (title, message) => {
  * @param {string} message
  */
 export const toastSuccess = (title, message) => {
-  setImmediate(() => {
+  setTimeout(() => {
     toastr.success(title, message)
-  })
+  }, 0)
 }

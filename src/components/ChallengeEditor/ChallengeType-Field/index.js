@@ -39,7 +39,7 @@ ChallengeTypeField.defaultProps = {
 }
 
 ChallengeTypeField.propTypes = {
-  types: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+  types: PropTypes.arrayOf(PropTypes.string).isRequired,
   onUpdateSelect: PropTypes.func.isRequired,
   challenge: PropTypes.shape().isRequired,
   disabled: PropTypes.bool

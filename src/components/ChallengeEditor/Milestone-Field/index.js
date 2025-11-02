@@ -38,7 +38,6 @@ MilestoneField.defaultProps = {
 
 MilestoneField.propTypes = {
   // currentType: PropTypes.string.isRequired,
-  track: PropTypes.string,
   milestones: PropTypes.arrayOf(PropTypes.shape()),
   onUpdateSelect: PropTypes.func.isRequired,
   disabled: PropTypes.bool,
