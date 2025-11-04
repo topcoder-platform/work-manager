@@ -26,7 +26,8 @@ import {
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
   QA_TRACK_ID, DESIGN_CHALLENGE_TYPES, ROUND_TYPES,
   MULTI_ROUND_CHALLENGE_TEMPLATE_ID, DS_TRACK_ID,
-  CHALLENGE_STATUS
+  CHALLENGE_STATUS,
+  SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS
 } from '../../config/constants'
 import {
   getDomainTypes,
@@ -867,14 +868,20 @@ class ChallengeEditor extends Component {
       return false
     }
 
+    const billingAccountId = _.get(challenge, 'billing.billingAccountId')
+    const normalizedBillingAccountId = _.isNil(billingAccountId) ? null : String(billingAccountId)
+    const isSkillsRequired = normalizedBillingAccountId ? !SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS.includes(normalizedBillingAccountId) : true
+
     const requiredFields = [
       'trackId',
       'typeId',
       'name',
       'description',
-      'skills',
       'prizeSets'
     ]
+    if (isSkillsRequired) {
+      requiredFields.push('skills')
+    }
     let isRequiredMissing = false
 
     requiredFields.forEach((key) => {
