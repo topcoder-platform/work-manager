@@ -4,7 +4,7 @@ import Select from '../../Select'
 import { searchSkills } from '../../../services/skills'
 import cn from 'classnames'
 import styles from './styles.module.scss'
-import { AUTOCOMPLETE_DEBOUNCE_TIME_MS } from '../../../config/constants'
+import { AUTOCOMPLETE_DEBOUNCE_TIME_MS, SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS } from '../../../config/constants'
 import _ from 'lodash'
 
 const fetchSkills = _.debounce((inputValue, callback) => {
@@ -27,12 +27,15 @@ const SkillsField = ({ readOnly, challenge, onUpdateSkills }) => {
     value: skill.id
   })), [challenge.skills])
   const existingSkills = useMemo(() => selectedSkills.map(item => item.label).join(','), [selectedSkills])
+  const billingAccountId = _.get(challenge, 'billing.billingAccountId')
+  const normalizedBillingAccountId = _.isNil(billingAccountId) ? null : String(billingAccountId)
+  const skillsRequired = normalizedBillingAccountId ? !SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS.includes(normalizedBillingAccountId) : true
 
   return (
     <>
       <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)}>
-          <label htmlFor='keywords'>Skills {!readOnly && (<span>*</span>)} :</label>
+          <label htmlFor='keywords'>Skills {!readOnly && skillsRequired && (<span>*</span>)} :</label>
         </div>
         <div className={cn(styles.field, styles.col2)}>
           <input type='hidden' />
@@ -58,7 +61,7 @@ const SkillsField = ({ readOnly, challenge, onUpdateSkills }) => {
         </div>
       </div>
 
-      { !readOnly && challenge.submitTriggered && (!selectedSkills || !selectedSkills.length) && <div className={styles.row}>
+      { !readOnly && skillsRequired && challenge.submitTriggered && (!selectedSkills || !selectedSkills.length) && <div className={styles.row}>
         <div className={cn(styles.field, styles.col1)} />
         <div className={cn(styles.field, styles.col2, styles.error)}>
           Select at least one skill

@@ -40,6 +40,7 @@ export const {
 
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
 export const PROJECTS_API_URL = process.env.PROJECTS_API_URL || process.env.PROJECT_API_URL
+export const SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS = ['80000062']
 
 /**
  * Filepicker config
