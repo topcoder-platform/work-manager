@@ -20,6 +20,47 @@ const ResourceToPhaseNameMap = {
   'Checkpoint Screener': 'Checkpoint Screening'
 }
 
+// Keep track filters aligned with the scorecards API regardless of legacy values
+const SCORECARD_TRACK_ALIASES = {
+  DEVELOP: 'DEVELOPMENT',
+  DEV: 'DEVELOPMENT',
+  QA: 'QUALITY_ASSURANCE',
+  QUALITY_ASSURANCE: 'QUALITY_ASSURANCE',
+  QUALITYASSURANCE: 'QUALITY_ASSURANCE',
+  DES: 'DESIGN',
+  DESIGN: 'DESIGN',
+  DS: 'DATA_SCIENCE',
+  DATA_SCIENCE: 'DATA_SCIENCE',
+  DATASCIENCE: 'DATA_SCIENCE'
+}
+
+const normalizeTrackForScorecards = (challenge, metadata) => {
+  const normalize = (value) => {
+    if (!value) return null
+    const normalized = value.toString().trim().toUpperCase().replace(/\s+/g, '_')
+    return SCORECARD_TRACK_ALIASES[normalized] || normalized
+  }
+
+  if (!challenge) return null
+
+  if (challenge.trackId && metadata && Array.isArray(metadata.challengeTracks)) {
+    const trackFromMetadata = metadata.challengeTracks.find(t => t.id === challenge.trackId)
+    if (trackFromMetadata) {
+      return normalize(trackFromMetadata.track || trackFromMetadata.name || trackFromMetadata.abbreviation)
+    }
+  }
+
+  const { track } = challenge
+  if (typeof track === 'string') {
+    return normalize(track)
+  }
+  if (track && typeof track === 'object') {
+    return normalize(track.track || track.name || track.abbreviation)
+  }
+
+  return null
+}
+
 class ChallengeReviewerField extends Component {
   constructor (props) {
     super(props)
@@ -327,19 +368,16 @@ class ChallengeReviewerField extends Component {
   }
 
   loadScorecards () {
-    const { challenge, loadScorecards } = this.props
+    const { challenge, loadScorecards, metadata } = this.props
 
     const filters = {
       status: 'ACTIVE'
     }
 
     // Add challenge track if available
-    if (challenge.track) {
-      if (typeof challenge.track === 'string') {
-        filters.challengeTrack = challenge.track.toUpperCase().replace(' ', '_')
-      } else if (challenge.track.track) {
-        filters.challengeTrack = challenge.track.track
-      }
+    const normalizedTrack = normalizeTrackForScorecards(challenge, metadata)
+    if (normalizedTrack) {
+      filters.challengeTrack = normalizedTrack
     }
 
     // Add challenge type if available
@@ -1013,7 +1051,8 @@ ChallengeReviewerField.propTypes = {
     scorecards: PropTypes.array,
     defaultReviewers: PropTypes.array,
     workflows: PropTypes.array,
-    resourceRoles: PropTypes.array
+    resourceRoles: PropTypes.array,
+    challengeTracks: PropTypes.array
   }),
   isLoading: PropTypes.bool,
   readOnly: PropTypes.bool,
