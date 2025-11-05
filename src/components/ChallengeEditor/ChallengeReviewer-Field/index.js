@@ -760,57 +760,57 @@ class ChallengeReviewerField extends Component {
                 onChange={(e) => this.updateReviewer(index, 'phaseId', e.target.value)}
               >
                 <option value=''>Select Phase</option>
-              {challenge.phases && challenge.phases
-                .filter(phase => {
-                  const rawName = phase.name ? phase.name : ''
-                  const phaseName = rawName.toLowerCase()
-                  const norm = phaseName.replace(/[-\s]/g, '')
-                  const isReviewPhase = phaseName.includes('review')
-                  const isSubmissionPhase = phaseName.includes('submission')
-                  const isScreeningPhase = norm === 'screening' || norm === 'checkpointscreening'
-                  const isApprovalPhase = norm === 'approval'
-                  const isPostMortemPhase = norm === 'postmortem'
-                  const isCurrentlySelected = reviewer.phaseId && ((phase.id === reviewer.phaseId) || (phase.phaseId === reviewer.phaseId)) && !isSubmissionPhase
+                {challenge.phases && challenge.phases
+                  .filter(phase => {
+                    const rawName = phase.name ? phase.name : ''
+                    const phaseName = rawName.toLowerCase()
+                    const norm = phaseName.replace(/[-\s]/g, '')
+                    const isReviewPhase = phaseName.includes('review')
+                    const isSubmissionPhase = phaseName.includes('submission')
+                    const isScreeningPhase = norm === 'screening' || norm === 'checkpointscreening'
+                    const isApprovalPhase = norm === 'approval'
+                    const isPostMortemPhase = norm === 'postmortem'
+                    const isCurrentlySelected = reviewer.phaseId && ((phase.id === reviewer.phaseId) || (phase.phaseId === reviewer.phaseId)) && !isSubmissionPhase
 
-                  // Collect phases already assigned to other reviewers (excluding current reviewer)
-                  const assignedPhaseIds = new Set(
-                    (challenge.reviewers || [])
-                      .filter((r, i) => i !== index)
-                      .map(r => r.phaseId)
-                      .filter(id => id !== undefined && id !== null)
-                  )
+                    // Collect phases already assigned to other reviewers (excluding current reviewer)
+                    const assignedPhaseIds = new Set(
+                      (challenge.reviewers || [])
+                        .filter((r, i) => i !== index)
+                        .map(r => r.phaseId)
+                        .filter(id => id !== undefined && id !== null)
+                    )
 
-                  // Exclude phases already assigned to other reviewers, except the currently selected phase
-                  if (assignedPhaseIds.has(phase.phaseId || phase.id) && !isCurrentlySelected) {
-                    return false
-                  }
+                    // Exclude phases already assigned to other reviewers, except the currently selected phase
+                    if (assignedPhaseIds.has(phase.phaseId || phase.id) && !isCurrentlySelected) {
+                      return false
+                    }
 
-                  // For AI reviewers, allow review, submission, and other required phases
-                  // For member reviewers, allow review and other required phases
-                  if (this.isAIReviewer(reviewer)) {
-                    return (
-                      isReviewPhase ||
+                    // For AI reviewers, allow review, submission, and other required phases
+                    // For member reviewers, allow review and other required phases
+                    if (this.isAIReviewer(reviewer)) {
+                      return (
+                        isReviewPhase ||
                       isSubmissionPhase ||
                       isScreeningPhase ||
                       isApprovalPhase ||
                       isPostMortemPhase ||
                       isCurrentlySelected
-                    )
-                  } else {
-                    return (
-                      isReviewPhase ||
+                      )
+                    } else {
+                      return (
+                        isReviewPhase ||
                       isScreeningPhase ||
                       isApprovalPhase ||
                       isPostMortemPhase ||
                       isCurrentlySelected
-                    )
-                  }
-                })
-                .map(phase => (
-                  <option key={phase.id || phase.phaseId} value={phase.phaseId || phase.id}>
-                    {phase.name || `Phase ${phase.phaseId || phase.id}`}
-                  </option>
-                ))}
+                      )
+                    }
+                  })
+                  .map(phase => (
+                    <option key={phase.id || phase.phaseId} value={phase.phaseId || phase.id}>
+                      {phase.name || `Phase ${phase.phaseId || phase.id}`}
+                    </option>
+                  ))}
               </select>
             )}
             {!readOnly && challenge.submitTriggered && validationErrors.phaseId && (
