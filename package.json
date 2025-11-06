@@ -114,7 +114,7 @@
     "sass-loader": "^13.3.2",
     "standard": "^12.0.1",
     "style-loader": "^3.3.4",
-    "tc-auth-lib": "topcoder-platform/tc-auth-lib#1.0.4",
+    "tc-auth-lib": "topcoder-platform/tc-auth-lib#master",
     "terser": "^5.31.0",
     "terser-webpack-plugin": "^5.3.10",
     "topcoder-healthcheck-dropin": "^1.0.3",
