@@ -86,11 +86,8 @@ class Routes extends React.Component {
     getFreshToken().then((token) => {
       this.props.saveToken(token)
     }).catch((error) => {
-      if (process.env.NODE_ENV === 'development') {
-        console.error(error)
-      } else {
-        console.error('An unexpected error occurred while getting auth token')
-      }
+      const errorMessage = error && error.message ? error.message : error
+      console.error('An unexpected error occurred while getting auth token', errorMessage)
       const redirectBackToUrl = encodeURIComponent(window.location.origin + this.props.location.pathname + this.props.location.search)
       window.location = `${ACCOUNTS_APP_LOGIN_URL}?retUrl=${redirectBackToUrl}`
     })
