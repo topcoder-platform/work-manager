@@ -1314,9 +1314,21 @@ class ChallengeEditor extends Component {
     const { updateChallengeDetails, assignedMemberDetails: oldAssignedMember, projectDetail, challengeDetails } = this.props
     if (this.state.isSaving) return
     this.setState({ isSaving: true }, async () => {
-      const challenge = this.collectChallengeData(status)
+      let challenge = this.collectChallengeData(status)
       let newChallenge = _.cloneDeep(this.state.challenge)
       newChallenge.status = status
+
+      if (challenge.reviewers && Array.isArray(challenge.reviewers)) {
+        challenge.reviewers = challenge.reviewers.map(reviewer => {
+          if (reviewer.isMemberReview === false) {
+            const copy = { ...reviewer }
+            delete copy.type
+            return copy
+          }
+          return reviewer
+        })
+      }
+
       try {
         const challengeId = this.getCurrentChallengeId()
         // state can have updated assigned member (in cases where user changes assignments without refreshing the page)

@@ -780,8 +780,9 @@ class ChallengeReviewerField extends Component {
                         .filter(id => id !== undefined && id !== null)
                     )
 
-                    // Exclude phases already assigned to other reviewers, except the currently selected phase
-                    if (assignedPhaseIds.has(phase.phaseId || phase.id) && !isCurrentlySelected) {
+                    // If current reviewer is a member review, allow selecting phases even if already assigned to others.
+                    // Only exclude assigned phases for ai reviewers.
+                    if (!!reviewer.isMemberReview && assignedPhaseIds.has(phase.phaseId || phase.id) && !isCurrentlySelected) {
                       return false
                     }
 
