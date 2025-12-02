@@ -772,24 +772,38 @@ class ChallengeReviewerField extends Component {
                     const isPostMortemPhase = norm === 'postmortem'
                     const isCurrentlySelected = reviewer.phaseId && ((phase.id === reviewer.phaseId) || (phase.phaseId === reviewer.phaseId)) && !isSubmissionPhase
 
+                    // Collect phases already assigned to other reviewers (excluding current reviewer)
+                    const assignedPhaseIds = new Set(
+                      (challenge.reviewers || [])
+                        .filter((r, i) => i !== index)
+                        .map(r => r.phaseId)
+                        .filter(id => id !== undefined && id !== null)
+                    )
+
+                    // If current reviewer is a member review, allow selecting phases even if already assigned to others.
+                    // Only exclude assigned phases for ai reviewers.
+                    if (!!reviewer.isMemberReview && assignedPhaseIds.has(phase.phaseId || phase.id) && !isCurrentlySelected) {
+                      return false
+                    }
+
                     // For AI reviewers, allow review, submission, and other required phases
                     // For member reviewers, allow review and other required phases
                     if (this.isAIReviewer(reviewer)) {
                       return (
                         isReviewPhase ||
-                        isSubmissionPhase ||
-                        isScreeningPhase ||
-                        isApprovalPhase ||
-                        isPostMortemPhase ||
-                        isCurrentlySelected
+                      isSubmissionPhase ||
+                      isScreeningPhase ||
+                      isApprovalPhase ||
+                      isPostMortemPhase ||
+                      isCurrentlySelected
                       )
                     } else {
                       return (
                         isReviewPhase ||
-                        isScreeningPhase ||
-                        isApprovalPhase ||
-                        isPostMortemPhase ||
-                        isCurrentlySelected
+                      isScreeningPhase ||
+                      isApprovalPhase ||
+                      isPostMortemPhase ||
+                      isCurrentlySelected
                       )
                     }
                   })
