@@ -467,7 +467,6 @@ class ChallengeReviewerField extends Component {
 
         if (possibleAlternatePhase) {
           defaultPhaseId = possibleAlternatePhase.phaseId || possibleAlternatePhase.id
-          // clear any prior transient error
           if (this.state.error) this.setState({ error: null })
         } else {
           const phase = (challenge.phases || []).find(p => (p.id === defaultPhaseId) || (p.phaseId === defaultPhaseId))
