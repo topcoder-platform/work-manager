@@ -444,6 +444,42 @@ class ChallengeReviewerField extends Component {
 
     const isAIReviewer = this.isAIReviewer(defaultTrackReviewer)
 
+    // Prevent adding a second manual (member) reviewer for the same phase.
+    // If the default phase already has a manual reviewer, attempt to find another
+    // suitable review phase that does not yet have a manual reviewer and use it.
+    if (!isAIReviewer && defaultPhaseId) {
+      const existsManualForPhase = currentReviewers.some(r => (r.isMemberReview !== false) && (r.phaseId === defaultPhaseId))
+      if (existsManualForPhase) {
+        const possibleAlternatePhase = (challenge.phases || []).find(p => {
+          const rawName = p.name ? p.name : ''
+          const phaseName = rawName.toLowerCase()
+          const phaseWithoutHyphens = phaseName.replace(/[-\s]/g, '')
+          const acceptedPhases = ['review', 'screening', 'checkpointscreening', 'approval', 'postmortem']
+          const isSubmissionPhase = phaseName.includes('submission')
+          const acceptable = acceptedPhases.includes(phaseWithoutHyphens) && !isSubmissionPhase
+
+          if (!acceptable) return false
+
+          const phaseId = p.phaseId || p.id
+          const used = currentReviewers.some(r => (r.isMemberReview !== false) && (r.phaseId === phaseId))
+          return !used
+        })
+
+        if (possibleAlternatePhase) {
+          defaultPhaseId = possibleAlternatePhase.phaseId || possibleAlternatePhase.id
+          // clear any prior transient error
+          if (this.state.error) this.setState({ error: null })
+        } else {
+          const phase = (challenge.phases || []).find(p => (p.id === defaultPhaseId) || (p.phaseId === defaultPhaseId))
+          const phaseName = phase ? (phase.name || defaultPhaseId) : defaultPhaseId
+          this.setState({
+            error: `A manual reviewer configuration already exists for phase '${phaseName}'`
+          })
+          return
+        }
+      }
+    }
+
     // For AI reviewers, get scorecardId from the workflow if available
     let scorecardId = ''
     if (isAIReviewer) {
@@ -482,6 +518,11 @@ class ChallengeReviewerField extends Component {
       newReviewer.memberReviewerCount = (defaultReviewer && defaultReviewer.memberReviewerCount) || 1
     }
 
+    // Clear any prior transient error when add succeeds
+    if (this.state.error) {
+      this.setState({ error: null })
+    }
+
     const updatedReviewers = currentReviewers.concat([newReviewer])
     onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
   }
@@ -513,6 +554,21 @@ class ChallengeReviewerField extends Component {
 
     // Special handling for phase and count changes
     if (field === 'phaseId') {
+      // Before changing phase, ensure we're not creating a duplicate manual reviewer for the target phase
+      const targetPhaseId = value
+      const isCurrentMember = (updatedReviewers[index] && (updatedReviewers[index].isMemberReview !== false))
+      if (isCurrentMember) {
+        const conflict = (currentReviewers || []).some((r, i) => i !== index && (r.isMemberReview !== false) && (r.phaseId === targetPhaseId))
+        if (conflict) {
+          const phase = (challenge.phases || []).find(p => (p.id === targetPhaseId) || (p.phaseId === targetPhaseId))
+          const phaseName = phase ? (phase.name || targetPhaseId) : targetPhaseId
+          this.setState({
+            error: `Cannot move manual reviewer to phase '${phaseName}' because a manual reviewer configuration already exists for that phase.`
+          })
+          return
+        }
+      }
+
       this.handlePhaseChangeWithReassign(index, value)
 
       // update payment based on default reviewer
@@ -632,6 +688,21 @@ class ChallengeReviewerField extends Component {
                   const currentReviewers = challenge.reviewers || []
                   const updatedReviewers = currentReviewers.slice()
 
+                  // Block switching an AI reviewer to a member reviewer if another manual reviewer exists for same phase
+                  if (!isAI) {
+                    const existingReviewer = currentReviewers[index] || {}
+                    const phaseId = existingReviewer.phaseId
+                    const conflict = currentReviewers.some((r, i) => i !== index && (r.isMemberReview !== false) && (r.phaseId === phaseId))
+                    if (conflict) {
+                      const phase = (challenge.phases || []).find(p => (p.id === phaseId) || (p.phaseId === phaseId))
+                      const phaseName = phase ? (phase.name || phaseId) : phaseId
+                      this.setState({
+                        error: `Cannot switch to Member Reviewer: a manual reviewer configuration already exists for phase '${phaseName}'. Increase "Number of Reviewers" on the existing configuration instead.`
+                      })
+                      return
+                    }
+                  }
+
                   // Update reviewer type by setting/clearing aiWorkflowId
                   const currentReviewer = updatedReviewers[index]
 
@@ -672,6 +743,11 @@ class ChallengeReviewerField extends Component {
                   // If switching to AI, clear any assigned members for this reviewer
                   if (isAI) {
                     this.handleToggleShouldOpen(index, true)
+                  }
+
+                  // Clear any transient error when successful change is applied
+                  if (this.state.error) {
+                    this.setState({ error: null })
                   }
 
                   onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
@@ -772,10 +848,10 @@ class ChallengeReviewerField extends Component {
                     const isPostMortemPhase = norm === 'postmortem'
                     const isCurrentlySelected = reviewer.phaseId && ((phase.id === reviewer.phaseId) || (phase.phaseId === reviewer.phaseId)) && !isSubmissionPhase
 
-                    // Collect phases already assigned to other reviewers (excluding current reviewer)
+                    // Collect phases already assigned to other manual (member) reviewers (excluding current reviewer)
                     const assignedPhaseIds = new Set(
                       (challenge.reviewers || [])
-                        .filter((r, i) => i !== index)
+                        .filter((r, i) => i !== index && (r.isMemberReview !== false))
                         .map(r => r.phaseId)
                         .filter(id => id !== undefined && id !== null)
                     )
@@ -1049,6 +1125,11 @@ class ChallengeReviewerField extends Component {
                   type='info'
                   onClick={this.addReviewer}
                 />
+              </div>
+            )}
+            {error && !isLoading && (
+              <div style={{ marginTop: '12px' }} className={styles.error}>
+                {error}
               </div>
             )}
           </div>
