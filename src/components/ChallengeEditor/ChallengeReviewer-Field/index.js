@@ -1127,7 +1127,7 @@ class ChallengeReviewerField extends Component {
               </div>
             )}
             {error && !isLoading && (
-              <div style={{ marginTop: '12px' }} className={styles.error}>
+              <div className={cn(styles.fieldError, styles.error)}>
                 {error}
               </div>
             )}
