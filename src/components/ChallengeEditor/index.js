@@ -926,7 +926,7 @@ class ChallengeEditor extends Component {
       // Additional validation: block saving draft if there are duplicate manual reviewer configs per phase
       const duplicates = this.getDuplicateManualReviewerPhases()
       if (duplicates && duplicates.length > 0) {
-        const message = `Duplicate manual reviewer configuration found for phase${duplicates.length > 1 ? 's' : ''}: ${duplicates.join(', ')}. Only one manual reviewer configuration is allowed per phase.`
+        const message = `Duplicate manual reviewer configuration found for phase(s): ${duplicates.join(', ')}. Only one manual reviewer configuration is allowed per phase.`
         this.setState({ hasValidationErrors: true, error: message })
         return false
       }
