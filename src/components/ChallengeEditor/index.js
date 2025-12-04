@@ -906,7 +906,6 @@ class ChallengeEditor extends Component {
 
     const counts = {}
     reviewers.forEach(r => {
-      // count only manual (member) reviewers; AI reviewers have isMemberReview === false
       if (r && (r.isMemberReview !== false) && r.phaseId) {
         const pid = String(r.phaseId)
         counts[pid] = (counts[pid] || 0) + 1
@@ -923,18 +922,15 @@ class ChallengeEditor extends Component {
   }
 
   validateChallenge () {
-    // First run the existing validations
     if (this.isValidChallenge()) {
       // Additional validation: block saving draft if there are duplicate manual reviewer configs per phase
       const duplicates = this.getDuplicateManualReviewerPhases()
       if (duplicates && duplicates.length > 0) {
         const message = `Duplicate manual reviewer configuration found for phase${duplicates.length > 1 ? 's' : ''}: ${duplicates.join(', ')}. Only one manual reviewer configuration is allowed per phase.`
-        // Surface the message to the top-level error so the UI shows it and prevent saving
         this.setState({ hasValidationErrors: true, error: message })
         return false
       }
 
-      // clear any previous error related to this validation
       if (this.state.error) {
         this.setState({ error: null })
       }
@@ -942,7 +938,6 @@ class ChallengeEditor extends Component {
       return true
     }
 
-    // If base validation failed, mark submitTriggered so fields show their validation errors
     this.setState(prevState => ({
       ...prevState,
       challenge: {
