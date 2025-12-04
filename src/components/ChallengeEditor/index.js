@@ -897,11 +897,47 @@ class ChallengeEditor extends Component {
     return !(isRequiredMissing || _.isEmpty(this.state.currentTemplate))
   }
 
+  // Return array of phase names that have more than one manual (member) reviewer configured.
+  // If none, returns empty array.
+  getDuplicateManualReviewerPhases () {
+    const { challenge } = this.state
+    const reviewers = (challenge && challenge.reviewers) || []
+    const phases = (challenge && challenge.phases) || []
+
+    const counts = {}
+    reviewers.forEach(r => {
+      if (r && (r.isMemberReview !== false) && r.phaseId) {
+        const pid = String(r.phaseId)
+        counts[pid] = (counts[pid] || 0) + 1
+      }
+    })
+
+    const duplicatedPhaseIds = Object.keys(counts).filter(pid => counts[pid] > 1)
+    if (duplicatedPhaseIds.length === 0) return []
+
+    return duplicatedPhaseIds.map(pid => {
+      const p = phases.find(ph => String(ph.phaseId || ph.id) === pid)
+      return p ? (p.name || pid) : pid
+    })
+  }
+
   validateChallenge () {
     if (this.isValidChallenge()) {
+      // Additional validation: block saving draft if there are duplicate manual reviewer configs per phase
+      const duplicates = this.getDuplicateManualReviewerPhases()
+      if (duplicates && duplicates.length > 0) {
+        const message = `Duplicate manual reviewer configuration found for phase(s): ${duplicates.join(', ')}. Only one manual reviewer configuration is allowed per phase.`
+        this.setState({ hasValidationErrors: true, error: message })
+        return false
+      }
+
+      if (this.state.error) {
+        this.setState({ error: null })
+      }
       this.setState({ hasValidationErrors: false })
       return true
     }
+
     this.setState(prevState => ({
       ...prevState,
       challenge: {

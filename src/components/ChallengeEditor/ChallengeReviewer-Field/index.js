@@ -444,41 +444,6 @@ class ChallengeReviewerField extends Component {
 
     const isAIReviewer = this.isAIReviewer(defaultTrackReviewer)
 
-    // Prevent adding a second manual (member) reviewer for the same phase.
-    // If the default phase already has a manual reviewer, attempt to find another
-    // suitable review phase that does not yet have a manual reviewer and use it.
-    if (!isAIReviewer && defaultPhaseId) {
-      const existsManualForPhase = currentReviewers.some(r => (r.isMemberReview !== false) && (r.phaseId === defaultPhaseId))
-      if (existsManualForPhase) {
-        const possibleAlternatePhase = (challenge.phases || []).find(p => {
-          const rawName = p.name ? p.name : ''
-          const phaseName = rawName.toLowerCase()
-          const phaseWithoutHyphens = phaseName.replace(/[-\s]/g, '')
-          const acceptedPhases = ['review', 'screening', 'checkpointscreening', 'approval', 'postmortem']
-          const isSubmissionPhase = phaseName.includes('submission')
-          const acceptable = acceptedPhases.includes(phaseWithoutHyphens) && !isSubmissionPhase
-
-          if (!acceptable) return false
-
-          const phaseId = p.phaseId || p.id
-          const used = currentReviewers.some(r => (r.isMemberReview !== false) && (r.phaseId === phaseId))
-          return !used
-        })
-
-        if (possibleAlternatePhase) {
-          defaultPhaseId = possibleAlternatePhase.phaseId || possibleAlternatePhase.id
-          if (this.state.error) this.setState({ error: null })
-        } else {
-          const phase = (challenge.phases || []).find(p => (p.id === defaultPhaseId) || (p.phaseId === defaultPhaseId))
-          const phaseName = phase ? (phase.name || defaultPhaseId) : defaultPhaseId
-          this.setState({
-            error: `A manual reviewer configuration already exists for phase '${phaseName}'`
-          })
-          return
-        }
-      }
-    }
-
     // For AI reviewers, get scorecardId from the workflow if available
     let scorecardId = ''
     if (isAIReviewer) {
