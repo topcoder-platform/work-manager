@@ -1856,7 +1856,7 @@ class ChallengeEditor extends Component {
                 </>
               )
             }
-              <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
+            <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             {
               dashboardToggle
             }
