@@ -25,7 +25,7 @@ import {
   MILESTONE_STATUS,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
   QA_TRACK_ID, DESIGN_CHALLENGE_TYPES, ROUND_TYPES,
-  MULTI_ROUND_CHALLENGE_TEMPLATE_ID, DS_TRACK_ID,
+  MULTI_ROUND_CHALLENGE_TEMPLATE_ID,
   CHALLENGE_STATUS,
   SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS
 } from '../../config/constants'
@@ -148,6 +148,7 @@ class ChallengeEditor extends Component {
     this.onSaveChallenge = this.onSaveChallenge.bind(this)
     this.getCurrentTemplate = this.getCurrentTemplate.bind(this)
     this.onUpdateMetadata = this.onUpdateMetadata.bind(this)
+    this.shouldShowDashboardSetting = this.shouldShowDashboardSetting.bind(this)
     this.getTemplatePhases = this.getTemplatePhases.bind(this)
     this.getAvailableTimelineTemplates = this.getAvailableTimelineTemplates.bind(this)
     this.autoUpdateChallengeThrottled = _.throttle(this.validateAndAutoUpdateChallenge.bind(this), 3000) // 3s
@@ -670,6 +671,20 @@ class ChallengeEditor extends Component {
   }
 
   /**
+   * Determines when the data dashboard toggle should be shown.
+   *
+   * @param {Object} challenge the challenge data to evaluate
+   */
+  shouldShowDashboardSetting (challenge = {}) {
+    const typeId = _.get(challenge, 'typeId')
+    const metadata = _.get(challenge, 'metadata', [])
+    const hasDashboardMetadata = _.some(metadata, { name: 'show_data_dashboard' })
+    const isMarathonMatch = typeId === MARATHON_TYPE_ID
+
+    return isMarathonMatch || hasDashboardMetadata
+  }
+
+  /**
    * Remove Phase from challenge Phases list
    * @param index
    */
@@ -897,11 +912,47 @@ class ChallengeEditor extends Component {
     return !(isRequiredMissing || _.isEmpty(this.state.currentTemplate))
   }
 
+  // Return array of phase names that have more than one manual (member) reviewer configured.
+  // If none, returns empty array.
+  getDuplicateManualReviewerPhases () {
+    const { challenge } = this.state
+    const reviewers = (challenge && challenge.reviewers) || []
+    const phases = (challenge && challenge.phases) || []
+
+    const counts = {}
+    reviewers.forEach(r => {
+      if (r && (r.isMemberReview !== false) && r.phaseId) {
+        const pid = String(r.phaseId)
+        counts[pid] = (counts[pid] || 0) + 1
+      }
+    })
+
+    const duplicatedPhaseIds = Object.keys(counts).filter(pid => counts[pid] > 1)
+    if (duplicatedPhaseIds.length === 0) return []
+
+    return duplicatedPhaseIds.map(pid => {
+      const p = phases.find(ph => String(ph.phaseId || ph.id) === pid)
+      return p ? (p.name || pid) : pid
+    })
+  }
+
   validateChallenge () {
     if (this.isValidChallenge()) {
+      // Additional validation: block saving draft if there are duplicate manual reviewer configs per phase
+      const duplicates = this.getDuplicateManualReviewerPhases()
+      if (duplicates && duplicates.length > 0) {
+        const message = `Duplicate manual reviewer configuration found for phase(s): ${duplicates.join(', ')}. Only one manual reviewer configuration is allowed per phase.`
+        this.setState({ hasValidationErrors: true, error: message })
+        return false
+      }
+
+      if (this.state.error) {
+        this.setState({ error: null })
+      }
       this.setState({ hasValidationErrors: false })
       return true
     }
+
     this.setState(prevState => ({
       ...prevState,
       challenge: {
@@ -1095,11 +1146,7 @@ class ChallengeEditor extends Component {
     const { challenge: { name, trackId, typeId, milestoneId, roundType, challengeType, metadata: challengeMetadata } } = this.state
     const { timelineTemplates } = metadata
     const isDesignChallenge = trackId === DES_TRACK_ID
-    const isDataScience = trackId === DS_TRACK_ID
-    const isChallengeType = typeId === CHALLENGE_TYPE_ID
-    const isDevChallenge = trackId === DEV_TRACK_ID
-    const isMM = typeId === MARATHON_TYPE_ID
-    const showDashBoard = (isDataScience && isChallengeType) || (isDevChallenge && isMM) || (isDevChallenge && isChallengeType)
+    const showDashBoard = this.shouldShowDashboardSetting({ trackId, typeId, metadata: challengeMetadata })
 
     // indicate that creating process has started
     this.setState({ isSaving: true })
@@ -1754,17 +1801,32 @@ class ChallengeEditor extends Component {
     const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
     const copilotResources = metadata.members || challengeResources
     const isDesignChallenge = challenge.trackId === DES_TRACK_ID
-    const isDevChallenge = challenge.trackId === DEV_TRACK_ID
-    const isMM = challenge.typeId === MARATHON_TYPE_ID
     const isChallengeType = challenge.typeId === CHALLENGE_TYPE_ID
     const showRoundType = isDesignChallenge && isChallengeType
     const showCheckpointPrizes = challenge.timelineTemplateId === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
-    const showDashBoard = (challenge.trackId === DS_TRACK_ID && isChallengeType) || (isDevChallenge && isMM) || (isDevChallenge && isChallengeType)
     const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
+    const showDashBoard = this.shouldShowDashboardSetting(challenge)
 
     const useDashboard = useDashboardData
       ? (_.isString(useDashboardData.value) && useDashboardData.value === 'true') ||
       (_.isBoolean(useDashboardData.value) && useDashboardData.value) : false
+
+    const dashboardToggle = showDashBoard && (
+      <div className={styles.row}>
+        <div className={cn(styles.field, styles.col1)}>
+          <label htmlFor='isDashboardEnabled'>Use data dashboard :</label>
+        </div>
+        <div className={cn(styles.field, styles.col2)}>
+          <input
+            name='isDashboardEnabled'
+            type='checkbox'
+            id='isDashboardEnabled'
+            checked={useDashboard}
+            onChange={(e) => this.onUpdateMetadata('show_data_dashboard', e.target.checked)}
+          />
+        </div>
+      </div>
+    )
 
     const workTypes = getDomainTypes(challenge.trackId)
     let filteredTypes = metadata.challengeTypes.filter(type => workTypes.includes(type.abbreviation))
@@ -1794,22 +1856,7 @@ class ChallengeEditor extends Component {
             }
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
             {
-              showDashBoard && (
-                <div className={styles.row}>
-                  <div className={cn(styles.field, styles.col1)}>
-                    <label htmlFor='isDashboardEnabled'>Use data dashboard :</label>
-                  </div>
-                  <div className={cn(styles.field, styles.col2)}>
-                    <input
-                      name='isDashboardEnabled'
-                      type='checkbox'
-                      id='isDashboardEnabled'
-                      checked={useDashboard}
-                      onChange={(e) => this.onUpdateMetadata('show_data_dashboard', e.target.checked)}
-                    />
-                  </div>
-                </div>
-              )
+              dashboardToggle
             }
             {projectDetail.version === 'v4' && <MilestoneField milestones={activeProjectMilestones} onUpdateSelect={this.onUpdateSelect} projectId={projectDetail.id} selectedMilestoneId={selectedMilestoneId} />}
             {useTask && (<DiscussionField hasForum={hasForum} toggleForum={this.toggleForumOnCreate} />)}
@@ -1841,24 +1888,6 @@ class ChallengeEditor extends Component {
             </div>
 
             <ChallengeNameField challenge={challenge} onUpdateInput={this.onUpdateInput} />
-            {
-              showDashBoard && (
-                <div className={styles.row}>
-                  <div className={cn(styles.field, styles.col1)}>
-                    <label htmlFor='isDashboardEnabled'>Use data dashboard :</label>
-                  </div>
-                  <div className={cn(styles.field, styles.col2)}>
-                    <input
-                      name='isDashboardEnabled'
-                      type='checkbox'
-                      id='isDashboardEnabled'
-                      checked={useDashboard}
-                      onChange={(e) => this.onUpdateMetadata('show_data_dashboard', e.target.checked)}
-                    />
-                  </div>
-                </div>
-              )
-            }
             {isTask && (
               <AssignedMemberField
                 challenge={challenge}
@@ -1890,6 +1919,7 @@ class ChallengeEditor extends Component {
             </div>
             {isOpenAdvanceSettings && (
               <React.Fragment>
+                {dashboardToggle}
                 <NDAField challenge={challenge} toggleNdaRequire={this.toggleNdaRequire} />
                 {/* remove terms field and use default term */}
                 {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}

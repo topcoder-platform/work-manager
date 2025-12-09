@@ -23,6 +23,9 @@ import {
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
   MULTI_ROUND_CHALLENGE_TEMPLATE_ID,
   DS_TRACK_ID,
+  DEV_TRACK_ID,
+  MARATHON_TYPE_ID,
+  CHALLENGE_TYPE_ID,
   COMMUNITY_APP_URL
 } from '../../../config/constants'
 import PhaseInput from '../../PhaseInput'
@@ -94,11 +97,33 @@ const ChallengeView = ({
   const isTask = _.get(challenge, 'task.isTask', false)
   const phases = _.get(challenge, 'phases', [])
   const showCheckpointPrizes = _.get(challenge, 'timelineTemplateId') === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
-  const isDataScience = challenge.trackId === DS_TRACK_ID
   const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
   const useDashboard = useDashboardData
     ? (_.isString(useDashboardData.value) && useDashboardData.value === 'true') ||
     (_.isBoolean(useDashboardData.value) && useDashboardData.value) : false
+  const showDashBoard = (() => {
+    const isSupportedTrack = challenge.trackId === DS_TRACK_ID || challenge.trackId === DEV_TRACK_ID
+    const isSupportedType = challenge.typeId === MARATHON_TYPE_ID || challenge.typeId === CHALLENGE_TYPE_ID
+
+    return (isSupportedTrack && isSupportedType) || Boolean(useDashboardData)
+  })()
+  const dashboardToggle = showDashBoard && (
+    <div className={styles.row}>
+      <div className={styles.col}>
+        <label className={styles.fieldTitle} htmlFor='isDashboardEnabled'>Use data dashboard :</label>
+      </div>
+      <div className={styles.col}>
+        <input
+          name='isDashboardEnabled'
+          type='checkbox'
+          id='isDashboardEnabled'
+          checked={useDashboard}
+          readOnly
+          disabled
+        />
+      </div>
+    </div>
+  )
 
   return (
     <div className={styles.wrapper}>
@@ -138,13 +163,6 @@ const ChallengeView = ({
                 </a></span>
               </div>
             </div>
-            {isDataScience && (
-              <div className={cn(styles.row, styles.topRow)}>
-                <div className={styles.col}>
-                  <span><span className={styles.fieldTitle}>Show data dashboard:</span> {useDashboard ? 'Yes' : 'No'}</span>
-                </div>
-              </div>
-            )}
             {isTask &&
               <AssignedMemberField challenge={challenge} assignedMemberDetails={assignedMemberDetails} readOnly />}
             <CopilotField challenge={{
@@ -175,6 +193,7 @@ const ChallengeView = ({
             </div>
             {openAdvanceSettings && (
               <>
+                {dashboardToggle}
                 <NDAField beta challenge={challenge} readOnly />
                 <div className={cn(styles.row, styles.topRow)}>
                   <div className={styles.col}>

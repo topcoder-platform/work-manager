@@ -342,8 +342,8 @@ importers:
         specifier: ^3.3.4
         version: 3.3.4(webpack@5.102.0)
       tc-auth-lib:
-        specifier: topcoder-platform/tc-auth-lib#1.0.4
-        version: '@topcoder-platform/tc-auth-lib@https://codeload.github.com/topcoder-platform/tc-auth-lib/tar.gz/68fdc22464810c51b703a33e529cdbd6d09437de'
+        specifier: topcoder-platform/tc-auth-lib#v2.0
+        version: '@topcoder-platform/tc-auth-lib@https://codeload.github.com/topcoder-platform/tc-auth-lib/tar.gz/56996006ee5918b3e77fc5a8ab005ae738b4de12'
       terser:
         specifier: ^5.31.0
         version: 5.44.0
@@ -1517,6 +1517,10 @@ packages:
   '@tootallnate/once@1.1.2':
     resolution: {integrity: sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==}
     engines: {node: '>= 6'}
+
+  '@topcoder-platform/tc-auth-lib@https://codeload.github.com/topcoder-platform/tc-auth-lib/tar.gz/56996006ee5918b3e77fc5a8ab005ae738b4de12':
+    resolution: {tarball: https://codeload.github.com/topcoder-platform/tc-auth-lib/tar.gz/56996006ee5918b3e77fc5a8ab005ae738b4de12}
+    version: 1.0.2
 
   '@topcoder-platform/tc-auth-lib@https://codeload.github.com/topcoder-platform/tc-auth-lib/tar.gz/68fdc22464810c51b703a33e529cdbd6d09437de':
     resolution: {tarball: https://codeload.github.com/topcoder-platform/tc-auth-lib/tar.gz/68fdc22464810c51b703a33e529cdbd6d09437de}
@@ -10188,6 +10192,10 @@ snapshots:
   '@tokenizer/token@0.3.0': {}
 
   '@tootallnate/once@1.1.2': {}
+
+  '@topcoder-platform/tc-auth-lib@https://codeload.github.com/topcoder-platform/tc-auth-lib/tar.gz/56996006ee5918b3e77fc5a8ab005ae738b4de12':
+    dependencies:
+      lodash: 4.17.21
 
   '@topcoder-platform/tc-auth-lib@https://codeload.github.com/topcoder-platform/tc-auth-lib/tar.gz/68fdc22464810c51b703a33e529cdbd6d09437de':
     dependencies:
