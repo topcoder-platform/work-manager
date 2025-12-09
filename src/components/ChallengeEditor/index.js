@@ -676,14 +676,13 @@ class ChallengeEditor extends Component {
    * @param {Object} challenge the challenge data to evaluate
    */
   shouldShowDashboardSetting (challenge = {}) {
-    const trackId = _.get(challenge, 'trackId')
-    const typeId = _.get(challenge, 'typeId')
-    const metadata = _.get(challenge, 'metadata', [])
-    const hasDashboardMetadata = _.some(metadata, { name: 'show_data_dashboard' })
-    const isSupportedTrack = trackId === DS_TRACK_ID || trackId === DEV_TRACK_ID
-    const isSupportedType = typeId === MARATHON_TYPE_ID || typeId === CHALLENGE_TYPE_ID
+   const trackId = _.get(challenge, 'trackId')
+   const typeId = _.get(challenge, 'typeId')
+   const metadata = _.get(challenge, 'metadata', [])
+   const hasDashboardMetadata = _.some(metadata, { name: 'show_data_dashboard' })
+    const isMarathonMatch = typeId === MARATHON_TYPE_ID
 
-    return (isSupportedTrack && isSupportedType) || hasDashboardMetadata
+    return isMarathonMatch || hasDashboardMetadata
   }
 
   /**
