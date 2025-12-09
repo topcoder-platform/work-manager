@@ -25,7 +25,7 @@ import {
   MILESTONE_STATUS,
   PHASE_PRODUCT_CHALLENGE_ID_FIELD,
   QA_TRACK_ID, DESIGN_CHALLENGE_TYPES, ROUND_TYPES,
-  MULTI_ROUND_CHALLENGE_TEMPLATE_ID, DS_TRACK_ID,
+  MULTI_ROUND_CHALLENGE_TEMPLATE_ID,
   CHALLENGE_STATUS,
   SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS
 } from '../../config/constants'
@@ -676,10 +676,9 @@ class ChallengeEditor extends Component {
    * @param {Object} challenge the challenge data to evaluate
    */
   shouldShowDashboardSetting (challenge = {}) {
-   const trackId = _.get(challenge, 'trackId')
-   const typeId = _.get(challenge, 'typeId')
-   const metadata = _.get(challenge, 'metadata', [])
-   const hasDashboardMetadata = _.some(metadata, { name: 'show_data_dashboard' })
+    const typeId = _.get(challenge, 'typeId')
+    const metadata = _.get(challenge, 'metadata', [])
+    const hasDashboardMetadata = _.some(metadata, { name: 'show_data_dashboard' })
     const isMarathonMatch = typeId === MARATHON_TYPE_ID
 
     return isMarathonMatch || hasDashboardMetadata
