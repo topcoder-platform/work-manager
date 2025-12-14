@@ -18,6 +18,9 @@
   min-width: 50px;
   width: 50px;
   border-right-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: $tc-black;
 }
 
 .icon {
@@ -26,3 +29,6 @@
   color: $tc-black;
 }
 
+.pointsLabel {
+  @include roboto-medium;
+}

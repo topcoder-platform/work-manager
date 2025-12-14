@@ -328,7 +328,8 @@ export const VALIDATION_VALUE_TYPE = {
 }
 
 export const CHALLENGE_PRIZE_TYPE = {
-  USD: 'USD'
+  USD: 'USD',
+  POINT: 'POINT'
 }
 
 export const ALLOWED_USER_ROLES = [
