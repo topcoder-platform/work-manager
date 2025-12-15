@@ -23,7 +23,7 @@ const CheckpointPrizesField = ({ challenge, onUpdateOthers, readOnly }) => {
   const checkpointPrize = prizeSets.find(p => p.type === type) || { type: PRIZE_SETS_TYPE.CHECKPOINT_PRIZES, prizes: [], 'description': 'Checkpoint Prizes' }
   const number = _.get(checkpointPrize, 'prizes.length') || DEFAULT_CHECKPOINT_PRIZE_COUNT
   const amount = _.get(checkpointPrize, 'prizes.length') ? checkpointPrize.prizes[0].value : DEFAULT_CHECKPOINT_PRIZE
-  const prizeType = getPrizeType(prizeSets)
+  const prizeType = _.get(checkpointPrize, 'prizes[0].type') || getPrizeType(prizeSets)
 
   // update the check point prize with default values if it's not already defined
   if (_.get(checkpointPrize, 'prizes.length') === 0) {
