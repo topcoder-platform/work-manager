@@ -4,17 +4,27 @@ import PropTypes from 'prop-types'
 import styles from './ChallengeTotal-Field.module.scss'
 import cn from 'classnames'
 import { convertDollarToInteger } from '../../../util/input-check'
+import { CHALLENGE_PRIZE_TYPE, PRIZE_SETS_TYPE } from '../../../config/constants'
+import { getPrizeType } from '../../../util/prize'
 
 const ChallengeTotalField = ({ challenge }) => {
   let challengeTotal = null
-  if (challenge.prizeSets) {
-    challengeTotal = _.flatten(challenge.prizeSets.map(p => p.prizes))
+  const prizeSets = challenge.prizeSets || []
+  const prizeType = getPrizeType(prizeSets)
+  const prizeSetsForTotal = prizeType === CHALLENGE_PRIZE_TYPE.POINT
+    ? prizeSets.filter(p => p.type === PRIZE_SETS_TYPE.COPILOT_PAYMENT)
+    : prizeSets
+
+  if (prizeSetsForTotal.length) {
+    challengeTotal = _.flatten(prizeSetsForTotal.map(p => p.prizes))
       .map(p => p.value)
       .map(v => convertDollarToInteger(v, '$'))
       .reduce((prev, next) => prev + next, 0)
   }
-  const placementPrizeSet = challenge.prizeSets.find(set => set.type === 'PLACEMENT')
-  const firstPlacePrize = (placementPrizeSet && placementPrizeSet.prizes && placementPrizeSet.prizes[0] && placementPrizeSet.prizes[0].value) || 0
+  const placementPrizeSet = prizeSets.find(set => set.type === PRIZE_SETS_TYPE.CHALLENGE_PRIZES)
+  const firstPlacePrize = prizeType === CHALLENGE_PRIZE_TYPE.POINT
+    ? 0
+    : (placementPrizeSet && placementPrizeSet.prizes && placementPrizeSet.prizes[0] && placementPrizeSet.prizes[0].value) || 0
   let reviewerTotal = 0
   if (challenge.reviewers && Array.isArray(challenge.reviewers)) {
     reviewerTotal = challenge.reviewers
