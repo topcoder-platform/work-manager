@@ -3,7 +3,8 @@ import PropTypes from 'prop-types'
 import styles from './ReviewCost-Field.module.scss'
 import cn from 'classnames'
 import { validateValue } from '../../../util/input-check'
-import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE, CHALLENGE_PRIZE_TYPE } from '../../../config/constants'
+import { VALIDATION_VALUE_TYPE, PRIZE_SETS_TYPE } from '../../../config/constants'
+import { getPrizeType } from '../../../util/prize'
 
 class ReviewCostField extends React.Component {
   constructor (props) {
@@ -14,16 +15,20 @@ class ReviewCostField extends React.Component {
   onChange (e) {
     const { challenge, onUpdateOthers } = this.props
     const type = PRIZE_SETS_TYPE.REVIEWER_PAYMENT
-    const reviewCost = challenge.prizeSets.find(p => p.type === type) || { type, prizes: [{ type: CHALLENGE_PRIZE_TYPE.USD, value: 0 }] }
+    const prizeSets = challenge.prizeSets || []
+    const prizeType = getPrizeType(prizeSets)
+    const reviewCost = prizeSets.find(p => p.type === type) || { type, prizes: [{ type: prizeType, value: 0 }] }
     const value = validateValue(e.target.value, VALIDATION_VALUE_TYPE.INTEGER, '$')
-    reviewCost.prizes = [{ type: CHALLENGE_PRIZE_TYPE.USD, value }]
-    onUpdateOthers({ field: 'prizeSets', value: [...challenge.prizeSets.filter(p => p.type !== type), reviewCost] })
+    reviewCost.prizes = [{ type: prizeType, value }]
+    onUpdateOthers({ field: 'prizeSets', value: [...prizeSets.filter(p => p.type !== type), reviewCost] })
   }
 
   render () {
     const { challenge } = this.props
     const type = PRIZE_SETS_TYPE.REVIEWER_PAYMENT
-    const reviewCost = challenge.prizeSets.find(p => p.type === type) || { type, prizes: [{ type: CHALLENGE_PRIZE_TYPE.USD, value: 0 }] }
+    const prizeSets = challenge.prizeSets || []
+    const prizeType = getPrizeType(prizeSets)
+    const reviewCost = prizeSets.find(p => p.type === type) || { type, prizes: [{ type: prizeType, value: 0 }] }
     const value = reviewCost.prizes[0].value
 
     return (

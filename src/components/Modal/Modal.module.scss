@@ -40,9 +40,10 @@
   border-radius: 4px;
   max-height: 95vh;
   max-width: $screen-md;
+  min-width: 480px;
+  width: auto;
   overflow: hidden;
   padding: 40px;
-  width: 480px;
   position: fixed;
   top: 50%;
   left: 50%;
@@ -51,6 +52,7 @@
 
   @include xs-to-lg {
     max-width: 95vw;
+    min-width: 0;
   }
 
   @include xs-to-sm {
