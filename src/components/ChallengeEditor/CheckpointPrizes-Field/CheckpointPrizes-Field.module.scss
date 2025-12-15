@@ -100,6 +100,11 @@
   border-right-width: 0;
 }
 
+.pointsLabel {
+  @include roboto-medium;
+  color: $tc-black;
+}
+
 .checkpointSelect {
   max-width: 85px;
 }

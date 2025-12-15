@@ -54,7 +54,9 @@ const CheckpointPrizesField = ({ challenge, onUpdateOthers, readOnly }) => {
               <div>
                 <div className={styles.checkpointPrizeInputContainer}>
                   <div className={styles.checkpointPrizeAmountContainer}>
-                    <FontAwesomeIcon className={styles.dollarIcon} icon={faDollarSign} />
+                    {prizeType === CHALLENGE_PRIZE_TYPE.POINT
+                      ? <span className={styles.pointsLabel}>Pts</span>
+                      : <FontAwesomeIcon className={styles.dollarIcon} icon={faDollarSign} />}
                   </div>
                   <input id='checkpointPrize' name='checkpointPrize' type='text' placeholder='' value={amount} maxLength='7' required onChange={(e) => onChange(number, e.target.value)} />
                 </div>
