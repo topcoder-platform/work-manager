@@ -3,14 +3,13 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import cn from 'classnames'
 import { PrimaryButton, OutlineButton } from '../../Buttons'
-import { REVIEW_OPPORTUNITY_TYPE_LABELS, REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE, MARATHON_TYPE_ID, DES_TRACK_ID, CHALLENGE_PRIZE_TYPE } from '../../../config/constants'
+import { REVIEW_OPPORTUNITY_TYPE_LABELS, REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE, MARATHON_TYPE_ID, DES_TRACK_ID } from '../../../config/constants'
 import { loadScorecards, loadDefaultReviewers, loadWorkflows, replaceResourceInRole, createResource, deleteResource } from '../../../actions/challenges'
 import styles from './ChallengeReviewer-Field.module.scss'
 import { validateValue } from '../../../util/input-check'
 import AssignedMemberField from '../AssignedMember-Field'
 import { getResourceRoleByName } from '../../../util/tc'
 import { isEqual } from 'lodash'
-import { getPrizeType } from '../../../util/prize'
 
 const ResourceToPhaseNameMap = {
   Reviewer: 'Review',
@@ -960,8 +959,7 @@ class ChallengeReviewerField extends Component {
   }
 
   getFirstPlacePrizeValue (challenge) {
-    const prizeSets = challenge.prizeSets || []
-    const placementPrizeSet = prizeSets.find(set => set.type === 'PLACEMENT')
+    const placementPrizeSet = challenge.prizeSets.find(set => set.type === 'PLACEMENT')
     if (placementPrizeSet && placementPrizeSet.prizes && placementPrizeSet.prizes[0] && placementPrizeSet.prizes[0].value) {
       return placementPrizeSet.prizes[0].value
     }
@@ -973,23 +971,20 @@ class ChallengeReviewerField extends Component {
     const { error } = this.state
     const { scorecards = [], defaultReviewers = [], workflows = [] } = metadata
     const reviewers = challenge.reviewers || []
-    const prizeType = getPrizeType(challenge.prizeSets)
-    const firstPlacePrize = prizeType === CHALLENGE_PRIZE_TYPE.POINT ? 0 : this.getFirstPlacePrizeValue(challenge)
+    const firstPlacePrize = this.getFirstPlacePrizeValue(challenge)
     const estimatedSubmissionsCount = 2 // Estimate assumes two submissions
-    const reviewersCost = prizeType === CHALLENGE_PRIZE_TYPE.POINT
-      ? '0.00'
-      : reviewers
-        .filter((r) => !this.isAIReviewer(r))
-        .reduce((sum, r) => {
-          const fixedAmount = parseFloat(r.fixedAmount || 0)
-          const baseCoefficient = parseFloat(r.baseCoefficient || 0)
-          const incrementalCoefficient = parseFloat(r.incrementalCoefficient || 0)
-          const reviewerCost = fixedAmount + (baseCoefficient + incrementalCoefficient * estimatedSubmissionsCount) * firstPlacePrize
+    const reviewersCost = reviewers
+      .filter((r) => !this.isAIReviewer(r))
+      .reduce((sum, r) => {
+        const fixedAmount = parseFloat(r.fixedAmount || 0)
+        const baseCoefficient = parseFloat(r.baseCoefficient || 0)
+        const incrementalCoefficient = parseFloat(r.incrementalCoefficient || 0)
+        const reviewerCost = fixedAmount + (baseCoefficient + incrementalCoefficient * estimatedSubmissionsCount) * firstPlacePrize
 
-          const count = parseInt(r.memberReviewerCount) || 1
-          return sum + reviewerCost * count
-        }, 0)
-        .toFixed(2)
+        const count = parseInt(r.memberReviewerCount) || 1
+        return sum + reviewerCost * count
+      }, 0)
+      .toFixed(2)
 
     if (isLoading) {
       return (
