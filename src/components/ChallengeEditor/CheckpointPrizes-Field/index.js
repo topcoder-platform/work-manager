@@ -23,7 +23,7 @@ const CheckpointPrizesField = ({ challenge, onUpdateOthers, readOnly }) => {
   const checkpointPrize = prizeSets.find(p => p.type === type) || { type: PRIZE_SETS_TYPE.CHECKPOINT_PRIZES, prizes: [], 'description': 'Checkpoint Prizes' }
   const number = _.get(checkpointPrize, 'prizes.length') || DEFAULT_CHECKPOINT_PRIZE_COUNT
   const amount = _.get(checkpointPrize, 'prizes.length') ? checkpointPrize.prizes[0].value : DEFAULT_CHECKPOINT_PRIZE
-  const prizeType = getPrizeType(prizeSets)
+  const prizeType = _.get(checkpointPrize, 'prizes[0].type') || getPrizeType(prizeSets)
 
   // update the check point prize with default values if it's not already defined
   if (_.get(checkpointPrize, 'prizes.length') === 0) {
@@ -54,7 +54,9 @@ const CheckpointPrizesField = ({ challenge, onUpdateOthers, readOnly }) => {
               <div>
                 <div className={styles.checkpointPrizeInputContainer}>
                   <div className={styles.checkpointPrizeAmountContainer}>
-                    <FontAwesomeIcon className={styles.dollarIcon} icon={faDollarSign} />
+                    {prizeType === CHALLENGE_PRIZE_TYPE.POINT
+                      ? <span className={styles.pointsLabel}>Pts</span>
+                      : <FontAwesomeIcon className={styles.dollarIcon} icon={faDollarSign} />}
                   </div>
                   <input id='checkpointPrize' name='checkpointPrize' type='text' placeholder='' value={amount} maxLength='7' required onChange={(e) => onChange(number, e.target.value)} />
                 </div>
