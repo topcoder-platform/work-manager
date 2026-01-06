@@ -38,7 +38,7 @@ import { loadSubmissions } from '../../actions/challengeSubmissions'
 import { loadProject } from '../../actions/projects'
 
 import { connect } from 'react-redux'
-import { SUBMITTER_ROLE_UUID, MESSAGE, PROJECT_ROLES } from '../../config/constants'
+import { SUBMITTER_ROLE_UUID, MESSAGE, PROJECT_ROLES, CHALLENGE_STATUS } from '../../config/constants'
 import { patchChallenge } from '../../services/challenges'
 import ConfirmationModal from '../../components/Modal/ConfirmationModal'
 import AlertModal from '../../components/Modal/AlertModal'
@@ -276,7 +276,7 @@ class ChallengeEditor extends Component {
     try {
       this.setState({ isLaunching: true })
       const payload = {
-        status: 'Active'
+        status: CHALLENGE_STATUS.ACTIVE
       }
       if (isTask) {
         payload.startDate = moment().format()
@@ -332,7 +332,7 @@ class ChallengeEditor extends Component {
       this.setState({ isLaunching: true })
       const response = await patchChallenge(challengeDetails.id, {
         winners,
-        status: 'Completed'
+        status: CHALLENGE_STATUS.COMPLETED
       })
       this.setState({
         isLaunching: false,
