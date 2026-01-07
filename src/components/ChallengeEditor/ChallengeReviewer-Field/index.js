@@ -152,7 +152,7 @@ class ChallengeReviewerField extends Component {
     this.loadWorkflows()
   }
 
-    updateAssignedMembers (challengeResources, challenge, prevChallenge = null) {
+  updateAssignedMembers (challengeResources, challenge, prevChallenge = null) {
     const reviewersWithPhaseName = challenge.reviewers.map(item => {
       const phase = challenge.phases && challenge.phases.find(p => (p.id === item.phaseId) || (p.phaseId === item.phaseId))
       return {
@@ -170,7 +170,7 @@ class ChallengeReviewerField extends Component {
     })
 
     const assignedMembers = {}
-    
+
     const unchangedReviewers = new Set()
     if (prevChallenge && prevChallenge.reviewers) {
       const prevReviewers = prevChallenge.reviewers || []
@@ -201,7 +201,7 @@ class ChallengeReviewerField extends Component {
 
         if (unchangedReviewers.has(index)) {
           const existing = assignedMembers[index] || []
-          const alreadyAssigned = existing.some(m => 
+          const alreadyAssigned = existing.some(m =>
             m && (m.userId === resource.memberId || m.handle === resource.memberHandle)
           )
           if (!alreadyAssigned) {
@@ -218,7 +218,7 @@ class ChallengeReviewerField extends Component {
             assignedMembers[index] = []
           }
           const existing = assignedMembers[index]
-          const alreadyAssigned = existing.some(m => 
+          const alreadyAssigned = existing.some(m =>
             m && (m.userId === resource.memberId || m.handle === resource.memberHandle)
           )
           if (!alreadyAssigned) {
@@ -235,8 +235,8 @@ class ChallengeReviewerField extends Component {
     Object.keys(assignedMembers).forEach(indexStr => {
       const index = parseInt(indexStr, 10)
       const reviewer = challenge.reviewers[index]
-      if (index >= challenge.reviewers.length || 
-          !reviewer || 
+      if (index >= challenge.reviewers.length ||
+          !reviewer ||
           (reviewer.isMemberReview === false)) {
         delete assignedMembers[index]
       }
