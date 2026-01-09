@@ -16,6 +16,9 @@ import TaaSList from './containers/TaaSList'
 import ProjectAssets from './containers/ProjectAssets'
 import TaaSProjectForm from './containers/TaaSProjectForm'
 import ChallengeEditor from './containers/ChallengeEditor'
+import EngagementEditor from './containers/EngagementEditor'
+import EngagementsList from './containers/EngagementsList'
+import ApplicationsList from './containers/ApplicationsList'
 import { getFreshToken, decodeToken } from 'tc-auth-lib'
 import { saveToken } from './actions/auth'
 import { loadChallengeDetails } from './actions/challenges'
@@ -240,6 +243,36 @@ class Routes extends React.Component {
               }
             />
           )}
+          <Route exact path='/projects/:projectId/engagements'
+            render={({ match }) => renderApp(
+              <EngagementsList projectId={match.params.projectId} />,
+              <TopBarContainer projectId={match.params.projectId} />,
+              <Tab projectId={match.params.projectId} />,
+              <FooterContainer />
+            )()} />
+          {!isReadOnly && (
+            <Route exact path='/projects/:projectId/engagements/new'
+              render={({ match }) => renderApp(
+                <EngagementEditor />,
+                <TopBarContainer />,
+                <Tab projectId={match.params.projectId} menu={'New Engagement'} />,
+                <FooterContainer />
+              )()} />
+          )}
+          <Route exact path='/projects/:projectId/engagements/:engagementId/applications'
+            render={({ match }) => renderApp(
+              <ApplicationsList projectId={match.params.projectId} engagementId={match.params.engagementId} />,
+              <TopBarContainer projectId={match.params.projectId} />,
+              <Tab projectId={match.params.projectId} menu={'Applications'} />,
+              <FooterContainer />
+            )()} />
+          <Route path='/projects/:projectId/engagements/:engagementId'
+            render={({ match }) => renderApp(
+              <EngagementEditor />,
+              <TopBarContainer />,
+              <Tab projectId={match.params.projectId} menu={'Engagement'} />,
+              <FooterContainer />
+            )()} />
           {
             !isReadOnly && (
               <Route exact path='/projects/:projectId/challenges/new'

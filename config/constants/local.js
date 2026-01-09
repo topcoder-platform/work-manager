@@ -30,6 +30,7 @@ module.exports = {
   // Local service URLs
   MEMBER_API_URL: `${LOCAL_MEMBER_API}/members`,
   CHALLENGE_API_URL: `${LOCAL_CHALLENGE_API}/challenges`,
+  ENGAGEMENTS_API_URL: `${LOCAL_CHALLENGE_API}/engagements`,
   CHALLENGE_DEFAULT_REVIEWERS_URL: `${LOCAL_CHALLENGE_API.replace(/\/v6$/, '')}/v6/challenge/default-reviewers`,
   CHALLENGE_API_VERSION: '1.1.0',
   CHALLENGE_TIMELINE_TEMPLATES_URL: `${LOCAL_CHALLENGE_API}/timeline-templates`,

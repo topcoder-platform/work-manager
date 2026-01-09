@@ -1,0 +1,144 @@
+@use '../../styles/includes' as *;
+
+.wrapper {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.topContainer {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.leftContainer {
+  display: flex;
+  align-items: center;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 29px;
+  margin-right: 5px;
+  color: $challenges-title;
+}
+
+.textRequired {
+  @include roboto-medium();
+
+  color: $tc-red;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 14px;
+  align-self: flex-end;
+  margin-top: 30px;
+  margin-right: 30px;
+  margin-bottom: 2px;
+}
+
+.container {
+  width: 100%;
+
+  .formContainer {
+    box-sizing: border-box;
+    margin: 0 30px 30px 30px;
+    @include form-container-default();
+
+    form {
+      width: 100%;
+    }
+  }
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  margin: 20px 30px;
+}
+
+.field {
+  &.col1 {
+    max-width: 185px;
+    min-width: 185px;
+    margin-right: 14px;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+
+    span {
+      color: $tc-red;
+    }
+  }
+
+  &.col2 {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.input,
+.textarea,
+.selectInput {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid $tc-gray-30;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.textarea {
+  min-height: 140px;
+}
+
+.inlineFields {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.inlineField {
+  flex: 1 1 200px;
+  min-width: 200px;
+}
+
+.durationDivider {
+  margin: 10px 0;
+  color: $tc-gray-60;
+  font-size: 12px;
+}
+
+.error {
+  color: $tc-red;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 12px;
+}
+
+.editor {
+  border: 1px solid $tc-gray-30;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.readOnlyValue {
+  padding: 10px 0;
+  color: $tc-gray-80;
+}

@@ -9,6 +9,7 @@ import {
   resetSidebarActiveParams,
   unloadProjects
 } from '../../actions/sidebar'
+import { checkAdmin, checkCopilot } from '../../util/tc'
 
 class TabContainer extends Component {
   constructor (props) {
@@ -18,6 +19,13 @@ class TabContainer extends Component {
       currentTab: 1
     }
     this.onTabChange = this.onTabChange.bind(this)
+    this.getProjectTabFromPath = this.getProjectTabFromPath.bind(this)
+    this.getTabFromPath = this.getTabFromPath.bind(this)
+  }
+
+  getCanViewAssets (props = this.props) {
+    const { token } = props
+    return !!token && (checkAdmin(token) || checkCopilot(token))
   }
 
   componentDidMount () {
@@ -42,6 +50,9 @@ class TabContainer extends Component {
     if (projectId && activeProjectId < 0) {
       this.props.setActiveProject(parseInt(projectId))
     }
+
+    const canViewAssets = this.getCanViewAssets()
+    this.setState({ currentTab: this.getTabFromPath(history.location.pathname, projectId, canViewAssets) })
   }
 
   componentWillReceiveProps (nextProps) {
@@ -51,19 +62,8 @@ class TabContainer extends Component {
       this.props.setActiveProject(parseInt(projectId))
     }
 
-    if (nextProps.history.location.pathname === '/') {
-      this.setState({ currentTab: 1 })
-    } else if (nextProps.history.location.pathname === '/projects') {
-      this.setState({ currentTab: 2 })
-    } else if (nextProps.history.location.pathname === '/users') {
-      this.setState({ currentTab: 3 })
-    } else if (nextProps.history.location.pathname === '/self-service') {
-      this.setState({ currentTab: 4 })
-    } else if (nextProps.history.location.pathname === '/taas') {
-      this.setState({ currentTab: 5 })
-    } else {
-      this.setState({ currentTab: 0 })
-    }
+    const canViewAssets = this.getCanViewAssets(nextProps)
+    this.setState({ currentTab: this.getTabFromPath(nextProps.history.location.pathname, projectId, canViewAssets) })
     if (
       isLoading ||
       // do not fetch projects for users page
@@ -96,6 +96,43 @@ class TabContainer extends Component {
     this.loadProjects(nextProps)
   }
 
+  getProjectTabFromPath (pathname, projectId, canViewAssets = true) {
+    if (!projectId) {
+      return 0
+    }
+    if (pathname.includes(`/projects/${projectId}/engagements`)) {
+      return 2
+    }
+    if (pathname.includes(`/projects/${projectId}/assets`)) {
+      return canViewAssets ? 3 : 0
+    }
+    if (pathname.includes(`/projects/${projectId}/challenges`)) {
+      return 1
+    }
+    return 0
+  }
+
+  getTabFromPath (pathname, projectId, canViewAssets = true) {
+    if (projectId) {
+      return this.getProjectTabFromPath(pathname, projectId, canViewAssets)
+    }
+    if (pathname === '/') {
+      return 1
+    }
+    if (pathname === '/projects') {
+      return 2
+    }
+    if (pathname === '/users') {
+      return 3
+    }
+    if (pathname === '/self-service') {
+      return 4
+    }
+    if (pathname === '/taas') {
+      return 5
+    }
+    return 0
+  }
   loadProjects (props) {
     const { history } = props
 
@@ -105,8 +142,23 @@ class TabContainer extends Component {
   }
 
   onTabChange (tab) {
-    const { history, resetSidebarActiveParams } = this.props
-    if (tab === 1) {
+    const { history, resetSidebarActiveParams, projectId } = this.props
+    const canViewAssets = this.getCanViewAssets()
+    if (projectId) {
+      if (tab === 3 && !canViewAssets) {
+        return
+      }
+      if (tab === 1) {
+        history.push(`/projects/${projectId}/challenges`)
+        this.setState({ currentTab: 1 })
+      } else if (tab === 2) {
+        history.push(`/projects/${projectId}/engagements`)
+        this.setState({ currentTab: 2 })
+      } else if (tab === 3) {
+        history.push(`/projects/${projectId}/assets`)
+        this.setState({ currentTab: 3 })
+      }
+    } else if (tab === 1) {
       history.push('/')
       this.setState({ currentTab: 1 })
     } else if (tab === 2) {
@@ -130,8 +182,9 @@ class TabContainer extends Component {
 
   render () {
     const { currentTab } = this.state
+    const canViewAssets = this.getCanViewAssets()
 
-    return <Tab selectTab={this.onTabChange} currentTab={currentTab} />
+    return <Tab selectTab={this.onTabChange} currentTab={currentTab} projectId={this.props.projectId} canViewAssets={canViewAssets} />
   }
 }
 
@@ -144,13 +197,15 @@ TabContainer.propTypes = {
   activeProjectId: PropTypes.number,
   history: PropTypes.any.isRequired,
   setActiveProject: PropTypes.func,
-  projectId: PropTypes.string,
+  projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   resetSidebarActiveParams: PropTypes.func,
-  selfService: PropTypes.bool
+  selfService: PropTypes.bool,
+  token: PropTypes.string
 }
 
-const mapStateToProps = ({ sidebar }) => ({
-  ...sidebar
+const mapStateToProps = ({ sidebar, auth }) => ({
+  ...sidebar,
+  token: auth.token
 })
 
 const mapDispatchToProps = {
