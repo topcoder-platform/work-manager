@@ -91,6 +91,7 @@ module.exports = {
 
   // Standardized skills API on local
   SKILLS_V5_API_URL: `${LOCAL_SKILLS_API_V5}/skills/autocomplete`,
+  SKILLS_V5_SKILLS_URL: `${LOCAL_SKILLS_API_V5}/skills`,
   UPDATE_SKILLS_V5_API_URL: `${LOCAL_SKILLS_API_V5}/challenge-skills`,
 
   SALESFORCE_BILLING_ACCOUNT_LINK: 'https://c.cs18.visual.force.com/apex/baredirect?id=',

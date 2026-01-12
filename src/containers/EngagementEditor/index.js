@@ -185,7 +185,7 @@ class EngagementEditorContainer extends Component {
     const hasDateRange = Boolean(engagement.startDate && engagement.endDate)
     const hasDuration = Boolean(engagement.durationAmount)
     if (!hasDateRange && !hasDuration) {
-      errors.duration = 'Provide a start/end date or a duration'
+      errors.duration = 'Start date and end date are required'
     }
 
     if (!engagement.applicationDeadline) {

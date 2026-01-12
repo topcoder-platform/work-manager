@@ -81,6 +81,7 @@ const EngagementEditor = ({
   const selectedCountries = (engagement.countries || []).map(code => {
     return countryOptionsByValue[code] || { label: code, value: code }
   })
+  const showDurationFields = !isNew
 
   if (isLoading) {
     return <Loader />
@@ -153,7 +154,6 @@ const EngagementEditor = ({
                     name='title'
                     type='text'
                     value={engagement.title}
-                    placeholder='Engagement title'
                     onChange={onUpdateInput}
                   />
                 ) : (
@@ -188,7 +188,7 @@ const EngagementEditor = ({
 
             <div className={styles.row}>
               <div className={cn(styles.field, styles.col1)}>
-                <label>Duration <span>*</span> :</label>
+                <label>{showDurationFields ? 'Duration' : 'Dates'} <span>*</span> :</label>
               </div>
               <div className={cn(styles.field, styles.col2)}>
                 <div className={styles.inlineFields}>
@@ -225,47 +225,51 @@ const EngagementEditor = ({
                     )}
                   </div>
                 </div>
-                <div className={styles.durationDivider}>or</div>
-                <div className={styles.inlineFields}>
-                  <div className={styles.inlineField}>
-                    <span>Duration</span>
-                    {canEdit ? (
-                      <input
-                        className={styles.input}
-                        type='number'
-                        min='1'
-                        name='durationAmount'
-                        value={engagement.durationAmount}
-                        onChange={onUpdateInput}
-                        placeholder='Enter duration'
-                      />
-                    ) : (
-                      <div className={styles.readOnlyValue}>{engagement.durationAmount || '-'}</div>
-                    )}
-                  </div>
-                  <div className={styles.inlineField}>
-                    <span>Unit</span>
-                    {canEdit ? (
-                      <Select
-                        className={styles.selectInput}
-                        value={engagement.durationUnit ? {
-                          label: engagement.durationUnit,
-                          value: engagement.durationUnit
-                        } : null}
-                        options={['weeks', 'months'].map(unit => ({ label: unit, value: unit }))}
-                        onChange={(option) => onUpdateInput({
-                          target: {
-                            name: 'durationUnit',
-                            value: option ? option.value : ''
-                          }
-                        })}
-                        isClearable={false}
-                      />
-                    ) : (
-                      <div className={styles.readOnlyValue}>{engagement.durationUnit || '-'}</div>
-                    )}
-                  </div>
-                </div>
+                {showDurationFields && (
+                  <>
+                    <div className={styles.durationDivider}>or</div>
+                    <div className={styles.inlineFields}>
+                      <div className={styles.inlineField}>
+                        <span>Duration</span>
+                        {canEdit ? (
+                          <input
+                            className={styles.input}
+                            type='number'
+                            min='1'
+                            name='durationAmount'
+                            value={engagement.durationAmount}
+                            onChange={onUpdateInput}
+                            placeholder='Enter duration'
+                          />
+                        ) : (
+                          <div className={styles.readOnlyValue}>{engagement.durationAmount || '-'}</div>
+                        )}
+                      </div>
+                      <div className={styles.inlineField}>
+                        <span>Unit</span>
+                        {canEdit ? (
+                          <Select
+                            className={styles.selectInput}
+                            value={engagement.durationUnit ? {
+                              label: engagement.durationUnit,
+                              value: engagement.durationUnit
+                            } : null}
+                            options={['weeks', 'months'].map(unit => ({ label: unit, value: unit }))}
+                            onChange={(option) => onUpdateInput({
+                              target: {
+                                name: 'durationUnit',
+                                value: option ? option.value : ''
+                              }
+                            })}
+                            isClearable={false}
+                          />
+                        ) : (
+                          <div className={styles.readOnlyValue}>{engagement.durationUnit || '-'}</div>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
                 {submitTriggered && validationErrors.duration && (
                   <div className={styles.error}>{validationErrors.duration}</div>
                 )}
