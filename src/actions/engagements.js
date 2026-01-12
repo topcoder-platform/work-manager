@@ -7,6 +7,7 @@ import {
   patchEngagement,
   deleteEngagement as deleteEngagementAPI
 } from '../services/engagements'
+import { fetchSkillsByIds } from '../services/skills'
 import {
   normalizeEngagement,
   normalizeEngagements,
@@ -29,6 +30,95 @@ import {
   DELETE_ENGAGEMENT_SUCCESS,
   DELETE_ENGAGEMENT_FAILURE
 } from '../config/constants'
+
+const getSkillId = (skill) => {
+  if (!skill) {
+    return null
+  }
+  if (typeof skill === 'string') {
+    return skill
+  }
+  return skill.id || skill.value || null
+}
+
+const getEngagementSkills = (engagement) => {
+  if (!engagement) {
+    return []
+  }
+  const skills = Array.isArray(engagement.skills) ? engagement.skills : []
+  if (skills.length) {
+    return skills
+  }
+  return Array.isArray(engagement.requiredSkills) ? engagement.requiredSkills : []
+}
+
+const buildSkillsMap = (skills = []) => (
+  skills.reduce((acc, skill) => {
+    if (skill && skill.id) {
+      acc[skill.id] = skill
+    }
+    return acc
+  }, {})
+)
+
+const withSkillDetails = (engagement, skillsMap) => {
+  if (!engagement) {
+    return engagement
+  }
+  const skills = getEngagementSkills(engagement)
+    .map((skill) => {
+      const id = getSkillId(skill)
+      if (!id) {
+        return null
+      }
+      const mapped = skillsMap[id]
+      const rawName = skill && typeof skill === 'object' ? (skill.name || skill.label) : null
+      const name = rawName && rawName !== id
+        ? rawName
+        : (mapped && mapped.name) || 'Unknown skill'
+      return {
+        ...(mapped || {}),
+        ...(skill && typeof skill === 'object' ? skill : {}),
+        id,
+        name
+      }
+    })
+    .filter(Boolean)
+
+  return {
+    ...engagement,
+    skills
+  }
+}
+
+const hydrateEngagementSkills = async (engagements = []) => {
+  if (!Array.isArray(engagements) || !engagements.length) {
+    return []
+  }
+
+  const skillIds = new Set()
+  engagements.forEach((engagement) => {
+    getEngagementSkills(engagement).forEach((skill) => {
+      const id = getSkillId(skill)
+      if (id) {
+        skillIds.add(id)
+      }
+    })
+  })
+
+  const uniqueIds = Array.from(skillIds)
+  if (!uniqueIds.length) {
+    return engagements.map((engagement) => withSkillDetails(engagement, {}))
+  }
+
+  try {
+    const skills = await fetchSkillsByIds(uniqueIds)
+    const skillsMap = buildSkillsMap(skills)
+    return engagements.map((engagement) => withSkillDetails(engagement, skillsMap))
+  } catch (error) {
+    return engagements.map((engagement) => withSkillDetails(engagement, {}))
+  }
+}
 
 /**
  * Loads engagements for a project
@@ -62,7 +152,8 @@ export function loadEngagements (projectId, status = 'all', filterName = '') {
         : Array.isArray(nestedData)
           ? nestedData
           : []
-      const normalizedEngagements = normalizeEngagements(engagements)
+      const hydratedEngagements = await hydrateEngagementSkills(engagements)
+      const normalizedEngagements = normalizeEngagements(hydratedEngagements)
       dispatch({
         type: LOAD_ENGAGEMENTS_SUCCESS,
         engagements: normalizedEngagements
@@ -97,7 +188,8 @@ export function loadEngagementDetails (projectId, engagementId) {
 
     try {
       const response = await fetchEngagement(engagementId)
-      const engagementDetails = normalizeEngagement(_.get(response, 'data', {}))
+      const [hydratedEngagement] = await hydrateEngagementSkills([_.get(response, 'data', {})])
+      const engagementDetails = normalizeEngagement(hydratedEngagement || {})
       return dispatch({
         type: LOAD_ENGAGEMENT_DETAILS_SUCCESS,
         engagementDetails
@@ -139,7 +231,8 @@ export function createEngagement (engagementDetails, projectId) {
 
     try {
       const response = await createEngagementAPI(payload)
-      const engagementDetails = normalizeEngagement(_.get(response, 'data', {}))
+      const [hydratedEngagement] = await hydrateEngagementSkills([_.get(response, 'data', {})])
+      const engagementDetails = normalizeEngagement(hydratedEngagement || {})
       return dispatch({
         type: CREATE_ENGAGEMENT_SUCCESS,
         engagementDetails
@@ -169,7 +262,8 @@ export function updateEngagementDetails (engagementId, engagementDetails, projec
 
     try {
       const response = await updateEngagementAPI(engagementId, engagementDetails)
-      const updatedDetails = normalizeEngagement(_.get(response, 'data', {}))
+      const [hydratedEngagement] = await hydrateEngagementSkills([_.get(response, 'data', {})])
+      const updatedDetails = normalizeEngagement(hydratedEngagement || {})
       return dispatch({
         type: UPDATE_ENGAGEMENT_DETAILS_SUCCESS,
         engagementDetails: updatedDetails
@@ -199,7 +293,8 @@ export function partiallyUpdateEngagementDetails (engagementId, partialDetails, 
 
     try {
       const response = await patchEngagement(engagementId, partialDetails)
-      const updatedDetails = normalizeEngagement(_.get(response, 'data', {}))
+      const [hydratedEngagement] = await hydrateEngagementSkills([_.get(response, 'data', {})])
+      const updatedDetails = normalizeEngagement(hydratedEngagement || {})
       return dispatch({
         type: UPDATE_ENGAGEMENT_DETAILS_SUCCESS,
         engagementDetails: updatedDetails
@@ -228,7 +323,8 @@ export function deleteEngagement (engagementId, projectId) {
 
     try {
       const response = await deleteEngagementAPI(engagementId)
-      const engagementDetails = normalizeEngagement(_.get(response, 'data', {}))
+      const [hydratedEngagement] = await hydrateEngagementSkills([_.get(response, 'data', {})])
+      const engagementDetails = normalizeEngagement(hydratedEngagement || {})
       return dispatch({
         type: DELETE_ENGAGEMENT_SUCCESS,
         engagementDetails,
