@@ -15,6 +15,10 @@ import {
 import { loadProject } from '../../actions/projects'
 import { checkAdmin, checkManager } from '../../util/tc'
 import { PROJECT_ROLES } from '../../config/constants'
+import {
+  normalizeEngagement as normalizeEngagementShape,
+  toEngagementStatusApi
+} from '../../util/engagements'
 
 const getEmptyEngagement = () => ({
   id: null,
@@ -104,18 +108,19 @@ class EngagementEditorContainer extends Component {
   }
 
   normalizeEngagement (details) {
-    const duration = details.duration || {}
+    const normalized = normalizeEngagementShape(details)
+    const duration = normalized.duration || {}
     return {
       ...getEmptyEngagement(),
-      ...details,
-      startDate: details.startDate ? moment(details.startDate).toDate() : null,
-      endDate: details.endDate ? moment(details.endDate).toDate() : null,
-      applicationDeadline: details.applicationDeadline ? moment(details.applicationDeadline).toDate() : null,
-      durationAmount: details.durationAmount || duration.amount || '',
-      durationUnit: details.durationUnit || duration.unit || 'weeks',
-      timezones: details.timezones || details.timeZones || [],
-      countries: details.countries || [],
-      skills: details.skills || []
+      ...normalized,
+      startDate: normalized.startDate ? moment(normalized.startDate).toDate() : null,
+      endDate: normalized.endDate ? moment(normalized.endDate).toDate() : null,
+      applicationDeadline: normalized.applicationDeadline ? moment(normalized.applicationDeadline).toDate() : null,
+      durationAmount: normalized.durationAmount || duration.amount || '',
+      durationUnit: normalized.durationUnit || duration.unit || 'weeks',
+      timezones: normalized.timezones || [],
+      countries: normalized.countries || [],
+      skills: normalized.skills || []
     }
   }
 
@@ -199,24 +204,42 @@ class EngagementEditorContainer extends Component {
   }
 
   buildPayload (engagement, isDraft) {
+    const hasDateRange = Boolean(engagement.startDate && engagement.endDate)
+    const hasDuration = Boolean(engagement.durationAmount)
+    const status = engagement.status || (isDraft ? 'Open' : '')
+    const requiredSkills = (engagement.skills || [])
+      .map((skill) => {
+        if (!skill) {
+          return null
+        }
+        if (typeof skill === 'string') {
+          return skill
+        }
+        return skill.id || skill.value || null
+      })
+      .filter(Boolean)
+
     const payload = {
       title: engagement.title,
       description: engagement.description,
-      startDate: engagement.startDate ? moment(engagement.startDate).toISOString() : null,
-      endDate: engagement.endDate ? moment(engagement.endDate).toISOString() : null,
-      timezones: engagement.timezones,
-      countries: engagement.countries,
-      skills: engagement.skills,
+      timeZones: engagement.timezones || [],
+      countries: engagement.countries || [],
+      requiredSkills,
       applicationDeadline: engagement.applicationDeadline
         ? moment(engagement.applicationDeadline).toISOString()
         : null,
-      status: engagement.status || (isDraft ? 'Open' : '')
+      status: toEngagementStatusApi(status)
     }
 
-    if (engagement.durationAmount) {
-      payload.duration = {
-        amount: Number(engagement.durationAmount),
-        unit: engagement.durationUnit || 'weeks'
+    if (hasDateRange) {
+      payload.durationStartDate = moment(engagement.startDate).toISOString()
+      payload.durationEndDate = moment(engagement.endDate).toISOString()
+    } else if (hasDuration) {
+      const amount = Number(engagement.durationAmount)
+      if ((engagement.durationUnit || 'weeks') === 'months') {
+        payload.durationMonths = amount
+      } else {
+        payload.durationWeeks = amount
       }
     }
 

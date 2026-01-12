@@ -106,39 +106,49 @@ const EngagementsList = ({
           {projectDetail && projectDetail.name ? `${projectDetail.name} Engagements` : 'Engagements'}
         </div>
         {canManage && (
-          <PrimaryButton
-            text='New Engagement'
-            type='info'
-            link={`/projects/${projectId}/engagements/new`}
-          />
+          <div className={styles.headerAction}>
+            <PrimaryButton
+              text='New Engagement'
+              type='info'
+              link={`/projects/${projectId}/engagements/new`}
+            />
+          </div>
         )}
       </div>
       <div className={styles.filters}>
-        <input
-          className={styles.filterInput}
-          type='text'
-          value={searchText}
-          onChange={(event) => setSearchText(event.target.value)}
-          placeholder='Search by title'
-        />
-        <Select
-          options={STATUS_OPTIONS}
-          value={statusFilter}
-          onChange={(option) => setStatusFilter(option || STATUS_OPTIONS[0])}
-          isClearable={false}
-        />
-        <Select
-          options={SORT_OPTIONS}
-          value={sortBy}
-          onChange={(option) => setSortBy(option || SORT_OPTIONS[0])}
-          isClearable={false}
-        />
-        <Select
-          options={SORT_ORDER_OPTIONS}
-          value={sortOrder}
-          onChange={(option) => setSortOrder(option || SORT_ORDER_OPTIONS[0])}
-          isClearable={false}
-        />
+        <div className={styles.filterSearch}>
+          <input
+            className={styles.filterInput}
+            type='text'
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+            placeholder='Search by title'
+          />
+        </div>
+        <div className={styles.filterItem}>
+          <Select
+            options={STATUS_OPTIONS}
+            value={statusFilter}
+            onChange={(option) => setStatusFilter(option || STATUS_OPTIONS[0])}
+            isClearable={false}
+          />
+        </div>
+        <div className={styles.filterItem}>
+          <Select
+            options={SORT_OPTIONS}
+            value={sortBy}
+            onChange={(option) => setSortBy(option || SORT_OPTIONS[0])}
+            isClearable={false}
+          />
+        </div>
+        <div className={styles.filterItem}>
+          <Select
+            options={SORT_ORDER_OPTIONS}
+            value={sortOrder}
+            onChange={(option) => setSortOrder(option || SORT_ORDER_OPTIONS[0])}
+            isClearable={false}
+          />
+        </div>
       </div>
 
       {filteredEngagements.length === 0 ? (

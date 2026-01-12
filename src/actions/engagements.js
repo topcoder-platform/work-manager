@@ -8,6 +8,11 @@ import {
   deleteEngagement as deleteEngagementAPI
 } from '../services/engagements'
 import {
+  normalizeEngagement,
+  normalizeEngagements,
+  toEngagementStatusApi
+} from '../util/engagements'
+import {
   LOAD_ENGAGEMENTS_PENDING,
   LOAD_ENGAGEMENTS_SUCCESS,
   LOAD_ENGAGEMENTS_FAILURE,
@@ -42,7 +47,7 @@ export function loadEngagements (projectId, status = 'all', filterName = '') {
       filters.projectId = projectId
     }
     if (status && status !== 'all') {
-      filters.status = status
+      filters.status = toEngagementStatusApi(status)
     }
     if (!_.isEmpty(filterName)) {
       filters.title = filterName
@@ -50,9 +55,17 @@ export function loadEngagements (projectId, status = 'all', filterName = '') {
 
     try {
       const response = await fetchEngagements(filters)
+      const responseData = _.get(response, 'data', [])
+      const nestedData = _.get(responseData, 'data', [])
+      const engagements = Array.isArray(responseData)
+        ? responseData
+        : Array.isArray(nestedData)
+          ? nestedData
+          : []
+      const normalizedEngagements = normalizeEngagements(engagements)
       dispatch({
         type: LOAD_ENGAGEMENTS_SUCCESS,
-        engagements: _.get(response, 'data', [])
+        engagements: normalizedEngagements
       })
     } catch (error) {
       dispatch({
@@ -84,9 +97,10 @@ export function loadEngagementDetails (projectId, engagementId) {
 
     try {
       const response = await fetchEngagement(engagementId)
+      const engagementDetails = normalizeEngagement(_.get(response, 'data', {}))
       return dispatch({
         type: LOAD_ENGAGEMENT_DETAILS_SUCCESS,
-        engagementDetails: _.get(response, 'data', {})
+        engagementDetails
       })
     } catch (error) {
       dispatch({
@@ -120,14 +134,15 @@ export function createEngagement (engagementDetails, projectId) {
 
     const payload = {
       ...engagementDetails,
-      projectId
+      projectId: String(projectId)
     }
 
     try {
       const response = await createEngagementAPI(payload)
+      const engagementDetails = normalizeEngagement(_.get(response, 'data', {}))
       return dispatch({
         type: CREATE_ENGAGEMENT_SUCCESS,
-        engagementDetails: _.get(response, 'data', {})
+        engagementDetails
       })
     } catch (error) {
       dispatch({
@@ -154,9 +169,10 @@ export function updateEngagementDetails (engagementId, engagementDetails, projec
 
     try {
       const response = await updateEngagementAPI(engagementId, engagementDetails)
+      const updatedDetails = normalizeEngagement(_.get(response, 'data', {}))
       return dispatch({
         type: UPDATE_ENGAGEMENT_DETAILS_SUCCESS,
-        engagementDetails: _.get(response, 'data', {})
+        engagementDetails: updatedDetails
       })
     } catch (error) {
       dispatch({
@@ -183,9 +199,10 @@ export function partiallyUpdateEngagementDetails (engagementId, partialDetails, 
 
     try {
       const response = await patchEngagement(engagementId, partialDetails)
+      const updatedDetails = normalizeEngagement(_.get(response, 'data', {}))
       return dispatch({
         type: UPDATE_ENGAGEMENT_DETAILS_SUCCESS,
-        engagementDetails: _.get(response, 'data', {})
+        engagementDetails: updatedDetails
       })
     } catch (error) {
       dispatch({
@@ -211,9 +228,10 @@ export function deleteEngagement (engagementId, projectId) {
 
     try {
       const response = await deleteEngagementAPI(engagementId)
+      const engagementDetails = normalizeEngagement(_.get(response, 'data', {}))
       return dispatch({
         type: DELETE_ENGAGEMENT_SUCCESS,
-        engagementDetails: _.get(response, 'data', {}),
+        engagementDetails,
         engagementId
       })
     } catch (error) {

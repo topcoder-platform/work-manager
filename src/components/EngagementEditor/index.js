@@ -13,6 +13,8 @@ import Loader from '../Loader'
 import styles from './EngagementEditor.module.scss'
 
 const ANY_OPTION = { label: 'Any', value: 'Any' }
+const INPUT_DATE_FORMAT = 'MM/dd/yyyy'
+const INPUT_TIME_FORMAT = 'HH:mm'
 
 const normalizeAnySelection = (selectedOptions) => {
   if (!selectedOptions || !selectedOptions.length) {
@@ -196,6 +198,8 @@ const EngagementEditor = ({
                       <DateInput
                         className={styles.selectInput}
                         value={engagement.startDate}
+                        dateFormat={INPUT_DATE_FORMAT}
+                        timeFormat={false}
                         onChange={value => onUpdateDate('startDate', value)}
                       />
                     ) : (
@@ -210,6 +214,8 @@ const EngagementEditor = ({
                       <DateInput
                         className={styles.selectInput}
                         value={engagement.endDate}
+                        dateFormat={INPUT_DATE_FORMAT}
+                        timeFormat={false}
                         onChange={value => onUpdateDate('endDate', value)}
                       />
                     ) : (
@@ -332,6 +338,7 @@ const EngagementEditor = ({
               </div>
               <div className={cn(styles.field, styles.col2)}>
                 <SkillsField
+                  embedded
                   readOnly={!canEdit}
                   challenge={{
                     ...engagement,
@@ -351,12 +358,14 @@ const EngagementEditor = ({
                   <DateInput
                     className={styles.selectInput}
                     value={engagement.applicationDeadline}
+                    dateFormat={INPUT_DATE_FORMAT}
+                    timeFormat={INPUT_TIME_FORMAT}
                     onChange={value => onUpdateDate('applicationDeadline', value)}
                   />
                 ) : (
                   <div className={styles.readOnlyValue}>
                     {engagement.applicationDeadline
-                      ? moment(engagement.applicationDeadline).format('MMM DD, YYYY')
+                      ? moment(engagement.applicationDeadline).format('MMM DD, YYYY HH:mm')
                       : '-'}
                   </div>
                 )}

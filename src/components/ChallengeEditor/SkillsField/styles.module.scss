@@ -50,3 +50,20 @@
     }
   }
 }
+
+.embeddedWrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.embeddedError {
+  color: $tc-red;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.embeddedReadOnly {
+  padding: 10px 0;
+  color: $tc-gray-80;
+}

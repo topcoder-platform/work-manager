@@ -53,7 +53,7 @@ DateInput.propTypes = {
   isValidDate: PropTypes.func,
   value: PropTypes.any,
   dateFormat: PropTypes.string,
-  timeFormat: PropTypes.string,
+  timeFormat: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   className: PropTypes.string
 }
 export default DateInput

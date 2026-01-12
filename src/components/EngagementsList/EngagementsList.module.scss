@@ -13,6 +13,10 @@
   margin-bottom: 20px;
 }
 
+.headerAction {
+  flex: 1 1 100%;
+}
+
 .title {
   font-size: 24px;
   font-weight: 700;
@@ -26,8 +30,15 @@
   margin-bottom: 20px;
 }
 
+.filterSearch,
+.filterItem {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
 .filterInput {
-  min-width: 200px;
+  width: 100%;
+  min-width: 0;
 }
 
 .table {
@@ -83,4 +94,21 @@
   padding: 40px;
   text-align: center;
   color: $tc-gray-70;
+}
+
+@include md-to-xl {
+  .headerAction {
+    flex: 0 0 220px;
+  }
+
+  .filters {
+    display: grid;
+    grid-template-columns: minmax(240px, 2fr) repeat(3, minmax(160px, 1fr));
+    align-items: center;
+  }
+
+  .filterSearch,
+  .filterItem {
+    flex: initial;
+  }
 }

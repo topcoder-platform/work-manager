@@ -1,5 +1,11 @@
 @use '../../styles/includes' as *;
 
+:global {
+  div[data-reach-popover] {
+    z-index: 10;
+  }
+}
+
 .wrapper {
   box-sizing: border-box;
   display: flex;

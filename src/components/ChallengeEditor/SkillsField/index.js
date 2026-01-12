@@ -21,7 +21,7 @@ const fetchSkills = _.debounce((inputValue, callback) => {
     })
 }, AUTOCOMPLETE_DEBOUNCE_TIME_MS)
 
-const SkillsField = ({ readOnly, challenge, onUpdateSkills }) => {
+const SkillsField = ({ readOnly, challenge, onUpdateSkills, embedded }) => {
   const selectedSkills = useMemo(() => (challenge.skills || []).map(skill => ({
     label: skill.name,
     value: skill.id
@@ -30,6 +30,37 @@ const SkillsField = ({ readOnly, challenge, onUpdateSkills }) => {
   const billingAccountId = _.get(challenge, 'billing.billingAccountId')
   const normalizedBillingAccountId = _.isNil(billingAccountId) ? null : String(billingAccountId)
   const skillsRequired = normalizedBillingAccountId ? !SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS.includes(normalizedBillingAccountId) : true
+  const showRequiredError = !readOnly && skillsRequired && challenge.submitTriggered && (!selectedSkills || !selectedSkills.length)
+
+  if (embedded) {
+    return (
+      <div className={styles.embeddedWrapper}>
+        <input type='hidden' />
+        {readOnly ? (
+          <div className={styles.embeddedReadOnly}>{existingSkills || '-'}</div>
+        ) : (
+          <Select
+            id='skill-select'
+            isMulti
+            simpleValue
+            isAsync
+            value={selectedSkills}
+            onChange={(values) => {
+              onUpdateSkills((values || []).map(value => ({
+                name: value.label,
+                id: value.value
+              })))
+            }}
+            cacheOptions
+            loadOptions={fetchSkills}
+          />
+        )}
+        {showRequiredError && (
+          <div className={styles.embeddedError}>Select at least one skill</div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <>
@@ -61,25 +92,29 @@ const SkillsField = ({ readOnly, challenge, onUpdateSkills }) => {
         </div>
       </div>
 
-      { !readOnly && skillsRequired && challenge.submitTriggered && (!selectedSkills || !selectedSkills.length) && <div className={styles.row}>
-        <div className={cn(styles.field, styles.col1)} />
-        <div className={cn(styles.field, styles.col2, styles.error)}>
-          Select at least one skill
+      {showRequiredError && (
+        <div className={styles.row}>
+          <div className={cn(styles.field, styles.col1)} />
+          <div className={cn(styles.field, styles.col2, styles.error)}>
+            Select at least one skill
+          </div>
         </div>
-      </div> }
+      )}
     </>
   )
 }
 
 SkillsField.defaultProps = {
   readOnly: false,
-  onUpdateSkills: () => { }
+  onUpdateSkills: () => { },
+  embedded: false
 }
 
 SkillsField.propTypes = {
   readOnly: PropTypes.bool,
   challenge: PropTypes.shape().isRequired,
-  onUpdateSkills: PropTypes.func
+  onUpdateSkills: PropTypes.func,
+  embedded: PropTypes.bool
 }
 
 export default SkillsField

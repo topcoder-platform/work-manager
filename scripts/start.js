@@ -21,6 +21,25 @@ const webpack = require('webpack')
 const WebpackDevServer = require('webpack-dev-server')
 const clearConsole = require('react-dev-utils/clearConsole')
 const checkRequiredFiles = require('react-dev-utils/checkRequiredFiles')
+const formatWebpackMessages = require('react-dev-utils/formatWebpackMessages')
+// Webpack 5 returns error objects; normalize to strings for react-dev-utils@7.
+const normalizeWebpackMessages = (json = {}) => {
+  const normalizeMessage = (message) => {
+    if (typeof message === 'string') return message
+    if (message && typeof message.message === 'string') return message.message
+    if (message && typeof message.stack === 'string') return message.stack
+    return String(message)
+  }
+  return {
+    ...json,
+    errors: Array.isArray(json.errors) ? json.errors.map(normalizeMessage) : [],
+    warnings: Array.isArray(json.warnings) ? json.warnings.map(normalizeMessage) : []
+  }
+}
+const formatWebpackMessagesPatched = (json) =>
+  formatWebpackMessages(normalizeWebpackMessages(json))
+require.cache[require.resolve('react-dev-utils/formatWebpackMessages')].exports =
+  formatWebpackMessagesPatched
 const {
   choosePort,
   createCompiler,
