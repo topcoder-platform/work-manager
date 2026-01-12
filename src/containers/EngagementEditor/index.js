@@ -384,7 +384,6 @@ EngagementEditorContainer.propTypes = {
   loadEngagementDetails: PropTypes.func.isRequired,
   createEngagement: PropTypes.func.isRequired,
   updateEngagementDetails: PropTypes.func.isRequired,
-  partiallyUpdateEngagementDetails: PropTypes.func.isRequired,
   deleteEngagement: PropTypes.func.isRequired,
   loadProject: PropTypes.func.isRequired
 }

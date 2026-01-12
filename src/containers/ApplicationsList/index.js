@@ -21,21 +21,31 @@ class ApplicationsListContainer extends Component {
   }
 
   componentDidMount () {
-    this.loadData(this.props)
+    this.loadData()
   }
 
-  componentWillReceiveProps (nextProps) {
-    const currentParams = this.getParams(this.props)
-    const nextParams = this.getParams(nextProps)
+  componentDidUpdate (prevProps) {
+    const currentParams = this.getParams()
+    const prevParams = this.getParamsFromProps(prevProps)
     if (
-      currentParams.projectId !== nextParams.projectId ||
-      currentParams.engagementId !== nextParams.engagementId
+      currentParams.projectId !== prevParams.projectId ||
+      currentParams.engagementId !== prevParams.engagementId
     ) {
-      this.loadData(nextProps)
+      this.loadData()
     }
   }
 
-  getParams (props = this.props) {
+  getParams () {
+    const { projectId, engagementId, match } = this.props
+    const resolvedProjectId = projectId || _.get(match, 'params.projectId')
+    const resolvedEngagementId = engagementId || _.get(match, 'params.engagementId')
+    return {
+      projectId: resolvedProjectId ? parseInt(resolvedProjectId, 10) : null,
+      engagementId: resolvedEngagementId || null
+    }
+  }
+
+  getParamsFromProps (props) {
     const projectId = props.projectId || _.get(props, 'match.params.projectId')
     const engagementId = props.engagementId || _.get(props, 'match.params.engagementId')
     return {
@@ -44,14 +54,15 @@ class ApplicationsListContainer extends Component {
     }
   }
 
-  loadData (props) {
-    const { projectId, engagementId } = this.getParams(props)
+  loadData () {
+    const { projectId, engagementId } = this.getParams()
+    const { loadProject, loadEngagementDetails, loadApplications } = this.props
     if (projectId) {
-      props.loadProject(projectId)
+      loadProject(projectId)
     }
     if (engagementId) {
-      props.loadEngagementDetails(projectId, engagementId)
-      props.loadApplications(engagementId)
+      loadEngagementDetails(projectId, engagementId)
+      loadApplications(engagementId)
     }
   }
 
@@ -111,7 +122,6 @@ ApplicationsListContainer.propTypes = {
     })
   }).isRequired,
   loadApplications: PropTypes.func.isRequired,
-  loadApplicationDetails: PropTypes.func.isRequired,
   updateApplicationStatus: PropTypes.func.isRequired,
   loadEngagementDetails: PropTypes.func.isRequired,
   loadProject: PropTypes.func.isRequired

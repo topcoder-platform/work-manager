@@ -194,7 +194,6 @@ ApplicationsList.propTypes = {
     description: PropTypes.string,
     applicationDeadline: PropTypes.any
   }),
-  projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isLoading: PropTypes.bool,
   canManage: PropTypes.bool,
   onUpdateStatus: PropTypes.func

@@ -24,8 +24,10 @@ class TabContainer extends Component {
   }
 
   getCanViewAssets (props = this.props) {
+    const { token: currentToken } = this.props
     const { token } = props
-    return !!token && (checkAdmin(token) || checkCopilot(token))
+    const resolvedToken = token || currentToken
+    return !!resolvedToken && (checkAdmin(resolvedToken) || checkCopilot(resolvedToken))
   }
 
   componentDidMount () {

@@ -11,29 +11,36 @@ import { PROJECT_ROLES } from '../../config/constants'
 
 class EngagementsListContainer extends Component {
   componentDidMount () {
-    this.loadData(this.props)
+    this.loadData()
   }
 
-  componentWillReceiveProps (nextProps) {
-    const currentProjectId = this.getProjectId(this.props)
-    const nextProjectId = this.getProjectId(nextProps)
-    if (currentProjectId !== nextProjectId) {
-      this.loadData(nextProps)
+  componentDidUpdate (prevProps) {
+    const currentProjectId = this.getProjectId()
+    const prevProjectId = this.getProjectIdFromProps(prevProps)
+    if (currentProjectId !== prevProjectId) {
+      this.loadData()
     }
   }
 
-  getProjectId (props) {
+  getProjectId () {
+    const { projectId, match } = this.props
+    const resolvedProjectId = projectId || _.get(match, 'params.projectId')
+    return resolvedProjectId ? parseInt(resolvedProjectId, 10) : null
+  }
+
+  getProjectIdFromProps (props) {
     const projectId = props.projectId || _.get(props, 'match.params.projectId')
     return projectId ? parseInt(projectId, 10) : null
   }
 
-  loadData (props) {
-    const projectId = this.getProjectId(props)
+  loadData () {
+    const projectId = this.getProjectId()
+    const { loadProject, loadEngagements } = this.props
     if (!projectId) {
       return
     }
-    props.loadProject(projectId)
-    props.loadEngagements(projectId, 'all')
+    loadProject(projectId)
+    loadEngagements(projectId, 'all')
   }
 
   canManage () {
@@ -47,7 +54,7 @@ class EngagementsListContainer extends Component {
   }
 
   render () {
-    const projectId = this.getProjectId(this.props)
+    const projectId = this.getProjectId()
     return (
       <EngagementsList
         engagements={this.props.engagements}
