@@ -61,6 +61,7 @@ const ApplicationsList = ({
 }) => {
   const [statusFilter, setStatusFilter] = useState(STATUS_OPTIONS[0])
   const [selectedApplication, setSelectedApplication] = useState(null)
+  const menuPortalTarget = typeof document === 'undefined' ? undefined : document.body
 
   const filteredApplications = useMemo(() => {
     let results = applications || []
@@ -163,6 +164,7 @@ const ApplicationsList = ({
                             value={statusOption}
                             onChange={(option) => option && onUpdateStatus(application.id, option.value)}
                             isClearable={false}
+                            menuPortalTarget={menuPortalTarget}
                           />
                         </div>
                       )}

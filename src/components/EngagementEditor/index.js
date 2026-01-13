@@ -10,6 +10,7 @@ import Select from '../Select'
 import SkillsField from '../ChallengeEditor/SkillsField'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import Loader from '../Loader'
+import { JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
 import styles from './EngagementEditor.module.scss'
 
 const ANY_OPTION = { label: 'Any', value: 'Any' }
@@ -41,7 +42,6 @@ const EngagementEditor = ({
   onUpdateDescription,
   onUpdateSkills,
   onUpdateDate,
-  onSaveDraft,
   onSavePublish,
   onCancel,
   onDelete
@@ -81,7 +81,23 @@ const EngagementEditor = ({
   const selectedCountries = (engagement.countries || []).map(code => {
     return countryOptionsByValue[code] || { label: code, value: code }
   })
-  const showDurationFields = !isNew
+
+  const selectedRoleOption = useMemo(() => {
+    if (!engagement.role) {
+      return null
+    }
+    return JOB_ROLE_OPTIONS.find(option => option.value === engagement.role || option.label === engagement.role) || null
+  }, [engagement.role])
+
+  const selectedWorkloadOption = useMemo(() => {
+    if (!engagement.workload) {
+      return null
+    }
+    return JOB_WORKLOAD_OPTIONS.find(option => option.value === engagement.workload || option.label === engagement.workload) || null
+  }, [engagement.workload])
+
+  const roleLabel = selectedRoleOption ? selectedRoleOption.label : engagement.role
+  const workloadLabel = selectedWorkloadOption ? selectedWorkloadOption.label : engagement.workload
 
   if (isLoading) {
     return <Loader />
@@ -120,14 +136,6 @@ const EngagementEditor = ({
             onClick={onCancel}
             disabled={isSaving}
           />
-          {canEdit && (
-            <OutlineButton
-              text='Save Draft'
-              type='info'
-              onClick={onSaveDraft}
-              disabled={isSaving}
-            />
-          )}
           {canEdit && (
             <PrimaryButton
               text='Publish'
@@ -188,90 +196,98 @@ const EngagementEditor = ({
 
             <div className={styles.row}>
               <div className={cn(styles.field, styles.col1)}>
-                <label>{showDurationFields ? 'Duration' : 'Dates'} <span>*</span> :</label>
+                <label htmlFor='durationWeeks'>Duration (Weeks) <span>*</span> :</label>
               </div>
               <div className={cn(styles.field, styles.col2)}>
-                <div className={styles.inlineFields}>
-                  <div className={styles.inlineField}>
-                    <span>Start Date</span>
-                    {canEdit ? (
-                      <DateInput
-                        className={styles.selectInput}
-                        value={engagement.startDate}
-                        dateFormat={INPUT_DATE_FORMAT}
-                        timeFormat={false}
-                        onChange={value => onUpdateDate('startDate', value)}
-                      />
-                    ) : (
-                      <div className={styles.readOnlyValue}>
-                        {engagement.startDate ? moment(engagement.startDate).format('MMM DD, YYYY') : '-'}
-                      </div>
-                    )}
+                {canEdit ? (
+                  <input
+                    className={styles.input}
+                    id='durationWeeks'
+                    name='durationWeeks'
+                    type='number'
+                    min='4'
+                    step='1'
+                    value={engagement.durationWeeks}
+                    onChange={onUpdateInput}
+                  />
+                ) : (
+                  <div className={styles.readOnlyValue}>
+                    {engagement.durationWeeks ? `${engagement.durationWeeks} weeks` : '-'}
                   </div>
-                  <div className={styles.inlineField}>
-                    <span>End Date</span>
-                    {canEdit ? (
-                      <DateInput
-                        className={styles.selectInput}
-                        value={engagement.endDate}
-                        dateFormat={INPUT_DATE_FORMAT}
-                        timeFormat={false}
-                        onChange={value => onUpdateDate('endDate', value)}
-                      />
-                    ) : (
-                      <div className={styles.readOnlyValue}>
-                        {engagement.endDate ? moment(engagement.endDate).format('MMM DD, YYYY') : '-'}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                {showDurationFields && (
-                  <>
-                    <div className={styles.durationDivider}>or</div>
-                    <div className={styles.inlineFields}>
-                      <div className={styles.inlineField}>
-                        <span>Duration</span>
-                        {canEdit ? (
-                          <input
-                            className={styles.input}
-                            type='number'
-                            min='1'
-                            name='durationAmount'
-                            value={engagement.durationAmount}
-                            onChange={onUpdateInput}
-                            placeholder='Enter duration'
-                          />
-                        ) : (
-                          <div className={styles.readOnlyValue}>{engagement.durationAmount || '-'}</div>
-                        )}
-                      </div>
-                      <div className={styles.inlineField}>
-                        <span>Unit</span>
-                        {canEdit ? (
-                          <Select
-                            className={styles.selectInput}
-                            value={engagement.durationUnit ? {
-                              label: engagement.durationUnit,
-                              value: engagement.durationUnit
-                            } : null}
-                            options={['weeks', 'months'].map(unit => ({ label: unit, value: unit }))}
-                            onChange={(option) => onUpdateInput({
-                              target: {
-                                name: 'durationUnit',
-                                value: option ? option.value : ''
-                              }
-                            })}
-                            isClearable={false}
-                          />
-                        ) : (
-                          <div className={styles.readOnlyValue}>{engagement.durationUnit || '-'}</div>
-                        )}
-                      </div>
-                    </div>
-                  </>
                 )}
-                {submitTriggered && validationErrors.duration && (
-                  <div className={styles.error}>{validationErrors.duration}</div>
+                {submitTriggered && validationErrors.durationWeeks && (
+                  <div className={styles.error}>{validationErrors.durationWeeks}</div>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.row}>
+              <div className={cn(styles.field, styles.col1)}>
+                <label htmlFor='role'>Role :</label>
+              </div>
+              <div className={cn(styles.field, styles.col2)}>
+                {canEdit ? (
+                  <Select
+                    className={styles.selectInput}
+                    options={JOB_ROLE_OPTIONS}
+                    value={selectedRoleOption}
+                    onChange={(option) => onUpdateInput({
+                      target: {
+                        name: 'role',
+                        value: option && option.value ? option.label : null
+                      }
+                    })}
+                    isClearable
+                  />
+                ) : (
+                  <div className={styles.readOnlyValue}>{roleLabel || 'Not specified'}</div>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.row}>
+              <div className={cn(styles.field, styles.col1)}>
+                <label htmlFor='workload'>Workload :</label>
+              </div>
+              <div className={cn(styles.field, styles.col2)}>
+                {canEdit ? (
+                  <Select
+                    className={styles.selectInput}
+                    options={JOB_WORKLOAD_OPTIONS}
+                    value={selectedWorkloadOption}
+                    onChange={(option) => onUpdateInput({
+                      target: {
+                        name: 'workload',
+                        value: option && option.value ? option.label : null
+                      }
+                    })}
+                    isClearable
+                  />
+                ) : (
+                  <div className={styles.readOnlyValue}>{workloadLabel || 'Not specified'}</div>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.row}>
+              <div className={cn(styles.field, styles.col1)}>
+                <label htmlFor='compensationRange'>Compensation Range :</label>
+              </div>
+              <div className={cn(styles.field, styles.col2)}>
+                {canEdit ? (
+                  <input
+                    className={styles.input}
+                    id='compensationRange'
+                    name='compensationRange'
+                    type='text'
+                    placeholder='e.g., $600-$700 USD'
+                    value={engagement.compensationRange}
+                    onChange={onUpdateInput}
+                  />
+                ) : (
+                  <div className={styles.readOnlyValue}>
+                    {engagement.compensationRange || 'Not specified'}
+                  </div>
                 )}
               </div>
             </div>
@@ -425,8 +441,10 @@ EngagementEditor.defaultProps = {
     timezones: [],
     countries: [],
     skills: [],
-    durationAmount: '',
-    durationUnit: 'weeks',
+    durationWeeks: '',
+    role: null,
+    workload: null,
+    compensationRange: '',
     status: 'Open'
   },
   isNew: true,
@@ -441,7 +459,6 @@ EngagementEditor.defaultProps = {
   onUpdateDescription: () => {},
   onUpdateSkills: () => {},
   onUpdateDate: () => {},
-  onSaveDraft: () => {},
   onSavePublish: () => {},
   onCancel: () => {},
   onDelete: () => {}
@@ -452,10 +469,10 @@ EngagementEditor.propTypes = {
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     title: PropTypes.string,
     description: PropTypes.string,
-    startDate: PropTypes.any,
-    endDate: PropTypes.any,
-    durationAmount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    durationUnit: PropTypes.string,
+    durationWeeks: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    role: PropTypes.string,
+    workload: PropTypes.string,
+    compensationRange: PropTypes.string,
     timezones: PropTypes.arrayOf(PropTypes.string),
     countries: PropTypes.arrayOf(PropTypes.string),
     skills: PropTypes.arrayOf(PropTypes.shape()),
@@ -470,7 +487,7 @@ EngagementEditor.propTypes = {
   validationErrors: PropTypes.shape({
     title: PropTypes.string,
     description: PropTypes.string,
-    duration: PropTypes.string,
+    durationWeeks: PropTypes.string,
     applicationDeadline: PropTypes.string,
     skills: PropTypes.string,
     status: PropTypes.string
@@ -481,7 +498,6 @@ EngagementEditor.propTypes = {
   onUpdateDescription: PropTypes.func,
   onUpdateSkills: PropTypes.func,
   onUpdateDate: PropTypes.func,
-  onSaveDraft: PropTypes.func,
   onSavePublish: PropTypes.func,
   onCancel: PropTypes.func,
   onDelete: PropTypes.func

@@ -10,6 +10,30 @@ const STATUS_TO_API = {
   Closed: 'CLOSED'
 }
 
+const ROLE_TO_API = {
+  designer: 'DESIGNER',
+  'software-developer': 'SOFTWARE_DEVELOPER',
+  'data-scientist': 'DATA_SCIENTIST',
+  'data-engineer': 'DATA_ENGINEER'
+}
+
+const ROLE_FROM_API = {
+  DESIGNER: 'Designer',
+  SOFTWARE_DEVELOPER: 'Software Developer',
+  DATA_SCIENTIST: 'Data Scientist',
+  DATA_ENGINEER: 'Data Engineer'
+}
+
+const WORKLOAD_TO_API = {
+  fulltime: 'FULL_TIME',
+  fractional: 'FRACTIONAL'
+}
+
+const WORKLOAD_FROM_API = {
+  FULL_TIME: 'Full-Time',
+  FRACTIONAL: 'Fractional'
+}
+
 export const toEngagementStatusApi = (status) => {
   if (!status) {
     return status
@@ -33,6 +57,52 @@ export const fromEngagementStatusApi = (status) => {
   return STATUS_LABELS[normalized] || status
 }
 
+export const toEngagementRoleApi = (role) => {
+  if (!role) {
+    return role
+  }
+  const normalized = role.toString().trim()
+  if (ROLE_TO_API[normalized]) {
+    return ROLE_TO_API[normalized]
+  }
+  const upper = normalized.toUpperCase().replace(/[\s-]+/g, '_')
+  if (ROLE_FROM_API[upper]) {
+    return upper
+  }
+  return role
+}
+
+export const fromEngagementRoleApi = (role) => {
+  if (!role) {
+    return role
+  }
+  const normalized = role.toString().trim().toUpperCase().replace(/[\s-]+/g, '_')
+  return ROLE_FROM_API[normalized] || role
+}
+
+export const toEngagementWorkloadApi = (workload) => {
+  if (!workload) {
+    return workload
+  }
+  const normalized = workload.toString().trim()
+  if (WORKLOAD_TO_API[normalized]) {
+    return WORKLOAD_TO_API[normalized]
+  }
+  const upper = normalized.toUpperCase().replace(/[\s-]+/g, '_')
+  if (WORKLOAD_FROM_API[upper]) {
+    return upper
+  }
+  return workload
+}
+
+export const fromEngagementWorkloadApi = (workload) => {
+  if (!workload) {
+    return workload
+  }
+  const normalized = workload.toString().trim().toUpperCase().replace(/[\s-]+/g, '_')
+  return WORKLOAD_FROM_API[normalized] || workload
+}
+
 const normalizeSkill = (skill) => {
   if (!skill) {
     return null
@@ -52,6 +122,10 @@ export const normalizeEngagement = (engagement = {}) => {
   if (!engagement || typeof engagement !== 'object') {
     return engagement
   }
+
+  const role = fromEngagementRoleApi(engagement.role)
+  const workload = fromEngagementWorkloadApi(engagement.workload)
+  const compensationRange = engagement.compensationRange || ''
 
   const durationWeeks = engagement.durationWeeks
   const durationMonths = engagement.durationMonths
@@ -87,15 +161,25 @@ export const normalizeEngagement = (engagement = {}) => {
     skills = requiredSkills.map(normalizeSkill).filter(Boolean)
   }
 
+  const normalizedDurationWeeks = durationWeeks != null && durationWeeks !== ''
+    ? durationWeeks
+    : durationUnit === 'weeks' && durationAmount != null && durationAmount !== ''
+      ? durationAmount
+      : ''
+
   return {
     ...engagement,
     startDate,
     endDate,
     durationAmount,
     durationUnit,
+    durationWeeks: normalizedDurationWeeks,
     timezones,
     skills,
-    status: fromEngagementStatusApi(engagement.status)
+    status: fromEngagementStatusApi(engagement.status),
+    role,
+    workload,
+    compensationRange
   }
 }
 

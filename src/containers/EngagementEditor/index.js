@@ -17,6 +17,10 @@ import { checkAdmin, checkManager } from '../../util/tc'
 import { PROJECT_ROLES } from '../../config/constants'
 import {
   normalizeEngagement as normalizeEngagementShape,
+  fromEngagementRoleApi,
+  fromEngagementWorkloadApi,
+  toEngagementRoleApi,
+  toEngagementWorkloadApi,
   toEngagementStatusApi
 } from '../../util/engagements'
 
@@ -24,10 +28,10 @@ const getEmptyEngagement = () => ({
   id: null,
   title: '',
   description: '',
-  startDate: null,
-  endDate: null,
-  durationAmount: '',
-  durationUnit: 'weeks',
+  durationWeeks: '',
+  role: null,
+  workload: null,
+  compensationRange: '',
   timezones: [],
   countries: [],
   skills: [],
@@ -50,7 +54,6 @@ class EngagementEditorContainer extends Component {
     this.onUpdateDescription = this.onUpdateDescription.bind(this)
     this.onUpdateSkills = this.onUpdateSkills.bind(this)
     this.onUpdateDate = this.onUpdateDate.bind(this)
-    this.onSaveDraft = this.onSaveDraft.bind(this)
     this.onSavePublish = this.onSavePublish.bind(this)
     this.onCancel = this.onCancel.bind(this)
     this.onDelete = this.onDelete.bind(this)
@@ -88,10 +91,12 @@ class EngagementEditorContainer extends Component {
       }
     }
 
+    const nextEngagementDetailsId = _.get(nextProps.engagementDetails, 'id', null)
     if (
-      nextProps.engagementDetails &&
-      nextProps.engagementDetails.id &&
-      nextProps.engagementDetails.id !== this.state.engagement.id
+      nextEngagementId &&
+      nextEngagementDetailsId &&
+      `${nextEngagementDetailsId}` === `${nextEngagementId}` &&
+      nextEngagementDetailsId !== this.state.engagement.id
     ) {
       this.setState({
         engagement: this.normalizeEngagement(nextProps.engagementDetails),
@@ -110,14 +115,21 @@ class EngagementEditorContainer extends Component {
   normalizeEngagement (details) {
     const normalized = normalizeEngagementShape(details)
     const duration = normalized.duration || {}
+    const rawDurationWeeks = normalized.durationWeeks != null && normalized.durationWeeks !== ''
+      ? normalized.durationWeeks
+      : duration.unit === 'weeks' && duration.amount != null && duration.amount !== ''
+        ? duration.amount
+        : ''
+    const parsedDurationWeeks = rawDurationWeeks !== '' ? parseInt(rawDurationWeeks, 10) : ''
+    const durationWeeks = Number.isNaN(parsedDurationWeeks) ? '' : parsedDurationWeeks
     return {
       ...getEmptyEngagement(),
       ...normalized,
-      startDate: normalized.startDate ? moment(normalized.startDate).toDate() : null,
-      endDate: normalized.endDate ? moment(normalized.endDate).toDate() : null,
+      durationWeeks,
+      role: fromEngagementRoleApi(normalized.role),
+      workload: fromEngagementWorkloadApi(normalized.workload),
+      compensationRange: normalized.compensationRange || '',
       applicationDeadline: normalized.applicationDeadline ? moment(normalized.applicationDeadline).toDate() : null,
-      durationAmount: normalized.durationAmount || duration.amount || '',
-      durationUnit: normalized.durationUnit || duration.unit || 'weeks',
       timezones: normalized.timezones || [],
       countries: normalized.countries || [],
       skills: normalized.skills || []
@@ -182,10 +194,16 @@ class EngagementEditorContainer extends Component {
       errors.description = 'Description is required'
     }
 
-    const hasDateRange = Boolean(engagement.startDate && engagement.endDate)
-    const hasDuration = Boolean(engagement.durationAmount)
-    if (!hasDateRange && !hasDuration) {
-      errors.duration = 'Start date and end date are required'
+    const durationValue = engagement.durationWeeks
+    const parsedDurationWeeks = Number(durationValue)
+    if (
+      durationValue === '' ||
+      durationValue == null ||
+      Number.isNaN(parsedDurationWeeks) ||
+      !Number.isInteger(parsedDurationWeeks) ||
+      parsedDurationWeeks < 4
+    ) {
+      errors.durationWeeks = 'Duration must be at least 4 weeks'
     }
 
     if (!engagement.applicationDeadline) {
@@ -204,8 +222,6 @@ class EngagementEditorContainer extends Component {
   }
 
   buildPayload (engagement, isDraft) {
-    const hasDateRange = Boolean(engagement.startDate && engagement.endDate)
-    const hasDuration = Boolean(engagement.durationAmount)
     const status = engagement.status || (isDraft ? 'Open' : '')
     const requiredSkills = (engagement.skills || [])
       .map((skill) => {
@@ -231,23 +247,26 @@ class EngagementEditorContainer extends Component {
       status: toEngagementStatusApi(status)
     }
 
-    if (hasDateRange) {
-      payload.durationStartDate = moment(engagement.startDate).toISOString()
-      payload.durationEndDate = moment(engagement.endDate).toISOString()
-    } else if (hasDuration) {
-      const amount = Number(engagement.durationAmount)
-      if ((engagement.durationUnit || 'weeks') === 'months') {
-        payload.durationMonths = amount
-      } else {
-        payload.durationWeeks = amount
+    if (engagement.durationWeeks !== '' && engagement.durationWeeks != null) {
+      const durationWeeks = parseInt(engagement.durationWeeks, 10)
+      if (!Number.isNaN(durationWeeks)) {
+        payload.durationWeeks = durationWeeks
       }
     }
 
-    return payload
-  }
+    if (engagement.role) {
+      payload.role = toEngagementRoleApi(engagement.role)
+    }
 
-  async onSaveDraft () {
-    await this.onSave(true)
+    if (engagement.workload) {
+      payload.workload = toEngagementWorkloadApi(engagement.workload)
+    }
+
+    if (engagement.compensationRange) {
+      payload.compensationRange = engagement.compensationRange
+    }
+
+    return payload
   }
 
   async onSavePublish () {
@@ -348,7 +367,6 @@ class EngagementEditorContainer extends Component {
         onUpdateDescription={this.onUpdateDescription}
         onUpdateSkills={this.onUpdateSkills}
         onUpdateDate={this.onUpdateDate}
-        onSaveDraft={this.onSaveDraft}
         onSavePublish={this.onSavePublish}
         onCancel={this.onCancel}
         onDelete={this.onDelete}

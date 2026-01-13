@@ -32,6 +32,10 @@ export default {
     margin: 0,
     padding: 0
   }),
+  menuPortal: (provided) => ({
+    ...provided,
+    zIndex: 10000
+  }),
   menuList: (provided) => ({
     ...provided,
     padding: 0
