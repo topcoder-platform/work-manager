@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import moment from 'moment-timezone'
+import { Link } from 'react-router-dom'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import Loader from '../Loader'
@@ -36,6 +37,25 @@ const getSortValue = (engagement, sortBy) => {
     return engagement.applicationDeadline || engagement.application_deadline || null
   }
   return engagement.createdAt || engagement.createdOn || engagement.created || null
+}
+
+const getApplicationsCount = (engagement) => {
+  if (!engagement) {
+    return 0
+  }
+  if (typeof engagement.applicationsCount === 'number') {
+    return engagement.applicationsCount
+  }
+  if (typeof engagement.applicationCount === 'number') {
+    return engagement.applicationCount
+  }
+  if (engagement._count && typeof engagement._count.applications === 'number') {
+    return engagement._count.applications
+  }
+  if (Array.isArray(engagement.applications)) {
+    return engagement.applications.length
+  }
+  return 0
 }
 
 const EngagementsList = ({
@@ -160,8 +180,8 @@ const EngagementsList = ({
               <th>Title</th>
               <th>Duration</th>
               <th>Location</th>
-              <th>Skills</th>
               <th>Application Deadline</th>
+              <th>Applications</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -178,7 +198,7 @@ const EngagementsList = ({
                     : '-'
               const timezones = (engagement.timezones || []).length ? engagement.timezones.join(', ') : 'Any'
               const countries = (engagement.countries || []).length ? engagement.countries.join(', ') : 'Any'
-              const skills = (engagement.skills || []).map(skill => skill.name || skill).join(', ')
+              const applicationsCount = getApplicationsCount(engagement)
               const statusClass = engagement.status === 'Open'
                 ? styles.statusOpen
                 : engagement.status === 'Pending Assignment'
@@ -190,8 +210,19 @@ const EngagementsList = ({
                   <td>{engagement.title || '-'}</td>
                   <td>{duration}</td>
                   <td>{`${timezones}${countries !== 'Any' ? ` / ${countries}` : ''}`}</td>
-                  <td>{skills || '-'}</td>
                   <td>{formatDate(engagement.applicationDeadline)}</td>
+                  <td>
+                    {engagement.id ? (
+                      <Link
+                        className={styles.applicationsLink}
+                        to={`/projects/${projectId}/engagements/${engagement.id}/applications`}
+                      >
+                        {applicationsCount}
+                      </Link>
+                    ) : (
+                      applicationsCount
+                    )}
+                  </td>
                   <td>
                     <span className={`${styles.status} ${statusClass}`}>
                       {engagement.status || '-'}
@@ -211,11 +242,6 @@ const EngagementsList = ({
                           onClick={() => setPendingDelete(engagement)}
                         />
                       )}
-                      <OutlineButton
-                        text='View Applications'
-                        type='info'
-                        link={`/projects/${projectId}/engagements/${engagement.id}/applications`}
-                      />
                     </div>
                   </td>
                 </tr>

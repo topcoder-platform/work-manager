@@ -7,7 +7,8 @@ const Tab = ({
   currentTab,
   selectTab,
   projectId,
-  canViewAssets
+  canViewAssets,
+  onBack
 }) => {
   const projectTabs = [
     { id: 1, label: 'Challenges' },
@@ -24,9 +25,32 @@ const Tab = ({
       { id: 5, label: 'TaaS' }
     ]
 
+  const handleBack = () => {
+    onBack()
+  }
+
+  const handleBackKeyDown = (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') {
+      return
+    }
+    event.preventDefault()
+    handleBack()
+  }
+
   return (
     <div className={styles.tabs}>
       <ul className={styles.challengeTab}>
+        {projectId && (
+          <li
+            className={cn(styles.item, styles.backItem)}
+            onClick={handleBack}
+            onKeyDown={handleBackKeyDown}
+            role='button'
+            tabIndex={0}
+          >
+            {'< Back'}
+          </li>
+        )}
         {tabs.map((tab) => (
           <li
             key={`tab-item-${tab.id}`}
@@ -59,14 +83,16 @@ const Tab = ({
 Tab.defaultProps = {
   selectTab: () => {},
   projectId: null,
-  canViewAssets: true
+  canViewAssets: true,
+  onBack: () => {}
 }
 
 Tab.propTypes = {
   selectTab: PT.func.isRequired,
   currentTab: PT.number.isRequired,
   projectId: PT.oneOfType([PT.string, PT.number]),
-  canViewAssets: PT.bool
+  canViewAssets: PT.bool,
+  onBack: PT.func
 }
 
 export default Tab

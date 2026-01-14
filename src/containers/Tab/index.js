@@ -19,6 +19,7 @@ class TabContainer extends Component {
       currentTab: 1
     }
     this.onTabChange = this.onTabChange.bind(this)
+    this.onBackToHome = this.onBackToHome.bind(this)
     this.getProjectTabFromPath = this.getProjectTabFromPath.bind(this)
     this.getTabFromPath = this.getTabFromPath.bind(this)
   }
@@ -143,6 +144,12 @@ class TabContainer extends Component {
     }
   }
 
+  onBackToHome () {
+    const { history, resetSidebarActiveParams } = this.props
+    history.push('/')
+    resetSidebarActiveParams()
+  }
+
   onTabChange (tab) {
     const { history, resetSidebarActiveParams, projectId } = this.props
     const canViewAssets = this.getCanViewAssets()
@@ -186,7 +193,15 @@ class TabContainer extends Component {
     const { currentTab } = this.state
     const canViewAssets = this.getCanViewAssets()
 
-    return <Tab selectTab={this.onTabChange} currentTab={currentTab} projectId={this.props.projectId} canViewAssets={canViewAssets} />
+    return (
+      <Tab
+        selectTab={this.onTabChange}
+        currentTab={currentTab}
+        projectId={this.props.projectId}
+        canViewAssets={canViewAssets}
+        onBack={this.onBackToHome}
+      />
+    )
   }
 }
 

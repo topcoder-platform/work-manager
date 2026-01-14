@@ -90,6 +90,21 @@
   flex-wrap: wrap;
 }
 
+.applicationsLink {
+  color: $link-color;
+  text-decoration: none;
+  font-weight: 600;
+
+  &:hover,
+  &:focus {
+    text-decoration: underline;
+  }
+
+  &:visited {
+    color: $link-color;
+  }
+}
+
 .emptyState {
   padding: 40px;
   text-align: center;
