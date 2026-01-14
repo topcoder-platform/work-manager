@@ -103,3 +103,32 @@ export function fetchApplication (engagementId, applicationId) {
 export function updateApplicationStatus (engagementId, applicationId, status) {
   return axiosInstance.patch(`${ENGAGEMENTS_API_URL}/${engagementId}/applications/${applicationId}`, { status })
 }
+
+/**
+ * Api request for fetching feedback for an engagement
+ * @param {String|Number} engagementId
+ * @returns {Promise<*>}
+ */
+export function fetchEngagementFeedback (engagementId) {
+  return axiosInstance.get(`${ENGAGEMENTS_API_URL}/${engagementId}/feedback`)
+}
+
+/**
+ * Api request for creating feedback for an engagement
+ * @param {String|Number} engagementId
+ * @param {Object} data
+ * @returns {Promise<*>}
+ */
+export function createEngagementFeedback (engagementId, data) {
+  return axiosInstance.post(`${ENGAGEMENTS_API_URL}/${engagementId}/feedback`, data)
+}
+
+/**
+ * Api request for generating customer feedback link for an engagement
+ * @param {String|Number} engagementId
+ * @param {Object} data
+ * @returns {Promise<*>}
+ */
+export function generateEngagementFeedbackLink (engagementId, data) {
+  return axiosInstance.post(`${ENGAGEMENTS_API_URL}/${engagementId}/feedback/generate-link`, data)
+}

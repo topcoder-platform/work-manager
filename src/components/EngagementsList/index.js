@@ -237,6 +237,13 @@ const EngagementsList = ({
                       />
                       {canManage && (
                         <OutlineButton
+                          text='Feedback'
+                          type='info'
+                          link={`/projects/${projectId}/engagements/${engagement.id}/feedback`}
+                        />
+                      )}
+                      {canManage && (
+                        <OutlineButton
                           text='Delete'
                           type='danger'
                           onClick={() => setPendingDelete(engagement)}

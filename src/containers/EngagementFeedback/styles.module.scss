@@ -1,0 +1,240 @@
+@use '../../styles/includes' as *;
+
+.container {
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: $challenges-title;
+}
+
+.subtitle {
+  margin-top: 6px;
+  color: $tc-gray-70;
+  font-size: 14px;
+  max-width: 720px;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.metaItem {
+  font-size: 13px;
+  color: $tc-gray-70;
+}
+
+.metaLabel {
+  font-weight: 600;
+  margin-right: 6px;
+  color: $tc-gray-80;
+}
+
+.panel {
+  background: $white;
+  border: 1px solid $tc-gray-20;
+  border-radius: 6px;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.panelTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: $tc-gray-90;
+}
+
+.panelDescription {
+  margin-top: 4px;
+  color: $tc-gray-70;
+  font-size: 14px;
+}
+
+.panelActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.notice {
+  padding: 12px;
+  border-radius: 4px;
+  background: $tc-gray-10;
+  color: $tc-gray-80;
+  font-size: 14px;
+}
+
+.loadingState,
+.emptyState {
+  padding: 20px;
+  text-align: center;
+  color: $tc-gray-70;
+  font-size: 14px;
+}
+
+.errorState {
+  padding: 12px;
+  border-radius: 4px;
+  background: rgba($tc-red, 0.08);
+  color: $tc-gray-80;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  font-size: 14px;
+}
+
+.feedbackList {
+  display: grid;
+  gap: 12px;
+}
+
+.feedbackItem {
+  border: 1px solid $tc-gray-20;
+  border-radius: 6px;
+  padding: 12px;
+  background: $white;
+}
+
+.feedbackText {
+  margin: 0 0 8px 0;
+  color: $tc-gray-90;
+  white-space: pre-wrap;
+}
+
+.feedbackMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: $tc-gray-70;
+  align-items: center;
+}
+
+.feedbackAuthor {
+  font-weight: 600;
+  color: $tc-gray-80;
+}
+
+.feedbackRating {
+  font-weight: 600;
+  color: $tc-gray-80;
+}
+
+.feedbackDate {
+  color: $tc-gray-70;
+}
+
+.modal {
+  display: grid;
+  gap: 16px;
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: $tc-gray-90;
+}
+
+.modalForm {
+  display: grid;
+  gap: 16px;
+}
+
+.modalField {
+  display: grid;
+  gap: 6px;
+}
+
+.modalLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: $tc-gray-80;
+}
+
+.input,
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid $tc-gray-30;
+  border-radius: 4px;
+  font-size: 14px;
+  color: $tc-gray-90;
+}
+
+.textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.characterCount {
+  font-size: 12px;
+  color: $tc-gray-60;
+  text-align: right;
+}
+
+.formError {
+  color: $tc-red;
+  font-size: 12px;
+}
+
+.modalActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.linkMessage {
+  font-size: 14px;
+  color: $tc-gray-80;
+}
+
+.linkDisplay {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 12px;
+  border: 1px solid $tc-gray-20;
+  border-radius: 6px;
+  background: $tc-gray-10;
+}
+
+.linkInput {
+  flex: 1 1 220px;
+  min-width: 220px;
+  border: 1px solid $tc-gray-30;
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 13px;
+  color: $tc-gray-80;
+  background: $white;
+}
+
+.linkMeta {
+  font-size: 12px;
+  color: $tc-gray-70;
+}

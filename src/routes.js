@@ -19,6 +19,7 @@ import ChallengeEditor from './containers/ChallengeEditor'
 import EngagementEditor from './containers/EngagementEditor'
 import EngagementsList from './containers/EngagementsList'
 import ApplicationsList from './containers/ApplicationsList'
+import EngagementFeedback from './containers/EngagementFeedback'
 import { getFreshToken, decodeToken } from 'tc-auth-lib'
 import { saveToken } from './actions/auth'
 import { loadChallengeDetails } from './actions/challenges'
@@ -264,6 +265,13 @@ class Routes extends React.Component {
               <ApplicationsList projectId={match.params.projectId} engagementId={match.params.engagementId} />,
               <TopBarContainer projectId={match.params.projectId} />,
               <Tab projectId={match.params.projectId} menu={'Applications'} />,
+              <FooterContainer />
+            )()} />
+          <Route exact path='/projects/:projectId/engagements/:engagementId/feedback'
+            render={({ match }) => renderApp(
+              <EngagementFeedback projectId={match.params.projectId} engagementId={match.params.engagementId} />,
+              <TopBarContainer projectId={match.params.projectId} />,
+              <Tab projectId={match.params.projectId} menu={'Feedback'} />,
               <FooterContainer />
             )()} />
           <Route path='/projects/:projectId/engagements/:engagementId'
