@@ -152,9 +152,9 @@ class ChallengeReviewerField extends Component {
     this.loadWorkflows()
   }
 
-  updateAssignedMembers (challengeResources, challenge) {
+  updateAssignedMembers (challengeResources, challenge, prevChallenge = null) {
     const reviewersWithPhaseName = challenge.reviewers.map(item => {
-      const phase = challenge.phases && challenge.phases.find(p => p.phaseId === item.phaseId)
+      const phase = challenge.phases && challenge.phases.find(p => (p.id === item.phaseId) || (p.phaseId === item.phaseId))
       return {
         ...item,
         name: phase && phase.name
@@ -171,19 +171,75 @@ class ChallengeReviewerField extends Component {
 
     const assignedMembers = {}
 
+    const unchangedReviewers = new Set()
+    if (prevChallenge && prevChallenge.reviewers) {
+      const prevReviewers = prevChallenge.reviewers || []
+      challenge.reviewers.forEach((reviewer, index) => {
+        const prevReviewer = prevReviewers[index]
+        if (prevReviewer &&
+            prevReviewer.phaseId === reviewer.phaseId &&
+            (reviewer.isMemberReview !== false) &&
+            (prevReviewer.isMemberReview !== false)) {
+          unchangedReviewers.add(index)
+          if (this.state.assignedMembers[index]) {
+            assignedMembers[index] = [...this.state.assignedMembers[index]]
+          }
+        }
+      })
+    }
+
     challengeResources.forEach((resource) => {
-      const indices = reviewerIndex[ResourceToPhaseNameMap[resource.roleName]] || []
+      const phaseName = ResourceToPhaseNameMap[resource.roleName]
+      if (!phaseName) return
+
+      const indices = reviewerIndex[phaseName] || []
 
       // Distribute resources across all reviewers with the same phase name
       indices.forEach((index) => {
-        if (!assignedMembers[index]) {
-          assignedMembers[index] = []
+        const reviewer = challenge.reviewers[index]
+        if (!reviewer || (reviewer.isMemberReview === false)) return
+
+        if (unchangedReviewers.has(index)) {
+          const existing = assignedMembers[index] || []
+          const alreadyAssigned = existing.some(m =>
+            m && (m.userId === resource.memberId || m.handle === resource.memberHandle)
+          )
+          if (!alreadyAssigned) {
+            if (!assignedMembers[index]) {
+              assignedMembers[index] = []
+            }
+            assignedMembers[index].push({
+              handle: resource.memberHandle,
+              userId: resource.memberId
+            })
+          }
+        } else {
+          if (!assignedMembers[index]) {
+            assignedMembers[index] = []
+          }
+          const existing = assignedMembers[index]
+          const alreadyAssigned = existing.some(m =>
+            m && (m.userId === resource.memberId || m.handle === resource.memberHandle)
+          )
+          if (!alreadyAssigned) {
+            assignedMembers[index].push({
+              handle: resource.memberHandle,
+              userId: resource.memberId
+            })
+          }
         }
-        assignedMembers[index].push({
-          handle: resource.memberHandle,
-          userId: resource.memberId
-        })
       })
+    })
+
+    // Clean up assignments for reviewers that no longer exist or are no longer member reviewers
+    Object.keys(assignedMembers).forEach(indexStr => {
+      const index = parseInt(indexStr, 10)
+      const reviewer = challenge.reviewers[index]
+      if (index >= challenge.reviewers.length ||
+          !reviewer ||
+          (reviewer.isMemberReview === false)) {
+        delete assignedMembers[index]
+      }
     })
 
     if (!isEqual(this.state.assignedMembers, assignedMembers)) {
@@ -222,7 +278,7 @@ class ChallengeReviewerField extends Component {
     })()
 
     if (challenge && this.doUpdateAssignedMembers && reviewersChanged) {
-      this.updateAssignedMembers(challengeResources, challenge)
+      this.updateAssignedMembers(challengeResources, challenge, prevChallenge)
     }
 
     if (challenge && prevChallenge &&
