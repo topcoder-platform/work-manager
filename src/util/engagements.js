@@ -1,12 +1,16 @@
 const STATUS_LABELS = {
   OPEN: 'Open',
   PENDING_ASSIGNMENT: 'Pending Assignment',
+  ACTIVE: 'Active',
+  CANCELLED: 'Cancelled',
   CLOSED: 'Closed'
 }
 
 const STATUS_TO_API = {
   Open: 'OPEN',
   'Pending Assignment': 'PENDING_ASSIGNMENT',
+  Active: 'ACTIVE',
+  Cancelled: 'CANCELLED',
   Closed: 'CLOSED'
 }
 

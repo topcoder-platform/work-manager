@@ -29,7 +29,8 @@ import {
   checkOnlyReadOnlyRoles,
   checkReadOnlyRoles,
   checkAdmin,
-  checkCopilot
+  checkCopilot,
+  checkAdminOrPmOrTaskManager
 } from './util/tc'
 import Users from './containers/Users'
 import { isBetaMode, removeFromLocalStorage, saveToLocalStorage } from './util/localstorage'
@@ -119,6 +120,7 @@ class Routes extends React.Component {
     const isReadOnly = checkReadOnlyRoles(this.props.token)
     const isCopilot = checkCopilot(this.props.token)
     const isAdmin = checkAdmin(this.props.token)
+    const canManageEngagements = checkAdminOrPmOrTaskManager(this.props.token, null)
 
     return (
       <React.Fragment>
@@ -251,12 +253,24 @@ class Routes extends React.Component {
               <Tab projectId={match.params.projectId} />,
               <FooterContainer />
             )()} />
-          {!isReadOnly && (
+          {canManageEngagements && (
             <Route exact path='/projects/:projectId/engagements/new'
               render={({ match }) => renderApp(
                 <EngagementEditor />,
                 <TopBarContainer />,
                 <Tab projectId={match.params.projectId} menu={'New Engagement'} />,
+                <FooterContainer />
+              )()} />
+          )}
+          {!canManageEngagements && (
+            <Route exact path='/projects/:projectId/engagements/new'
+              render={({ match }) => renderApp(
+                <Challenges
+                  menu='NULL'
+                  warnMessage={'You need Admin, Project Manager, or Task Manager role to create engagements'}
+                />,
+                <TopBarContainer />,
+                <Tab projectId={match.params.projectId} />,
                 <FooterContainer />
               )()} />
           )}
@@ -274,13 +288,27 @@ class Routes extends React.Component {
               <Tab projectId={match.params.projectId} menu={'Feedback'} />,
               <FooterContainer />
             )()} />
-          <Route path='/projects/:projectId/engagements/:engagementId'
-            render={({ match }) => renderApp(
-              <EngagementEditor />,
-              <TopBarContainer />,
-              <Tab projectId={match.params.projectId} menu={'Engagement'} />,
-              <FooterContainer />
-            )()} />
+          {canManageEngagements && (
+            <Route path='/projects/:projectId/engagements/:engagementId'
+              render={({ match }) => renderApp(
+                <EngagementEditor />,
+                <TopBarContainer />,
+                <Tab projectId={match.params.projectId} menu={'Engagement'} />,
+                <FooterContainer />
+              )()} />
+          )}
+          {!canManageEngagements && (
+            <Route path='/projects/:projectId/engagements/:engagementId'
+              render={({ match }) => renderApp(
+                <Challenges
+                  menu='NULL'
+                  warnMessage={'You need Admin, Project Manager, or Task Manager role to edit engagements'}
+                />,
+                <TopBarContainer />,
+                <Tab projectId={match.params.projectId} />,
+                <FooterContainer />
+              )()} />
+          )}
           {
             !isReadOnly && (
               <Route exact path='/projects/:projectId/challenges/new'

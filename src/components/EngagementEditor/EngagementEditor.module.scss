@@ -148,3 +148,52 @@
   padding: 10px 0;
   color: $tc-gray-80;
 }
+
+.memberList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.memberRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid $tc-gray-20;
+  border-radius: 4px;
+  background-color: $white;
+}
+
+.memberHandle {
+  color: $tc-gray-80;
+  font-weight: 500;
+}
+
+.memberActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.memberNote {
+  font-size: 12px;
+  color: $tc-red;
+}
+
+.assignmentProgress {
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.assignmentProgressComplete {
+  color: $tc-green-40;
+}
+
+.assignmentProgressPartial {
+  color: $tc-blue-40;
+}

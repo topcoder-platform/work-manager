@@ -1,0 +1,71 @@
+@use '../../styles/includes' as *;
+
+.form {
+  @include form-container-default();
+  background-color: $white;
+  padding: 24px 30px;
+  border-radius: 6px;
+  min-width: 520px;
+  box-sizing: border-box;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 24px;
+  color: $challenges-title;
+  margin-bottom: 20px;
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.label {
+  max-width: 185px;
+  min-width: 185px;
+  margin-right: 14px;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  color: $tc-gray-80;
+}
+
+.field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid $tc-gray-30;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.selectInput {
+  width: 100%;
+}
+
+.readOnly {
+  background-color: $tc-gray-10;
+  color: $tc-gray-80;
+}
+
+.error {
+  color: $tc-red;
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}

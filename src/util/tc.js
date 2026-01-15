@@ -11,7 +11,9 @@ import {
   READ_ONLY_ROLES,
   ALLOWED_DOWNLOAD_SUBMISSIONS_ROLES,
   ALLOWED_EDIT_RESOURCE_ROLES,
-  MANAGER_ROLES
+  MANAGER_ROLES,
+  PROJECT_ROLES,
+  TASK_MANAGER_ROLES
 } from '../config/constants'
 import _ from 'lodash'
 import { decodeToken } from 'tc-auth-lib'
@@ -205,6 +207,29 @@ export const checkManager = (token) => {
   const tokenData = decodeToken(token)
   const roles = _.get(tokenData, 'roles')
   return roles.some(val => MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
+}
+
+export const checkTaskManager = (token) => {
+  const tokenData = decodeToken(token)
+  const roles = _.get(tokenData, 'roles')
+  return roles.some(val => TASK_MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
+}
+
+export const checkAdminOrPmOrTaskManager = (token, project) => {
+  const tokenData = decodeToken(token)
+  const roles = _.get(tokenData, 'roles')
+  const userId = tokenData.userId
+
+  const isAdmin = roles.some(val => ADMIN_ROLES.indexOf(val.toLowerCase()) > -1)
+  const isManager = roles.some(val => MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
+  const isTaskManager = roles.some(val => TASK_MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
+
+  const isProjectManager = project && !_.isEmpty(project) &&
+    project.members && project.members.some(member =>
+      member.userId === userId && member.role === PROJECT_ROLES.MANAGER
+    )
+
+  return isAdmin || isManager || isTaskManager || isProjectManager
 }
 /**
  * Checks if token has any of the copilot roles

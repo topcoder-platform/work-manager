@@ -37,7 +37,8 @@ export const {
   SKILLS_V5_SKILLS_URL,
   UPDATE_SKILLS_V5_API_URL,
   SALESFORCE_BILLING_ACCOUNT_LINK,
-  PROFILE_URL
+  PROFILE_URL,
+  TC_FINANCE_API_URL
 } = process.env
 
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
@@ -152,6 +153,10 @@ export const UPDATE_ENGAGEMENT_DETAILS_FAILURE = 'UPDATE_ENGAGEMENT_DETAILS_FAIL
 export const DELETE_ENGAGEMENT_PENDING = 'DELETE_ENGAGEMENT_PENDING'
 export const DELETE_ENGAGEMENT_SUCCESS = 'DELETE_ENGAGEMENT_SUCCESS'
 export const DELETE_ENGAGEMENT_FAILURE = 'DELETE_ENGAGEMENT_FAILURE'
+
+export const CREATE_PAYMENT_PENDING = 'CREATE_PAYMENT_PENDING'
+export const CREATE_PAYMENT_SUCCESS = 'CREATE_PAYMENT_SUCCESS'
+export const CREATE_PAYMENT_FAILURE = 'CREATE_PAYMENT_FAILURE'
 
 // Application action types
 export const LOAD_APPLICATIONS_PENDING = 'LOAD_APPLICATIONS_PENDING'
@@ -374,7 +379,8 @@ export const ALLOWED_USER_ROLES = [
   'connect admin',
   'connect manager',
   'connect copilot',
-  'topcoder user'
+  'topcoder user',
+  'topcoder task manager'
 ]
 
 export const READ_ONLY_ROLES = [
@@ -392,6 +398,10 @@ export const COPILOT_ROLES = [
 
 export const MANAGER_ROLES = [
   'project manager'
+]
+
+export const TASK_MANAGER_ROLES = [
+  'topcoder task manager'
 ]
 
 export const downloadAttachmentURL = (challengeId, attachmentId, token) =>

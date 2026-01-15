@@ -5,6 +5,8 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import EngagementEditor from '../../components/EngagementEditor'
+import Modal from '../../components/Modal'
+import PaymentForm from '../../components/PaymentForm'
 import {
   loadEngagementDetails,
   createEngagement,
@@ -12,9 +14,12 @@ import {
   partiallyUpdateEngagementDetails,
   deleteEngagement
 } from '../../actions/engagements'
+import { createMemberPayment } from '../../actions/payments'
 import { loadProject } from '../../actions/projects'
-import { checkAdmin, checkManager } from '../../util/tc'
+import { checkAdmin, checkManager, checkTaskManager } from '../../util/tc'
+import { toastFailure } from '../../util/toaster'
 import { PROJECT_ROLES } from '../../config/constants'
+import { fetchProfile } from '../../services/user'
 import {
   normalizeEngagement as normalizeEngagementShape,
   fromEngagementRoleApi,
@@ -36,8 +41,51 @@ const getEmptyEngagement = () => ({
   countries: [],
   skills: [],
   applicationDeadline: null,
-  status: 'Open'
+  status: 'Open',
+  isPrivate: false,
+  requiredMemberCount: '',
+  assignedMemberHandle: '',
+  assignedMembers: [],
+  assignedMemberHandles: []
 })
+
+const getMemberHandle = (member) => {
+  if (!member) {
+    return null
+  }
+  if (typeof member === 'string') {
+    return member
+  }
+  return member.handle || member.memberHandle || member.username || member.name || member.userHandle || member.userName || null
+}
+
+const getMemberId = (member) => {
+  if (!member || typeof member === 'string') {
+    return null
+  }
+  return member.id || member.memberId || member.userId || null
+}
+
+const normalizeMemberInfo = (member, index, memberIdLookup = {}) => {
+  if (!member) {
+    return { id: null, handle: '-', key: `member-${index}` }
+  }
+  if (typeof member === 'string') {
+    return {
+      id: memberIdLookup[member] || null,
+      handle: member,
+      key: member || `member-${index}`
+    }
+  }
+  const handle = getMemberHandle(member) || '-'
+  const id = getMemberId(member) || (handle !== '-' ? memberIdLookup[handle] : null)
+  return {
+    ...member,
+    id,
+    handle,
+    key: id || handle || `member-${index}`
+  }
+}
 
 class EngagementEditorContainer extends Component {
   constructor (props) {
@@ -47,7 +95,10 @@ class EngagementEditorContainer extends Component {
       submitTriggered: false,
       validationErrors: {},
       showDeleteModal: false,
-      isSaving: false
+      isSaving: false,
+      showPaymentModal: false,
+      selectedMember: null,
+      memberIdLookup: {}
     }
 
     this.onUpdateInput = this.onUpdateInput.bind(this)
@@ -58,6 +109,10 @@ class EngagementEditorContainer extends Component {
     this.onCancel = this.onCancel.bind(this)
     this.onDelete = this.onDelete.bind(this)
     this.onToggleDelete = this.onToggleDelete.bind(this)
+    this.onOpenPaymentModal = this.onOpenPaymentModal.bind(this)
+    this.onClosePaymentModal = this.onClosePaymentModal.bind(this)
+    this.onSubmitPayment = this.onSubmitPayment.bind(this)
+    this.resolveMemberIds = this.resolveMemberIds.bind(this)
   }
 
   componentDidMount () {
@@ -98,11 +153,13 @@ class EngagementEditorContainer extends Component {
       `${nextEngagementDetailsId}` === `${nextEngagementId}` &&
       nextEngagementDetailsId !== this.state.engagement.id
     ) {
+      const normalizedEngagement = this.normalizeEngagement(nextProps.engagementDetails)
       this.setState({
-        engagement: this.normalizeEngagement(nextProps.engagementDetails),
+        engagement: normalizedEngagement,
         submitTriggered: false,
         validationErrors: {}
       })
+      this.resolveMemberIds(normalizedEngagement)
     }
   }
 
@@ -129,6 +186,11 @@ class EngagementEditorContainer extends Component {
       role: fromEngagementRoleApi(normalized.role),
       workload: fromEngagementWorkloadApi(normalized.workload),
       compensationRange: normalized.compensationRange || '',
+      isPrivate: normalized.isPrivate || false,
+      requiredMemberCount: normalized.requiredMemberCount || '',
+      assignedMemberHandle: normalized.assignedMemberHandle || '',
+      assignedMembers: normalized.assignedMembers || [],
+      assignedMemberHandles: normalized.assignedMemberHandles || [],
       applicationDeadline: normalized.applicationDeadline ? moment(normalized.applicationDeadline).toDate() : null,
       timezones: normalized.timezones || [],
       countries: normalized.countries || [],
@@ -218,6 +280,21 @@ class EngagementEditorContainer extends Component {
       errors.status = 'Status is required'
     }
 
+    if (engagement.isPrivate && (!engagement.assignedMemberHandle || !engagement.assignedMemberHandle.trim())) {
+      errors.assignedMemberHandle = 'Member handle is required for private engagements'
+    }
+
+    if (engagement.requiredMemberCount !== '' && engagement.requiredMemberCount != null) {
+      const parsedRequiredMemberCount = Number(engagement.requiredMemberCount)
+      if (
+        Number.isNaN(parsedRequiredMemberCount) ||
+        !Number.isInteger(parsedRequiredMemberCount) ||
+        parsedRequiredMemberCount < 1
+      ) {
+        errors.requiredMemberCount = 'Required members must be a positive number'
+      }
+    }
+
     return errors
   }
 
@@ -264,6 +341,21 @@ class EngagementEditorContainer extends Component {
 
     if (engagement.compensationRange) {
       payload.compensationRange = engagement.compensationRange
+    }
+
+    if (engagement.isPrivate !== undefined) {
+      payload.isPrivate = engagement.isPrivate
+    }
+
+    if (engagement.requiredMemberCount !== '' && engagement.requiredMemberCount != null) {
+      const requiredMemberCount = parseInt(engagement.requiredMemberCount, 10)
+      if (!Number.isNaN(requiredMemberCount)) {
+        payload.requiredMemberCount = requiredMemberCount
+      }
+    }
+
+    if (engagement.isPrivate && engagement.assignedMemberHandle) {
+      payload.assignedMemberHandle = engagement.assignedMemberHandle
     }
 
     return payload
@@ -315,6 +407,114 @@ class EngagementEditorContainer extends Component {
     this.setState((prevState) => ({ showDeleteModal: !prevState.showDeleteModal }))
   }
 
+  onOpenPaymentModal (member) {
+    this.setState({
+      showPaymentModal: true,
+      selectedMember: member
+    })
+  }
+
+  onClosePaymentModal () {
+    this.setState({
+      showPaymentModal: false,
+      selectedMember: null
+    })
+  }
+
+  async onSubmitPayment (member, paymentTitle, amount) {
+    const { engagement, selectedMember } = this.state
+    const { payments, projectDetail, createMemberPayment } = this.props
+    if (payments && payments.isProcessing) {
+      return
+    }
+    const memberToPay = member || selectedMember
+    if (!memberToPay) {
+      toastFailure('Error', 'Member is required to create a payment')
+      return
+    }
+    const memberHandle = getMemberHandle(memberToPay)
+    let memberId = getMemberId(memberToPay)
+    if (!memberId && memberHandle) {
+      try {
+        const profile = await fetchProfile(memberHandle)
+        memberId = profile && (profile.userId || profile.id || profile.memberId)
+      } catch (error) {
+        // Keep memberId unset to fall through to validation error.
+      }
+    }
+    if (!memberId) {
+      toastFailure('Error', 'Member ID is required to create a payment')
+      return
+    }
+    const billingAccountId = _.get(projectDetail, 'billingAccountId')
+    if (!billingAccountId) {
+      toastFailure('Error', 'Billing account is required to create a payment')
+      return
+    }
+    if (!window.confirm('Are you sure you want to submit this payment?')) {
+      return
+    }
+    try {
+      await createMemberPayment(
+        engagement.id,
+        memberId,
+        memberHandle,
+        paymentTitle,
+        amount,
+        billingAccountId
+      )
+      this.onClosePaymentModal()
+    } catch (error) {
+      // Keep modal open to show error toast from reducer.
+    }
+  }
+
+  async resolveMemberIds (engagement) {
+    if (!engagement) {
+      return
+    }
+    const assignedMembers = Array.isArray(engagement.assignedMembers) ? engagement.assignedMembers : []
+    const assignedMemberHandles = Array.isArray(engagement.assignedMemberHandles) ? engagement.assignedMemberHandles : []
+    const memberCandidates = assignedMembers.length ? assignedMembers : assignedMemberHandles
+    if (!memberCandidates.length) {
+      return
+    }
+    const handlesToLookup = memberCandidates.reduce((acc, member) => {
+      const handle = getMemberHandle(member)
+      const id = getMemberId(member)
+      if (
+        handle &&
+        !id &&
+        !Object.prototype.hasOwnProperty.call(this.state.memberIdLookup, handle) &&
+        !acc.includes(handle)
+      ) {
+        acc.push(handle)
+      }
+      return acc
+    }, [])
+    if (!handlesToLookup.length) {
+      return
+    }
+    const results = await Promise.all(handlesToLookup.map(async (handle) => {
+      try {
+        const profile = await fetchProfile(handle)
+        const id = profile && (profile.userId || profile.id || profile.memberId)
+        return { handle, id: id || null }
+      } catch (error) {
+        return { handle, id: null }
+      }
+    }))
+    this.setState((prevState) => {
+      const nextLookup = { ...prevState.memberIdLookup }
+      results.forEach(({ handle, id }) => {
+        if (!Object.prototype.hasOwnProperty.call(nextLookup, handle) || (id && !nextLookup[handle])) {
+          nextLookup[handle] = id
+        }
+      })
+      return { memberIdLookup: nextLookup }
+    })
+  }
+
   async onDelete () {
     if (this.state.isSaving) {
       return
@@ -341,37 +541,66 @@ class EngagementEditorContainer extends Component {
     const { auth, projectDetail } = this.props
     const isAdmin = checkAdmin(auth.token)
     const isManager = checkManager(auth.token)
+    const isTaskManager = checkTaskManager(auth.token)
     const members = _.get(projectDetail, 'members', [])
     const userId = _.get(auth, 'user.userId')
     const isProjectManager = members.some(member => member.userId === userId && member.role === PROJECT_ROLES.MANAGER)
-    return isAdmin || isManager || isProjectManager
+    return isAdmin || isManager || isTaskManager || isProjectManager
   }
 
   render () {
-    const { match, isLoading } = this.props
+    const { match, isLoading, payments } = this.props
     const engagementId = _.get(match.params, 'engagementId', null)
     const isNew = !engagementId
+    const isPaymentProcessing = Boolean(payments && payments.isProcessing)
+    const shouldShowPaymentModal = this.state.showPaymentModal && this.state.selectedMember
+    const assignedMembersForPayment = this.getAssignedMembersForPayment()
 
     return (
-      <EngagementEditor
-        engagement={this.state.engagement}
-        isNew={isNew}
-        isLoading={isLoading}
-        isSaving={this.state.isSaving}
-        canEdit={this.canEdit()}
-        submitTriggered={this.state.submitTriggered}
-        validationErrors={this.state.validationErrors}
-        showDeleteModal={this.state.showDeleteModal}
-        onToggleDelete={this.onToggleDelete}
-        onUpdateInput={this.onUpdateInput}
-        onUpdateDescription={this.onUpdateDescription}
-        onUpdateSkills={this.onUpdateSkills}
-        onUpdateDate={this.onUpdateDate}
-        onSavePublish={this.onSavePublish}
-        onCancel={this.onCancel}
-        onDelete={this.onDelete}
-      />
+      <React.Fragment>
+        <EngagementEditor
+          engagement={this.state.engagement}
+          isNew={isNew}
+          isLoading={isLoading}
+          isSaving={this.state.isSaving}
+          canEdit={this.canEdit()}
+          isPaymentProcessing={isPaymentProcessing}
+          submitTriggered={this.state.submitTriggered}
+          validationErrors={this.state.validationErrors}
+          showDeleteModal={this.state.showDeleteModal}
+          resolvedAssignedMembers={assignedMembersForPayment}
+          onToggleDelete={this.onToggleDelete}
+          onUpdateInput={this.onUpdateInput}
+          onUpdateDescription={this.onUpdateDescription}
+          onUpdateSkills={this.onUpdateSkills}
+          onUpdateDate={this.onUpdateDate}
+          onSavePublish={this.onSavePublish}
+          onCancel={this.onCancel}
+          onDelete={this.onDelete}
+          onOpenPaymentModal={this.onOpenPaymentModal}
+        />
+        {shouldShowPaymentModal && (
+          <Modal onCancel={this.onClosePaymentModal}>
+            <PaymentForm
+              engagement={this.state.engagement}
+              member={this.state.selectedMember}
+              availableMembers={assignedMembersForPayment}
+              isProcessing={isPaymentProcessing}
+              onSubmit={this.onSubmitPayment}
+              onCancel={this.onClosePaymentModal}
+            />
+          </Modal>
+        )}
+      </React.Fragment>
     )
+  }
+
+  getAssignedMembersForPayment () {
+    const { engagement, memberIdLookup } = this.state
+    const assignedMembers = Array.isArray(engagement.assignedMembers) ? engagement.assignedMembers : []
+    const assignedMemberHandles = Array.isArray(engagement.assignedMemberHandles) ? engagement.assignedMemberHandles : []
+    const memberCandidates = assignedMembers.length ? assignedMembers : assignedMemberHandles
+    return memberCandidates.map((member, index) => normalizeMemberInfo(member, index, memberIdLookup))
   }
 }
 
@@ -397,20 +626,25 @@ EngagementEditorContainer.propTypes = {
       role: PropTypes.string
     }))
   }),
+  payments: PropTypes.shape({
+    isProcessing: PropTypes.bool
+  }),
   engagementDetails: PropTypes.shape(),
   isLoading: PropTypes.bool,
   loadEngagementDetails: PropTypes.func.isRequired,
   createEngagement: PropTypes.func.isRequired,
   updateEngagementDetails: PropTypes.func.isRequired,
   deleteEngagement: PropTypes.func.isRequired,
-  loadProject: PropTypes.func.isRequired
+  loadProject: PropTypes.func.isRequired,
+  createMemberPayment: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
   engagementDetails: state.engagements.engagementDetails,
   isLoading: state.engagements.isLoading,
   auth: state.auth,
-  projectDetail: state.projects.projectDetail
+  projectDetail: state.projects.projectDetail,
+  payments: state.payments
 })
 
 const mapDispatchToProps = {
@@ -419,7 +653,8 @@ const mapDispatchToProps = {
   updateEngagementDetails,
   partiallyUpdateEngagementDetails,
   deleteEngagement,
-  loadProject
+  loadProject,
+  createMemberPayment
 }
 
 export default withRouter(

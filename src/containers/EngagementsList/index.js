@@ -6,8 +6,7 @@ import { withRouter } from 'react-router-dom'
 import EngagementsList from '../../components/EngagementsList'
 import { loadEngagements, deleteEngagement } from '../../actions/engagements'
 import { loadProject } from '../../actions/projects'
-import { checkAdmin, checkManager } from '../../util/tc'
-import { PROJECT_ROLES } from '../../config/constants'
+import { checkAdminOrPmOrTaskManager } from '../../util/tc'
 
 class EngagementsListContainer extends Component {
   componentDidMount () {
@@ -45,12 +44,7 @@ class EngagementsListContainer extends Component {
 
   canManage () {
     const { auth, projectDetail } = this.props
-    const isAdmin = checkAdmin(auth.token)
-    const isManager = checkManager(auth.token)
-    const members = _.get(projectDetail, 'members', [])
-    const userId = _.get(auth, 'user.userId')
-    const isProjectManager = members.some(member => member.userId === userId && member.role === PROJECT_ROLES.MANAGER)
-    return isAdmin || isManager || isProjectManager
+    return checkAdminOrPmOrTaskManager(auth.token, projectDetail)
   }
 
   render () {

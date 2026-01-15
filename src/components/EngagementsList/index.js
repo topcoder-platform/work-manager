@@ -12,6 +12,8 @@ const STATUS_OPTIONS = [
   { label: 'All', value: 'all' },
   { label: 'Open', value: 'Open' },
   { label: 'Pending Assignment', value: 'Pending Assignment' },
+  { label: 'Active', value: 'Active' },
+  { label: 'Cancelled', value: 'Cancelled' },
   { label: 'Closed', value: 'Closed' }
 ]
 
@@ -203,7 +205,11 @@ const EngagementsList = ({
                 ? styles.statusOpen
                 : engagement.status === 'Pending Assignment'
                   ? styles.statusPendingAssignment
-                  : styles.statusClosed
+                  : engagement.status === 'Active'
+                    ? styles.statusActive
+                    : engagement.status === 'Cancelled'
+                      ? styles.statusCancelled
+                      : styles.statusClosed
 
               return (
                 <tr key={engagement.id || engagement.title}>
@@ -230,11 +236,13 @@ const EngagementsList = ({
                   </td>
                   <td>
                     <div className={styles.actions}>
-                      <OutlineButton
-                        text='Edit'
-                        type='info'
-                        link={`/projects/${projectId}/engagements/${engagement.id}`}
-                      />
+                      {canManage && (
+                        <OutlineButton
+                          text='Edit'
+                          type='info'
+                          link={`/projects/${projectId}/engagements/${engagement.id}`}
+                        />
+                      )}
                       {canManage && (
                         <OutlineButton
                           text='Feedback'

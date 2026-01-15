@@ -11,11 +11,28 @@ import SkillsField from '../ChallengeEditor/SkillsField'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import Loader from '../Loader'
 import { JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
+import { suggestProfiles } from '../../services/user'
 import styles from './EngagementEditor.module.scss'
 
 const ANY_OPTION = { label: 'Any', value: 'Any' }
 const INPUT_DATE_FORMAT = 'MM/dd/yyyy'
 const INPUT_TIME_FORMAT = 'HH:mm'
+
+const getEmptyEngagement = () => ({
+  title: '',
+  description: '',
+  timezones: [],
+  countries: [],
+  skills: [],
+  durationWeeks: '',
+  role: null,
+  workload: null,
+  compensationRange: '',
+  status: 'Open',
+  isPrivate: false,
+  requiredMemberCount: '',
+  assignedMemberHandle: ''
+})
 
 const normalizeAnySelection = (selectedOptions) => {
   if (!selectedOptions || !selectedOptions.length) {
@@ -28,12 +45,29 @@ const normalizeAnySelection = (selectedOptions) => {
   return selectedOptions
 }
 
+const normalizeMemberInfo = (member, index) => {
+  if (!member) {
+    return { id: null, handle: '-', key: `member-${index}` }
+  }
+  if (typeof member === 'string') {
+    return { id: null, handle: member, key: member }
+  }
+  const handle = member.handle || member.memberHandle || member.username || member.name || member.userHandle || member.userName || '-'
+  const id = member.id || member.memberId || member.userId || null
+  return {
+    id,
+    handle,
+    key: id || handle || `member-${index}`
+  }
+}
+
 const EngagementEditor = ({
   engagement,
   isNew,
   isLoading,
   isSaving,
   canEdit,
+  isPaymentProcessing,
   submitTriggered,
   validationErrors,
   showDeleteModal,
@@ -44,7 +78,9 @@ const EngagementEditor = ({
   onUpdateDate,
   onSavePublish,
   onCancel,
-  onDelete
+  onDelete,
+  onOpenPaymentModal,
+  resolvedAssignedMembers
 }) => {
   const timeZoneOptions = useMemo(() => {
     const zones = moment.tz.names().map(zone => ({
@@ -98,6 +134,50 @@ const EngagementEditor = ({
 
   const roleLabel = selectedRoleOption ? selectedRoleOption.label : engagement.role
   const workloadLabel = selectedWorkloadOption ? selectedWorkloadOption.label : engagement.workload
+  const assignedMembers = Array.isArray(engagement.assignedMembers) ? engagement.assignedMembers : []
+  const assignedMemberHandles = Array.isArray(engagement.assignedMemberHandles) ? engagement.assignedMemberHandles : []
+  const assignedMemberList = resolvedAssignedMembers.length
+    ? resolvedAssignedMembers
+    : assignedMembers.length
+      ? assignedMembers.map((member, index) => normalizeMemberInfo(member, index))
+      : assignedMemberHandles.map((member, index) => normalizeMemberInfo(member, index))
+  const showAssignedMembers = assignedMemberList.length > 0
+  const assignedMemberCount = assignedMemberList.length
+  const requiredMemberCountValue = Number(engagement.requiredMemberCount)
+  const hasRequiredMemberCount = Number.isInteger(requiredMemberCountValue) && requiredMemberCountValue > 0
+  const isFullyStaffed = hasRequiredMemberCount && assignedMemberCount >= requiredMemberCountValue
+  const assignedMemberLabel = assignedMemberCount === 1 ? 'member' : 'members'
+  const requiredMemberLabel = requiredMemberCountValue === 1 ? 'member' : 'members'
+  let assignmentProgressText = 'No members assigned'
+
+  if (assignedMemberCount > 0) {
+    if (!hasRequiredMemberCount) {
+      assignmentProgressText = `${assignedMemberCount} ${assignedMemberLabel} assigned (no limit set)`
+    } else if (isFullyStaffed) {
+      assignmentProgressText = `Fully staffed (${assignedMemberCount} ${assignedMemberLabel})`
+    } else {
+      assignmentProgressText = `${assignedMemberCount} of ${requiredMemberCountValue} ${requiredMemberLabel} assigned`
+    }
+  }
+
+  const assignmentProgressClassName = cn(
+    styles.assignmentProgress,
+    isFullyStaffed ? styles.assignmentProgressComplete : styles.assignmentProgressPartial
+  )
+
+  const loadMemberOptions = (inputValue) => {
+    if (!inputValue) {
+      return Promise.resolve([])
+    }
+    return suggestProfiles(inputValue).then((profiles = []) => {
+      return profiles
+        .map((profile) => {
+          const handle = typeof profile === 'string' ? profile : profile.handle
+          return handle ? { label: handle, value: handle } : null
+        })
+        .filter(Boolean)
+    })
+  }
 
   if (isLoading) {
     return <Loader />
@@ -407,7 +487,7 @@ const EngagementEditor = ({
                       label: engagement.status,
                       value: engagement.status
                     } : null}
-                    options={['Open', 'Pending Assignment', 'Closed'].map(status => ({
+                    options={['Open', 'Pending Assignment', 'Active', 'Cancelled', 'Closed'].map(status => ({
                       label: status,
                       value: status
                     }))}
@@ -427,6 +507,121 @@ const EngagementEditor = ({
                 )}
               </div>
             </div>
+
+            {showAssignedMembers && (
+              <div className={styles.row}>
+                <div className={cn(styles.field, styles.col1)}>
+                  <label>Assigned Members :</label>
+                </div>
+                <div className={cn(styles.field, styles.col2)}>
+                  <div className={styles.memberList}>
+                    {assignedMemberList.map((member) => {
+                      const isPayDisabled = !member.id || isPaymentProcessing
+                      return (
+                        <div key={member.key} className={styles.memberRow}>
+                          <div className={styles.memberHandle}>{member.handle || '-'}</div>
+                          {canEdit && (
+                            <div className={styles.memberActions}>
+                              <PrimaryButton
+                                text={isPaymentProcessing ? 'Processing...' : 'Pay'}
+                                type='info'
+                                onClick={() => onOpenPaymentModal(member)}
+                                disabled={isPayDisabled}
+                              />
+                              {!member.id && (
+                                <div className={styles.memberNote}>Member id unavailable</div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className={styles.row}>
+              <div className={cn(styles.field, styles.col1)}>
+                <label htmlFor={canEdit ? 'requiredMemberCount' : undefined}>Required Members :</label>
+              </div>
+              <div className={cn(styles.field, styles.col2)}>
+                {canEdit ? (
+                  <input
+                    className={styles.input}
+                    id='requiredMemberCount'
+                    name='requiredMemberCount'
+                    type='number'
+                    min='1'
+                    step='1'
+                    value={engagement.requiredMemberCount}
+                    onChange={onUpdateInput}
+                  />
+                ) : (
+                  <div className={styles.readOnlyValue}>
+                    {hasRequiredMemberCount ? requiredMemberCountValue : 'Not specified'}
+                  </div>
+                )}
+                <div className={assignmentProgressClassName}>{assignmentProgressText}</div>
+                {canEdit && submitTriggered && validationErrors.requiredMemberCount && (
+                  <div className={styles.error}>{validationErrors.requiredMemberCount}</div>
+                )}
+              </div>
+            </div>
+
+            {canEdit && (
+              <div className={styles.row}>
+                <div className={cn(styles.field, styles.col1)}>
+                  <label htmlFor='isPrivate'>Private Engagement :</label>
+                </div>
+                <div className={cn(styles.field, styles.col2)}>
+                  <input
+                    id='isPrivate'
+                    name='isPrivate'
+                    type='checkbox'
+                    checked={Boolean(engagement.isPrivate)}
+                    onChange={(event) => onUpdateInput({
+                      target: {
+                        name: 'isPrivate',
+                        value: event.target.checked
+                      }
+                    })}
+                  />
+                </div>
+              </div>
+            )}
+
+            {canEdit && engagement.isPrivate && (
+              <div className={styles.row}>
+                <div className={cn(styles.field, styles.col1)}>
+                  <label>Assign to Member <span>*</span> :</label>
+                </div>
+                <div className={cn(styles.field, styles.col2)}>
+                  <Select
+                    className={styles.selectInput}
+                    isAsync
+                    loadOptions={loadMemberOptions}
+                    placeholder='Type to search for a member...'
+                    value={engagement.assignedMemberHandle
+                      ? {
+                        label: engagement.assignedMemberHandle,
+                        value: engagement.assignedMemberHandle
+                      }
+                      : null}
+                    onChange={(option) => onUpdateInput({
+                      target: {
+                        name: 'assignedMemberHandle',
+                        value: option ? option.value : ''
+                      }
+                    })}
+                    isClearable
+                  />
+                  {submitTriggered && validationErrors.assignedMemberHandle && (
+                    <div className={styles.error}>{validationErrors.assignedMemberHandle}</div>
+                  )}
+                </div>
+              </div>
+            )}
           </form>
         </div>
       </div>
@@ -435,22 +630,12 @@ const EngagementEditor = ({
 }
 
 EngagementEditor.defaultProps = {
-  engagement: {
-    title: '',
-    description: '',
-    timezones: [],
-    countries: [],
-    skills: [],
-    durationWeeks: '',
-    role: null,
-    workload: null,
-    compensationRange: '',
-    status: 'Open'
-  },
+  engagement: getEmptyEngagement(),
   isNew: true,
   isLoading: false,
   isSaving: false,
   canEdit: true,
+  isPaymentProcessing: false,
   submitTriggered: false,
   validationErrors: {},
   showDeleteModal: false,
@@ -461,7 +646,9 @@ EngagementEditor.defaultProps = {
   onUpdateDate: () => {},
   onSavePublish: () => {},
   onCancel: () => {},
-  onDelete: () => {}
+  onDelete: () => {},
+  onOpenPaymentModal: () => {},
+  resolvedAssignedMembers: []
 }
 
 EngagementEditor.propTypes = {
@@ -473,6 +660,24 @@ EngagementEditor.propTypes = {
     role: PropTypes.string,
     workload: PropTypes.string,
     compensationRange: PropTypes.string,
+    isPrivate: PropTypes.bool,
+    requiredMemberCount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    assignedMemberHandle: PropTypes.string,
+    assignedMembers: PropTypes.arrayOf(PropTypes.oneOfType([
+      PropTypes.string,
+      PropTypes.shape({
+        id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        memberId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        userId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+        handle: PropTypes.string,
+        memberHandle: PropTypes.string,
+        username: PropTypes.string,
+        name: PropTypes.string,
+        userHandle: PropTypes.string,
+        userName: PropTypes.string
+      })
+    ])),
+    assignedMemberHandles: PropTypes.arrayOf(PropTypes.string),
     timezones: PropTypes.arrayOf(PropTypes.string),
     countries: PropTypes.arrayOf(PropTypes.string),
     skills: PropTypes.arrayOf(PropTypes.shape()),
@@ -483,6 +688,7 @@ EngagementEditor.propTypes = {
   isLoading: PropTypes.bool,
   isSaving: PropTypes.bool,
   canEdit: PropTypes.bool,
+  isPaymentProcessing: PropTypes.bool,
   submitTriggered: PropTypes.bool,
   validationErrors: PropTypes.shape({
     title: PropTypes.string,
@@ -490,6 +696,8 @@ EngagementEditor.propTypes = {
     durationWeeks: PropTypes.string,
     applicationDeadline: PropTypes.string,
     skills: PropTypes.string,
+    assignedMemberHandle: PropTypes.string,
+    requiredMemberCount: PropTypes.string,
     status: PropTypes.string
   }),
   showDeleteModal: PropTypes.bool,
@@ -500,7 +708,20 @@ EngagementEditor.propTypes = {
   onUpdateDate: PropTypes.func,
   onSavePublish: PropTypes.func,
   onCancel: PropTypes.func,
-  onDelete: PropTypes.func
+  onDelete: PropTypes.func,
+  onOpenPaymentModal: PropTypes.func,
+  resolvedAssignedMembers: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    memberId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    userId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    handle: PropTypes.string,
+    memberHandle: PropTypes.string,
+    username: PropTypes.string,
+    name: PropTypes.string,
+    userHandle: PropTypes.string,
+    userName: PropTypes.string,
+    key: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+  }))
 }
 
 export default EngagementEditor

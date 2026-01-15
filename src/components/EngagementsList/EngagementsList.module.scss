@@ -79,6 +79,16 @@
   color: $tc-gray-90;
 }
 
+.statusActive {
+  background: $tc-blue-20;
+  color: $tc-gray-90;
+}
+
+.statusCancelled {
+  background: $tc-red-20;
+  color: $tc-gray-90;
+}
+
 .statusClosed {
   background: $tc-gray-30;
   color: $tc-gray-80;
