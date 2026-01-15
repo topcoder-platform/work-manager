@@ -171,6 +171,26 @@ export const normalizeEngagement = (engagement = {}) => {
       ? durationAmount
       : ''
 
+  const assignments = Array.isArray(engagement.assignments) ? engagement.assignments : []
+  const assignmentsData = assignments.map((assignment) => ({
+    id: assignment.id,
+    engagementId: assignment.engagementId,
+    memberId: assignment.memberId,
+    memberHandle: assignment.memberHandle,
+    createdAt: assignment.createdAt,
+    updatedAt: assignment.updatedAt
+  }))
+
+  const assignedMembersFromAssignments = assignments.map((assignment) => assignment.memberId).filter(Boolean)
+  const assignedMemberHandlesFromAssignments = assignments.map((assignment) => assignment.memberHandle).filter(Boolean)
+
+  const finalAssignedMembers = assignedMembersFromAssignments.length
+    ? assignedMembersFromAssignments
+    : (engagement.assignedMembers || [])
+  const finalAssignedMemberHandles = assignedMemberHandlesFromAssignments.length
+    ? assignedMemberHandlesFromAssignments
+    : (engagement.assignedMemberHandles || [])
+
   return {
     ...engagement,
     startDate,
@@ -183,7 +203,10 @@ export const normalizeEngagement = (engagement = {}) => {
     status: fromEngagementStatusApi(engagement.status),
     role,
     workload,
-    compensationRange
+    compensationRange,
+    assignments: assignmentsData,
+    assignedMembers: finalAssignedMembers,
+    assignedMemberHandles: finalAssignedMemberHandles
   }
 }
 

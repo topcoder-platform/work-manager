@@ -43,6 +43,15 @@ const EngagementFeedback = ({
     return engagementId || _.get(match, 'params.engagementId') || null
   }, [engagementId, match])
 
+  const assignmentId = useMemo(() => {
+    const assignments = _.get(engagementDetails, 'assignments', [])
+    if (!Array.isArray(assignments) || !assignments.length) {
+      return null
+    }
+    const assignmentWithId = assignments.find((assignment) => assignment && assignment.id)
+    return assignmentWithId ? assignmentWithId.id : null
+  }, [engagementDetails])
+
   const canManage = useMemo(() => {
     const isAdmin = checkAdmin(auth.token)
     const isManager = checkManager(auth.token)
@@ -76,13 +85,16 @@ const EngagementFeedback = ({
   }, [resolvedProjectId, resolvedEngagementId, loadProject, loadEngagementDetails])
 
   const fetchFeedback = useCallback(async () => {
-    if (!resolvedEngagementId || !canManage) {
+    if (!resolvedEngagementId || !assignmentId || !canManage) {
+      setFeedback([])
+      setFeedbackError('')
+      setFeedbackLoading(false)
       return
     }
     setFeedbackLoading(true)
     setFeedbackError('')
     try {
-      const response = await fetchEngagementFeedback(resolvedEngagementId)
+      const response = await fetchEngagementFeedback(resolvedEngagementId, assignmentId)
       const data = _.get(response, 'data', [])
       setFeedback(Array.isArray(data) ? data : [])
     } catch (err) {
@@ -92,7 +104,7 @@ const EngagementFeedback = ({
     } finally {
       setFeedbackLoading(false)
     }
-  }, [resolvedEngagementId, canManage])
+  }, [resolvedEngagementId, assignmentId, canManage])
 
   useEffect(() => {
     fetchFeedback()
@@ -131,6 +143,10 @@ const EngagementFeedback = ({
       setFeedbackFormError('Engagement is required to submit feedback.')
       return
     }
+    if (!assignmentId) {
+      setFeedbackFormError('Assignment is required to submit feedback.')
+      return
+    }
     const trimmedFeedback = feedbackText.trim()
     if (!trimmedFeedback) {
       setFeedbackFormError('Feedback is required.')
@@ -154,7 +170,7 @@ const EngagementFeedback = ({
     setIsSubmittingFeedback(true)
     setFeedbackFormError('')
     try {
-      await createEngagementFeedback(resolvedEngagementId, {
+      await createEngagementFeedback(resolvedEngagementId, assignmentId, {
         feedbackText: trimmedFeedback,
         rating: ratingValue || undefined
       })
@@ -171,6 +187,7 @@ const EngagementFeedback = ({
   }, [
     isSubmittingFeedback,
     resolvedEngagementId,
+    assignmentId,
     feedbackText,
     rating,
     handleCloseAddFeedbackModal,
@@ -186,6 +203,10 @@ const EngagementFeedback = ({
       setGenerateError('Engagement is required to generate a link.')
       return
     }
+    if (!assignmentId) {
+      setGenerateError('Assignment is required to generate a link.')
+      return
+    }
     const trimmedEmail = customerEmail.trim()
     if (!trimmedEmail) {
       setGenerateError('Customer email is required.')
@@ -199,7 +220,7 @@ const EngagementFeedback = ({
     setIsGeneratingLink(true)
     setGenerateError('')
     try {
-      const response = await generateEngagementFeedbackLink(resolvedEngagementId, {
+      const response = await generateEngagementFeedbackLink(resolvedEngagementId, assignmentId, {
         customerEmail: trimmedEmail
       })
       setGeneratedLink(_.get(response, 'data', null))
@@ -211,7 +232,7 @@ const EngagementFeedback = ({
     } finally {
       setIsGeneratingLink(false)
     }
-  }, [isGeneratingLink, resolvedEngagementId, customerEmail])
+  }, [isGeneratingLink, resolvedEngagementId, assignmentId, customerEmail])
 
   const handleCopyLink = useCallback(async () => {
     const feedbackUrl = _.get(generatedLink, 'feedbackUrl')

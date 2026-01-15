@@ -45,6 +45,7 @@ const getEmptyEngagement = () => ({
   isPrivate: false,
   requiredMemberCount: '',
   assignedMemberHandle: '',
+  assignments: [],
   assignedMembers: [],
   assignedMemberHandles: []
 })
@@ -179,6 +180,15 @@ class EngagementEditorContainer extends Component {
         : ''
     const parsedDurationWeeks = rawDurationWeeks !== '' ? parseInt(rawDurationWeeks, 10) : ''
     const durationWeeks = Number.isNaN(parsedDurationWeeks) ? '' : parsedDurationWeeks
+    const assignments = Array.isArray(normalized.assignments) ? normalized.assignments : []
+    const assignedMembersFromAssignments = assignments.map((assignment) => assignment.memberId).filter(Boolean)
+    const assignedMemberHandlesFromAssignments = assignments.map((assignment) => assignment.memberHandle).filter(Boolean)
+    const assignedMembers = assignedMembersFromAssignments.length
+      ? assignedMembersFromAssignments
+      : (normalized.assignedMembers || [])
+    const assignedMemberHandles = assignedMemberHandlesFromAssignments.length
+      ? assignedMemberHandlesFromAssignments
+      : (normalized.assignedMemberHandles || [])
     return {
       ...getEmptyEngagement(),
       ...normalized,
@@ -189,8 +199,9 @@ class EngagementEditorContainer extends Component {
       isPrivate: normalized.isPrivate || false,
       requiredMemberCount: normalized.requiredMemberCount || '',
       assignedMemberHandle: normalized.assignedMemberHandle || '',
-      assignedMembers: normalized.assignedMembers || [],
-      assignedMemberHandles: normalized.assignedMemberHandles || [],
+      assignments,
+      assignedMembers,
+      assignedMemberHandles,
       applicationDeadline: normalized.applicationDeadline ? moment(normalized.applicationDeadline).toDate() : null,
       timezones: normalized.timezones || [],
       countries: normalized.countries || [],
@@ -473,9 +484,14 @@ class EngagementEditorContainer extends Component {
     if (!engagement) {
       return
     }
+    const assignments = Array.isArray(engagement.assignments) ? engagement.assignments : []
     const assignedMembers = Array.isArray(engagement.assignedMembers) ? engagement.assignedMembers : []
     const assignedMemberHandles = Array.isArray(engagement.assignedMemberHandles) ? engagement.assignedMemberHandles : []
-    const memberCandidates = assignedMembers.length ? assignedMembers : assignedMemberHandles
+    const memberCandidates = assignments.length
+      ? assignments
+      : assignedMembers.length
+        ? assignedMembers
+        : assignedMemberHandles
     if (!memberCandidates.length) {
       return
     }
@@ -596,11 +612,22 @@ class EngagementEditorContainer extends Component {
   }
 
   getAssignedMembersForPayment () {
-    const { engagement, memberIdLookup } = this.state
+    const { engagement } = this.state
+    const assignments = Array.isArray(engagement.assignments) ? engagement.assignments : []
+
+    if (assignments.length > 0) {
+      return assignments.map((assignment, index) => ({
+        id: assignment.memberId,
+        handle: assignment.memberHandle,
+        key: assignment.id || assignment.memberId || `assignment-${index}`,
+        assignmentId: assignment.id
+      }))
+    }
+
     const assignedMembers = Array.isArray(engagement.assignedMembers) ? engagement.assignedMembers : []
     const assignedMemberHandles = Array.isArray(engagement.assignedMemberHandles) ? engagement.assignedMemberHandles : []
     const memberCandidates = assignedMembers.length ? assignedMembers : assignedMemberHandles
-    return memberCandidates.map((member, index) => normalizeMemberInfo(member, index, memberIdLookup))
+    return memberCandidates.map((member, index) => normalizeMemberInfo(member, index, this.state.memberIdLookup))
   }
 }
 

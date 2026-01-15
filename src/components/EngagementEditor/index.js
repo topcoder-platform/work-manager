@@ -54,10 +54,12 @@ const normalizeMemberInfo = (member, index) => {
   }
   const handle = member.handle || member.memberHandle || member.username || member.name || member.userHandle || member.userName || '-'
   const id = member.id || member.memberId || member.userId || null
+  const assignmentId = member.assignmentId || null
   return {
     id,
     handle,
-    key: id || handle || `member-${index}`
+    key: id || handle || `member-${index}`,
+    assignmentId
   }
 }
 
@@ -134,13 +136,21 @@ const EngagementEditor = ({
 
   const roleLabel = selectedRoleOption ? selectedRoleOption.label : engagement.role
   const workloadLabel = selectedWorkloadOption ? selectedWorkloadOption.label : engagement.workload
+  const assignments = Array.isArray(engagement.assignments) ? engagement.assignments : []
   const assignedMembers = Array.isArray(engagement.assignedMembers) ? engagement.assignedMembers : []
   const assignedMemberHandles = Array.isArray(engagement.assignedMemberHandles) ? engagement.assignedMemberHandles : []
-  const assignedMemberList = resolvedAssignedMembers.length
-    ? resolvedAssignedMembers
-    : assignedMembers.length
-      ? assignedMembers.map((member, index) => normalizeMemberInfo(member, index))
-      : assignedMemberHandles.map((member, index) => normalizeMemberInfo(member, index))
+  const assignedMemberList = assignments.length > 0
+    ? assignments.map((assignment, index) => ({
+      id: assignment.memberId,
+      handle: assignment.memberHandle,
+      key: assignment.id || `assignment-${index}`,
+      assignmentId: assignment.id
+    }))
+    : resolvedAssignedMembers.length
+      ? resolvedAssignedMembers
+      : assignedMembers.length
+        ? assignedMembers.map((member, index) => normalizeMemberInfo(member, index))
+        : assignedMemberHandles.map((member, index) => normalizeMemberInfo(member, index))
   const showAssignedMembers = assignedMemberList.length > 0
   const assignedMemberCount = assignedMemberList.length
   const requiredMemberCountValue = Number(engagement.requiredMemberCount)
@@ -663,6 +673,14 @@ EngagementEditor.propTypes = {
     isPrivate: PropTypes.bool,
     requiredMemberCount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     assignedMemberHandle: PropTypes.string,
+    assignments: PropTypes.arrayOf(PropTypes.shape({
+      id: PropTypes.string,
+      engagementId: PropTypes.string,
+      memberId: PropTypes.string,
+      memberHandle: PropTypes.string,
+      createdAt: PropTypes.string,
+      updatedAt: PropTypes.string
+    })),
     assignedMembers: PropTypes.arrayOf(PropTypes.oneOfType([
       PropTypes.string,
       PropTypes.shape({
@@ -720,7 +738,8 @@ EngagementEditor.propTypes = {
     name: PropTypes.string,
     userHandle: PropTypes.string,
     userName: PropTypes.string,
-    key: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    key: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    assignmentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
   }))
 }
 

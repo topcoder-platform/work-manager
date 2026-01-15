@@ -105,30 +105,33 @@ export function updateApplicationStatus (engagementId, applicationId, status) {
 }
 
 /**
- * Api request for fetching feedback for an engagement
+ * Api request for fetching feedback for an engagement assignment
  * @param {String|Number} engagementId
+ * @param {String|Number} assignmentId
  * @returns {Promise<*>}
  */
-export function fetchEngagementFeedback (engagementId) {
-  return axiosInstance.get(`${ENGAGEMENTS_API_URL}/${engagementId}/feedback`)
+export function fetchEngagementFeedback (engagementId, assignmentId) {
+  return axiosInstance.get(`${ENGAGEMENTS_API_URL}/${engagementId}/assignments/${assignmentId}/feedback`)
 }
 
 /**
- * Api request for creating feedback for an engagement
+ * Api request for creating feedback for an engagement assignment
  * @param {String|Number} engagementId
+ * @param {String|Number} assignmentId
  * @param {Object} data
  * @returns {Promise<*>}
  */
-export function createEngagementFeedback (engagementId, data) {
-  return axiosInstance.post(`${ENGAGEMENTS_API_URL}/${engagementId}/feedback`, data)
+export function createEngagementFeedback (engagementId, assignmentId, data) {
+  return axiosInstance.post(`${ENGAGEMENTS_API_URL}/${engagementId}/assignments/${assignmentId}/feedback`, data)
 }
 
 /**
- * Api request for generating customer feedback link for an engagement
+ * Api request for generating customer feedback link for an engagement assignment
  * @param {String|Number} engagementId
+ * @param {String|Number} assignmentId
  * @param {Object} data
  * @returns {Promise<*>}
  */
-export function generateEngagementFeedbackLink (engagementId, data) {
-  return axiosInstance.post(`${ENGAGEMENTS_API_URL}/${engagementId}/feedback/generate-link`, data)
+export function generateEngagementFeedbackLink (engagementId, assignmentId, data) {
+  return axiosInstance.post(`${ENGAGEMENTS_API_URL}/${engagementId}/assignments/${assignmentId}/feedback/generate-link`, data)
 }
