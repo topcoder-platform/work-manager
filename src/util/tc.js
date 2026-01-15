@@ -226,8 +226,8 @@ export const checkAdminOrPmOrTaskManager = (token, project) => {
 
   const isProjectManager = project && !_.isEmpty(project) &&
     project.members && project.members.some(member =>
-      member.userId === userId && member.role === PROJECT_ROLES.MANAGER
-    )
+    member.userId === userId && member.role === PROJECT_ROLES.MANAGER
+  )
 
   return isAdmin || isManager || isTaskManager || isProjectManager
 }
