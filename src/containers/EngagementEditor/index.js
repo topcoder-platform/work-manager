@@ -44,7 +44,6 @@ const getEmptyEngagement = () => ({
   status: 'Open',
   isPrivate: false,
   requiredMemberCount: '',
-  assignedMemberHandle: '',
   assignments: [],
   assignedMembers: [],
   assignedMemberHandles: []
@@ -186,9 +185,15 @@ class EngagementEditorContainer extends Component {
     const assignedMembers = assignedMembersFromAssignments.length
       ? assignedMembersFromAssignments
       : (normalized.assignedMembers || [])
+    const legacyAssignedMemberHandles = normalized.assignedMemberHandle
+      ? [normalized.assignedMemberHandle]
+      : []
+    const normalizedAssignedMemberHandles = Array.isArray(normalized.assignedMemberHandles)
+      ? normalized.assignedMemberHandles
+      : []
     const assignedMemberHandles = assignedMemberHandlesFromAssignments.length
       ? assignedMemberHandlesFromAssignments
-      : (normalized.assignedMemberHandles || [])
+      : (normalizedAssignedMemberHandles.length ? normalizedAssignedMemberHandles : legacyAssignedMemberHandles)
     return {
       ...getEmptyEngagement(),
       ...normalized,
@@ -198,7 +203,6 @@ class EngagementEditorContainer extends Component {
       compensationRange: normalized.compensationRange || '',
       isPrivate: normalized.isPrivate || false,
       requiredMemberCount: normalized.requiredMemberCount || '',
-      assignedMemberHandle: normalized.assignedMemberHandle || '',
       assignments,
       assignedMembers,
       assignedMemberHandles,
@@ -220,12 +224,17 @@ class EngagementEditorContainer extends Component {
 
   onUpdateInput (event) {
     const { name, value } = event.target
-    this.setState((prevState) => ({
-      engagement: {
-        ...prevState.engagement,
-        [name]: value
+    this.setState((prevState) => {
+      const nextValue = name === 'assignedMemberHandles'
+        ? (Array.isArray(value) ? value : [])
+        : value
+      return {
+        engagement: {
+          ...prevState.engagement,
+          [name]: nextValue
+        }
       }
-    }))
+    })
   }
 
   onUpdateDescription (value) {
@@ -291,8 +300,30 @@ class EngagementEditorContainer extends Component {
       errors.status = 'Status is required'
     }
 
-    if (engagement.isPrivate && (!engagement.assignedMemberHandle || !engagement.assignedMemberHandle.trim())) {
-      errors.assignedMemberHandle = 'Member handle is required for private engagements'
+    if (engagement.isPrivate) {
+      const assignedMemberHandles = Array.isArray(engagement.assignedMemberHandles)
+        ? engagement.assignedMemberHandles
+        : []
+      const trimmedMemberHandles = assignedMemberHandles.map((handle) => (handle || '').trim())
+      const requiredMemberCountValue = Number(engagement.requiredMemberCount)
+      const hasRequiredMemberCount = Number.isInteger(requiredMemberCountValue) && requiredMemberCountValue > 0
+
+      if (hasRequiredMemberCount) {
+        const requiredHandles = trimmedMemberHandles.slice(0, requiredMemberCountValue)
+        const missingIndices = []
+        for (let index = 0; index < requiredMemberCountValue; index += 1) {
+          if (!requiredHandles[index]) {
+            errors[`assignedMemberHandle${index}`] = `Member ${index + 1} is required`
+            missingIndices.push(index)
+          }
+        }
+        if (missingIndices.length) {
+          errors.assignedMemberHandles = `All ${requiredMemberCountValue} member assignments are required for private engagements`
+        }
+      } else if (!trimmedMemberHandles.some(Boolean)) {
+        errors.assignedMemberHandle0 = 'Member 1 is required'
+        errors.assignedMemberHandles = 'Member 1 is required'
+      }
     }
 
     if (engagement.requiredMemberCount !== '' && engagement.requiredMemberCount != null) {
@@ -365,8 +396,20 @@ class EngagementEditorContainer extends Component {
       }
     }
 
-    if (engagement.isPrivate && engagement.assignedMemberHandle) {
-      payload.assignedMemberHandle = engagement.assignedMemberHandle
+    const assignedMemberHandles = Array.isArray(engagement.assignedMemberHandles)
+      ? engagement.assignedMemberHandles
+      : []
+    const trimmedAssignedMemberHandles = assignedMemberHandles
+      .map((handle) => (handle || '').trim())
+      .filter(Boolean)
+    const requiredMemberCountValue = Number(engagement.requiredMemberCount)
+    const hasRequiredMemberCount = Number.isInteger(requiredMemberCountValue) && requiredMemberCountValue > 0
+    const assignmentLimit = hasRequiredMemberCount ? requiredMemberCountValue : trimmedAssignedMemberHandles.length
+    const payloadAssignedMemberHandles = trimmedAssignedMemberHandles.slice(0, assignmentLimit)
+
+    if (engagement.isPrivate && payloadAssignedMemberHandles.length) {
+      payload.assignedMemberHandles = payloadAssignedMemberHandles
+      payload.assignedMemberHandle = payloadAssignedMemberHandles[0]
     }
 
     return payload

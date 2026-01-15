@@ -31,7 +31,7 @@ const getEmptyEngagement = () => ({
   status: 'Open',
   isPrivate: false,
   requiredMemberCount: '',
-  assignedMemberHandle: ''
+  assignedMemberHandles: []
 })
 
 const normalizeAnySelection = (selectedOptions) => {
@@ -154,6 +154,8 @@ const EngagementEditor = ({
   const showAssignedMembers = assignedMemberList.length > 0
   const assignedMemberCount = assignedMemberList.length
   const requiredMemberCountValue = Number(engagement.requiredMemberCount)
+  const assignmentFieldCount = Math.max(1, requiredMemberCountValue || 1)
+  const assignmentFieldIndices = Array.from({ length: assignmentFieldCount }, (_, index) => index)
   const hasRequiredMemberCount = Number.isInteger(requiredMemberCountValue) && requiredMemberCountValue > 0
   const isFullyStaffed = hasRequiredMemberCount && assignedMemberCount >= requiredMemberCountValue
   const assignedMemberLabel = assignedMemberCount === 1 ? 'member' : 'members'
@@ -601,34 +603,67 @@ const EngagementEditor = ({
               </div>
             )}
 
-            {canEdit && engagement.isPrivate && (
-              <div className={styles.row}>
-                <div className={cn(styles.field, styles.col1)}>
-                  <label>Assign to Member <span>*</span> :</label>
+            {canEdit && engagement.isPrivate && assignmentFieldIndices.map((index) => {
+              const assignmentLabel = assignmentFieldCount > 1
+                ? `Assign to Member ${index + 1}`
+                : 'Assign to Member'
+              const selectedHandle = assignedMemberHandles[index]
+              const fieldError = validationErrors[`assignedMemberHandle${index}`]
+              const nextAssignedMemberHandles = Array.from(
+                { length: assignmentFieldCount },
+                (_, handleIndex) => assignedMemberHandles[handleIndex] || ''
+              )
+              return (
+                <div key={`assign-member-${index}`} className={styles.row}>
+                  <div className={cn(styles.field, styles.col1)}>
+                    <label>{assignmentLabel} <span>*</span> :</label>
+                  </div>
+                  <div className={cn(styles.field, styles.col2)}>
+                    <Select
+                      className={styles.selectInput}
+                      isAsync
+                      loadOptions={loadMemberOptions}
+                      placeholder='Type to search for a member...'
+                      value={selectedHandle
+                        ? {
+                          label: selectedHandle,
+                          value: selectedHandle
+                        }
+                        : null}
+                      onChange={(option) => {
+                        const updatedHandles = [...nextAssignedMemberHandles]
+                        updatedHandles[index] = option ? option.value : ''
+                        onUpdateInput({
+                          target: {
+                            name: 'assignedMemberHandles',
+                            value: updatedHandles
+                          }
+                        })
+                      }}
+                      isClearable
+                    />
+                    {submitTriggered && fieldError && (
+                      <div className={styles.error}>{fieldError}</div>
+                    )}
+                  </div>
                 </div>
+              )
+            })}
+            {canEdit && engagement.isPrivate && assignmentFieldCount > 1 && (
+              <div className={styles.row}>
+                <div className={cn(styles.field, styles.col1)} />
                 <div className={cn(styles.field, styles.col2)}>
-                  <Select
-                    className={styles.selectInput}
-                    isAsync
-                    loadOptions={loadMemberOptions}
-                    placeholder='Type to search for a member...'
-                    value={engagement.assignedMemberHandle
-                      ? {
-                        label: engagement.assignedMemberHandle,
-                        value: engagement.assignedMemberHandle
-                      }
-                      : null}
-                    onChange={(option) => onUpdateInput({
-                      target: {
-                        name: 'assignedMemberHandle',
-                        value: option ? option.value : ''
-                      }
-                    })}
-                    isClearable
-                  />
-                  {submitTriggered && validationErrors.assignedMemberHandle && (
-                    <div className={styles.error}>{validationErrors.assignedMemberHandle}</div>
-                  )}
+                  <div className={styles.memberNote}>
+                    Only the first member will be assigned until API is updated
+                  </div>
+                </div>
+              </div>
+            )}
+            {canEdit && engagement.isPrivate && submitTriggered && validationErrors.assignedMemberHandles && (
+              <div className={styles.row}>
+                <div className={cn(styles.field, styles.col1)} />
+                <div className={cn(styles.field, styles.col2)}>
+                  <div className={styles.error}>{validationErrors.assignedMemberHandles}</div>
                 </div>
               </div>
             )}
@@ -672,7 +707,6 @@ EngagementEditor.propTypes = {
     compensationRange: PropTypes.string,
     isPrivate: PropTypes.bool,
     requiredMemberCount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    assignedMemberHandle: PropTypes.string,
     assignments: PropTypes.arrayOf(PropTypes.shape({
       id: PropTypes.string,
       engagementId: PropTypes.string,
@@ -714,7 +748,7 @@ EngagementEditor.propTypes = {
     durationWeeks: PropTypes.string,
     applicationDeadline: PropTypes.string,
     skills: PropTypes.string,
-    assignedMemberHandle: PropTypes.string,
+    assignedMemberHandles: PropTypes.string,
     requiredMemberCount: PropTypes.string,
     status: PropTypes.string
   }),

@@ -1,7 +1,7 @@
 import qs from 'qs'
 import { axiosInstance } from './axiosWithAuth'
 
-const { ENGAGEMENTS_API_URL } = process.env
+const { ENGAGEMENTS_API_URL, APPLICATIONS_API_URL } = process.env
 
 /**
  * Api request for fetching engagements
@@ -101,7 +101,7 @@ export function fetchApplication (engagementId, applicationId) {
  * @returns {Promise<*>}
  */
 export function updateApplicationStatus (engagementId, applicationId, status) {
-  return axiosInstance.patch(`${ENGAGEMENTS_API_URL}/${engagementId}/applications/${applicationId}`, { status })
+  return axiosInstance.patch(`${APPLICATIONS_API_URL}/${applicationId}/status`, { status })
 }
 
 /**
