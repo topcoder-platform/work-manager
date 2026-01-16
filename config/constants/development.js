@@ -17,6 +17,7 @@ module.exports = {
   MEMBER_API_URL: `${DEV_API_HOSTNAME}/v6/members`,
   CHALLENGE_API_URL: `${DEV_API_HOSTNAME}/v6/challenges`,
   ENGAGEMENTS_API_URL: `${DEV_API_HOSTNAME}/v6/engagements/engagements`,
+  TC_FINANCE_API_URL: process.env.TC_FINANCE_API_URL || `${API_V6}/finance`,
   CHALLENGE_DEFAULT_REVIEWERS_URL: `${DEV_API_HOSTNAME}/v6/challenge/default-reviewers`,
   CHALLENGE_API_VERSION: '1.1.0',
   CHALLENGE_TIMELINE_TEMPLATES_URL: `${DEV_API_HOSTNAME}/v6/timeline-templates`,

@@ -173,12 +173,6 @@ const PaymentForm = ({ engagement, member, availableMembers, isProcessing, onSub
         </div>
       </div>
       <div className={styles.row}>
-        <div className={styles.label}>Member Handle</div>
-        <div className={styles.field}>
-          <input className={`${styles.input} ${styles.readOnly}`} value={memberHandle} readOnly />
-        </div>
-      </div>
-      <div className={styles.row}>
         <div className={styles.label}>Payment Title</div>
         <div className={styles.field}>
           <input

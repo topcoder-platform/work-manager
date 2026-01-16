@@ -8,14 +8,15 @@ import styles from './PrimaryButton.module.scss'
 
 const PrimaryButton = React.forwardRef(
   (
-    { type, text, link, onClick, submit, disabled, onMouseEnter, onMouseLeave, href },
+    { type, text, link, onClick, submit, disabled, onMouseEnter, onMouseLeave, href, className },
     ref
   ) => {
+    const containerClassName = cn(styles.container, styles[type], className)
     if (!_.isEmpty(href)) {
       return (
         <a
           type={submit ? 'submit' : 'button'}
-          className={cn(styles.container, styles[type])}
+          className={containerClassName}
           onClick={submit ? null : onClick}
           disabled={disabled}
           onMouseEnter={onMouseEnter}
@@ -32,7 +33,7 @@ const PrimaryButton = React.forwardRef(
       return (
         <button
           type={submit ? 'submit' : 'button'}
-          className={cn(styles.container, styles[type])}
+          className={containerClassName}
           onClick={submit ? null : onClick}
           disabled={disabled}
           onMouseEnter={onMouseEnter}
@@ -45,7 +46,7 @@ const PrimaryButton = React.forwardRef(
     }
     return (
       <Link
-        className={cn(styles.container, styles[type])}
+        className={containerClassName}
         to={`${link}`}
         ref={ref}
         onMouseEnter={onMouseEnter}
@@ -66,7 +67,8 @@ PrimaryButton.propTypes = {
   submit: PropTypes.bool,
   disabled: PropTypes.bool,
   onMouseEnter: PropTypes.func,
-  onMouseLeave: PropTypes.func
+  onMouseLeave: PropTypes.func,
+  className: PropTypes.string
 }
 
 export default PrimaryButton

@@ -31,7 +31,7 @@ const EngagementPayment = ({
     <div className={styles.container}>
       <div className={styles.header}>
         <div className={styles.title}>Payment for: {engagementTitle}</div>
-        <OutlineButton text='Back' type='info' link={backUrl} />
+        <OutlineButton text='Back' type='info' link={backUrl} className={styles.actionButton} />
       </div>
       {hasMembers ? (
         <div className={styles.membersList}>
@@ -46,6 +46,7 @@ const EngagementPayment = ({
               <PrimaryButton
                 text='Pay'
                 type='info'
+                className={styles.actionButton}
                 onClick={() => onOpenPaymentModal(member)}
                 disabled={!member.id || isPaymentProcessing}
               />
