@@ -13,6 +13,30 @@
   margin-bottom: 20px;
 }
 
+.tabs {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.tabButton {
+  border: 1px solid $tc-gray-20;
+  background: $tc-gray-10;
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: $tc-gray-80;
+  cursor: pointer;
+}
+
+.tabButtonActive {
+  background: $tc-blue-20;
+  border-color: $tc-blue-20;
+  color: $tc-gray-90;
+}
+
 .headerAction {
   flex: 1 1 100%;
 }
@@ -98,6 +122,12 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.actionsColumn {
+  width: 300px;
+  min-width: 300px;
+  max-width: 300px;
 }
 
 .applicationsLink {

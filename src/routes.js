@@ -17,6 +17,7 @@ import ProjectAssets from './containers/ProjectAssets'
 import TaaSProjectForm from './containers/TaaSProjectForm'
 import ChallengeEditor from './containers/ChallengeEditor'
 import EngagementEditor from './containers/EngagementEditor'
+import EngagementPayment from './containers/EngagementPayment'
 import EngagementsList from './containers/EngagementsList'
 import ApplicationsList from './containers/ApplicationsList'
 import EngagementFeedback from './containers/EngagementFeedback'
@@ -286,6 +287,34 @@ class Routes extends React.Component {
               <EngagementFeedback projectId={match.params.projectId} engagementId={match.params.engagementId} />,
               <TopBarContainer projectId={match.params.projectId} />,
               <Tab projectId={match.params.projectId} menu={'Feedback'} />,
+              <FooterContainer />
+            )()} />
+          {canManageEngagements && (
+            <Route exact path='/projects/:projectId/engagements/:engagementId/pay'
+              render={({ match }) => renderApp(
+                <EngagementPayment projectId={match.params.projectId} engagementId={match.params.engagementId} />,
+                <TopBarContainer projectId={match.params.projectId} />,
+                <Tab projectId={match.params.projectId} menu={'Payment'} />,
+                <FooterContainer />
+              )()} />
+          )}
+          {!canManageEngagements && (
+            <Route exact path='/projects/:projectId/engagements/:engagementId/pay'
+              render={({ match }) => renderApp(
+                <Challenges
+                  menu='NULL'
+                  warnMessage={'You need Admin, Project Manager, or Task Manager role to edit engagements'}
+                />,
+                <TopBarContainer />,
+                <Tab projectId={match.params.projectId} />,
+                <FooterContainer />
+              )()} />
+          )}
+          <Route exact path='/projects/:projectId/engagements/:engagementId/view'
+            render={({ match }) => renderApp(
+              <EngagementEditor />,
+              <TopBarContainer projectId={match.params.projectId} />,
+              <Tab projectId={match.params.projectId} menu={'Engagement'} />,
               <FooterContainer />
             )()} />
           {canManageEngagements && (

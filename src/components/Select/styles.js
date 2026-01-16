@@ -4,6 +4,21 @@ export default {
     width: '100%'
   }),
   control: (provided, state) => {
+    const useBottomBorder = Boolean(state.selectProps && state.selectProps.useBottomBorder)
+    if (useBottomBorder) {
+      return {
+        ...provided,
+        border: 'none',
+        borderBottom: '1px solid #d5d5d5',
+        borderRadius: 0,
+        boxShadow: 'none',
+        backgroundColor: 'transparent',
+        minHeight: '40px',
+        ':hover': {
+          borderColor: 'transparent'
+        }
+      }
+    }
     let styles = {
       ...provided,
       borderRadius: '2px !important',

@@ -125,8 +125,9 @@ const hydrateEngagementSkills = async (engagements = []) => {
  * @param {String|Number} projectId
  * @param {String} status
  * @param {String} filterName
+ * @param {Boolean} includePrivate
  */
-export function loadEngagements (projectId, status = 'all', filterName = '') {
+export function loadEngagements (projectId, status = 'all', filterName = '', includePrivate = false) {
   return async (dispatch) => {
     dispatch({
       type: LOAD_ENGAGEMENTS_PENDING
@@ -141,6 +142,9 @@ export function loadEngagements (projectId, status = 'all', filterName = '') {
     }
     if (!_.isEmpty(filterName)) {
       filters.title = filterName
+    }
+    if (includePrivate) {
+      filters.includePrivate = true
     }
 
     try {

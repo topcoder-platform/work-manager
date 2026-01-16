@@ -39,7 +39,8 @@ export const {
   UPDATE_SKILLS_V5_API_URL,
   SALESFORCE_BILLING_ACCOUNT_LINK,
   PROFILE_URL,
-  TC_FINANCE_API_URL
+  TC_FINANCE_API_URL,
+  ENGAGEMENTS_APP_URL
 } = process.env
 
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS

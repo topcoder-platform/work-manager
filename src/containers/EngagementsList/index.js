@@ -39,12 +39,20 @@ class EngagementsListContainer extends Component {
       return
     }
     loadProject(projectId)
-    loadEngagements(projectId, 'all')
+    loadEngagements(projectId, 'all', '', this.canIncludePrivate())
   }
 
   canManage () {
     const { auth, projectDetail } = this.props
     return checkAdminOrPmOrTaskManager(auth.token, projectDetail)
+  }
+
+  canIncludePrivate () {
+    const { auth } = this.props
+    if (!auth || !auth.token) {
+      return false
+    }
+    return checkAdminOrPmOrTaskManager(auth.token, null)
   }
 
   render () {
@@ -56,6 +64,7 @@ class EngagementsListContainer extends Component {
         projectDetail={this.props.projectDetail}
         isLoading={this.props.isLoading}
         canManage={this.canManage()}
+        currentUser={this.props.auth.user}
         onDeleteEngagement={this.props.deleteEngagement}
       />
     )
@@ -77,7 +86,8 @@ EngagementsListContainer.propTypes = {
   auth: PropTypes.shape({
     token: PropTypes.string,
     user: PropTypes.shape({
-      userId: PropTypes.number
+      userId: PropTypes.number,
+      handle: PropTypes.string
     })
   }).isRequired,
   loadEngagements: PropTypes.func.isRequired,

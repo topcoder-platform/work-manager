@@ -9,7 +9,7 @@ import {
   resetSidebarActiveParams,
   unloadProjects
 } from '../../actions/sidebar'
-import { checkAdmin, checkCopilot, checkAdminOrPmOrTaskManager } from '../../util/tc'
+import { checkAdmin, checkCopilot } from '../../util/tc'
 
 class TabContainer extends Component {
   constructor (props) {
@@ -29,13 +29,6 @@ class TabContainer extends Component {
     const { token } = props
     const resolvedToken = token || currentToken
     return !!resolvedToken && (checkAdmin(resolvedToken) || checkCopilot(resolvedToken))
-  }
-
-  getCanManageEngagements (props = this.props) {
-    const { token: currentToken } = this.props
-    const { token } = props
-    const resolvedToken = token || currentToken
-    return !!resolvedToken && checkAdminOrPmOrTaskManager(resolvedToken, null)
   }
 
   componentDidMount () {
@@ -62,8 +55,7 @@ class TabContainer extends Component {
     }
 
     const canViewAssets = this.getCanViewAssets()
-    const canManageEngagements = this.getCanManageEngagements()
-    this.setState({ currentTab: this.getTabFromPath(history.location.pathname, projectId, canViewAssets, canManageEngagements) })
+    this.setState({ currentTab: this.getTabFromPath(history.location.pathname, projectId, canViewAssets) })
   }
 
   componentWillReceiveProps (nextProps) {
@@ -74,8 +66,7 @@ class TabContainer extends Component {
     }
 
     const canViewAssets = this.getCanViewAssets(nextProps)
-    const canManageEngagements = this.getCanManageEngagements(nextProps)
-    this.setState({ currentTab: this.getTabFromPath(nextProps.history.location.pathname, projectId, canViewAssets, canManageEngagements) })
+    this.setState({ currentTab: this.getTabFromPath(nextProps.history.location.pathname, projectId, canViewAssets) })
     if (
       isLoading ||
       // do not fetch projects for users page
@@ -108,12 +99,12 @@ class TabContainer extends Component {
     this.loadProjects(nextProps)
   }
 
-  getProjectTabFromPath (pathname, projectId, canViewAssets = true, canManageEngagements = true) {
+  getProjectTabFromPath (pathname, projectId, canViewAssets = true) {
     if (!projectId) {
       return 0
     }
     if (pathname.includes(`/projects/${projectId}/engagements`)) {
-      return canManageEngagements ? 2 : 0
+      return 2
     }
     if (pathname.includes(`/projects/${projectId}/assets`)) {
       return canViewAssets ? 3 : 0
@@ -124,9 +115,9 @@ class TabContainer extends Component {
     return 0
   }
 
-  getTabFromPath (pathname, projectId, canViewAssets = true, canManageEngagements = true) {
+  getTabFromPath (pathname, projectId, canViewAssets = true) {
     if (projectId) {
-      return this.getProjectTabFromPath(pathname, projectId, canViewAssets, canManageEngagements)
+      return this.getProjectTabFromPath(pathname, projectId, canViewAssets)
     }
     if (pathname === '/') {
       return 1
@@ -162,12 +153,8 @@ class TabContainer extends Component {
   onTabChange (tab) {
     const { history, resetSidebarActiveParams, projectId } = this.props
     const canViewAssets = this.getCanViewAssets()
-    const canManageEngagements = this.getCanManageEngagements()
     if (projectId) {
       if (tab === 3 && !canViewAssets) {
-        return
-      }
-      if (tab === 2 && !canManageEngagements) {
         return
       }
       if (tab === 1) {
@@ -205,7 +192,6 @@ class TabContainer extends Component {
   render () {
     const { currentTab } = this.state
     const canViewAssets = this.getCanViewAssets()
-    const canManageEngagements = this.getCanManageEngagements()
 
     return (
       <Tab
@@ -213,7 +199,6 @@ class TabContainer extends Component {
         currentTab={currentTab}
         projectId={this.props.projectId}
         canViewAssets={canViewAssets}
-        canManageEngagements={canManageEngagements}
         onBack={this.onBackToHome}
       />
     )

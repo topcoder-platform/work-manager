@@ -1,0 +1,103 @@
+@use '../../../styles/includes' as *;
+
+.editor {
+  @include roboto-light();
+
+  width: 100%;
+  margin: 0 30px;
+  border-radius: 2px;
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+
+  &.isPrivate {
+    max-height: 400px;
+  }
+
+  :global {
+    .CodeMirror.CodeMirror-wrap {
+      min-height: 0;
+      flex: 1;
+      box-sizing: border-box;
+      height: auto;
+      border-right: 1px solid #aaa;
+      border-left: 1px solid #aaa;
+      border-bottom: 1px solid #aaa;
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+
+    .editor-toolbar {
+      opacity: 1;
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      border-top: 1px solid #aaa;
+      border-left: 1px solid #aaa;
+      border-right: 1px solid #aaa;
+
+      &::after,
+      &::before {
+        content: none;
+      }
+
+      button.table {
+        width: auto;
+      }
+    }
+
+    .editor-statusbar {
+      font-size: 13px;
+      padding: 8px 0;
+      overflow: hidden;
+      display: flex;
+
+      span {
+        min-width: 0;
+      }
+
+      .upload-image {
+        margin-left: 0;
+        margin-right: auto;
+        display: flex;
+      }
+
+      .countOfRemainingChars {
+        margin-left: 0;
+        min-width: 0;
+        display: flex;
+      }
+
+      .message {
+        display: none;
+      }
+    }
+  }
+
+  .reviewContainer {
+    :global {
+      table {
+        display: block;
+        width: 100%;
+        overflow: auto;
+        box-sizing: border-box;
+
+        * {
+          box-sizing: border-box;
+        }
+
+        tr {
+          background-color: #fff;
+          border-top: 1px solid #c6cbd1;
+        }
+
+        th,
+        td {
+          padding: 6px 13px;
+          border: 1px solid #dfe2e5;
+        }
+      }
+    }
+  }
+
+}

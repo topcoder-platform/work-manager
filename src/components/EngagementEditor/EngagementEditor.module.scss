@@ -94,9 +94,11 @@
 .selectInput {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid $tc-gray-30;
-  border-radius: 4px;
+  border: none;
+  border-bottom: 1px solid $tc-gray-20;
+  border-radius: 0;
   font-size: 14px;
+  background-color: transparent;
 }
 
 .textarea {
@@ -196,4 +198,62 @@
 
 .assignmentProgressPartial {
   color: $tc-blue-40;
+}
+
+.attachmentsTable {
+  margin-top: 16px;
+}
+
+.attachmentsHeader {
+  @include roboto-medium();
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: $tc-gray-20;
+  border-radius: 2px;
+  height: 39px;
+  padding: 0 20px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 17px;
+  color: $tc-gray-80;
+}
+
+.attachmentRow {
+  @include roboto();
+
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0 20px;
+  border-bottom: 1px solid $tc-gray-60;
+  font-size: 14px;
+  line-height: 17px;
+  color: $tc-gray-80;
+}
+
+.attachmentName {
+  flex: 4;
+  color: $tc-blue-20;
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.attachmentSize {
+  flex: 2;
+  display: flex;
+  justify-content: center;
+  color: $tc-gray-80;
+}
+
+.attachmentActions {
+  flex: 2;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.attachmentRemoveIcon {
+  color: $tc-red;
+  cursor: pointer;
 }

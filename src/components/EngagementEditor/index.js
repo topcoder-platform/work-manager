@@ -3,20 +3,58 @@ import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import moment from 'moment-timezone'
 import cn from 'classnames'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTrash } from '@fortawesome/free-solid-svg-icons'
 import { PrimaryButton, OutlineButton } from '../Buttons'
-import TuiEditor from '../TuiEditor'
+import DescriptionField from './DescriptionField'
 import DateInput from '../DateInput'
 import Select from '../Select'
 import SkillsField from '../ChallengeEditor/SkillsField'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import Loader from '../Loader'
-import { JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
+import FilestackFilePicker from '../FilestackFilePicker'
+import { ENGAGEMENTS_APP_URL, JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS, getAWSContainerFileURL } from '../../config/constants'
 import { suggestProfiles } from '../../services/user'
 import styles from './EngagementEditor.module.scss'
 
 const ANY_OPTION = { label: 'Any', value: 'Any' }
 const INPUT_DATE_FORMAT = 'MM/dd/yyyy'
 const INPUT_TIME_FORMAT = 'HH:mm'
+const ENGAGEMENT_ATTACHMENTS_FOLDER = 'ENGAGEMENT_ATTACHMENTS'
+
+const formatBytes = (bytes, decimals) => {
+  const value = Number(bytes)
+  if (!Number.isFinite(value)) {
+    return ''
+  }
+  if (value === 0) return '0 Bytes'
+  const k = 1024
+  const dm = decimals <= 0 ? 0 : decimals || 2
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+  const i = Math.floor(Math.log(value) / Math.log(k))
+  return parseFloat((value / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
+}
+
+const getAttachmentName = (attachment) => {
+  if (!attachment || typeof attachment !== 'object') {
+    return ''
+  }
+  return attachment.name || attachment.fileName || attachment.title || ''
+}
+
+const getAttachmentSize = (attachment) => {
+  if (!attachment || typeof attachment !== 'object') {
+    return null
+  }
+  return attachment.fileSize || attachment.size || null
+}
+
+const getAttachmentUrl = (attachment) => {
+  if (!attachment || typeof attachment !== 'object') {
+    return ''
+  }
+  return attachment.url || attachment.fileUrl || attachment.downloadUrl || ''
+}
 
 const getEmptyEngagement = () => ({
   title: '',
@@ -65,11 +103,11 @@ const normalizeMemberInfo = (member, index) => {
 
 const EngagementEditor = ({
   engagement,
+  projectId,
   isNew,
   isLoading,
   isSaving,
   canEdit,
-  isPaymentProcessing,
   submitTriggered,
   validationErrors,
   showDeleteModal,
@@ -81,8 +119,10 @@ const EngagementEditor = ({
   onSavePublish,
   onCancel,
   onDelete,
-  onOpenPaymentModal,
-  resolvedAssignedMembers
+  resolvedAssignedMembers,
+  attachments,
+  onUploadAttachments,
+  onRemoveAttachment
 }) => {
   const timeZoneOptions = useMemo(() => {
     const zones = moment.tz.names().map(zone => ({
@@ -176,6 +216,20 @@ const EngagementEditor = ({
     styles.assignmentProgress,
     isFullyStaffed ? styles.assignmentProgressComplete : styles.assignmentProgressPartial
   )
+  const attachmentList = Array.isArray(attachments) ? attachments : []
+  const attachmentPath = `engagements/${engagement.id || 'new'}/${ENGAGEMENT_ATTACHMENTS_FOLDER}/`
+
+  const onAttachmentsUploadDone = ({ filesUploaded }) => {
+    if (!filesUploaded || !filesUploaded.length) {
+      return
+    }
+    const uploadedAttachments = filesUploaded.map(file => ({
+      name: file.originalFile.name,
+      fileSize: file.originalFile.size,
+      url: encodeURI(getAWSContainerFileURL(file.key))
+    }))
+    onUploadAttachments(uploadedAttachments)
+  }
 
   const loadMemberOptions = (inputValue) => {
     if (!inputValue) {
@@ -219,6 +273,23 @@ const EngagementEditor = ({
               text='Delete'
               type='danger'
               onClick={onToggleDelete}
+              disabled={isSaving}
+            />
+          )}
+          {engagement.id && !isNew && (
+            <OutlineButton
+              text='View'
+              type='info'
+              url={`${ENGAGEMENTS_APP_URL}/${engagement.id}`}
+              target='_blank'
+              disabled={isSaving}
+            />
+          )}
+          {engagement.id && !isNew && showAssignedMembers && canEdit && (
+            <OutlineButton
+              text='Pay'
+              type='info'
+              link={`/projects/${projectId}/engagements/${engagement.id}/pay`}
               disabled={isSaving}
             />
           )}
@@ -270,18 +341,71 @@ const EngagementEditor = ({
                 <label htmlFor='description'>Description <span>*</span> :</label>
               </div>
               <div className={cn(styles.field, styles.col2)}>
-                {canEdit ? (
-                  <TuiEditor
-                    key={engagement.id || 'new-engagement'}
-                    className={styles.editor}
-                    initialValue={engagement.description || ''}
-                    onChange={onUpdateDescription}
-                  />
-                ) : (
-                  <div className={styles.readOnlyValue}>{engagement.description || '-'}</div>
-                )}
+                <DescriptionField
+                  key={engagement.id || 'new-engagement'}
+                  engagement={engagement}
+                  onUpdateDescription={onUpdateDescription}
+                  readOnly={!canEdit}
+                  isPrivate={engagement.isPrivate}
+                />
                 {submitTriggered && validationErrors.description && (
                   <div className={styles.error}>{validationErrors.description}</div>
+                )}
+              </div>
+            </div>
+
+            <div className={styles.row}>
+              <div className={cn(styles.field, styles.col1)}>
+                <label>Attachments :</label>
+              </div>
+              <div className={cn(styles.field, styles.col2)}>
+                {canEdit && (
+                  <FilestackFilePicker
+                    path={attachmentPath}
+                    onUploadDone={onAttachmentsUploadDone}
+                  />
+                )}
+                {attachmentList.length > 0 && (
+                  <div className={styles.attachmentsTable}>
+                    <div className={styles.attachmentsHeader}>
+                      <div className={styles.attachmentName}>File Name</div>
+                      <div className={styles.attachmentSize}>Size</div>
+                      {canEdit && <div className={styles.attachmentActions}>Action</div>}
+                    </div>
+                    {attachmentList.map((attachment, index) => {
+                      const name = getAttachmentName(attachment)
+                      const sizeLabel = formatBytes(getAttachmentSize(attachment))
+                      const url = getAttachmentUrl(attachment)
+                      const key = attachment.id || attachment.url || `${name}-${index}`
+                      return (
+                        <div key={key} className={styles.attachmentRow}>
+                          {url ? (
+                            <a
+                              className={styles.attachmentName}
+                              href={url}
+                              target='_blank'
+                              rel='noreferrer'
+                            >
+                              {name || url}
+                            </a>
+                          ) : (
+                            <div className={styles.attachmentName}>{name || 'Attachment'}</div>
+                          )}
+                          <div className={styles.attachmentSize}>{sizeLabel || '-'}</div>
+                          {canEdit && (
+                            <div className={styles.attachmentActions}>
+                              <FontAwesomeIcon
+                                icon={faTrash}
+                                size='lg'
+                                className={styles.attachmentRemoveIcon}
+                                onClick={() => onRemoveAttachment(attachment)}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
                 )}
               </div>
             </div>
@@ -321,6 +445,7 @@ const EngagementEditor = ({
                 {canEdit ? (
                   <Select
                     className={styles.selectInput}
+                    useBottomBorder
                     options={JOB_ROLE_OPTIONS}
                     value={selectedRoleOption}
                     onChange={(option) => onUpdateInput({
@@ -345,6 +470,7 @@ const EngagementEditor = ({
                 {canEdit ? (
                   <Select
                     className={styles.selectInput}
+                    useBottomBorder
                     options={JOB_WORKLOAD_OPTIONS}
                     value={selectedWorkloadOption}
                     onChange={(option) => onUpdateInput({
@@ -386,7 +512,7 @@ const EngagementEditor = ({
 
             <div className={styles.row}>
               <div className={cn(styles.field, styles.col1)}>
-                <label>Time Zone :</label>
+                <label>Time Zone <span>*</span> :</label>
               </div>
               <div className={cn(styles.field, styles.col2)}>
                 {canEdit ? (
@@ -409,12 +535,15 @@ const EngagementEditor = ({
                     {(engagement.timezones || []).length ? engagement.timezones.join(', ') : 'Any'}
                   </div>
                 )}
+                {submitTriggered && validationErrors.timezones && (
+                  <div className={styles.error}>{validationErrors.timezones}</div>
+                )}
               </div>
             </div>
 
             <div className={styles.row}>
               <div className={cn(styles.field, styles.col1)}>
-                <label>Country :</label>
+                <label>Country <span>*</span> :</label>
               </div>
               <div className={cn(styles.field, styles.col2)}>
                 {canEdit ? (
@@ -440,6 +569,9 @@ const EngagementEditor = ({
                         .join(', ')
                       : 'Any'}
                   </div>
+                )}
+                {submitTriggered && validationErrors.countries && (
+                  <div className={styles.error}>{validationErrors.countries}</div>
                 )}
               </div>
             </div>
@@ -495,6 +627,7 @@ const EngagementEditor = ({
                 {canEdit ? (
                   <Select
                     className={styles.selectInput}
+                    useBottomBorder
                     value={engagement.status ? {
                       label: engagement.status,
                       value: engagement.status
@@ -519,39 +652,6 @@ const EngagementEditor = ({
                 )}
               </div>
             </div>
-
-            {showAssignedMembers && (
-              <div className={styles.row}>
-                <div className={cn(styles.field, styles.col1)}>
-                  <label>Assigned Members :</label>
-                </div>
-                <div className={cn(styles.field, styles.col2)}>
-                  <div className={styles.memberList}>
-                    {assignedMemberList.map((member) => {
-                      const isPayDisabled = !member.id || isPaymentProcessing
-                      return (
-                        <div key={member.key} className={styles.memberRow}>
-                          <div className={styles.memberHandle}>{member.handle || '-'}</div>
-                          {canEdit && (
-                            <div className={styles.memberActions}>
-                              <PrimaryButton
-                                text={isPaymentProcessing ? 'Processing...' : 'Pay'}
-                                type='info'
-                                onClick={() => onOpenPaymentModal(member)}
-                                disabled={isPayDisabled}
-                              />
-                              {!member.id && (
-                                <div className={styles.memberNote}>Member id unavailable</div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              </div>
-            )}
 
             <div className={styles.row}>
               <div className={cn(styles.field, styles.col1)}>
@@ -580,6 +680,24 @@ const EngagementEditor = ({
                 )}
               </div>
             </div>
+            {showAssignedMembers && (
+              <div className={styles.row}>
+                <div className={cn(styles.field, styles.col1)}>
+                  <label>Assigned Members :</label>
+                </div>
+                <div className={cn(styles.field, styles.col2)}>
+                  <div className={styles.memberList}>
+                    {assignedMemberList.map((member) => (
+                      <div key={member.key} className={styles.memberRow}>
+                        <div className={styles.memberHandle}>
+                          {member.handle || member.memberHandle || '-'}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {canEdit && (
               <div className={styles.row}>
@@ -621,6 +739,7 @@ const EngagementEditor = ({
                   <div className={cn(styles.field, styles.col2)}>
                     <Select
                       className={styles.selectInput}
+                      useBottomBorder
                       isAsync
                       loadOptions={loadMemberOptions}
                       placeholder='Type to search for a member...'
@@ -649,16 +768,6 @@ const EngagementEditor = ({
                 </div>
               )
             })}
-            {canEdit && engagement.isPrivate && assignmentFieldCount > 1 && (
-              <div className={styles.row}>
-                <div className={cn(styles.field, styles.col1)} />
-                <div className={cn(styles.field, styles.col2)}>
-                  <div className={styles.memberNote}>
-                    Only the first member will be assigned until API is updated
-                  </div>
-                </div>
-              </div>
-            )}
             {canEdit && engagement.isPrivate && submitTriggered && validationErrors.assignedMemberHandles && (
               <div className={styles.row}>
                 <div className={cn(styles.field, styles.col1)} />
@@ -676,11 +785,11 @@ const EngagementEditor = ({
 
 EngagementEditor.defaultProps = {
   engagement: getEmptyEngagement(),
+  projectId: null,
   isNew: true,
   isLoading: false,
   isSaving: false,
   canEdit: true,
-  isPaymentProcessing: false,
   submitTriggered: false,
   validationErrors: {},
   showDeleteModal: false,
@@ -692,8 +801,10 @@ EngagementEditor.defaultProps = {
   onSavePublish: () => {},
   onCancel: () => {},
   onDelete: () => {},
-  onOpenPaymentModal: () => {},
-  resolvedAssignedMembers: []
+  resolvedAssignedMembers: [],
+  attachments: [],
+  onUploadAttachments: () => {},
+  onRemoveAttachment: () => {}
 }
 
 EngagementEditor.propTypes = {
@@ -736,11 +847,11 @@ EngagementEditor.propTypes = {
     applicationDeadline: PropTypes.any,
     status: PropTypes.string
   }),
+  projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   isNew: PropTypes.bool,
   isLoading: PropTypes.bool,
   isSaving: PropTypes.bool,
   canEdit: PropTypes.bool,
-  isPaymentProcessing: PropTypes.bool,
   submitTriggered: PropTypes.bool,
   validationErrors: PropTypes.shape({
     title: PropTypes.string,
@@ -748,6 +859,8 @@ EngagementEditor.propTypes = {
     durationWeeks: PropTypes.string,
     applicationDeadline: PropTypes.string,
     skills: PropTypes.string,
+    timezones: PropTypes.string,
+    countries: PropTypes.string,
     assignedMemberHandles: PropTypes.string,
     requiredMemberCount: PropTypes.string,
     status: PropTypes.string
@@ -761,7 +874,6 @@ EngagementEditor.propTypes = {
   onSavePublish: PropTypes.func,
   onCancel: PropTypes.func,
   onDelete: PropTypes.func,
-  onOpenPaymentModal: PropTypes.func,
   resolvedAssignedMembers: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     memberId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
@@ -774,7 +886,18 @@ EngagementEditor.propTypes = {
     userName: PropTypes.string,
     key: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     assignmentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-  }))
+  })),
+  attachments: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    name: PropTypes.string,
+    fileName: PropTypes.string,
+    fileSize: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    size: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    url: PropTypes.string,
+    fileUrl: PropTypes.string
+  })),
+  onUploadAttachments: PropTypes.func,
+  onRemoveAttachment: PropTypes.func
 }
 
 export default EngagementEditor

@@ -12,6 +12,7 @@ module.exports = {
   ACCOUNTS_APP_CONNECTOR_URL: process.env.ACCOUNTS_APP_CONNECTOR_URL || `https://accounts-auth0.${DOMAIN}`,
   ACCOUNTS_APP_LOGIN_URL: `https://accounts-auth0.${DOMAIN}`,
   COMMUNITY_APP_URL: `https://www.${DOMAIN}`,
+  ENGAGEMENTS_APP_URL: 'https://engagements.topcoder.com',
   MEMBER_API_URL: `${PROD_API_HOSTNAME}/v6/members`,
   CHALLENGE_API_URL: `${PROD_API_HOSTNAME}/v6/challenges`,
   ENGAGEMENTS_API_URL: `${PROD_API_HOSTNAME}/v6/engagements/engagements`,

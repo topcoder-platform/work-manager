@@ -26,6 +26,7 @@ module.exports = {
   ACCOUNTS_APP_CONNECTOR_URL: `https://accounts-auth0.${DOMAIN}`,
   ACCOUNTS_APP_LOGIN_URL: `https://accounts-auth0.${DOMAIN}`,
   COMMUNITY_APP_URL: `https://www.${DOMAIN}`,
+  ENGAGEMENTS_APP_URL: 'https://engagements.topcoder-dev.com',
 
   // Local service URLs
   MEMBER_API_URL: `${LOCAL_MEMBER_API}/members`,

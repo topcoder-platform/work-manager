@@ -8,12 +8,11 @@ const Tab = ({
   selectTab,
   projectId,
   canViewAssets,
-  canManageEngagements,
   onBack
 }) => {
   const projectTabs = [
     { id: 1, label: 'Challenges' },
-    ...(canManageEngagements ? [{ id: 2, label: 'Engagements' }] : []),
+    { id: 2, label: 'Engagements' },
     ...(canViewAssets ? [{ id: 3, label: 'Assets' }] : [])
   ]
   const tabs = projectId
@@ -85,7 +84,6 @@ Tab.defaultProps = {
   selectTab: () => {},
   projectId: null,
   canViewAssets: true,
-  canManageEngagements: true,
   onBack: () => {}
 }
 
@@ -94,7 +92,6 @@ Tab.propTypes = {
   currentTab: PT.number.isRequired,
   projectId: PT.oneOfType([PT.string, PT.number]),
   canViewAssets: PT.bool,
-  canManageEngagements: PT.bool,
   onBack: PT.func
 }
 

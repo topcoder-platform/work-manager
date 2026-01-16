@@ -1,0 +1,60 @@
+@use '../../styles/includes' as *;
+
+.container {
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: $challenges-title;
+}
+
+.membersList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.memberRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: 1px solid $tc-gray-20;
+  border-radius: 6px;
+  background: $white;
+}
+
+.memberInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.memberHandle {
+  font-size: 16px;
+  font-weight: 600;
+  color: $tc-gray-80;
+}
+
+.memberNote {
+  font-size: 12px;
+  color: $tc-gray-60;
+}
+
+.emptyState {
+  padding: 40px;
+  text-align: center;
+  color: $tc-gray-70;
+}
