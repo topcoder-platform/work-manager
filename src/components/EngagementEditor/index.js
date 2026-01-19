@@ -281,7 +281,7 @@ const EngagementEditor = ({
               </div>
             </div>
 
-            <div className={styles.row}>
+            <div className={cn(styles.row, styles.descriptionRow)}>
               <div className={cn(styles.field, styles.col1)}>
                 <label htmlFor='description'>Description <span>*</span> :</label>
               </div>

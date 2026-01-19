@@ -59,6 +59,27 @@
     form {
       width: 100%;
     }
+
+    .descriptionRow {
+      align-items: flex-start;
+
+      .field {
+        &.col1 {
+          margin-top: 8px;
+          margin-bottom: 0;
+          padding-top: 0;
+          align-items: flex-start;
+        }
+
+        &.col2 {
+          width: 100%;
+          max-width: none;
+          min-width: 0;
+          flex-direction: column;
+          align-self: stretch;
+        }
+      }
+    }
   }
 }
 
