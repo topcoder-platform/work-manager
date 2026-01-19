@@ -62,11 +62,25 @@ const getMemberId = (member) => {
   return member.id || member.memberId || member.userId || null
 }
 
-const getAttachmentKey = (attachment) => {
-  if (!attachment || typeof attachment !== 'object') {
-    return ''
+const normalizeMemberId = (value) => {
+  if (value == null) {
+    return null
   }
-  return attachment.id || attachment.url || attachment.fileUrl || attachment.name || attachment.fileName || ''
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    if (!trimmed) {
+      return null
+    }
+    if (!/^\d+$/.test(trimmed)) {
+      return null
+    }
+    const parsed = parseInt(trimmed, 10)
+    return Number.isNaN(parsed) ? null : parsed
+  }
+  return null
 }
 
 const normalizeMemberInfo = (member, index, memberIdLookup = {}) => {
@@ -95,7 +109,6 @@ class EngagementEditorContainer extends Component {
     super(props)
     this.state = {
       engagement: getEmptyEngagement(),
-      attachments: [],
       submitTriggered: false,
       validationErrors: {},
       showDeleteModal: false,
@@ -112,8 +125,6 @@ class EngagementEditorContainer extends Component {
     this.onDelete = this.onDelete.bind(this)
     this.onToggleDelete = this.onToggleDelete.bind(this)
     this.resolveMemberIds = this.resolveMemberIds.bind(this)
-    this.onUploadAttachments = this.onUploadAttachments.bind(this)
-    this.onRemoveAttachment = this.onRemoveAttachment.bind(this)
   }
 
   componentDidMount () {
@@ -143,7 +154,7 @@ class EngagementEditorContainer extends Component {
       if (nextEngagementId) {
         this.props.loadEngagementDetails(nextProjectId, nextEngagementId)
       } else {
-        this.setState({ engagement: getEmptyEngagement(), attachments: [], submitTriggered: false, validationErrors: {} })
+        this.setState({ engagement: getEmptyEngagement(), submitTriggered: false, validationErrors: {} })
       }
     }
 
@@ -155,12 +166,10 @@ class EngagementEditorContainer extends Component {
       nextEngagementDetailsId !== this.state.engagement.id
     ) {
       const normalizedEngagement = this.normalizeEngagement(nextProps.engagementDetails)
-      const nextAttachments = Array.isArray(normalizedEngagement.attachments) ? normalizedEngagement.attachments : []
       const engagementDetails = { ...normalizedEngagement }
       delete engagementDetails.attachments
       this.setState({
         engagement: engagementDetails,
-        attachments: nextAttachments,
         submitTriggered: false,
         validationErrors: {}
       })
@@ -268,35 +277,6 @@ class EngagementEditorContainer extends Component {
         [field]: normalized
       }
     }))
-  }
-
-  onUploadAttachments (uploadedAttachments) {
-    if (!Array.isArray(uploadedAttachments) || !uploadedAttachments.length) {
-      return
-    }
-    this.setState((prevState) => {
-      const existing = Array.isArray(prevState.attachments) ? prevState.attachments : []
-      const merged = [...existing]
-      uploadedAttachments.forEach((attachment) => {
-        const key = getAttachmentKey(attachment)
-        const exists = key && merged.some(item => getAttachmentKey(item) === key)
-        if (!exists) {
-          merged.push(attachment)
-        }
-      })
-      return { attachments: merged }
-    })
-  }
-
-  onRemoveAttachment (attachment) {
-    const removeKey = getAttachmentKey(attachment)
-    this.setState((prevState) => {
-      const existing = Array.isArray(prevState.attachments) ? prevState.attachments : []
-      if (!removeKey) {
-        return { attachments: existing.filter(item => item !== attachment) }
-      }
-      return { attachments: existing.filter(item => getAttachmentKey(item) !== removeKey) }
-    })
   }
 
   getValidationErrors (engagement) {
@@ -407,14 +387,6 @@ class EngagementEditorContainer extends Component {
         : null,
       status: toEngagementStatusApi(status)
     }
-    const attachments = Array.isArray(this.state.attachments) ? this.state.attachments : []
-    payload.attachments = attachments.map((attachment) => {
-      if (!attachment || typeof attachment !== 'object') {
-        return attachment
-      }
-      const { isDeleting, ...rest } = attachment
-      return rest
-    })
 
     if (engagement.durationWeeks !== '' && engagement.durationWeeks != null) {
       const durationWeeks = parseInt(engagement.durationWeeks, 10)
@@ -461,25 +433,25 @@ class EngagementEditorContainer extends Component {
     const memberIdLookup = this.state.memberIdLookup || {}
     const payloadAssignedMemberIds = payloadAssignedMemberHandles.map((handle, index) => {
       const assignmentMatch = assignments.find((assignment) => getMemberHandle(assignment) === handle)
-      const assignmentId = assignmentMatch ? getMemberId(assignmentMatch) : null
+      const assignmentId = assignmentMatch ? normalizeMemberId(getMemberId(assignmentMatch)) : null
       if (assignmentId != null) {
         return assignmentId
       }
 
       const assignedMemberMatch = assignedMembers.find((member) => getMemberHandle(member) === handle)
-      let assignedMemberId = assignedMemberMatch ? getMemberId(assignedMemberMatch) : null
+      let assignedMemberId = assignedMemberMatch ? normalizeMemberId(getMemberId(assignedMemberMatch)) : null
 
       if (assignedMemberId == null && assignedMembers.length > index) {
         const indexedMember = assignedMembers[index]
         if (indexedMember != null) {
           if (typeof indexedMember === 'number') {
-            assignedMemberId = indexedMember
+            assignedMemberId = normalizeMemberId(indexedMember)
           } else if (typeof indexedMember === 'string') {
             if (indexedMember !== handle) {
-              assignedMemberId = indexedMember
+              assignedMemberId = normalizeMemberId(indexedMember)
             }
           } else {
-            assignedMemberId = getMemberId(indexedMember)
+            assignedMemberId = normalizeMemberId(getMemberId(indexedMember))
           }
         }
       }
@@ -489,7 +461,7 @@ class EngagementEditorContainer extends Component {
       }
 
       if (Object.prototype.hasOwnProperty.call(memberIdLookup, handle)) {
-        return memberIdLookup[handle]
+        return normalizeMemberId(memberIdLookup[handle])
       }
 
       return null
@@ -566,14 +538,14 @@ class EngagementEditorContainer extends Component {
     const memberCandidates = assignments.length
       ? assignments
       : assignedMembers.length
-        ? assignedMembers
+        ? [...assignedMembers, ...assignedMemberHandles]
         : assignedMemberHandles
     if (!memberCandidates.length) {
       return
     }
     const handlesToLookup = memberCandidates.reduce((acc, member) => {
       const handle = getMemberHandle(member)
-      const id = getMemberId(member)
+      const id = normalizeMemberId(getMemberId(member))
       if (
         handle &&
         !id &&
@@ -590,8 +562,8 @@ class EngagementEditorContainer extends Component {
     const results = await Promise.all(handlesToLookup.map(async (handle) => {
       try {
         const profile = await fetchProfile(handle)
-        const id = profile && (profile.userId || profile.id || profile.memberId)
-        return { handle, id: id || null }
+        const id = normalizeMemberId(profile && (profile.userId || profile.id || profile.memberId))
+        return { handle, id }
       } catch (error) {
         return { handle, id: null }
       }
@@ -658,7 +630,6 @@ class EngagementEditorContainer extends Component {
         validationErrors={this.state.validationErrors}
         showDeleteModal={this.state.showDeleteModal}
         resolvedAssignedMembers={assignedMembersForPayment}
-        attachments={this.state.attachments}
         onToggleDelete={this.onToggleDelete}
         onUpdateInput={this.onUpdateInput}
         onUpdateDescription={this.onUpdateDescription}
@@ -667,8 +638,6 @@ class EngagementEditorContainer extends Component {
         onSavePublish={this.onSavePublish}
         onCancel={this.onCancel}
         onDelete={this.onDelete}
-        onUploadAttachments={this.onUploadAttachments}
-        onRemoveAttachment={this.onRemoveAttachment}
       />
     )
   }

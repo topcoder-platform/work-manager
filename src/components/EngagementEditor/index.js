@@ -3,8 +3,6 @@ import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import moment from 'moment-timezone'
 import cn from 'classnames'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTrash } from '@fortawesome/free-solid-svg-icons'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import DescriptionField from './DescriptionField'
 import DateInput from '../DateInput'
@@ -12,49 +10,13 @@ import Select from '../Select'
 import SkillsField from '../ChallengeEditor/SkillsField'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import Loader from '../Loader'
-import FilestackFilePicker from '../FilestackFilePicker'
-import { ENGAGEMENTS_APP_URL, JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS, getAWSContainerFileURL } from '../../config/constants'
+import { ENGAGEMENTS_APP_URL, JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
 import { suggestProfiles } from '../../services/user'
 import styles from './EngagementEditor.module.scss'
 
 const ANY_OPTION = { label: 'Any', value: 'Any' }
 const INPUT_DATE_FORMAT = 'MM/dd/yyyy'
 const INPUT_TIME_FORMAT = 'HH:mm'
-const ENGAGEMENT_ATTACHMENTS_FOLDER = 'ENGAGEMENT_ATTACHMENTS'
-
-const formatBytes = (bytes, decimals) => {
-  const value = Number(bytes)
-  if (!Number.isFinite(value)) {
-    return ''
-  }
-  if (value === 0) return '0 Bytes'
-  const k = 1024
-  const dm = decimals <= 0 ? 0 : decimals || 2
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
-  const i = Math.floor(Math.log(value) / Math.log(k))
-  return parseFloat((value / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
-}
-
-const getAttachmentName = (attachment) => {
-  if (!attachment || typeof attachment !== 'object') {
-    return ''
-  }
-  return attachment.name || attachment.fileName || attachment.title || ''
-}
-
-const getAttachmentSize = (attachment) => {
-  if (!attachment || typeof attachment !== 'object') {
-    return null
-  }
-  return attachment.fileSize || attachment.size || null
-}
-
-const getAttachmentUrl = (attachment) => {
-  if (!attachment || typeof attachment !== 'object') {
-    return ''
-  }
-  return attachment.url || attachment.fileUrl || attachment.downloadUrl || ''
-}
 
 const getEmptyEngagement = () => ({
   title: '',
@@ -119,10 +81,7 @@ const EngagementEditor = ({
   onSavePublish,
   onCancel,
   onDelete,
-  resolvedAssignedMembers,
-  attachments,
-  onUploadAttachments,
-  onRemoveAttachment
+  resolvedAssignedMembers
 }) => {
   const timeZoneOptions = useMemo(() => {
     const zones = moment.tz.names().map(zone => ({
@@ -216,20 +175,6 @@ const EngagementEditor = ({
     styles.assignmentProgress,
     isFullyStaffed ? styles.assignmentProgressComplete : styles.assignmentProgressPartial
   )
-  const attachmentList = Array.isArray(attachments) ? attachments : []
-  const attachmentPath = `engagements/${engagement.id || 'new'}/${ENGAGEMENT_ATTACHMENTS_FOLDER}/`
-
-  const onAttachmentsUploadDone = ({ filesUploaded }) => {
-    if (!filesUploaded || !filesUploaded.length) {
-      return
-    }
-    const uploadedAttachments = filesUploaded.map(file => ({
-      name: file.originalFile.name,
-      fileSize: file.originalFile.size,
-      url: encodeURI(getAWSContainerFileURL(file.key))
-    }))
-    onUploadAttachments(uploadedAttachments)
-  }
 
   const loadMemberOptions = (inputValue) => {
     if (!inputValue) {
@@ -350,62 +295,6 @@ const EngagementEditor = ({
                 />
                 {submitTriggered && validationErrors.description && (
                   <div className={styles.error}>{validationErrors.description}</div>
-                )}
-              </div>
-            </div>
-
-            <div className={styles.row}>
-              <div className={cn(styles.field, styles.col1)}>
-                <label>Attachments :</label>
-              </div>
-              <div className={cn(styles.field, styles.col2)}>
-                {canEdit && (
-                  <FilestackFilePicker
-                    path={attachmentPath}
-                    onUploadDone={onAttachmentsUploadDone}
-                  />
-                )}
-                {attachmentList.length > 0 && (
-                  <div className={styles.attachmentsTable}>
-                    <div className={styles.attachmentsHeader}>
-                      <div className={styles.attachmentName}>File Name</div>
-                      <div className={styles.attachmentSize}>Size</div>
-                      {canEdit && <div className={styles.attachmentActions}>Action</div>}
-                    </div>
-                    {attachmentList.map((attachment, index) => {
-                      const name = getAttachmentName(attachment)
-                      const sizeLabel = formatBytes(getAttachmentSize(attachment))
-                      const url = getAttachmentUrl(attachment)
-                      const key = attachment.id || attachment.url || `${name}-${index}`
-                      return (
-                        <div key={key} className={styles.attachmentRow}>
-                          {url ? (
-                            <a
-                              className={styles.attachmentName}
-                              href={url}
-                              target='_blank'
-                              rel='noreferrer'
-                            >
-                              {name || url}
-                            </a>
-                          ) : (
-                            <div className={styles.attachmentName}>{name || 'Attachment'}</div>
-                          )}
-                          <div className={styles.attachmentSize}>{sizeLabel || '-'}</div>
-                          {canEdit && (
-                            <div className={styles.attachmentActions}>
-                              <FontAwesomeIcon
-                                icon={faTrash}
-                                size='lg'
-                                className={styles.attachmentRemoveIcon}
-                                onClick={() => onRemoveAttachment(attachment)}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
                 )}
               </div>
             </div>
@@ -801,10 +690,7 @@ EngagementEditor.defaultProps = {
   onSavePublish: () => {},
   onCancel: () => {},
   onDelete: () => {},
-  resolvedAssignedMembers: [],
-  attachments: [],
-  onUploadAttachments: () => {},
-  onRemoveAttachment: () => {}
+  resolvedAssignedMembers: []
 }
 
 EngagementEditor.propTypes = {
@@ -886,18 +772,7 @@ EngagementEditor.propTypes = {
     userName: PropTypes.string,
     key: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     assignmentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-  })),
-  attachments: PropTypes.arrayOf(PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    name: PropTypes.string,
-    fileName: PropTypes.string,
-    fileSize: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    size: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    url: PropTypes.string,
-    fileUrl: PropTypes.string
-  })),
-  onUploadAttachments: PropTypes.func,
-  onRemoveAttachment: PropTypes.func
+  }))
 }
 
 export default EngagementEditor
