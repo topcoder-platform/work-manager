@@ -32,6 +32,8 @@ module.exports = {
   MEMBER_API_URL: `${LOCAL_MEMBER_API}/members`,
   CHALLENGE_API_URL: `${LOCAL_CHALLENGE_API}/challenges`,
   ENGAGEMENTS_API_URL: `${LOCAL_CHALLENGE_API}/engagements/engagements`,
+  ENGAGEMENTS_ROOT_API_URL: `${LOCAL_CHALLENGE_API}/engagements`,
+  APPLICATIONS_API_URL: `${LOCAL_CHALLENGE_API}/engagements/applications`,
   TC_FINANCE_API_URL: process.env.TC_FINANCE_API_URL || 'http://localhost:3009/v6/finance',
   CHALLENGE_DEFAULT_REVIEWERS_URL: `${LOCAL_CHALLENGE_API.replace(/\/v6$/, '')}/v6/challenge/default-reviewers`,
   CHALLENGE_API_VERSION: '1.1.0',

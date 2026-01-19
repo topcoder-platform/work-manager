@@ -5,6 +5,7 @@ export const {
   COMMUNITY_APP_URL,
   CHALLENGE_API_URL,
   ENGAGEMENTS_API_URL,
+  ENGAGEMENTS_ROOT_API_URL,
   APPLICATIONS_API_URL,
   CHALLENGE_DEFAULT_REVIEWERS_URL,
   COPILOTS_URL,
@@ -381,6 +382,9 @@ export const ALLOWED_USER_ROLES = [
   'connect admin',
   'connect manager',
   'connect copilot',
+  'project manager',
+  'topcoder project manager',
+  'task manager',
   'topcoder user',
   'topcoder task manager'
 ]
@@ -399,11 +403,13 @@ export const COPILOT_ROLES = [
 ]
 
 export const MANAGER_ROLES = [
-  'project manager'
+  'project manager',
+  'topcoder project manager'
 ]
 
 export const TASK_MANAGER_ROLES = [
-  'topcoder task manager'
+  'topcoder task manager',
+  'task manager'
 ]
 
 export const downloadAttachmentURL = (challengeId, attachmentId, token) =>

@@ -50,10 +50,9 @@ export function loadApplications (engagementId, statusFilter = 'all') {
 
 /**
  * Loads application details
- * @param {String|Number} engagementId
  * @param {String|Number} applicationId
  */
-export function loadApplicationDetails (engagementId, applicationId) {
+export function loadApplicationDetails (applicationId) {
   return async (dispatch) => {
     if (!applicationId) {
       return dispatch({
@@ -67,7 +66,7 @@ export function loadApplicationDetails (engagementId, applicationId) {
     })
 
     try {
-      const response = await fetchApplication(engagementId, applicationId)
+      const response = await fetchApplication(applicationId)
       return dispatch({
         type: LOAD_APPLICATION_DETAILS_SUCCESS,
         applicationDetails: _.get(response, 'data', {})
@@ -84,18 +83,17 @@ export function loadApplicationDetails (engagementId, applicationId) {
 
 /**
  * Updates application status
- * @param {String|Number} engagementId
  * @param {String|Number} applicationId
  * @param {String} status
  */
-export function updateApplicationStatus (engagementId, applicationId, status) {
+export function updateApplicationStatus (applicationId, status) {
   return async (dispatch) => {
     dispatch({
       type: UPDATE_APPLICATION_STATUS_PENDING
     })
 
     try {
-      const response = await updateApplicationStatusAPI(engagementId, applicationId, status)
+      const response = await updateApplicationStatusAPI(applicationId, status)
       return dispatch({
         type: UPDATE_APPLICATION_STATUS_SUCCESS,
         application: _.get(response, 'data', {})

@@ -435,18 +435,22 @@ const EngagementFeedback = ({
               )}
 
               <div className={styles.modalActions}>
-                <PrimaryButton
-                  text={isSubmittingFeedback ? 'Submitting...' : 'Submit Feedback'}
-                  type='info'
-                  submit
-                  disabled={isSubmittingFeedback}
-                />
-                <OutlineButton
-                  text='Cancel'
-                  type='info'
-                  onClick={handleCloseAddFeedbackModal}
-                  disabled={isSubmittingFeedback}
-                />
+                <div className={styles.modalAction}>
+                  <PrimaryButton
+                    text={isSubmittingFeedback ? 'Submitting...' : 'Submit Feedback'}
+                    type='info'
+                    submit
+                    disabled={isSubmittingFeedback}
+                  />
+                </div>
+                <div className={styles.modalAction}>
+                  <OutlineButton
+                    text='Cancel'
+                    type='info'
+                    onClick={handleCloseAddFeedbackModal}
+                    disabled={isSubmittingFeedback}
+                  />
+                </div>
               </div>
             </form>
           </div>
@@ -478,18 +482,22 @@ const EngagementFeedback = ({
                 )}
 
                 <div className={styles.modalActions}>
-                  <PrimaryButton
-                    text={isGeneratingLink ? 'Generating...' : 'Generate Link'}
-                    type='info'
-                    submit
-                    disabled={isGeneratingLink}
-                  />
-                  <OutlineButton
-                    text='Cancel'
-                    type='info'
-                    onClick={handleCloseGenerateLinkModal}
-                    disabled={isGeneratingLink}
-                  />
+                  <div className={styles.modalAction}>
+                    <PrimaryButton
+                      text={isGeneratingLink ? 'Generating...' : 'Generate Link'}
+                      type='info'
+                      submit
+                      disabled={isGeneratingLink}
+                    />
+                  </div>
+                  <div className={styles.modalAction}>
+                    <OutlineButton
+                      text='Cancel'
+                      type='info'
+                      onClick={handleCloseGenerateLinkModal}
+                      disabled={isGeneratingLink}
+                    />
+                  </div>
                 </div>
               </form>
             )}
@@ -512,7 +520,9 @@ const EngagementFeedback = ({
                   </div>
                 )}
                 <div className={styles.modalActions}>
-                  <PrimaryButton text='Close' type='info' onClick={handleCloseGenerateLinkModal} />
+                  <div className={styles.modalAction}>
+                    <PrimaryButton text='Close' type='info' onClick={handleCloseGenerateLinkModal} />
+                  </div>
                 </div>
               </div>
             )}

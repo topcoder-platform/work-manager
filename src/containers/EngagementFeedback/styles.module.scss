@@ -207,6 +207,12 @@
   flex-wrap: wrap;
 }
 
+.modalAction {
+  flex: 1 1 200px;
+  min-width: 180px;
+  height: 40px;
+}
+
 .linkMessage {
   font-size: 14px;
   color: $tc-gray-80;

@@ -1,7 +1,7 @@
 import qs from 'qs'
 import { axiosInstance } from './axiosWithAuth'
 
-const { ENGAGEMENTS_API_URL, APPLICATIONS_API_URL } = process.env
+const { ENGAGEMENTS_API_URL, ENGAGEMENTS_ROOT_API_URL, APPLICATIONS_API_URL } = process.env
 
 /**
  * Api request for fetching engagements
@@ -80,27 +80,25 @@ export function fetchApplications (engagementId, filters = {}, params = {}) {
   }
   const queryString = qs.stringify(query, { encode: false })
   const querySuffix = queryString ? `?${queryString}` : ''
-  return axiosInstance.get(`${ENGAGEMENTS_API_URL}/${engagementId}/applications${querySuffix}`)
+  return axiosInstance.get(`${ENGAGEMENTS_ROOT_API_URL}/${engagementId}/applications${querySuffix}`)
 }
 
 /**
  * Api request for fetching application details
- * @param {String|Number} engagementId
  * @param {String|Number} applicationId
  * @returns {Promise<*>}
  */
-export function fetchApplication (engagementId, applicationId) {
-  return axiosInstance.get(`${ENGAGEMENTS_API_URL}/${engagementId}/applications/${applicationId}`)
+export function fetchApplication (applicationId) {
+  return axiosInstance.get(`${APPLICATIONS_API_URL}/${applicationId}`)
 }
 
 /**
  * Api request for updating application status
- * @param {String|Number} engagementId
  * @param {String|Number} applicationId
  * @param {String} status
  * @returns {Promise<*>}
  */
-export function updateApplicationStatus (engagementId, applicationId, status) {
+export function updateApplicationStatus (applicationId, status) {
   return axiosInstance.patch(`${APPLICATIONS_API_URL}/${applicationId}/status`, { status })
 }
 
@@ -111,7 +109,7 @@ export function updateApplicationStatus (engagementId, applicationId, status) {
  * @returns {Promise<*>}
  */
 export function fetchEngagementFeedback (engagementId, assignmentId) {
-  return axiosInstance.get(`${ENGAGEMENTS_API_URL}/${engagementId}/assignments/${assignmentId}/feedback`)
+  return axiosInstance.get(`${ENGAGEMENTS_ROOT_API_URL}/${engagementId}/assignments/${assignmentId}/feedback`)
 }
 
 /**
@@ -122,7 +120,7 @@ export function fetchEngagementFeedback (engagementId, assignmentId) {
  * @returns {Promise<*>}
  */
 export function createEngagementFeedback (engagementId, assignmentId, data) {
-  return axiosInstance.post(`${ENGAGEMENTS_API_URL}/${engagementId}/assignments/${assignmentId}/feedback`, data)
+  return axiosInstance.post(`${ENGAGEMENTS_ROOT_API_URL}/${engagementId}/assignments/${assignmentId}/feedback`, data)
 }
 
 /**
@@ -133,5 +131,5 @@ export function createEngagementFeedback (engagementId, assignmentId, data) {
  * @returns {Promise<*>}
  */
 export function generateEngagementFeedbackLink (engagementId, assignmentId, data) {
-  return axiosInstance.post(`${ENGAGEMENTS_API_URL}/${engagementId}/assignments/${assignmentId}/feedback/generate-link`, data)
+  return axiosInstance.post(`${ENGAGEMENTS_ROOT_API_URL}/${engagementId}/assignments/${assignmentId}/feedback/generate-link`, data)
 }
