@@ -31,7 +31,7 @@ export function createMemberPayment (
     const payload = {
       winnerId: String(memberId),
       type: 'ENGAGEMENT',
-      origin: 'work-manager',
+      origin: 'Topcoder',
       category: 'ENGAGEMENT_PAYMENT',
       title: paymentTitle,
       description: paymentTitle,
