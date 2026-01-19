@@ -7,10 +7,10 @@ import { OutlineButton } from '../Buttons'
 import styles from './ApplicationDetail.module.scss'
 
 const STATUS_OPTIONS = [
-  { label: 'Submitted', value: 'submitted' },
-  { label: 'Under Review', value: 'under_review' },
-  { label: 'Accepted', value: 'accepted' },
-  { label: 'Rejected', value: 'rejected' }
+  { label: 'Submitted', value: 'SUBMITTED' },
+  { label: 'Under Review', value: 'UNDER_REVIEW' },
+  { label: 'Accepted', value: 'ACCEPTED' },
+  { label: 'Rejected', value: 'REJECTED' }
 ]
 
 const formatDateTime = (value) => {

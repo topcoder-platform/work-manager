@@ -9,10 +9,10 @@ import styles from './ApplicationsList.module.scss'
 
 const STATUS_OPTIONS = [
   { label: 'All', value: 'all' },
-  { label: 'Submitted', value: 'submitted' },
-  { label: 'Under Review', value: 'under_review' },
-  { label: 'Accepted', value: 'accepted' },
-  { label: 'Rejected', value: 'rejected' }
+  { label: 'Submitted', value: 'SUBMITTED' },
+  { label: 'Under Review', value: 'UNDER_REVIEW' },
+  { label: 'Accepted', value: 'ACCEPTED' },
+  { label: 'Rejected', value: 'REJECTED' }
 ]
 
 const STATUS_UPDATE_OPTIONS = STATUS_OPTIONS.filter(option => option.value !== 'all')
