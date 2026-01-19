@@ -29,7 +29,7 @@ export function createMemberPayment (
 
     const parsedAmount = Number(amount)
     const payload = {
-      winnerId: memberId,
+      winnerId: String(memberId),
       type: 'ENGAGEMENT',
       origin: 'work-manager',
       category: 'ENGAGEMENT_PAYMENT',

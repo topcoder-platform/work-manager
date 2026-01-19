@@ -29,11 +29,32 @@ const getMemberHandle = (member) => {
   return member.handle || member.memberHandle || member.username || member.name || member.userHandle || member.userName || null
 }
 
+const normalizeMemberId = (value) => {
+  if (value == null) {
+    return null
+  }
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value : null
+  }
+  if (typeof value === 'string') {
+    const trimmed = value.trim()
+    if (!trimmed) {
+      return null
+    }
+    if (!/^\d+$/.test(trimmed)) {
+      return null
+    }
+    const parsed = parseInt(trimmed, 10)
+    return Number.isNaN(parsed) ? null : parsed
+  }
+  return null
+}
+
 const getMemberId = (member) => {
   if (!member || typeof member === 'string') {
     return null
   }
-  return member.id || member.memberId || member.member_id || member.userId || null
+  return normalizeMemberId(member.id || member.memberId || member.member_id || member.userId || null)
 }
 
 const normalizeMemberInfo = (member, index, memberIdLookup = {}) => {
@@ -205,7 +226,7 @@ class EngagementPaymentContainer extends Component {
     if (!memberId && memberHandle) {
       try {
         const profile = await fetchProfile(memberHandle)
-        memberId = profile && (profile.userId || profile.id || profile.memberId)
+        memberId = normalizeMemberId(profile && (profile.userId || profile.id || profile.memberId))
       } catch (error) {
         // Keep memberId unset to fall through to validation error.
       }
@@ -271,7 +292,7 @@ class EngagementPaymentContainer extends Component {
     const results = await Promise.all(handlesToLookup.map(async (handle) => {
       try {
         const profile = await fetchProfile(handle)
-        const id = profile && (profile.userId || profile.id || profile.memberId)
+        const id = normalizeMemberId(profile && (profile.userId || profile.id || profile.memberId))
         return { handle, id: id || null }
       } catch (error) {
         return { handle, id: null }
