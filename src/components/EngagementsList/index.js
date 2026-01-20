@@ -317,6 +317,13 @@ const EngagementsList = ({
                         />
                         {assignedMembersCount > 0 && (
                           <OutlineButton
+                            text='Experience Log'
+                            type='info'
+                            link={`/projects/${projectId}/engagements/${engagement.id}/experience`}
+                          />
+                        )}
+                        {assignedMembersCount > 0 && (
+                          <OutlineButton
                             text='Pay'
                             type='info'
                             link={`/projects/${projectId}/engagements/${engagement.id}/pay`}

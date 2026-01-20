@@ -21,6 +21,7 @@ import EngagementPayment from './containers/EngagementPayment'
 import EngagementsList from './containers/EngagementsList'
 import ApplicationsList from './containers/ApplicationsList'
 import EngagementFeedback from './containers/EngagementFeedback'
+import EngagementExperience from './containers/EngagementExperience'
 import { getFreshToken, decodeToken } from 'tc-auth-lib'
 import { saveToken } from './actions/auth'
 import { loadChallengeDetails } from './actions/challenges'
@@ -282,6 +283,17 @@ class Routes extends React.Component {
               <Tab
                 projectId={match.params.projectId}
                 menu={'Applications'}
+                backPath={`/projects/${match.params.projectId}/engagements`}
+              />,
+              <FooterContainer />
+            )()} />
+          <Route exact path='/projects/:projectId/engagements/:engagementId/experience'
+            render={({ match }) => renderApp(
+              <EngagementExperience projectId={match.params.projectId} engagementId={match.params.engagementId} />,
+              <TopBarContainer projectId={match.params.projectId} />,
+              <Tab
+                projectId={match.params.projectId}
+                menu={'Experience'}
                 backPath={`/projects/${match.params.projectId}/engagements`}
               />,
               <FooterContainer />

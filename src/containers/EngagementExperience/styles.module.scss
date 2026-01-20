@@ -1,0 +1,122 @@
+@use '../../styles/includes' as *;
+
+.container {
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: $challenges-title;
+}
+
+.subtitle {
+  margin-top: 6px;
+  color: $tc-gray-70;
+  font-size: 14px;
+  max-width: 720px;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.metaItem {
+  font-size: 13px;
+  color: $tc-gray-70;
+}
+
+.metaLabel {
+  font-weight: 600;
+  margin-right: 6px;
+  color: $tc-gray-80;
+}
+
+.panel {
+  background: $white;
+  border: 1px solid $tc-gray-20;
+  border-radius: 6px;
+  padding: 20px;
+  display: grid;
+  gap: 16px;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.panelTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: $tc-gray-90;
+}
+
+.panelDescription {
+  margin-top: 4px;
+  color: $tc-gray-70;
+  font-size: 14px;
+}
+
+.notice {
+  padding: 12px;
+  border-radius: 4px;
+  background: $tc-gray-10;
+  color: $tc-gray-80;
+  font-size: 14px;
+}
+
+.loadingState,
+.emptyState {
+  padding: 20px;
+  text-align: center;
+  color: $tc-gray-70;
+  font-size: 14px;
+}
+
+.memberList {
+  display: grid;
+  gap: 16px;
+}
+
+.memberSection {
+  border: 1px solid $tc-gray-20;
+  border-radius: 6px;
+  padding: 16px;
+  background: $white;
+  display: grid;
+  gap: 12px;
+}
+
+.memberHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.memberName {
+  font-size: 16px;
+  font-weight: 600;
+  color: $tc-gray-90;
+}
+
+.memberMeta {
+  font-size: 12px;
+  color: $tc-gray-70;
+}

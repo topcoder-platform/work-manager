@@ -646,6 +646,11 @@ const EngagementFeedback = ({
             {generatedLink && (
               <div className={styles.modalForm}>
                 <div className={styles.linkMessage}>Feedback link generated successfully.</div>
+                {generatedLink.expiresAt && (
+                  <div className={styles.linkMeta}>
+                    {`Expires on ${moment(generatedLink.expiresAt).format('MMM DD, YYYY')}`}
+                  </div>
+                )}
                 <div className={styles.linkDisplay}>
                   <input
                     className={styles.linkInput}
@@ -655,11 +660,6 @@ const EngagementFeedback = ({
                   />
                   <OutlineButton text='Copy Link' type='info' onClick={handleCopyLink} />
                 </div>
-                {generatedLink.expiresAt && (
-                  <div className={styles.linkMeta}>
-                    {`Expires on ${moment(generatedLink.expiresAt).format('MMM DD, YYYY')}`}
-                  </div>
-                )}
                 <div className={styles.modalActions}>
                   <div className={styles.modalAction}>
                     <PrimaryButton text='Close' type='info' onClick={handleCloseGenerateLinkModal} />

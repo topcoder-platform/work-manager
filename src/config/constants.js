@@ -384,6 +384,8 @@ export const ALLOWED_USER_ROLES = [
   'connect copilot',
   'project manager',
   'topcoder project manager',
+  'talent manager',
+  'topcoder talent manager',
   'task manager',
   'topcoder user',
   'topcoder task manager'
@@ -411,7 +413,9 @@ export const MANAGER_ROLES = [
 
 export const TASK_MANAGER_ROLES = [
   'topcoder task manager',
-  'task manager'
+  'task manager',
+  'topcoder talent manager',
+  'talent manager'
 ]
 
 export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
