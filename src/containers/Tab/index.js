@@ -145,8 +145,12 @@ class TabContainer extends Component {
   }
 
   onBackToHome () {
-    const { history, resetSidebarActiveParams } = this.props
-    history.push('/')
+    const { history, resetSidebarActiveParams, backPath } = this.props
+    if (backPath) {
+      history.push(backPath)
+    } else {
+      history.push('/')
+    }
     resetSidebarActiveParams()
   }
 
@@ -215,6 +219,7 @@ TabContainer.propTypes = {
   history: PropTypes.any.isRequired,
   setActiveProject: PropTypes.func,
   projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  backPath: PropTypes.string,
   resetSidebarActiveParams: PropTypes.func,
   selfService: PropTypes.bool,
   token: PropTypes.string

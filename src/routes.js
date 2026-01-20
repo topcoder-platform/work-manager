@@ -268,7 +268,7 @@ class Routes extends React.Component {
               render={({ match }) => renderApp(
                 <Challenges
                   menu='NULL'
-                  warnMessage={'You need Admin, Project Manager, or Task Manager role to create engagements'}
+                  warnMessage={'You need Admin, Project Manager, Talent Manager, or Task Manager role to create engagements'}
                 />,
                 <TopBarContainer />,
                 <Tab projectId={match.params.projectId} />,
@@ -279,14 +279,22 @@ class Routes extends React.Component {
             render={({ match }) => renderApp(
               <ApplicationsList projectId={match.params.projectId} engagementId={match.params.engagementId} />,
               <TopBarContainer projectId={match.params.projectId} />,
-              <Tab projectId={match.params.projectId} menu={'Applications'} />,
+              <Tab
+                projectId={match.params.projectId}
+                menu={'Applications'}
+                backPath={`/projects/${match.params.projectId}/engagements`}
+              />,
               <FooterContainer />
             )()} />
           <Route exact path='/projects/:projectId/engagements/:engagementId/feedback'
             render={({ match }) => renderApp(
               <EngagementFeedback projectId={match.params.projectId} engagementId={match.params.engagementId} />,
               <TopBarContainer projectId={match.params.projectId} />,
-              <Tab projectId={match.params.projectId} menu={'Feedback'} />,
+              <Tab
+                projectId={match.params.projectId}
+                menu={'Feedback'}
+                backPath={`/projects/${match.params.projectId}/engagements`}
+              />,
               <FooterContainer />
             )()} />
           {canManageEngagements && (
@@ -303,7 +311,7 @@ class Routes extends React.Component {
               render={({ match }) => renderApp(
                 <Challenges
                   menu='NULL'
-                  warnMessage={'You need Admin, Project Manager, or Task Manager role to edit engagements'}
+                  warnMessage={'You need Admin, Project Manager, Talent Manager, or Task Manager role to edit engagements'}
                 />,
                 <TopBarContainer />,
                 <Tab projectId={match.params.projectId} />,
@@ -331,7 +339,7 @@ class Routes extends React.Component {
               render={({ match }) => renderApp(
                 <Challenges
                   menu='NULL'
-                  warnMessage={'You need Admin, Project Manager, or Task Manager role to edit engagements'}
+                  warnMessage={'You need Admin, Project Manager, Talent Manager, or Task Manager role to edit engagements'}
                 />,
                 <TopBarContainer />,
                 <Tab projectId={match.params.projectId} />,

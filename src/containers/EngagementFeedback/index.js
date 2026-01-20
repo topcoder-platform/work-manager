@@ -43,13 +43,38 @@ const EngagementFeedback = ({
     return engagementId || _.get(match, 'params.engagementId') || null
   }, [engagementId, match])
 
-  const assignmentId = useMemo(() => {
+  const assignmentOptions = useMemo(() => {
     const assignments = _.get(engagementDetails, 'assignments', [])
     if (!Array.isArray(assignments) || !assignments.length) {
-      return null
+      return []
     }
-    const assignmentWithId = assignments.find((assignment) => assignment && assignment.id)
-    return assignmentWithId ? assignmentWithId.id : null
+    return assignments
+      .map((assignment, index) => {
+        if (!assignment || !assignment.id) {
+          return null
+        }
+        const handle = assignment.memberHandle != null
+          ? String(assignment.memberHandle).trim()
+          : ''
+        const memberId = assignment.memberId != null
+          ? String(assignment.memberId).trim()
+          : ''
+        let label = ''
+        if (handle && memberId) {
+          label = `${handle} (${memberId})`
+        } else if (handle) {
+          label = handle
+        } else if (memberId) {
+          label = `Member ${memberId}`
+        } else {
+          label = `Assignment ${index + 1}`
+        }
+        return {
+          id: assignment.id,
+          label
+        }
+      })
+      .filter(Boolean)
   }, [engagementDetails])
 
   const canManage = useMemo(() => {
@@ -61,6 +86,7 @@ const EngagementFeedback = ({
     return isAdmin || isManager || isProjectManager
   }, [auth, projectDetail])
 
+  const [selectedAssignmentId, setSelectedAssignmentId] = useState(null)
   const [feedback, setFeedback] = useState([])
   const [feedbackLoading, setFeedbackLoading] = useState(false)
   const [feedbackError, setFeedbackError] = useState('')
@@ -75,6 +101,19 @@ const EngagementFeedback = ({
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false)
   const [isGeneratingLink, setIsGeneratingLink] = useState(false)
 
+  const selectedAssignment = useMemo(() => {
+    if (!selectedAssignmentId) {
+      return null
+    }
+    return assignmentOptions.find((assignment) => assignment.id === selectedAssignmentId) || null
+  }, [assignmentOptions, selectedAssignmentId])
+
+  const assignmentLabel = selectedAssignment ? selectedAssignment.label : ''
+  const assignmentId = selectedAssignmentId
+  const hasAssignments = assignmentOptions.length > 0
+  const hasMultipleAssignments = assignmentOptions.length > 1
+  const assignmentSelectValue = assignmentId || (assignmentOptions[0] ? assignmentOptions[0].id : '')
+
   useEffect(() => {
     if (resolvedProjectId) {
       loadProject(resolvedProjectId)
@@ -83,6 +122,27 @@ const EngagementFeedback = ({
       loadEngagementDetails(resolvedProjectId, resolvedEngagementId)
     }
   }, [resolvedProjectId, resolvedEngagementId, loadProject, loadEngagementDetails])
+
+  useEffect(() => {
+    if (!assignmentOptions.length) {
+      setSelectedAssignmentId(null)
+      return
+    }
+    setSelectedAssignmentId((current) => {
+      if (current && assignmentOptions.some((assignment) => assignment.id === current)) {
+        return current
+      }
+      return assignmentOptions[0].id
+    })
+  }, [assignmentOptions])
+
+  useEffect(() => {
+    setFeedback([])
+    setFeedbackError('')
+    setFeedbackFormError('')
+    setGeneratedLink(null)
+    setGenerateError('')
+  }, [assignmentId])
 
   const fetchFeedback = useCallback(async () => {
     if (!resolvedEngagementId || !assignmentId || !canManage) {
@@ -276,6 +336,14 @@ const EngagementFeedback = ({
       )
     }
 
+    if (!assignmentId) {
+      return (
+        <div className={styles.emptyState}>
+          {hasAssignments ? 'Select an assignment to view feedback.' : 'No assignments available yet.'}
+        </div>
+      )
+    }
+
     if (feedbackLoading) {
       return (
         <div className={styles.loadingState}>Loading feedback...</div>
@@ -367,6 +435,29 @@ const EngagementFeedback = ({
             <div className={styles.panelDescription}>
               Capture internal notes and gather customer feedback.
             </div>
+            <div className={styles.assignmentRow}>
+              <span className={styles.assignmentLabel}>Assignment:</span>
+              {hasAssignments ? (
+                hasMultipleAssignments ? (
+                  <select
+                    id='assignment-select'
+                    className={styles.assignmentSelect}
+                    value={assignmentSelectValue}
+                    onChange={(event) => setSelectedAssignmentId(event.target.value)}
+                  >
+                    {assignmentOptions.map((assignment) => (
+                      <option key={assignment.id} value={assignment.id}>
+                        {assignment.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <span className={styles.assignmentValue}>{assignmentLabel}</span>
+                )
+              ) : (
+                <span className={styles.assignmentValue}>Not assigned</span>
+              )}
+            </div>
           </div>
           {canManage && (
             <div className={styles.panelActions}>
@@ -374,11 +465,13 @@ const EngagementFeedback = ({
                 text='Add Feedback'
                 type='info'
                 onClick={() => setShowAddFeedbackModal(true)}
+                disabled={!assignmentId}
               />
               <OutlineButton
                 text='Generate Customer Feedback Link'
                 type='info'
                 onClick={() => setShowGenerateLinkModal(true)}
+                disabled={!assignmentId}
               />
             </div>
           )}
@@ -398,6 +491,30 @@ const EngagementFeedback = ({
           <div className={styles.modal}>
             <div className={styles.modalTitle}>Add Feedback</div>
             <form className={styles.modalForm} onSubmit={handleAddFeedbackSubmit}>
+              <div className={styles.modalField}>
+                <label className={styles.modalLabel} htmlFor='feedback-assignment'>Assignment</label>
+                {hasAssignments ? (
+                  hasMultipleAssignments ? (
+                    <select
+                      id='feedback-assignment'
+                      className={styles.input}
+                      value={assignmentSelectValue}
+                      onChange={(event) => setSelectedAssignmentId(event.target.value)}
+                      disabled={isSubmittingFeedback}
+                    >
+                      {assignmentOptions.map((assignment) => (
+                        <option key={assignment.id} value={assignment.id}>
+                          {assignment.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <div className={styles.assignmentValue}>{assignmentLabel}</div>
+                  )
+                ) : (
+                  <div className={styles.assignmentValue}>Not assigned</div>
+                )}
+              </div>
               <div className={styles.modalField}>
                 <label className={styles.modalLabel} htmlFor='feedback-text'>Feedback</label>
                 <textarea
@@ -440,7 +557,7 @@ const EngagementFeedback = ({
                     text={isSubmittingFeedback ? 'Submitting...' : 'Submit Feedback'}
                     type='info'
                     submit
-                    disabled={isSubmittingFeedback}
+                    disabled={isSubmittingFeedback || !assignmentId}
                   />
                 </div>
                 <div className={styles.modalAction}>
@@ -463,6 +580,30 @@ const EngagementFeedback = ({
             <div className={styles.modalTitle}>Generate Customer Feedback Link</div>
             {!generatedLink && (
               <form className={styles.modalForm} onSubmit={handleGenerateLinkSubmit}>
+                <div className={styles.modalField}>
+                  <label className={styles.modalLabel} htmlFor='generate-feedback-assignment'>Assignment</label>
+                  {hasAssignments ? (
+                    hasMultipleAssignments ? (
+                      <select
+                        id='generate-feedback-assignment'
+                        className={styles.input}
+                        value={assignmentSelectValue}
+                        onChange={(event) => setSelectedAssignmentId(event.target.value)}
+                        disabled={isGeneratingLink}
+                      >
+                        {assignmentOptions.map((assignment) => (
+                          <option key={assignment.id} value={assignment.id}>
+                            {assignment.label}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className={styles.assignmentValue}>{assignmentLabel}</div>
+                    )
+                  ) : (
+                    <div className={styles.assignmentValue}>Not assigned</div>
+                  )}
+                </div>
                 <div className={styles.modalField}>
                   <label className={styles.modalLabel} htmlFor='customer-email'>Customer Email</label>
                   <input
@@ -487,7 +628,7 @@ const EngagementFeedback = ({
                       text={isGeneratingLink ? 'Generating...' : 'Generate Link'}
                       type='info'
                       submit
-                      disabled={isGeneratingLink}
+                      disabled={isGeneratingLink || !assignmentId}
                     />
                   </div>
                   <div className={styles.modalAction}>
@@ -556,7 +697,12 @@ EngagementFeedback.propTypes = {
     title: PropTypes.string,
     description: PropTypes.string,
     status: PropTypes.string,
-    updatedAt: PropTypes.string
+    updatedAt: PropTypes.string,
+    assignments: PropTypes.arrayOf(PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      memberId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      memberHandle: PropTypes.string
+    }))
   }),
   projectDetail: PropTypes.shape({
     members: PropTypes.arrayOf(PropTypes.shape())

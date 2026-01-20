@@ -20,6 +20,42 @@ const formatDateTime = (value) => {
   return moment(value).format('MMM DD, YYYY HH:mm')
 }
 
+const formatMobileNumber = (value) => {
+  if (!value) {
+    return '-'
+  }
+
+  const rawValue = value.toString().trim()
+  if (!rawValue) {
+    return '-'
+  }
+
+  let digits = rawValue.replace(/\D/g, '')
+  if (!digits) {
+    return '-'
+  }
+
+  if (digits.length === 11 && digits.startsWith('1')) {
+    digits = digits.slice(1)
+  }
+
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+  }
+
+  if (digits.length > 10) {
+    const countryCode = digits.slice(0, digits.length - 10)
+    const nationalNumber = digits.slice(-10)
+    return `+${countryCode} (${nationalNumber.slice(0, 3)}) ${nationalNumber.slice(3, 6)}-${nationalNumber.slice(6)}`
+  }
+
+  if (digits.length === 7) {
+    return `${digits.slice(0, 3)}-${digits.slice(3)}`
+  }
+
+  return digits
+}
+
 const getStatusClass = (status) => {
   const normalized = (status || '').toString().toLowerCase().replace(/\s+/g, '_')
   if (normalized === 'submitted') {
@@ -78,6 +114,10 @@ const ApplicationDetail = ({ application, engagement, canManage, onUpdateStatus,
             <div className={styles.detailItem}>
               <div className={styles.label}>Email</div>
               <div className={styles.value}>{application.email || '-'}</div>
+            </div>
+            <div className={styles.detailItem}>
+              <div className={styles.label}>Mobile Number</div>
+              <div className={styles.value}>{formatMobileNumber(application.mobileNumber)}</div>
             </div>
             <div className={styles.detailItem}>
               <div className={styles.label}>Address</div>
@@ -182,6 +222,7 @@ ApplicationDetail.propTypes = {
     name: PropTypes.string,
     email: PropTypes.string,
     address: PropTypes.string,
+    mobileNumber: PropTypes.string,
     coverLetter: PropTypes.string,
     resumeUrl: PropTypes.string,
     portfolioUrls: PropTypes.arrayOf(PropTypes.string),

@@ -321,13 +321,20 @@ class EngagementEditorContainer extends Component {
       const trimmedMemberHandles = assignedMemberHandles.map((handle) => (handle || '').trim())
       const requiredMemberCountValue = Number(engagement.requiredMemberCount)
       const hasRequiredMemberCount = Number.isInteger(requiredMemberCountValue) && requiredMemberCountValue > 0
+      const assignmentFieldCount = Math.max(1, requiredMemberCountValue || 1)
+      const getAssignedMemberRequiredMessage = (index) => {
+        const assignmentLabel = assignmentFieldCount > 1
+          ? `Assign to Member ${index + 1}`
+          : 'Assign to Member'
+        return `${assignmentLabel} is required`
+      }
 
       if (hasRequiredMemberCount) {
         const requiredHandles = trimmedMemberHandles.slice(0, requiredMemberCountValue)
         const missingIndices = []
         for (let index = 0; index < requiredMemberCountValue; index += 1) {
           if (!requiredHandles[index]) {
-            errors[`assignedMemberHandle${index}`] = `Member ${index + 1} is required`
+            errors[`assignedMemberHandle${index}`] = getAssignedMemberRequiredMessage(index)
             missingIndices.push(index)
           }
         }
@@ -335,8 +342,9 @@ class EngagementEditorContainer extends Component {
           errors.assignedMemberHandles = `All ${requiredMemberCountValue} member assignments are required for private engagements`
         }
       } else if (!trimmedMemberHandles.some(Boolean)) {
-        errors.assignedMemberHandle0 = 'Member 1 is required'
-        errors.assignedMemberHandles = 'Member 1 is required'
+        const requiredMessage = getAssignedMemberRequiredMessage(0)
+        errors.assignedMemberHandle0 = requiredMessage
+        errors.assignedMemberHandles = requiredMessage
       }
     }
 
@@ -466,16 +474,13 @@ class EngagementEditorContainer extends Component {
 
       return null
     })
-    const hasAssignedMemberIds = payloadAssignedMemberIds.some((id) => id != null)
+    const hasCompleteAssignedMemberIds = payloadAssignedMemberHandles.length > 0 &&
+      payloadAssignedMemberIds.every((id) => id != null)
 
     if (engagement.isPrivate && payloadAssignedMemberHandles.length) {
       payload.assignedMemberHandles = payloadAssignedMemberHandles
-      payload.assignedMemberHandle = payloadAssignedMemberHandles[0]
-      if (hasAssignedMemberIds) {
+      if (hasCompleteAssignedMemberIds) {
         payload.assignedMemberIds = payloadAssignedMemberIds
-      }
-      if (payloadAssignedMemberIds[0] != null) {
-        payload.assignedMemberId = payloadAssignedMemberIds[0]
       }
     }
 

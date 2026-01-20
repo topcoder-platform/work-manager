@@ -404,7 +404,9 @@ export const COPILOT_ROLES = [
 
 export const MANAGER_ROLES = [
   'project manager',
-  'topcoder project manager'
+  'topcoder project manager',
+  'talent manager',
+  'topcoder talent manager'
 ]
 
 export const TASK_MANAGER_ROLES = [

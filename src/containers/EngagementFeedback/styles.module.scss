@@ -72,6 +72,35 @@
   font-size: 14px;
 }
 
+.assignmentRow {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.assignmentLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: $tc-gray-80;
+}
+
+.assignmentSelect {
+  min-width: 220px;
+  padding: 8px 10px;
+  border: 1px solid $tc-gray-30;
+  border-radius: 4px;
+  font-size: 13px;
+  color: $tc-gray-90;
+  background: $white;
+}
+
+.assignmentValue {
+  font-size: 13px;
+  color: $tc-gray-80;
+}
+
 .panelActions {
   display: flex;
   gap: 8px;
@@ -243,4 +272,5 @@
 .linkMeta {
   font-size: 12px;
   color: $tc-gray-70;
+  margin-top: 4px;
 }
