@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import moment from 'moment-timezone'
@@ -10,6 +10,7 @@ import Select from '../Select'
 import SkillsField from '../ChallengeEditor/SkillsField'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import Loader from '../Loader'
+import MemberExperienceList from '../MemberExperienceList'
 import { ENGAGEMENTS_APP_URL, JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
 import { suggestProfiles } from '../../services/user'
 import styles from './EngagementEditor.module.scss'
@@ -81,7 +82,12 @@ const EngagementEditor = ({
   onSavePublish,
   onCancel,
   onDelete,
-  resolvedAssignedMembers
+  resolvedAssignedMembers,
+  memberExperiences,
+  memberExperiencesLoading,
+  memberExperiencesError,
+  canViewMemberExperiences,
+  onRetryMemberExperience
 }) => {
   const timeZoneOptions = useMemo(() => {
     const zones = moment.tz.names().map(zone => ({
@@ -138,20 +144,26 @@ const EngagementEditor = ({
   const assignments = Array.isArray(engagement.assignments) ? engagement.assignments : []
   const assignedMembers = Array.isArray(engagement.assignedMembers) ? engagement.assignedMembers : []
   const assignedMemberHandles = Array.isArray(engagement.assignedMemberHandles) ? engagement.assignedMemberHandles : []
-  const assignedMemberList = assignments.length > 0
-    ? assignments.map((assignment, index) => ({
-      id: assignment.memberId,
-      handle: assignment.memberHandle,
-      key: assignment.id || `assignment-${index}`,
-      assignmentId: assignment.id
-    }))
-    : resolvedAssignedMembers.length
-      ? resolvedAssignedMembers
-      : assignedMembers.length
-        ? assignedMembers.map((member, index) => normalizeMemberInfo(member, index))
-        : assignedMemberHandles.map((member, index) => normalizeMemberInfo(member, index))
+  const assignedMemberList = useMemo(() => {
+    if (assignments.length > 0) {
+      return assignments.map((assignment, index) => ({
+        id: assignment.memberId,
+        handle: assignment.memberHandle,
+        key: assignment.id || `assignment-${index}`,
+        assignmentId: assignment.id
+      }))
+    }
+    if (resolvedAssignedMembers.length) {
+      return resolvedAssignedMembers
+    }
+    if (assignedMembers.length) {
+      return assignedMembers.map((member, index) => normalizeMemberInfo(member, index))
+    }
+    return assignedMemberHandles.map((member, index) => normalizeMemberInfo(member, index))
+  }, [assignments, resolvedAssignedMembers, assignedMembers, assignedMemberHandles])
   const showAssignedMembers = assignedMemberList.length > 0
   const assignedMemberCount = assignedMemberList.length
+  const [expandedMemberExperiences, setExpandedMemberExperiences] = useState({})
   const requiredMemberCountValue = Number(engagement.requiredMemberCount)
   const assignmentFieldCount = Math.max(1, requiredMemberCountValue || 1)
   const assignmentFieldIndices = Array.from({ length: assignmentFieldCount }, (_, index) => index)
@@ -189,6 +201,38 @@ const EngagementEditor = ({
         .filter(Boolean)
     })
   }
+
+  useEffect(() => {
+    if (!showAssignedMembers || !canViewMemberExperiences) {
+      setExpandedMemberExperiences((prevState) => (
+        Object.keys(prevState).length ? {} : prevState
+      ))
+      return
+    }
+    setExpandedMemberExperiences((prevState) => {
+      const nextState = {}
+      assignedMemberList.forEach((member, index) => {
+        const memberKey = member.assignmentId || member.key || `${member.handle || 'member'}-${index}`
+        nextState[memberKey] = Object.prototype.hasOwnProperty.call(prevState, memberKey)
+          ? prevState[memberKey]
+          : true
+      })
+      const prevKeys = Object.keys(prevState)
+      const nextKeys = Object.keys(nextState)
+      if (prevKeys.length !== nextKeys.length) {
+        return nextState
+      }
+      const hasChanges = nextKeys.some((key) => prevState[key] !== nextState[key])
+      return hasChanges ? nextState : prevState
+    })
+  }, [assignedMemberList, showAssignedMembers, canViewMemberExperiences])
+
+  const toggleMemberExperience = useCallback((memberKey) => {
+    setExpandedMemberExperiences((prevState) => ({
+      ...prevState,
+      [memberKey]: !prevState[memberKey]
+    }))
+  }, [])
 
   if (isLoading) {
     return <Loader />
@@ -588,6 +632,56 @@ const EngagementEditor = ({
               </div>
             )}
 
+            {showAssignedMembers && canViewMemberExperiences && (
+              <div className={styles.row}>
+                <div className={cn(styles.field, styles.col1)}>
+                  <label>Member Experiences :</label>
+                </div>
+                <div className={cn(styles.field, styles.col2)}>
+                  <div className={styles.memberExperienceSection}>
+                    {assignedMemberList.map((member, index) => {
+                      const memberKey = member.assignmentId || member.key || `${member.handle || 'member'}-${index}`
+                      const isExpanded = expandedMemberExperiences[memberKey] !== false
+                      const assignmentId = member.assignmentId
+                      const experiences = assignmentId && memberExperiences[assignmentId]
+                        ? memberExperiences[assignmentId]
+                        : []
+                      const isLoadingExperiences = assignmentId && memberExperiencesLoading[assignmentId]
+                      const experienceError = assignmentId && memberExperiencesError[assignmentId]
+                      const retryHandler = assignmentId && onRetryMemberExperience
+                        ? () => onRetryMemberExperience(assignmentId)
+                        : null
+                      return (
+                        <div key={member.key || memberKey} className={styles.memberExperienceItem}>
+                          <button
+                            type='button'
+                            className={styles.memberExperienceHeader}
+                            onClick={() => toggleMemberExperience(memberKey)}
+                            aria-expanded={isExpanded}
+                          >
+                            <span>{member.handle || member.memberHandle || '-'}</span>
+                            <span className={styles.memberExperienceToggle}>
+                              {isExpanded ? 'Hide' : 'Show'}
+                            </span>
+                          </button>
+                          {isExpanded && (
+                            <div className={styles.memberExperienceContent}>
+                              <MemberExperienceList
+                                experiences={experiences}
+                                isLoading={Boolean(isLoadingExperiences)}
+                                error={experienceError}
+                                onRetry={retryHandler}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {canEdit && (
               <div className={styles.row}>
                 <div className={cn(styles.field, styles.col1)}>
@@ -690,7 +784,12 @@ EngagementEditor.defaultProps = {
   onSavePublish: () => {},
   onCancel: () => {},
   onDelete: () => {},
-  resolvedAssignedMembers: []
+  resolvedAssignedMembers: [],
+  memberExperiences: {},
+  memberExperiencesLoading: {},
+  memberExperiencesError: {},
+  canViewMemberExperiences: false,
+  onRetryMemberExperience: null
 }
 
 EngagementEditor.propTypes = {
@@ -772,7 +871,12 @@ EngagementEditor.propTypes = {
     userName: PropTypes.string,
     key: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     assignmentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-  }))
+  })),
+  memberExperiences: PropTypes.objectOf(PropTypes.arrayOf(PropTypes.shape())),
+  memberExperiencesLoading: PropTypes.objectOf(PropTypes.bool),
+  memberExperiencesError: PropTypes.objectOf(PropTypes.string),
+  canViewMemberExperiences: PropTypes.bool,
+  onRetryMemberExperience: PropTypes.func
 }
 
 export default EngagementEditor

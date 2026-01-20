@@ -16,6 +16,7 @@ import { loadProject } from '../../actions/projects'
 import { checkAdmin, checkManager, checkTaskManager } from '../../util/tc'
 import { PROJECT_ROLES } from '../../config/constants'
 import { fetchProfile } from '../../services/user'
+import { fetchMemberExperiences } from '../../services/engagements'
 import {
   normalizeEngagement as normalizeEngagementShape,
   fromEngagementRoleApi,
@@ -113,7 +114,10 @@ class EngagementEditorContainer extends Component {
       validationErrors: {},
       showDeleteModal: false,
       isSaving: false,
-      memberIdLookup: {}
+      memberIdLookup: {},
+      memberExperiences: {},
+      memberExperiencesLoading: {},
+      memberExperiencesError: {}
     }
 
     this.onUpdateInput = this.onUpdateInput.bind(this)
@@ -125,6 +129,8 @@ class EngagementEditorContainer extends Component {
     this.onDelete = this.onDelete.bind(this)
     this.onToggleDelete = this.onToggleDelete.bind(this)
     this.resolveMemberIds = this.resolveMemberIds.bind(this)
+    this.fetchMemberExperiencesForAssignment = this.fetchMemberExperiencesForAssignment.bind(this)
+    this.handleMemberExperienceRetry = this.handleMemberExperienceRetry.bind(this)
   }
 
   componentDidMount () {
@@ -145,6 +151,8 @@ class EngagementEditorContainer extends Component {
     const nextProjectId = this.getProjectId(nextProps.match)
     const currentEngagementId = _.get(match.params, 'engagementId', null)
     const nextEngagementId = _.get(nextProps.match.params, 'engagementId', null)
+    const canViewMemberExperiencesNext = this.canViewMemberExperiences(nextProps)
+    const canViewMemberExperiencesCurrent = this.canViewMemberExperiences(this.props)
 
     if (currentProjectId !== nextProjectId && nextProjectId) {
       this.props.loadProject(nextProjectId)
@@ -171,9 +179,39 @@ class EngagementEditorContainer extends Component {
       this.setState({
         engagement: engagementDetails,
         submitTriggered: false,
-        validationErrors: {}
+        validationErrors: {},
+        memberExperiences: {},
+        memberExperiencesLoading: {},
+        memberExperiencesError: {}
+      }, () => {
+        this.resolveMemberIds(normalizedEngagement)
+        if (canViewMemberExperiencesNext) {
+          const assignments = Array.isArray(normalizedEngagement.assignments)
+            ? normalizedEngagement.assignments
+            : []
+          assignments.forEach((assignment) => {
+            if (assignment && assignment.id && normalizedEngagement.id) {
+              this.fetchMemberExperiencesForAssignment(normalizedEngagement.id, assignment.id)
+            }
+          })
+        }
       })
-      this.resolveMemberIds(normalizedEngagement)
+    }
+
+    if (canViewMemberExperiencesNext && !canViewMemberExperiencesCurrent) {
+      const engagementId = this.state.engagement.id || _.get(nextProps.engagementDetails, 'id', null)
+      const stateAssignments = Array.isArray(this.state.engagement.assignments)
+        ? this.state.engagement.assignments
+        : []
+      const nextAssignments = Array.isArray(_.get(nextProps.engagementDetails, 'assignments', []))
+        ? _.get(nextProps.engagementDetails, 'assignments', [])
+        : []
+      const assignments = stateAssignments.length ? stateAssignments : nextAssignments
+      assignments.forEach((assignment) => {
+        if (assignment && assignment.id && engagementId && !this.state.memberExperiences[assignment.id]) {
+          this.fetchMemberExperiencesForAssignment(engagementId, assignment.id)
+        }
+      })
     }
   }
 
@@ -584,6 +622,61 @@ class EngagementEditorContainer extends Component {
     })
   }
 
+  async fetchMemberExperiencesForAssignment (engagementId, assignmentId) {
+    if (!engagementId || !assignmentId) {
+      return
+    }
+    if (this.state.memberExperiencesLoading[assignmentId]) {
+      return
+    }
+    this.setState((prevState) => ({
+      memberExperiencesLoading: {
+        ...prevState.memberExperiencesLoading,
+        [assignmentId]: true
+      },
+      memberExperiencesError: {
+        ...prevState.memberExperiencesError,
+        [assignmentId]: ''
+      }
+    }))
+
+    try {
+      const response = await fetchMemberExperiences(engagementId, assignmentId)
+      const data = _.get(response, 'data', [])
+      this.setState((prevState) => ({
+        memberExperiences: {
+          ...prevState.memberExperiences,
+          [assignmentId]: Array.isArray(data) ? data : []
+        }
+      }))
+    } catch (error) {
+      const errorMessage = _.get(error, 'response.data.message') ||
+        (error && error.message) ||
+        'Unable to load member experiences.'
+      this.setState((prevState) => ({
+        memberExperiencesError: {
+          ...prevState.memberExperiencesError,
+          [assignmentId]: errorMessage
+        }
+      }))
+    } finally {
+      this.setState((prevState) => ({
+        memberExperiencesLoading: {
+          ...prevState.memberExperiencesLoading,
+          [assignmentId]: false
+        }
+      }))
+    }
+  }
+
+  handleMemberExperienceRetry (assignmentId) {
+    const engagementId = this.state.engagement.id
+    if (!engagementId || !assignmentId) {
+      return
+    }
+    this.fetchMemberExperiencesForAssignment(engagementId, assignmentId)
+  }
+
   async onDelete () {
     if (this.state.isSaving) {
       return
@@ -617,11 +710,22 @@ class EngagementEditorContainer extends Component {
     return isAdmin || isManager || isTaskManager || isProjectManager
   }
 
+  canViewMemberExperiences (props = this.props) {
+    const { auth, projectDetail } = props
+    const isAdmin = checkAdmin(auth.token)
+    const isManager = checkManager(auth.token)
+    const members = _.get(projectDetail, 'members', [])
+    const userId = _.get(auth, 'user.userId')
+    const isProjectManager = members.some(member => member.userId === userId && member.role === PROJECT_ROLES.MANAGER)
+    return isAdmin || isManager || isProjectManager
+  }
+
   render () {
     const { match, isLoading } = this.props
     const engagementId = _.get(match.params, 'engagementId', null)
     const isNew = !engagementId
     const assignedMembersForPayment = this.getAssignedMembersForPayment()
+    const canViewMemberExperiences = this.canViewMemberExperiences()
 
     return (
       <EngagementEditor
@@ -635,6 +739,11 @@ class EngagementEditorContainer extends Component {
         validationErrors={this.state.validationErrors}
         showDeleteModal={this.state.showDeleteModal}
         resolvedAssignedMembers={assignedMembersForPayment}
+        memberExperiences={this.state.memberExperiences}
+        memberExperiencesLoading={this.state.memberExperiencesLoading}
+        memberExperiencesError={this.state.memberExperiencesError}
+        canViewMemberExperiences={canViewMemberExperiences}
+        onRetryMemberExperience={this.handleMemberExperienceRetry}
         onToggleDelete={this.onToggleDelete}
         onUpdateInput={this.onUpdateInput}
         onUpdateDescription={this.onUpdateDescription}

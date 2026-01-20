@@ -222,3 +222,42 @@
 .assignmentProgressPartial {
   color: $tc-blue-40;
 }
+
+.memberExperienceSection {
+  display: grid;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.memberExperienceItem {
+  border: 1px solid $tc-gray-20;
+  border-radius: 6px;
+  background: $white;
+  overflow: hidden;
+}
+
+.memberExperienceHeader {
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 1px solid $tc-gray-20;
+  background: $tc-gray-10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: $tc-gray-80;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+}
+
+.memberExperienceToggle {
+  font-size: 12px;
+  font-weight: 500;
+  color: $tc-gray-60;
+}
+
+.memberExperienceContent {
+  padding: 12px;
+}

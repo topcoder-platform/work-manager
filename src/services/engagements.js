@@ -113,6 +113,16 @@ export function fetchEngagementFeedback (engagementId, assignmentId) {
 }
 
 /**
+ * Api request for fetching member experiences for an engagement assignment
+ * @param {String|Number} engagementId
+ * @param {String|Number} assignmentId
+ * @returns {Promise<*>}
+ */
+export function fetchMemberExperiences (engagementId, assignmentId) {
+  return axiosInstance.get(`${ENGAGEMENTS_ROOT_API_URL}/${engagementId}/assignments/${assignmentId}/experiences`)
+}
+
+/**
  * Api request for creating feedback for an engagement assignment
  * @param {String|Number} engagementId
  * @param {String|Number} assignmentId
