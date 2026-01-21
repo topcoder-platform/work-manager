@@ -212,7 +212,12 @@ class EngagementPaymentContainer extends Component {
 
   async onSubmitPayment (member, paymentTitle, amount) {
     const { engagement, selectedMember } = this.state
-    const { payments, projectDetail, createMemberPayment } = this.props
+    const {
+      payments,
+      projectDetail,
+      currentBillingAccount,
+      createMemberPayment
+    } = this.props
     if (payments && payments.isProcessing) {
       return
     }
@@ -235,7 +240,10 @@ class EngagementPaymentContainer extends Component {
       toastFailure('Error', 'Member ID is required to create a payment')
       return
     }
-    const billingAccountId = _.get(projectDetail, 'billingAccountId')
+    const projectBillingAccountId = _.get(projectDetail, 'billingAccountId', null)
+    const billingAccountId = (_.isNil(projectBillingAccountId) || projectBillingAccountId === '')
+      ? currentBillingAccount
+      : projectBillingAccountId
     if (!billingAccountId) {
       toastFailure('Error', 'Billing account is required to create a payment')
       return
@@ -371,6 +379,7 @@ EngagementPaymentContainer.propTypes = {
   projectDetail: PropTypes.shape({
     billingAccountId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
   }),
+  currentBillingAccount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   loadEngagementDetails: PropTypes.func.isRequired,
   loadProject: PropTypes.func.isRequired,
   createMemberPayment: PropTypes.func.isRequired
@@ -380,6 +389,7 @@ const mapStateToProps = (state) => ({
   engagementDetails: state.engagements.engagementDetails,
   isLoading: state.engagements.isLoading,
   projectDetail: state.projects.projectDetail,
+  currentBillingAccount: state.projects.currentBillingAccount,
   payments: state.payments
 })
 

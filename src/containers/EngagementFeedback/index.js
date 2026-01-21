@@ -11,8 +11,7 @@ import Modal from '../../components/Modal'
 import { PrimaryButton, OutlineButton } from '../../components/Buttons'
 import { loadProject } from '../../actions/projects'
 import { loadEngagementDetails } from '../../actions/engagements'
-import { checkAdmin, checkManager } from '../../util/tc'
-import { PROJECT_ROLES } from '../../config/constants'
+import { checkAdminOrPmOrTaskManager } from '../../util/tc'
 import {
   fetchEngagementFeedback,
   createEngagementFeedback,
@@ -86,12 +85,7 @@ const EngagementFeedback = ({
   }, [engagementDetails, hasMatchingEngagement])
 
   const canManage = useMemo(() => {
-    const isAdmin = checkAdmin(auth.token)
-    const isManager = checkManager(auth.token)
-    const members = _.get(projectDetail, 'members', [])
-    const userId = _.get(auth, 'user.userId')
-    const isProjectManager = members.some(member => member.userId === userId && member.role === PROJECT_ROLES.MANAGER)
-    return isAdmin || isManager || isProjectManager
+    return checkAdminOrPmOrTaskManager(auth.token, projectDetail)
   }, [auth, projectDetail])
 
   const [selectedAssignmentId, setSelectedAssignmentId] = useState(null)
@@ -339,7 +333,7 @@ const EngagementFeedback = ({
     if (!canManage) {
       return (
         <div className={styles.emptyState}>
-          Feedback is available to project managers and admins only.
+          Feedback is available to admins, project managers, talent managers, and task managers only.
         </div>
       )
     }
@@ -528,7 +522,7 @@ const EngagementFeedback = ({
                 )}
               </div>
               <div className={styles.modalField}>
-                <label className={styles.modalLabel} htmlFor='feedback-text'>Feedback</label>
+                <label className={styles.modalLabel} htmlFor='feedback-text'>Internal Performance Review</label>
                 <textarea
                   id='feedback-text'
                   className={styles.textarea}
@@ -545,7 +539,7 @@ const EngagementFeedback = ({
               </div>
 
               <div className={styles.modalField}>
-                <label className={styles.modalLabel} htmlFor='feedback-rating'>Rating (optional)</label>
+                <label className={styles.modalLabel} htmlFor='feedback-rating'>Communication with Customer (optional)</label>
                 <input
                   id='feedback-rating'
                   type='number'
