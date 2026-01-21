@@ -43,7 +43,15 @@ const EngagementFeedback = ({
     return engagementId || _.get(match, 'params.engagementId') || null
   }, [engagementId, match])
 
+  const engagementDetailsId = _.get(engagementDetails, 'id')
+  const hasMatchingEngagement = resolvedEngagementId != null &&
+    engagementDetailsId != null &&
+    String(engagementDetailsId) === String(resolvedEngagementId)
+
   const assignmentOptions = useMemo(() => {
+    if (!hasMatchingEngagement) {
+      return []
+    }
     const assignments = _.get(engagementDetails, 'assignments', [])
     if (!Array.isArray(assignments) || !assignments.length) {
       return []
@@ -75,7 +83,7 @@ const EngagementFeedback = ({
         }
       })
       .filter(Boolean)
-  }, [engagementDetails])
+  }, [engagementDetails, hasMatchingEngagement])
 
   const canManage = useMemo(() => {
     const isAdmin = checkAdmin(auth.token)
@@ -109,7 +117,7 @@ const EngagementFeedback = ({
   }, [assignmentOptions, selectedAssignmentId])
 
   const assignmentLabel = selectedAssignment ? selectedAssignment.label : ''
-  const assignmentId = selectedAssignmentId
+  const assignmentId = hasMatchingEngagement ? selectedAssignmentId : null
   const hasAssignments = assignmentOptions.length > 0
   const hasMultipleAssignments = assignmentOptions.length > 1
   const assignmentSelectValue = assignmentId || (assignmentOptions[0] ? assignmentOptions[0].id : '')
@@ -145,7 +153,7 @@ const EngagementFeedback = ({
   }, [assignmentId])
 
   const fetchFeedback = useCallback(async () => {
-    if (!resolvedEngagementId || !assignmentId || !canManage) {
+    if (!resolvedEngagementId || !assignmentId || !canManage || !hasMatchingEngagement) {
       setFeedback([])
       setFeedbackError('')
       setFeedbackLoading(false)
@@ -164,7 +172,7 @@ const EngagementFeedback = ({
     } finally {
       setFeedbackLoading(false)
     }
-  }, [resolvedEngagementId, assignmentId, canManage])
+  }, [resolvedEngagementId, assignmentId, canManage, hasMatchingEngagement])
 
   useEffect(() => {
     fetchFeedback()
@@ -368,6 +376,8 @@ const EngagementFeedback = ({
     return (
       <div className={styles.feedbackList}>
         {feedback.map(item => {
+          const feedbackBody = typeof item.feedbackText === 'string' ? item.feedbackText : ''
+          const isPendingFeedback = feedbackBody.trim().length === 0
           const authorLabel = item.givenByHandle
             ? `Topcoder PM: ${item.givenByHandle}`
             : `Customer: ${item.givenByEmail || 'Unknown'}`
@@ -376,7 +386,9 @@ const EngagementFeedback = ({
             : '-'
           return (
             <div key={item.id || `${authorLabel}-${createdAt}`} className={styles.feedbackItem}>
-              <p className={styles.feedbackText}>{item.feedbackText}</p>
+              <p className={`${styles.feedbackText} ${isPendingFeedback ? styles.pendingText : ''}`}>
+                {isPendingFeedback ? 'Pending' : feedbackBody}
+              </p>
               <div className={styles.feedbackMeta}>
                 <span className={styles.feedbackAuthor}>{authorLabel}</span>
                 {item.rating ? (
@@ -658,7 +670,12 @@ const EngagementFeedback = ({
                     value={generatedLink.feedbackUrl || ''}
                     readOnly
                   />
-                  <OutlineButton text='Copy Link' type='info' onClick={handleCopyLink} />
+                  <OutlineButton
+                    className={styles.copyLinkButton}
+                    text='Copy Link'
+                    type='info'
+                    onClick={handleCopyLink}
+                  />
                 </div>
                 <div className={styles.modalActions}>
                   <div className={styles.modalAction}>

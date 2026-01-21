@@ -56,6 +56,7 @@ const PaymentForm = ({ engagement, member, availableMembers, isProcessing, onSub
   const [amount, setAmount] = useState('')
   const [validationError, setValidationError] = useState('')
   const [memberError, setMemberError] = useState('')
+  const [titleError, setTitleError] = useState('')
   const normalizedMembers = useMemo(() => {
     if (!Array.isArray(availableMembers)) {
       return []
@@ -97,6 +98,7 @@ const PaymentForm = ({ engagement, member, availableMembers, isProcessing, onSub
     setPaymentTitle(defaultTitle)
     setAmount('')
     setValidationError('')
+    setTitleError('')
   }, [defaultTitle, member])
 
   useEffect(() => {
@@ -122,6 +124,8 @@ const PaymentForm = ({ engagement, member, availableMembers, isProcessing, onSub
   const memberHandle = getMemberHandle(selectedMember)
   const parsedAmount = Number(amount)
   const isAmountValid = Number.isFinite(parsedAmount) && parsedAmount > 0
+  const trimmedTitle = paymentTitle.trim()
+  const isTitleValid = trimmedTitle.length > 0
 
   const onSubmitForm = (event) => {
     event.preventDefault()
@@ -132,13 +136,18 @@ const PaymentForm = ({ engagement, member, availableMembers, isProcessing, onSub
       setMemberError('Select a member to pay')
       return
     }
+    if (!isTitleValid) {
+      setTitleError('Payment title is required')
+      return
+    }
     if (!isAmountValid) {
       setValidationError('Amount must be greater than 0')
       return
     }
     setValidationError('')
     setMemberError('')
-    onSubmit(selectedMember, paymentTitle.trim(), parsedAmount)
+    setTitleError('')
+    onSubmit(selectedMember, trimmedTitle, parsedAmount)
   }
 
   const onAmountChange = (event) => {
@@ -179,8 +188,14 @@ const PaymentForm = ({ engagement, member, availableMembers, isProcessing, onSub
             className={styles.input}
             type='text'
             value={paymentTitle}
-            onChange={(event) => setPaymentTitle(event.target.value)}
+            onChange={(event) => {
+              setPaymentTitle(event.target.value)
+              if (titleError) {
+                setTitleError('')
+              }
+            }}
           />
+          {titleError && <div className={styles.error}>{titleError}</div>}
         </div>
       </div>
       <div className={styles.row}>
@@ -203,7 +218,7 @@ const PaymentForm = ({ engagement, member, availableMembers, isProcessing, onSub
           text={isProcessing ? 'Processing...' : 'Submit Payment'}
           type='info'
           submit
-          disabled={isProcessing || !isAmountValid || !selectedMember || memberHandle === '-'}
+          disabled={isProcessing || !isAmountValid || !selectedMember || memberHandle === '-' || !isTitleValid}
         />
       </div>
     </form>

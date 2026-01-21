@@ -154,6 +154,11 @@
   white-space: pre-wrap;
 }
 
+.pendingText {
+  font-style: italic;
+  color: $tc-gray-70;
+}
+
 .feedbackMeta {
   display: flex;
   flex-wrap: wrap;
@@ -256,6 +261,10 @@
   border: 1px solid $tc-gray-20;
   border-radius: 6px;
   background: $tc-gray-10;
+}
+
+.copyLinkButton {
+  height: 40px;
 }
 
 .linkInput {
