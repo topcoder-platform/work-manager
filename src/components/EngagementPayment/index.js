@@ -151,6 +151,8 @@ const EngagementPayment = ({
           const amount = formatCurrency(getPaymentAmount(payment))
           const date = formatDate(getPaymentDate(payment))
           const status = getPaymentStatus(payment)
+          const normalizedStatus = typeof status === 'string' ? status.trim().toLowerCase() : ''
+          const showStatus = normalizedStatus && normalizedStatus !== 'unknown'
           const title = getPaymentTitle(payment)
           return (
             <div key={paymentKey} className={styles.paymentItem}>
@@ -159,7 +161,7 @@ const EngagementPayment = ({
                 <div className={styles.paymentTitle}>{title}</div>
                 <div className={styles.paymentMeta}>
                   <span className={styles.paymentDate}>{date}</span>
-                  <span className={styles.paymentStatus}>{status}</span>
+                  {showStatus && <span className={styles.paymentStatus}>{status}</span>}
                 </div>
               </div>
             </div>
