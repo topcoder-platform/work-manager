@@ -59,7 +59,8 @@ export function createMemberPayment (
       const response = await createPayment(payload)
       dispatch({
         type: CREATE_PAYMENT_SUCCESS,
-        payment: response.data
+        payment: response.data,
+        assignmentId
       })
       return response
     } catch (error) {
@@ -85,10 +86,13 @@ export function fetchAssignmentPayments (assignmentId) {
 
     try {
       const response = await getPaymentsByAssignmentId(assignmentId)
+      const payments = response && response.data && response.data.data
+        ? response.data.data
+        : response.data
       dispatch({
         type: FETCH_ASSIGNMENT_PAYMENTS_SUCCESS,
         assignmentId,
-        payments: response.data
+        payments
       })
       return response
     } catch (error) {

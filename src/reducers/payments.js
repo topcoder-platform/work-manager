@@ -21,6 +21,12 @@ const initialState = {
 
 const getErrorMessage = (action) => _.get(action, 'error.response.data.message', 'Failed to create payment')
 const getFetchErrorMessage = (action) => _.get(action, 'error.response.data.message', 'Failed to load payments')
+const getPaymentIdentifier = (payment) => {
+  if (!payment) {
+    return null
+  }
+  return payment.id || payment.paymentId || payment.uuid || null
+}
 
 export default function (state = initialState, action) {
   switch (action.type) {
@@ -30,14 +36,38 @@ export default function (state = initialState, action) {
         isProcessing: true,
         errorMessage: ''
       }
-    case CREATE_PAYMENT_SUCCESS:
+    case CREATE_PAYMENT_SUCCESS: {
       toastSuccess('Success', 'Payment created successfully')
+      const assignmentId = action.assignmentId
+      let paymentsByAssignment = state.paymentsByAssignment
+      if (!_.isNil(assignmentId) && action.payment) {
+        const currentEntry = paymentsByAssignment[assignmentId] || {}
+        const currentPayments = Array.isArray(currentEntry.payments) ? currentEntry.payments : []
+        const newPaymentId = getPaymentIdentifier(action.payment)
+        const filteredPayments = newPaymentId
+          ? currentPayments.filter((payment) => {
+            const existingId = getPaymentIdentifier(payment)
+            return !existingId || `${existingId}` !== `${newPaymentId}`
+          })
+          : currentPayments
+        paymentsByAssignment = {
+          ...paymentsByAssignment,
+          [assignmentId]: {
+            ...currentEntry,
+            isLoading: false,
+            error: '',
+            payments: [action.payment, ...filteredPayments]
+          }
+        }
+      }
       return {
         ...state,
         isProcessing: false,
         lastPayment: action.payment || null,
-        errorMessage: ''
+        errorMessage: '',
+        paymentsByAssignment
       }
+    }
     case CREATE_PAYMENT_FAILURE: {
       const errorMessage = getErrorMessage(action)
       toastFailure('Error', errorMessage)
