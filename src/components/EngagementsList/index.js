@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import moment from 'moment-timezone'
 import { Link } from 'react-router-dom'
 import { PrimaryButton, OutlineButton } from '../Buttons'
+import Tooltip from '../Tooltip'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import Loader from '../Loader'
 import Select from '../Select'
@@ -122,6 +123,43 @@ const getAssignedMembersCount = (engagement) => {
     return 1
   }
   return 0
+}
+
+const getMemberHandle = (member) => {
+  if (!member) {
+    return null
+  }
+  if (typeof member === 'string') {
+    return member
+  }
+  if (typeof member !== 'object') {
+    return null
+  }
+  return member.handle || member.memberHandle || member.username || member.name || member.userHandle || member.userName || null
+}
+
+const getAssignedMemberHandles = (engagement) => {
+  if (!engagement) {
+    return []
+  }
+  const assignments = Array.isArray(engagement.assignments) ? engagement.assignments : []
+  if (assignments.length) {
+    return Array.from(new Set(assignments.map((assignment) => getMemberHandle(assignment)).filter(Boolean)))
+  }
+  const assignedMemberHandles = Array.isArray(engagement.assignedMemberHandles)
+    ? engagement.assignedMemberHandles
+    : []
+  if (assignedMemberHandles.length) {
+    return Array.from(new Set(assignedMemberHandles.map((handle) => getMemberHandle(handle)).filter(Boolean)))
+  }
+  const assignedMembers = Array.isArray(engagement.assignedMembers) ? engagement.assignedMembers : []
+  if (assignedMembers.length) {
+    return Array.from(new Set(assignedMembers.map((member) => getMemberHandle(member)).filter(Boolean)))
+  }
+  if (engagement.assignedMemberHandle) {
+    return [engagement.assignedMemberHandle]
+  }
+  return []
 }
 
 const EngagementsList = ({
@@ -262,6 +300,16 @@ const EngagementsList = ({
               const applicationsCount = getApplicationsCount(engagement)
               const statusClass = getStatusClass(engagement.status)
               const assignedMembersCount = getAssignedMembersCount(engagement)
+              const assignedMemberHandles = getAssignedMemberHandles(engagement)
+              const assignedMembersTooltip = assignedMemberHandles.length ? (
+                <div className={styles.assignedMembersTooltip}>
+                  {assignedMemberHandles.map((handle) => (
+                    <div key={handle}>{handle}</div>
+                  ))}
+                </div>
+              ) : (
+                'Assigned members unavailable'
+              )
 
               return (
                 <tr key={engagement.id || engagement.title}>
@@ -296,12 +344,16 @@ const EngagementsList = ({
                   {canManage && (
                     <td>
                       {engagement.id && assignedMembersCount > 0 ? (
-                        <Link
-                          className={styles.applicationsLink}
-                          to={`/projects/${projectId}/engagements/${engagement.id}/pay`}
-                        >
-                          {assignedMembersCount}
-                        </Link>
+                        <Tooltip content={assignedMembersTooltip}>
+                          <span>
+                            <Link
+                              className={styles.applicationsLink}
+                              to={`/projects/${projectId}/engagements/${engagement.id}/pay`}
+                            >
+                              {assignedMembersCount}
+                            </Link>
+                          </span>
+                        </Tooltip>
                       ) : (
                         assignedMembersCount
                       )}

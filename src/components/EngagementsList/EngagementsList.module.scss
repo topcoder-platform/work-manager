@@ -145,6 +145,12 @@
   }
 }
 
+.assignedMembersTooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .emptyState {
   padding: 40px;
   text-align: center;
