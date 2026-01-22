@@ -42,7 +42,9 @@
   max-width: $screen-md;
   min-width: 480px;
   width: auto;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 40px;
   position: fixed;
   top: 50%;

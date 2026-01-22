@@ -6,12 +6,35 @@ import cn from 'classnames'
 import styles from './Outline.module.scss'
 import _ from 'lodash'
 
-const OutlineButton = ({ type, text, link, onClick, url, className, submit, disabled, target = 'self' }) => {
+const OutlineButton = ({ type, text, link, onClick, url, className, submit, disabled, target = 'self', rel }) => {
+  const containerClassName = cn(styles.container, styles[type], className)
+
+  const handleUrlClick = (event) => {
+    if (disabled) {
+      event.preventDefault()
+      event.stopPropagation()
+      return
+    }
+    if (onClick) {
+      onClick(event)
+    }
+  }
+
+  const resolvedRel = (() => {
+    if (target !== '_blank') {
+      return rel
+    }
+    const relTokens = new Set((rel || '').split(/\s+/).filter(Boolean))
+    relTokens.add('noopener')
+    relTokens.add('noreferrer')
+    return Array.from(relTokens).join(' ')
+  })()
+
   if (_.isEmpty(link) && _.isEmpty(url)) {
     return (
       <button
         type={submit ? 'submit' : 'button'}
-        className={cn(styles.container, styles[type], className)}
+        className={cn(containerClassName, disabled && styles.disable)}
         onClick={submit ? null : onClick}
         disabled={disabled}
       >
@@ -22,14 +45,22 @@ const OutlineButton = ({ type, text, link, onClick, url, className, submit, disa
 
   if (!_.isEmpty(link)) {
     return (
-      <Link className={cn(styles.container, styles[type], className)} to={link}>
+      <Link className={containerClassName} to={link}>
         <span>{text}</span>
       </Link>
     )
   }
 
   return (
-    <a className={cn(styles.container, styles[type], className)} href={`${url}`} target={target}>
+    <a
+      className={cn(containerClassName, disabled && styles.disable)}
+      href={`${url}`}
+      target={target}
+      rel={resolvedRel}
+      onClick={(disabled || onClick) ? handleUrlClick : null}
+      aria-disabled={disabled ? 'true' : null}
+      tabIndex={disabled ? -1 : null}
+    >
       <span>{text}</span>
     </a>
   )
@@ -44,7 +75,8 @@ OutlineButton.propTypes = {
   onClick: PropTypes.func,
   submit: PropTypes.bool,
   disabled: PropTypes.bool,
-  target: PropTypes.oneOf(['_blank', 'self'])
+  target: PropTypes.oneOf(['_blank', 'self']),
+  rel: PropTypes.string
 }
 
 export default OutlineButton

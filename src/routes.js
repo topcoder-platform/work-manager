@@ -16,6 +16,12 @@ import TaaSList from './containers/TaaSList'
 import ProjectAssets from './containers/ProjectAssets'
 import TaaSProjectForm from './containers/TaaSProjectForm'
 import ChallengeEditor from './containers/ChallengeEditor'
+import EngagementEditor from './containers/EngagementEditor'
+import EngagementPayment from './containers/EngagementPayment'
+import EngagementsList from './containers/EngagementsList'
+import ApplicationsList from './containers/ApplicationsList'
+import EngagementFeedback from './containers/EngagementFeedback'
+import EngagementExperience from './containers/EngagementExperience'
 import { getFreshToken, decodeToken } from 'tc-auth-lib'
 import { saveToken } from './actions/auth'
 import { loadChallengeDetails } from './actions/challenges'
@@ -25,7 +31,8 @@ import {
   checkOnlyReadOnlyRoles,
   checkReadOnlyRoles,
   checkAdmin,
-  checkCopilot
+  checkCopilot,
+  checkAdminOrPmOrTaskManager
 } from './util/tc'
 import Users from './containers/Users'
 import { isBetaMode, removeFromLocalStorage, saveToLocalStorage } from './util/localstorage'
@@ -115,6 +122,7 @@ class Routes extends React.Component {
     const isReadOnly = checkReadOnlyRoles(this.props.token)
     const isCopilot = checkCopilot(this.props.token)
     const isAdmin = checkAdmin(this.props.token)
+    const canManageEngagements = checkAdminOrPmOrTaskManager(this.props.token, null)
 
     return (
       <React.Fragment>
@@ -239,6 +247,116 @@ class Routes extends React.Component {
                 )()
               }
             />
+          )}
+          <Route exact path='/projects/:projectId/engagements'
+            render={({ match }) => renderApp(
+              <EngagementsList projectId={match.params.projectId} />,
+              <TopBarContainer projectId={match.params.projectId} />,
+              <Tab projectId={match.params.projectId} />,
+              <FooterContainer />
+            )()} />
+          {canManageEngagements && (
+            <Route exact path='/projects/:projectId/engagements/new'
+              render={({ match }) => renderApp(
+                <EngagementEditor />,
+                <TopBarContainer />,
+                <Tab projectId={match.params.projectId} menu={'New Engagement'} />,
+                <FooterContainer />
+              )()} />
+          )}
+          {!canManageEngagements && (
+            <Route exact path='/projects/:projectId/engagements/new'
+              render={({ match }) => renderApp(
+                <Challenges
+                  menu='NULL'
+                  warnMessage={'You need Admin, Project Manager, Talent Manager, or Task Manager role to create engagements'}
+                />,
+                <TopBarContainer />,
+                <Tab projectId={match.params.projectId} />,
+                <FooterContainer />
+              )()} />
+          )}
+          <Route exact path='/projects/:projectId/engagements/:engagementId/applications'
+            render={({ match }) => renderApp(
+              <ApplicationsList projectId={match.params.projectId} engagementId={match.params.engagementId} />,
+              <TopBarContainer projectId={match.params.projectId} />,
+              <Tab
+                projectId={match.params.projectId}
+                menu={'Applications'}
+                backPath={`/projects/${match.params.projectId}/engagements`}
+              />,
+              <FooterContainer />
+            )()} />
+          <Route exact path='/projects/:projectId/engagements/:engagementId/experience'
+            render={({ match }) => renderApp(
+              <EngagementExperience projectId={match.params.projectId} engagementId={match.params.engagementId} />,
+              <TopBarContainer projectId={match.params.projectId} />,
+              <Tab
+                projectId={match.params.projectId}
+                menu={'Experience'}
+                backPath={`/projects/${match.params.projectId}/engagements`}
+              />,
+              <FooterContainer />
+            )()} />
+          <Route exact path='/projects/:projectId/engagements/:engagementId/feedback'
+            render={({ match }) => renderApp(
+              <EngagementFeedback projectId={match.params.projectId} engagementId={match.params.engagementId} />,
+              <TopBarContainer projectId={match.params.projectId} />,
+              <Tab
+                projectId={match.params.projectId}
+                menu={'Feedback'}
+                backPath={`/projects/${match.params.projectId}/engagements`}
+              />,
+              <FooterContainer />
+            )()} />
+          {canManageEngagements && (
+            <Route exact path='/projects/:projectId/engagements/:engagementId/pay'
+              render={({ match }) => renderApp(
+                <EngagementPayment projectId={match.params.projectId} engagementId={match.params.engagementId} />,
+                <TopBarContainer projectId={match.params.projectId} />,
+                <Tab projectId={match.params.projectId} menu={'Payment'} />,
+                <FooterContainer />
+              )()} />
+          )}
+          {!canManageEngagements && (
+            <Route exact path='/projects/:projectId/engagements/:engagementId/pay'
+              render={({ match }) => renderApp(
+                <Challenges
+                  menu='NULL'
+                  warnMessage={'You need Admin, Project Manager, Talent Manager, or Task Manager role to edit engagements'}
+                />,
+                <TopBarContainer />,
+                <Tab projectId={match.params.projectId} />,
+                <FooterContainer />
+              )()} />
+          )}
+          <Route exact path='/projects/:projectId/engagements/:engagementId/view'
+            render={({ match }) => renderApp(
+              <EngagementEditor />,
+              <TopBarContainer projectId={match.params.projectId} />,
+              <Tab projectId={match.params.projectId} menu={'Engagement'} />,
+              <FooterContainer />
+            )()} />
+          {canManageEngagements && (
+            <Route path='/projects/:projectId/engagements/:engagementId'
+              render={({ match }) => renderApp(
+                <EngagementEditor />,
+                <TopBarContainer />,
+                <Tab projectId={match.params.projectId} menu={'Engagement'} />,
+                <FooterContainer />
+              )()} />
+          )}
+          {!canManageEngagements && (
+            <Route path='/projects/:projectId/engagements/:engagementId'
+              render={({ match }) => renderApp(
+                <Challenges
+                  menu='NULL'
+                  warnMessage={'You need Admin, Project Manager, Talent Manager, or Task Manager role to edit engagements'}
+                />,
+                <TopBarContainer />,
+                <Tab projectId={match.params.projectId} />,
+                <FooterContainer />
+              )()} />
           )}
           {
             !isReadOnly && (
