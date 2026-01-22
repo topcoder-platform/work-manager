@@ -6,6 +6,7 @@ import { PrimaryButton, OutlineButton } from '../Buttons'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import Loader from '../Loader'
 import Select from '../Select'
+import { formatTimeZoneList } from '../../util/timezones'
 import styles from './EngagementsList.module.scss'
 
 const STATUS_OPTIONS = [
@@ -64,7 +65,7 @@ const getLocationLabel = (engagement) => {
   if (!engagement) {
     return '-'
   }
-  const timezones = (engagement.timezones || []).length ? engagement.timezones.join(', ') : 'Any'
+  const timezones = formatTimeZoneList(engagement.timezones, 'Any')
   const countries = (engagement.countries || []).length ? engagement.countries.join(', ') : 'Any'
   return `${timezones}${countries !== 'Any' ? ` / ${countries}` : ''}`
 }
@@ -294,7 +295,16 @@ const EngagementsList = ({
                   )}
                   {canManage && (
                     <td>
-                      {assignedMembersCount}
+                      {engagement.id && assignedMembersCount > 0 ? (
+                        <Link
+                          className={styles.applicationsLink}
+                          to={`/projects/${projectId}/engagements/${engagement.id}/pay`}
+                        >
+                          {assignedMembersCount}
+                        </Link>
+                      ) : (
+                        assignedMembersCount
+                      )}
                     </td>
                   )}
                   <td>

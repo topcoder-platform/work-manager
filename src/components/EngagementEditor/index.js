@@ -12,6 +12,7 @@ import ConfirmationModal from '../Modal/ConfirmationModal'
 import Loader from '../Loader'
 import { ENGAGEMENTS_APP_URL, JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
 import { suggestProfiles } from '../../services/user'
+import { formatTimeZoneLabel, formatTimeZoneList } from '../../util/timezones'
 import styles from './EngagementEditor.module.scss'
 
 const ANY_OPTION = { label: 'Any', value: 'Any' }
@@ -85,7 +86,7 @@ const EngagementEditor = ({
 }) => {
   const timeZoneOptions = useMemo(() => {
     const zones = moment.tz.names().map(zone => ({
-      label: zone,
+      label: formatTimeZoneLabel(zone),
       value: zone
     }))
     return [ANY_OPTION, ...zones]
@@ -110,10 +111,11 @@ const EngagementEditor = ({
     }, {})
   }, [countryOptions])
 
-  const selectedTimeZones = (engagement.timezones || []).map(zone => ({
-    label: zone,
-    value: zone
-  }))
+  const selectedTimeZones = (engagement.timezones || []).map(zone => (
+    zone === ANY_OPTION.value
+      ? ANY_OPTION
+      : { label: formatTimeZoneLabel(zone), value: zone }
+  ))
 
   const selectedCountries = (engagement.countries || []).map(code => {
     return countryOptionsByValue[code] || { label: code, value: code }
@@ -426,7 +428,7 @@ const EngagementEditor = ({
                   />
                 ) : (
                   <div className={styles.readOnlyValue}>
-                    {(engagement.timezones || []).length ? engagement.timezones.join(', ') : 'Any'}
+                    {formatTimeZoneList(engagement.timezones, 'Any')}
                   </div>
                 )}
                 {submitTriggered && validationErrors.timezones && (

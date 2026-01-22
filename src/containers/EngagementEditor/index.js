@@ -279,7 +279,8 @@ class EngagementEditorContainer extends Component {
     }))
   }
 
-  getValidationErrors (engagement) {
+  getValidationErrors (engagement, options = {}) {
+    const { requireFutureDeadline = false } = options
     const errors = {}
 
     if (!engagement.title || !engagement.title.trim()) {
@@ -304,6 +305,13 @@ class EngagementEditorContainer extends Component {
 
     if (!engagement.applicationDeadline) {
       errors.applicationDeadline = 'Application deadline is required'
+    } else if (requireFutureDeadline) {
+      const deadlineMoment = moment(engagement.applicationDeadline)
+      if (!deadlineMoment.isValid()) {
+        errors.applicationDeadline = 'Application deadline must be a valid date'
+      } else if (deadlineMoment.isSameOrBefore(moment())) {
+        errors.applicationDeadline = 'Application deadline must be in the future'
+      }
     }
 
     if (!engagement.skills || !engagement.skills.length) {
@@ -449,21 +457,6 @@ class EngagementEditorContainer extends Component {
       const assignedMemberMatch = assignedMembers.find((member) => getMemberHandle(member) === handle)
       let assignedMemberId = assignedMemberMatch ? normalizeMemberId(getMemberId(assignedMemberMatch)) : null
 
-      if (assignedMemberId == null && assignedMembers.length > index) {
-        const indexedMember = assignedMembers[index]
-        if (indexedMember != null) {
-          if (typeof indexedMember === 'number') {
-            assignedMemberId = normalizeMemberId(indexedMember)
-          } else if (typeof indexedMember === 'string') {
-            if (indexedMember !== handle) {
-              assignedMemberId = normalizeMemberId(indexedMember)
-            }
-          } else {
-            assignedMemberId = normalizeMemberId(getMemberId(indexedMember))
-          }
-        }
-      }
-
       if (assignedMemberId != null) {
         return assignedMemberId
       }
@@ -500,7 +493,7 @@ class EngagementEditorContainer extends Component {
     const projectId = this.getProjectId(match)
 
     if (!isDraft) {
-      const validationErrors = this.getValidationErrors(engagement)
+      const validationErrors = this.getValidationErrors(engagement, { requireFutureDeadline: !engagement.id })
       if (Object.keys(validationErrors).length) {
         this.setState({ submitTriggered: true, validationErrors })
         return

@@ -5,7 +5,7 @@ import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import EngagementPayment from '../../components/EngagementPayment'
 import { loadEngagementDetails } from '../../actions/engagements'
-import { createMemberPayment } from '../../actions/payments'
+import { createMemberPayment, fetchAssignmentPayments } from '../../actions/payments'
 import { loadProject } from '../../actions/projects'
 import { toastFailure } from '../../util/toaster'
 import { fetchProfile } from '../../services/user'
@@ -127,6 +127,8 @@ class EngagementPaymentContainer extends Component {
     this.onClosePaymentModal = this.onClosePaymentModal.bind(this)
     this.onSubmitPayment = this.onSubmitPayment.bind(this)
     this.resolveMemberIds = this.resolveMemberIds.bind(this)
+    this.fetchPaymentsForAssignments = this.fetchPaymentsForAssignments.bind(this)
+    this.getPaymentEntries = this.getPaymentEntries.bind(this)
   }
 
   static getDerivedStateFromProps (nextProps, prevState) {
@@ -157,6 +159,7 @@ class EngagementPaymentContainer extends Component {
     if (this.state.engagement.id) {
       this.resolveMemberIds(this.state.engagement)
     }
+    this.fetchPaymentsForAssignments(this.getPaymentEntries(this.state.engagement))
   }
 
   componentDidUpdate (prevProps) {
@@ -182,7 +185,9 @@ class EngagementPaymentContainer extends Component {
       `${nextEngagementDetailsId}` === `${engagementId}` &&
       engagementDetails !== prevProps.engagementDetails
     ) {
-      this.resolveMemberIds(normalizeEngagement(engagementDetails))
+      const normalizedEngagement = normalizeEngagement(engagementDetails)
+      this.resolveMemberIds(normalizedEngagement)
+      this.fetchPaymentsForAssignments(this.getPaymentEntries(normalizedEngagement))
     }
   }
 
@@ -197,6 +202,11 @@ class EngagementPaymentContainer extends Component {
   }
 
   onOpenPaymentModal (member) {
+    const assignmentId = _.get(member, 'assignmentId', null)
+    if (_.isNil(assignmentId) || assignmentId === '') {
+      toastFailure('Error', 'Assignment ID is required to create a payment')
+      return
+    }
     this.setState({
       showPaymentModal: true,
       selectedMember: member
@@ -211,12 +221,13 @@ class EngagementPaymentContainer extends Component {
   }
 
   async onSubmitPayment (member, paymentTitle, amount) {
-    const { engagement, selectedMember } = this.state
+    const { selectedMember } = this.state
     const {
       payments,
       projectDetail,
       currentBillingAccount,
-      createMemberPayment
+      createMemberPayment,
+      fetchAssignmentPayments
     } = this.props
     if (payments && payments.isProcessing) {
       return
@@ -228,6 +239,7 @@ class EngagementPaymentContainer extends Component {
     }
     const memberHandle = getMemberHandle(memberToPay)
     let memberId = getMemberId(memberToPay)
+    const assignmentIdFromMember = _.get(memberToPay, 'assignmentId', null)
     if (!memberId && memberHandle) {
       try {
         const profile = await fetchProfile(memberHandle)
@@ -238,6 +250,11 @@ class EngagementPaymentContainer extends Component {
     }
     if (!memberId) {
       toastFailure('Error', 'Member ID is required to create a payment')
+      return
+    }
+    const assignmentId = assignmentIdFromMember
+    if (_.isNil(assignmentId) || assignmentId === '') {
+      toastFailure('Error', 'Assignment ID is required to create a payment')
       return
     }
     const projectBillingAccountId = _.get(projectDetail, 'billingAccountId', null)
@@ -253,13 +270,16 @@ class EngagementPaymentContainer extends Component {
     }
     try {
       await createMemberPayment(
-        engagement.id,
+        assignmentId,
         memberId,
         memberHandle,
         paymentTitle,
         amount,
         billingAccountId
       )
+      if (fetchAssignmentPayments) {
+        fetchAssignmentPayments(assignmentId)
+      }
       this.onClosePaymentModal()
     } catch (error) {
       // Keep modal open to show error toast from reducer.
@@ -317,6 +337,45 @@ class EngagementPaymentContainer extends Component {
     })
   }
 
+  getPaymentEntries (engagement) {
+    if (!engagement) {
+      return []
+    }
+    const assignments = Array.isArray(engagement.assignments) ? engagement.assignments : []
+    if (assignments.length) {
+      return assignments
+    }
+    const assignedMembers = Array.isArray(engagement.assignedMembers) ? engagement.assignedMembers : []
+    return assignedMembers.filter((member) => member && typeof member === 'object' && !Array.isArray(member))
+  }
+
+  fetchPaymentsForAssignments (entries) {
+    const { fetchAssignmentPayments, paymentsByAssignment } = this.props
+    if (!Array.isArray(entries) || !entries.length) {
+      return
+    }
+    entries.forEach((entry) => {
+      if (!entry) {
+        return
+      }
+      const assignmentId = Object.prototype.hasOwnProperty.call(entry, 'assignmentId')
+        ? _.get(entry, 'assignmentId', null)
+        : (Object.prototype.hasOwnProperty.call(entry, 'memberId') ||
+          Object.prototype.hasOwnProperty.call(entry, 'memberHandle') ||
+          Object.prototype.hasOwnProperty.call(entry, 'engagementId'))
+          ? _.get(entry, 'id', null)
+          : null
+      if (_.isNil(assignmentId) || assignmentId === '') {
+        return
+      }
+      const currentEntry = paymentsByAssignment && paymentsByAssignment[assignmentId]
+      if (currentEntry && currentEntry.isLoading) {
+        return
+      }
+      fetchAssignmentPayments(assignmentId)
+    })
+  }
+
   getAssignedMembersForPayment () {
     const { engagement } = this.state
     const assignments = Array.isArray(engagement.assignments) ? engagement.assignments : []
@@ -340,7 +399,7 @@ class EngagementPaymentContainer extends Component {
 
   render () {
     const projectId = this.getProjectId()
-    const { isLoading, payments } = this.props
+    const { isLoading, payments, paymentsByAssignment } = this.props
     const assignedMembersForPayment = this.getAssignedMembersForPayment()
     const isPaymentProcessing = Boolean(payments && payments.isProcessing)
     const shouldShowPaymentModal = this.state.showPaymentModal && this.state.selectedMember
@@ -351,6 +410,7 @@ class EngagementPaymentContainer extends Component {
         assignedMembers={assignedMembersForPayment}
         isLoading={isLoading}
         isPaymentProcessing={isPaymentProcessing}
+        paymentsByAssignment={paymentsByAssignment}
         projectId={projectId}
         showPaymentModal={shouldShowPaymentModal}
         selectedMember={this.state.selectedMember}
@@ -376,13 +436,19 @@ EngagementPaymentContainer.propTypes = {
   payments: PropTypes.shape({
     isProcessing: PropTypes.bool
   }),
+  paymentsByAssignment: PropTypes.objectOf(PropTypes.shape({
+    isLoading: PropTypes.bool,
+    payments: PropTypes.arrayOf(PropTypes.object),
+    error: PropTypes.string
+  })),
   projectDetail: PropTypes.shape({
     billingAccountId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
   }),
   currentBillingAccount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   loadEngagementDetails: PropTypes.func.isRequired,
   loadProject: PropTypes.func.isRequired,
-  createMemberPayment: PropTypes.func.isRequired
+  createMemberPayment: PropTypes.func.isRequired,
+  fetchAssignmentPayments: PropTypes.func.isRequired
 }
 
 const mapStateToProps = (state) => ({
@@ -390,13 +456,15 @@ const mapStateToProps = (state) => ({
   isLoading: state.engagements.isLoading,
   projectDetail: state.projects.projectDetail,
   currentBillingAccount: state.projects.currentBillingAccount,
-  payments: state.payments
+  payments: state.payments,
+  paymentsByAssignment: state.payments.paymentsByAssignment
 })
 
 const mapDispatchToProps = {
   loadEngagementDetails,
   loadProject,
-  createMemberPayment
+  createMemberPayment,
+  fetchAssignmentPayments
 }
 
 export default withRouter(

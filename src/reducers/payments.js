@@ -6,16 +6,21 @@ import { toastSuccess, toastFailure } from '../util/toaster'
 import {
   CREATE_PAYMENT_PENDING,
   CREATE_PAYMENT_SUCCESS,
-  CREATE_PAYMENT_FAILURE
+  CREATE_PAYMENT_FAILURE,
+  FETCH_ASSIGNMENT_PAYMENTS_PENDING,
+  FETCH_ASSIGNMENT_PAYMENTS_SUCCESS,
+  FETCH_ASSIGNMENT_PAYMENTS_FAILURE
 } from '../config/constants'
 
 const initialState = {
   isProcessing: false,
   lastPayment: null,
-  errorMessage: ''
+  errorMessage: '',
+  paymentsByAssignment: {}
 }
 
 const getErrorMessage = (action) => _.get(action, 'error.response.data.message', 'Failed to create payment')
+const getFetchErrorMessage = (action) => _.get(action, 'error.response.data.message', 'Failed to load payments')
 
 export default function (state = initialState, action) {
   switch (action.type) {
@@ -40,6 +45,60 @@ export default function (state = initialState, action) {
         ...state,
         isProcessing: false,
         errorMessage
+      }
+    }
+    case FETCH_ASSIGNMENT_PAYMENTS_PENDING: {
+      const assignmentId = action.assignmentId
+      if (_.isNil(assignmentId)) {
+        return state
+      }
+      const currentEntry = state.paymentsByAssignment[assignmentId] || {}
+      return {
+        ...state,
+        paymentsByAssignment: {
+          ...state.paymentsByAssignment,
+          [assignmentId]: {
+            ...currentEntry,
+            isLoading: true,
+            error: ''
+          }
+        }
+      }
+    }
+    case FETCH_ASSIGNMENT_PAYMENTS_SUCCESS: {
+      const assignmentId = action.assignmentId
+      if (_.isNil(assignmentId)) {
+        return state
+      }
+      return {
+        ...state,
+        paymentsByAssignment: {
+          ...state.paymentsByAssignment,
+          [assignmentId]: {
+            isLoading: false,
+            payments: Array.isArray(action.payments) ? action.payments : [],
+            error: ''
+          }
+        }
+      }
+    }
+    case FETCH_ASSIGNMENT_PAYMENTS_FAILURE: {
+      const assignmentId = action.assignmentId
+      if (_.isNil(assignmentId)) {
+        return state
+      }
+      const errorMessage = getFetchErrorMessage(action)
+      const currentEntry = state.paymentsByAssignment[assignmentId] || {}
+      return {
+        ...state,
+        paymentsByAssignment: {
+          ...state.paymentsByAssignment,
+          [assignmentId]: {
+            ...currentEntry,
+            isLoading: false,
+            error: errorMessage
+          }
+        }
       }
     }
     default:
