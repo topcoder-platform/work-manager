@@ -84,12 +84,34 @@ const EngagementEditor = ({
   onDelete,
   resolvedAssignedMembers
 }) => {
-  const timeZoneOptions = useMemo(() => {
-    const zones = moment.tz.names().map(zone => ({
-      label: formatTimeZoneLabel(zone),
-      value: zone
-    }))
-    return [ANY_OPTION, ...zones]
+  const { timeZoneOptions, timeZoneOptionByZone } = useMemo(() => {
+    const optionByLabel = new Map()
+    moment.tz.names().forEach((zone) => {
+      const label = formatTimeZoneLabel(zone)
+      if (!label) {
+        return
+      }
+      const normalizedLabel = label.toLowerCase()
+      let option = optionByLabel.get(normalizedLabel)
+      if (!option) {
+        option = { label, value: label, zones: [] }
+        optionByLabel.set(normalizedLabel, option)
+      }
+      option.zones.push(zone)
+    })
+
+    const options = Array.from(optionByLabel.values())
+    const optionByZone = new Map()
+    options.forEach((option) => {
+      option.zones.forEach((zone) => {
+        optionByZone.set(zone, option)
+      })
+    })
+
+    return {
+      timeZoneOptions: [ANY_OPTION, ...options],
+      timeZoneOptionByZone: optionByZone
+    }
   }, [])
 
   const countryOptions = useMemo(() => {
@@ -111,11 +133,38 @@ const EngagementEditor = ({
     }, {})
   }, [countryOptions])
 
-  const selectedTimeZones = (engagement.timezones || []).map(zone => (
-    zone === ANY_OPTION.value
-      ? ANY_OPTION
-      : { label: formatTimeZoneLabel(zone), value: zone }
-  ))
+  const selectedTimeZones = useMemo(() => {
+    const timeZones = Array.isArray(engagement.timezones) ? engagement.timezones : []
+    if (timeZones.includes(ANY_OPTION.value)) {
+      return [ANY_OPTION]
+    }
+
+    const selected = []
+    const seen = new Set()
+    timeZones.forEach((zone) => {
+      const option = timeZoneOptionByZone.get(zone)
+      if (option) {
+        const key = option.value.toLowerCase()
+        if (!seen.has(key)) {
+          seen.add(key)
+          selected.push(option)
+        }
+        return
+      }
+      const label = formatTimeZoneLabel(zone)
+      if (!label) {
+        return
+      }
+      const normalizedLabel = label.toLowerCase()
+      if (seen.has(normalizedLabel)) {
+        return
+      }
+      seen.add(normalizedLabel)
+      selected.push({ label, value: label, zones: [zone] })
+    })
+
+    return selected
+  }, [engagement.timezones, timeZoneOptionByZone])
 
   const selectedCountries = (engagement.countries || []).map(code => {
     return countryOptionsByValue[code] || { label: code, value: code }
@@ -418,10 +467,32 @@ const EngagementEditor = ({
                     value={selectedTimeZones}
                     onChange={(values) => {
                       const normalized = normalizeAnySelection(values)
+                      const timezones = []
+                      const seen = new Set()
+                      normalized.forEach((option) => {
+                        if (!option) {
+                          return
+                        }
+                        if (option.value === ANY_OPTION.value) {
+                          timezones.length = 0
+                          timezones.push(ANY_OPTION.value)
+                          return
+                        }
+                        if (!Array.isArray(option.zones) || option.zones.length === 0) {
+                          return
+                        }
+                        option.zones.forEach((zone) => {
+                          if (seen.has(zone)) {
+                            return
+                          }
+                          seen.add(zone)
+                          timezones.push(zone)
+                        })
+                      })
                       onUpdateInput({
                         target: {
                           name: 'timezones',
-                          value: normalized.map(option => option.value)
+                          value: timezones
                         }
                       })
                     }}
