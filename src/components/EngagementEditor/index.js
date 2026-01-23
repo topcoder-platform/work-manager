@@ -169,6 +169,16 @@ const EngagementEditor = ({
   const selectedCountries = (engagement.countries || []).map(code => {
     return countryOptionsByValue[code] || { label: code, value: code }
   })
+  const getMinApplicationDeadline = () => {
+    return moment().add(1, 'minute').startOf('minute').toDate()
+  }
+  const isValidApplicationDeadlineDate = (currentDate) => {
+    if (!currentDate) {
+      return false
+    }
+    const minDateTime = getMinApplicationDeadline()
+    return moment(currentDate).isSameOrAfter(minDateTime, 'day')
+  }
 
   const selectedRoleOption = useMemo(() => {
     if (!engagement.role) {
@@ -572,6 +582,8 @@ const EngagementEditor = ({
                     dateFormat={INPUT_DATE_FORMAT}
                     timeFormat={INPUT_TIME_FORMAT}
                     onChange={value => onUpdateDate('applicationDeadline', value)}
+                    isValidDate={isValidApplicationDeadlineDate}
+                    minDateTime={getMinApplicationDeadline}
                   />
                 ) : (
                   <div className={styles.readOnlyValue}>
