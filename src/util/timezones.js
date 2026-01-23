@@ -81,5 +81,16 @@ export const formatTimeZoneList = (timeZones, fallback = 'Any') => {
     .map(zone => formatTimeZoneLabel(zone))
     .filter(Boolean)
 
-  return labels.length ? labels.join(', ') : fallback
+  const uniqueLabels = []
+  const seenLabels = new Set()
+  labels.forEach((label) => {
+    const normalized = label.toLowerCase()
+    if (seenLabels.has(normalized)) {
+      return
+    }
+    seenLabels.add(normalized)
+    uniqueLabels.push(label)
+  })
+
+  return uniqueLabels.length ? uniqueLabels.join(', ') : fallback
 }
