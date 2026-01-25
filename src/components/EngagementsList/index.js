@@ -66,9 +66,34 @@ const getLocationLabel = (engagement) => {
   if (!engagement) {
     return '-'
   }
-  const timezones = formatTimeZoneList(engagement.timezones, 'Any')
-  const countries = (engagement.countries || []).length ? engagement.countries.join(', ') : 'Any'
-  return `${timezones}${countries !== 'Any' ? ` / ${countries}` : ''}`
+  const normalizeValues = (values) => (
+    Array.isArray(values)
+      ? values.map(value => String(value).trim()).filter(Boolean)
+      : []
+  )
+  const isAnyValue = (value) => value.toLowerCase() === 'any'
+
+  const rawTimezones = normalizeValues(engagement.timezones)
+  const rawCountries = normalizeValues(engagement.countries)
+  const hasAnyLocation = rawTimezones.some(isAnyValue) || rawCountries.some(isAnyValue)
+  const filteredTimezones = rawTimezones.filter(value => !isAnyValue(value))
+  const filteredCountries = rawCountries.filter(value => !isAnyValue(value))
+
+  const timezones = formatTimeZoneList(filteredTimezones, '')
+  const countryLabel = hasAnyLocation || (!filteredCountries.length && !timezones)
+    ? 'Remote'
+    : (filteredCountries.length ? filteredCountries.join(', ') : '')
+
+  if (timezones && countryLabel) {
+    return `${timezones} / ${countryLabel}`
+  }
+  if (timezones) {
+    return timezones
+  }
+  if (countryLabel) {
+    return countryLabel
+  }
+  return 'Remote'
 }
 
 const getStatusClass = (status) => {
