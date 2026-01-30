@@ -177,6 +177,14 @@ export const normalizeEngagement = (engagement = {}) => {
     engagementId: assignment.engagementId,
     memberId: assignment.memberId,
     memberHandle: assignment.memberHandle,
+    status: assignment.status || assignment.assignmentStatus,
+    termsAccepted: assignment.termsAccepted != null
+      ? assignment.termsAccepted
+      : assignment.terms_accepted,
+    agreementRate: assignment.agreementRate || assignment.agreement_rate || assignment.rate,
+    terminationReason: assignment.terminationReason || assignment.termination_reason,
+    startDate: assignment.startDate || assignment.start_date,
+    endDate: assignment.endDate || assignment.end_date,
     createdAt: assignment.createdAt,
     updatedAt: assignment.updatedAt
   }))

@@ -428,6 +428,8 @@ export const PAGE_SIZE = 10
 
 export const PROJECTS_PAGE_SIZE = 20
 
+export const ENGAGEMENTS_PAGE_SIZE = 20
+
 /**
  * The minimal number of characters to enter before starting showing autocomplete suggestions
  */

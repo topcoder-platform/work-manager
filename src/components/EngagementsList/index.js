@@ -373,7 +373,7 @@ const EngagementsList = ({
                           <span>
                             <Link
                               className={styles.applicationsLink}
-                              to={`/projects/${projectId}/engagements/${engagement.id}/pay`}
+                              to={`/projects/${projectId}/engagements/${engagement.id}/assignments`}
                             >
                               {assignedMembersCount}
                             </Link>
@@ -413,7 +413,7 @@ const EngagementsList = ({
                           <OutlineButton
                             text='Pay'
                             type='info'
-                            link={`/projects/${projectId}/engagements/${engagement.id}/pay`}
+                            link={`/projects/${projectId}/engagements/${engagement.id}/assignments`}
                           />
                         )}
                         <OutlineButton

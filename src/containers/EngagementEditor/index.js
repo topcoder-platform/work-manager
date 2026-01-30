@@ -368,11 +368,11 @@ class EngagementEditorContainer extends Component {
     }
 
     if (!Array.isArray(engagement.timezones) || engagement.timezones.length === 0) {
-      errors.timezones = 'timeZones must contain at least 1 elements'
+      errors.timezones = 'Select at least one Time Zone'
     }
 
     if (!Array.isArray(engagement.countries) || engagement.countries.length === 0) {
-      errors.countries = 'countries must contain at least 1 elements'
+      errors.countries = 'Select at least one Country'
     }
 
     return errors

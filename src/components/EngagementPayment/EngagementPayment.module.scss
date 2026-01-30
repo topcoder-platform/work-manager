@@ -35,11 +35,6 @@
   background: $white;
 }
 
-.memberRowExpanded {
-  border-color: $tc-gray-30;
-  box-shadow: 0 6px 16px rgba(42, 42, 42, 0.08);
-}
-
 .memberRowHeader {
   display: flex;
   align-items: center;
@@ -88,10 +83,30 @@
   gap: 4px;
 }
 
+.memberHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .memberHandle {
   font-size: 16px;
   font-weight: 600;
   color: $tc-gray-80;
+}
+
+.assignmentStatus {
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  background: $tc-gray-10;
+  color: $tc-gray-70;
+  border: 1px solid $tc-gray-30;
+  text-transform: none;
+  white-space: nowrap;
 }
 
 .memberNote {
@@ -99,20 +114,136 @@
   color: $tc-gray-60;
 }
 
-.paymentHistorySection {
-  border-top: 1px solid $tc-gray-20;
-  padding-top: 12px;
+.memberMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-top: 6px;
+}
+
+.memberMetaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.memberMetaLabel {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: $tc-gray-50;
+  font-weight: 600;
+}
+
+.memberMetaValue {
+  font-size: 13px;
+  color: $tc-gray-80;
+  font-weight: 600;
+}
+
+.termsIndicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: $tc-green-20;
+  border: 1px solid $tc-green-40;
+}
+
+.termsIcon {
+  color: $tc-green-50;
+  font-size: 12px;
+}
+
+.historyModal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.terminationModal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.terminationTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: $tc-gray-90;
+}
+
+.terminationMessage {
+  font-size: 13px;
+  color: $tc-gray-70;
+}
+
+.terminationField {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.paymentHistoryHeader {
-  font-size: 13px;
-  font-weight: 600;
-  color: $tc-gray-70;
+.terminationLabel {
+  font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.6px;
+  color: $tc-gray-50;
+  font-weight: 600;
+}
+
+.terminationTextarea {
+  border: 1px solid $tc-gray-30;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+  min-height: 96px;
+  resize: vertical;
+  font-family: inherit;
+  color: $tc-gray-90;
+}
+
+.terminationActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.terminationButton {
+  width: auto;
+  min-width: 140px;
+  flex: 0 0 auto;
+}
+
+.historyModalHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.historyModalTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: $tc-gray-90;
+}
+
+.historyModalSubtitle {
+  font-size: 13px;
+  color: $tc-gray-60;
+  margin-top: 4px;
+}
+
+.historyModalBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .paymentList {
@@ -217,6 +348,11 @@
 
   .memberInfo {
     width: 100%;
+  }
+
+  .memberMetaItem {
+    width: 100%;
+    min-width: 0;
   }
 
   .toggleButton {

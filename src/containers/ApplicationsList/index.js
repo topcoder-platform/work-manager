@@ -77,10 +77,11 @@ class ApplicationsListContainer extends Component {
   }
 
   async handleUpdateStatus (applicationId, newStatus) {
-    const { engagementId } = this.getParams()
+    const { engagementId, projectId } = this.getParams()
     try {
       await this.props.updateApplicationStatus(applicationId, newStatus)
       await this.props.loadApplications(engagementId)
+      await this.props.loadEngagementDetails(projectId, engagementId)
     } catch (error) {
     }
   }

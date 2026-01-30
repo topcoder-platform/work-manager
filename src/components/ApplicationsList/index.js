@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import moment from 'moment-timezone'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck } from '@fortawesome/free-solid-svg-icons'
 import { OutlineButton } from '../Buttons'
 import Loader from '../Loader'
 import Select from '../Select'
@@ -63,6 +65,20 @@ const ApplicationsList = ({
   const [selectedApplication, setSelectedApplication] = useState(null)
   const menuPortalTarget = typeof document === 'undefined' ? undefined : document.body
 
+  const assignedMemberIds = useMemo(() => {
+    const assignedMembers = Array.isArray(engagement && engagement.assignedMembers)
+      ? engagement.assignedMembers
+      : []
+    const assignments = Array.isArray(engagement && engagement.assignments)
+      ? engagement.assignments
+      : []
+    const assignedFromAssignments = assignments
+      .map((assignment) => assignment && assignment.memberId)
+      .filter(Boolean)
+    const source = assignedMembers.length ? assignedMembers : assignedFromAssignments
+    return new Set(source.map((memberId) => String(memberId)))
+  }, [engagement])
+
   const filteredApplications = useMemo(() => {
     let results = applications || []
     if (statusFilter && statusFilter.value !== 'all') {
@@ -123,6 +139,7 @@ const ApplicationsList = ({
         <table className={styles.table}>
           <thead>
             <tr>
+              <th className={styles.assignedHeader}>Assigned</th>
               <th>Applicant Name</th>
               <th>Email</th>
               <th>Applied Date</th>
@@ -137,9 +154,18 @@ const ApplicationsList = ({
               const statusLabel = getStatusLabel(application.status)
               const statusClass = getStatusClass(application.status)
               const statusOption = STATUS_UPDATE_OPTIONS.find(option => option.value === application.status) || null
+              const applicationUserId = application.userId || application.user_id || application.memberId || application.member_id
+              const isAssigned = applicationUserId != null && assignedMemberIds.has(String(applicationUserId))
 
               return (
                 <tr key={application.id || application.email}>
+                  <td className={styles.assignedCell}>
+                    {isAssigned && (
+                      <span className={styles.assignedIndicator} title='Assigned'>
+                        <FontAwesomeIcon className={styles.assignedIcon} icon={faCheck} />
+                      </span>
+                    )}
+                  </td>
                   <td>{application.name || '-'}</td>
                   <td>{application.email || '-'}</td>
                   <td>{formatDateTime(application.createdAt)}</td>
@@ -194,7 +220,13 @@ ApplicationsList.propTypes = {
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     title: PropTypes.string,
     description: PropTypes.string,
-    applicationDeadline: PropTypes.any
+    applicationDeadline: PropTypes.any,
+    assignedMembers: PropTypes.arrayOf(
+      PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    ),
+    assignments: PropTypes.arrayOf(PropTypes.shape({
+      memberId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    }))
   }),
   isLoading: PropTypes.bool,
   canManage: PropTypes.bool,

@@ -300,7 +300,7 @@ const EngagementEditor = ({
             <OutlineButton
               text='Pay'
               type='info'
-              link={`/projects/${projectId}/engagements/${engagement.id}/pay`}
+              link={`/projects/${projectId}/engagements/${engagement.id}/assignments`}
               disabled={isSaving}
             />
           )}

@@ -72,6 +72,32 @@
   font-weight: 600;
 }
 
+.assignedHeader {
+  width: 60px;
+  text-align: center;
+}
+
+.assignedCell {
+  width: 60px;
+  text-align: center;
+}
+
+.assignedIndicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: $tc-green-20;
+  border: 1px solid $tc-green-40;
+}
+
+.assignedIcon {
+  color: $tc-green-50;
+  font-size: 12px;
+}
+
 .status {
   padding: 4px 8px;
   border-radius: 12px;

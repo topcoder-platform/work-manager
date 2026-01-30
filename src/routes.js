@@ -310,7 +310,7 @@ class Routes extends React.Component {
               <FooterContainer />
             )()} />
           {canManageEngagements && (
-            <Route exact path='/projects/:projectId/engagements/:engagementId/pay'
+            <Route exact path='/projects/:projectId/engagements/:engagementId/assignments'
               render={({ match }) => renderApp(
                 <EngagementPayment projectId={match.params.projectId} engagementId={match.params.engagementId} />,
                 <TopBarContainer projectId={match.params.projectId} />,
@@ -319,7 +319,7 @@ class Routes extends React.Component {
               )()} />
           )}
           {!canManageEngagements && (
-            <Route exact path='/projects/:projectId/engagements/:engagementId/pay'
+            <Route exact path='/projects/:projectId/engagements/:engagementId/assignments'
               render={({ match }) => renderApp(
                 <Challenges
                   menu='NULL'

@@ -13,7 +13,9 @@ import {
   normalizeEngagements,
   toEngagementStatusApi
 } from '../util/engagements'
+import { paginationHeaders } from '../util/pagination'
 import {
+  ENGAGEMENTS_PAGE_SIZE,
   LOAD_ENGAGEMENTS_PENDING,
   LOAD_ENGAGEMENTS_SUCCESS,
   LOAD_ENGAGEMENTS_FAILURE,
@@ -148,14 +150,61 @@ export function loadEngagements (projectId, status = 'all', filterName = '', inc
     }
 
     try {
-      const response = await fetchEngagements(filters)
-      const responseData = _.get(response, 'data', [])
-      const nestedData = _.get(responseData, 'data', [])
-      const engagements = Array.isArray(responseData)
-        ? responseData
-        : Array.isArray(nestedData)
-          ? nestedData
-          : []
+      const engagements = []
+      let page = 1
+      let totalPages
+      let perPage = ENGAGEMENTS_PAGE_SIZE
+
+      do {
+        const response = await fetchEngagements(filters, { page, perPage })
+        const responseData = _.get(response, 'data', [])
+        const nestedData = _.get(responseData, 'data', [])
+        const pageEngagements = Array.isArray(responseData)
+          ? responseData
+          : Array.isArray(nestedData)
+            ? nestedData
+            : []
+        const meta = _.get(responseData, 'meta', {})
+        const headers = paginationHeaders(response)
+        const metaPerPage = Number(meta.perPage)
+        const metaTotalPages = Number(meta.totalPages)
+        const metaTotalCount = Number(meta.totalCount)
+        const metaPage = Number(meta.page)
+        const headerPerPage = Number.isFinite(headers.xPerPage) ? headers.xPerPage : undefined
+        const headerTotalPages = Number.isFinite(headers.xTotalPages) ? headers.xTotalPages : undefined
+        const headerTotal = Number.isFinite(headers.xTotal) ? headers.xTotal : undefined
+        const headerPage = Number.isFinite(headers.xPage) ? headers.xPage : undefined
+        const resolvedPerPage = Number.isFinite(metaPerPage) ? metaPerPage : (headerPerPage || perPage)
+        const resolvedTotalPages = Number.isFinite(metaTotalPages)
+          ? metaTotalPages
+          : (headerTotalPages || (headerTotal && resolvedPerPage ? Math.ceil(headerTotal / resolvedPerPage) : undefined))
+        const hasPagingMeta = Number.isFinite(metaPerPage) ||
+          Number.isFinite(metaTotalPages) ||
+          Number.isFinite(metaTotalCount) ||
+          Number.isFinite(metaPage) ||
+          Number.isFinite(headerPerPage) ||
+          Number.isFinite(headerTotalPages) ||
+          Number.isFinite(headerTotal) ||
+          Number.isFinite(headerPage)
+
+        engagements.push(...pageEngagements)
+        perPage = resolvedPerPage || perPage
+        totalPages = resolvedTotalPages
+
+        if (!hasPagingMeta) {
+          break
+        }
+
+        if (totalPages) {
+          page += 1
+        } else {
+          page += 1
+          if (pageEngagements.length < perPage) {
+            break
+          }
+        }
+      } while (!totalPages || page <= totalPages)
+
       const hydratedEngagements = await hydrateEngagementSkills(engagements)
       const normalizedEngagements = normalizeEngagements(hydratedEngagements)
       dispatch({

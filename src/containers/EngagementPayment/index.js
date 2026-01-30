@@ -7,8 +7,9 @@ import EngagementPayment from '../../components/EngagementPayment'
 import { loadEngagementDetails } from '../../actions/engagements'
 import { createMemberPayment, fetchAssignmentPayments } from '../../actions/payments'
 import { loadProject } from '../../actions/projects'
-import { toastFailure } from '../../util/toaster'
+import { toastFailure, toastSuccess } from '../../util/toaster'
 import { fetchProfile } from '../../services/user'
+import { updateEngagementAssignmentStatus } from '../../services/engagements'
 import { normalizeEngagement as normalizeEngagementShape } from '../../util/engagements'
 
 const getEmptyEngagement = () => ({
@@ -120,7 +121,8 @@ class EngagementPaymentContainer extends Component {
       engagement: getEmptyEngagement(),
       showPaymentModal: false,
       selectedMember: null,
-      memberIdLookup: {}
+      memberIdLookup: {},
+      terminatingAssignments: {}
     }
 
     this.onOpenPaymentModal = this.onOpenPaymentModal.bind(this)
@@ -129,6 +131,7 @@ class EngagementPaymentContainer extends Component {
     this.resolveMemberIds = this.resolveMemberIds.bind(this)
     this.fetchPaymentsForAssignments = this.fetchPaymentsForAssignments.bind(this)
     this.getPaymentEntries = this.getPaymentEntries.bind(this)
+    this.onTerminateAssignment = this.onTerminateAssignment.bind(this)
   }
 
   static getDerivedStateFromProps (nextProps, prevState) {
@@ -337,6 +340,43 @@ class EngagementPaymentContainer extends Component {
     })
   }
 
+  async onTerminateAssignment (member, terminationReason = '') {
+    const assignmentId = _.get(member, 'assignmentId', null)
+    if (_.isNil(assignmentId) || assignmentId === '') {
+      toastFailure('Error', 'Assignment ID is required to terminate an assignment')
+      return false
+    }
+
+    const memberHandle = getMemberHandle(member) || 'this member'
+    this.setState((prevState) => ({
+      terminatingAssignments: {
+        ...prevState.terminatingAssignments,
+        [assignmentId]: true
+      }
+    }))
+
+    try {
+      await updateEngagementAssignmentStatus(
+        this.getEngagementId(),
+        assignmentId,
+        'TERMINATED',
+        terminationReason
+      )
+      await this.props.loadEngagementDetails(this.getProjectId(), this.getEngagementId())
+      toastSuccess('Success', `Assignment for ${memberHandle} terminated.`)
+      return true
+    } catch (error) {
+      toastFailure('Error', (error && error.message) || 'Failed to terminate assignment')
+      return false
+    } finally {
+      this.setState((prevState) => {
+        const next = { ...prevState.terminatingAssignments }
+        delete next[assignmentId]
+        return { terminatingAssignments: next }
+      })
+    }
+  }
+
   getPaymentEntries (engagement) {
     if (!engagement) {
       return []
@@ -411,12 +451,14 @@ class EngagementPaymentContainer extends Component {
         isLoading={isLoading}
         isPaymentProcessing={isPaymentProcessing}
         paymentsByAssignment={paymentsByAssignment}
+        terminatingAssignments={this.state.terminatingAssignments}
         projectId={projectId}
         showPaymentModal={shouldShowPaymentModal}
         selectedMember={this.state.selectedMember}
         onOpenPaymentModal={this.onOpenPaymentModal}
         onClosePaymentModal={this.onClosePaymentModal}
         onSubmitPayment={this.onSubmitPayment}
+        onTerminateAssignment={this.onTerminateAssignment}
       />
     )
   }
