@@ -107,8 +107,8 @@ export function updateApplicationStatus (applicationId, status) {
  * @param {String|Number} applicationId
  * @returns {Promise<*>}
  */
-export function approveApplication (applicationId) {
-  return axiosInstance.patch(`${APPLICATIONS_API_URL}/${applicationId}/approve`)
+export function approveApplication (applicationId, assignmentDetails = {}) {
+  return axiosInstance.patch(`${APPLICATIONS_API_URL}/${applicationId}/approve`, assignmentDetails)
 }
 
 /**

@@ -2,7 +2,6 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import moment from 'moment-timezone'
 import Modal from '../Modal'
-import Select from '../Select'
 import { OutlineButton } from '../Buttons'
 import styles from './ApplicationDetail.module.scss'
 
@@ -84,14 +83,13 @@ const getStatusLabel = (status) => {
   return status.toString().replace(/_/g, ' ')
 }
 
-const ApplicationDetail = ({ application, engagement, canManage, onUpdateStatus, onClose }) => {
+const ApplicationDetail = ({ application, engagement, onClose }) => {
   if (!application) {
     return null
   }
 
   const statusLabel = getStatusLabel(application.status)
   const statusClass = getStatusClass(application.status)
-  const statusOption = STATUS_OPTIONS.find(option => option.value === application.status) || null
   const portfolioUrls = Array.isArray(application.portfolioUrls) ? application.portfolioUrls : []
 
   return (
@@ -149,19 +147,6 @@ const ApplicationDetail = ({ application, engagement, canManage, onUpdateStatus,
                 <span className={`${styles.status} ${statusClass}`}>{statusLabel}</span>
               </div>
             </div>
-            {canManage && (
-              <div className={styles.detailItem}>
-                <div className={styles.label}>Update Status</div>
-                <div className={styles.statusControl}>
-                  <Select
-                    options={STATUS_OPTIONS}
-                    value={statusOption}
-                    onChange={(option) => option && onUpdateStatus(application.id, option.value)}
-                    isClearable={false}
-                  />
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
@@ -211,8 +196,6 @@ const ApplicationDetail = ({ application, engagement, canManage, onUpdateStatus,
 ApplicationDetail.defaultProps = {
   application: null,
   engagement: null,
-  canManage: false,
-  onUpdateStatus: () => {},
   onClose: () => {}
 }
 
@@ -234,8 +217,6 @@ ApplicationDetail.propTypes = {
   engagement: PropTypes.shape({
     title: PropTypes.string
   }),
-  canManage: PropTypes.bool,
-  onUpdateStatus: PropTypes.func,
   onClose: PropTypes.func
 }
 

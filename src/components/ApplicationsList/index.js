@@ -3,10 +3,12 @@ import PropTypes from 'prop-types'
 import moment from 'moment-timezone'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCheck } from '@fortawesome/free-solid-svg-icons'
-import { OutlineButton } from '../Buttons'
+import { OutlineButton, PrimaryButton } from '../Buttons'
 import Loader from '../Loader'
 import Select from '../Select'
 import ApplicationDetail from '../ApplicationDetail'
+import Modal from '../Modal'
+import DateInput from '../DateInput'
 import styles from './ApplicationsList.module.scss'
 
 const STATUS_OPTIONS = [
@@ -18,6 +20,8 @@ const STATUS_OPTIONS = [
 ]
 
 const STATUS_UPDATE_OPTIONS = STATUS_OPTIONS.filter(option => option.value !== 'all')
+const INPUT_DATE_FORMAT = 'MM/dd/yyyy'
+const INPUT_TIME_FORMAT = 'HH:mm'
 
 const formatDateTime = (value) => {
   if (!value) {
@@ -63,6 +67,12 @@ const ApplicationsList = ({
 }) => {
   const [statusFilter, setStatusFilter] = useState(STATUS_OPTIONS[0])
   const [selectedApplication, setSelectedApplication] = useState(null)
+  const [acceptApplication, setAcceptApplication] = useState(null)
+  const [acceptStartDate, setAcceptStartDate] = useState(null)
+  const [acceptEndDate, setAcceptEndDate] = useState(null)
+  const [acceptRate, setAcceptRate] = useState('')
+  const [acceptErrors, setAcceptErrors] = useState({})
+  const [isAccepting, setIsAccepting] = useState(false)
   const menuPortalTarget = typeof document === 'undefined' ? undefined : document.body
 
   const assignedMemberIds = useMemo(() => {
@@ -91,16 +101,173 @@ const ApplicationsList = ({
     return <Loader />
   }
 
+  const resetAcceptState = () => {
+    setAcceptApplication(null)
+    setAcceptStartDate(null)
+    setAcceptEndDate(null)
+    setAcceptRate('')
+    setAcceptErrors({})
+    setIsAccepting(false)
+  }
+
+  const handleCloseAcceptModal = () => {
+    resetAcceptState()
+  }
+
+  const openAcceptModal = (application) => {
+    setAcceptApplication(application)
+    setAcceptStartDate(null)
+    setAcceptEndDate(null)
+    setAcceptRate('')
+    setAcceptErrors({})
+    setIsAccepting(false)
+  }
+
+  const handleAcceptSubmit = async () => {
+    if (!acceptApplication || isAccepting) {
+      return
+    }
+
+    const nextErrors = {}
+    const parsedStart = acceptStartDate ? moment(acceptStartDate) : null
+    const parsedEnd = acceptEndDate ? moment(acceptEndDate) : null
+    const normalizedRate = acceptRate != null ? String(acceptRate).trim() : ''
+
+    if (!parsedStart || !parsedStart.isValid()) {
+      nextErrors.startDate = 'Start date is required.'
+    }
+    if (!parsedEnd || !parsedEnd.isValid()) {
+      nextErrors.endDate = 'End date is required.'
+    }
+    if (!normalizedRate) {
+      nextErrors.rate = 'Assignment rate is required.'
+    }
+    if (parsedStart && parsedEnd && parsedStart.isValid() && parsedEnd.isValid() && parsedEnd.isBefore(parsedStart)) {
+      nextErrors.endDate = 'End date must be after start date.'
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setAcceptErrors(nextErrors)
+      return
+    }
+
+    setIsAccepting(true)
+    try {
+      await onUpdateStatus(acceptApplication.id, 'ACCEPTED', {
+        startDate: parsedStart.toISOString(),
+        endDate: parsedEnd.toISOString(),
+        agreementRate: normalizedRate
+      })
+      resetAcceptState()
+    } catch (error) {
+      setIsAccepting(false)
+    }
+  }
+
+  const handleStatusChange = (application, option) => {
+    if (!option) {
+      return
+    }
+    if (option.value === 'ACCEPTED') {
+      if (application.status === 'ACCEPTED') {
+        return
+      }
+      openAcceptModal(application)
+      return
+    }
+    onUpdateStatus(application.id, option.value)
+  }
+
   return (
     <div className={styles.container}>
       {selectedApplication && (
         <ApplicationDetail
           application={selectedApplication}
           engagement={engagement}
-          canManage={canManage}
-          onUpdateStatus={onUpdateStatus}
           onClose={() => setSelectedApplication(null)}
         />
+      )}
+      {acceptApplication && (
+        <Modal onCancel={handleCloseAcceptModal}>
+          <div className={styles.acceptModal}>
+            <div className={styles.acceptTitle}>Accept Application</div>
+            <div className={styles.acceptSubtitle}>
+              {acceptApplication.name || acceptApplication.email || 'Selected applicant'}
+            </div>
+            <div className={styles.acceptGrid}>
+              <div className={styles.acceptField}>
+                <label className={styles.acceptLabel}>Start date</label>
+                <DateInput
+                  className={styles.acceptDateInput}
+                  value={acceptStartDate}
+                  dateFormat={INPUT_DATE_FORMAT}
+                  timeFormat={INPUT_TIME_FORMAT}
+                  onChange={(value) => {
+                    setAcceptStartDate(value)
+                    if (acceptErrors.startDate) {
+                      setAcceptErrors(prev => ({ ...prev, startDate: '' }))
+                    }
+                  }}
+                />
+                {acceptErrors.startDate && (
+                  <div className={styles.acceptError}>{acceptErrors.startDate}</div>
+                )}
+              </div>
+              <div className={styles.acceptField}>
+                <label className={styles.acceptLabel}>End date</label>
+                <DateInput
+                  className={styles.acceptDateInput}
+                  value={acceptEndDate}
+                  dateFormat={INPUT_DATE_FORMAT}
+                  timeFormat={INPUT_TIME_FORMAT}
+                  minDateTime={acceptStartDate ? moment(acceptStartDate).toDate() : null}
+                  onChange={(value) => {
+                    setAcceptEndDate(value)
+                    if (acceptErrors.endDate) {
+                      setAcceptErrors(prev => ({ ...prev, endDate: '' }))
+                    }
+                  }}
+                />
+                {acceptErrors.endDate && (
+                  <div className={styles.acceptError}>{acceptErrors.endDate}</div>
+                )}
+              </div>
+              <div className={styles.acceptFieldFull}>
+                <label className={styles.acceptLabel}>Assignment rate</label>
+                <input
+                  className={styles.acceptInput}
+                  type='number'
+                  min='0'
+                  step='0.01'
+                  value={acceptRate}
+                  onChange={(event) => {
+                    setAcceptRate(event.target.value)
+                    if (acceptErrors.rate) {
+                      setAcceptErrors(prev => ({ ...prev, rate: '' }))
+                    }
+                  }}
+                />
+                {acceptErrors.rate && (
+                  <div className={styles.acceptError}>{acceptErrors.rate}</div>
+                )}
+              </div>
+            </div>
+            <div className={styles.acceptActions}>
+              <OutlineButton
+                text='Cancel'
+                type='info'
+                onClick={handleCloseAcceptModal}
+                disabled={isAccepting}
+              />
+              <PrimaryButton
+                text={isAccepting ? 'Saving...' : 'Confirm'}
+                type='info'
+                onClick={handleAcceptSubmit}
+                disabled={isAccepting}
+              />
+            </div>
+          </div>
+        </Modal>
       )}
       <div className={styles.header}>
         <div>
@@ -188,7 +355,7 @@ const ApplicationsList = ({
                           <Select
                             options={STATUS_UPDATE_OPTIONS}
                             value={statusOption}
-                            onChange={(option) => option && onUpdateStatus(application.id, option.value)}
+                            onChange={(option) => handleStatusChange(application, option)}
                             isClearable={false}
                             menuPortalTarget={menuPortalTarget}
                           />

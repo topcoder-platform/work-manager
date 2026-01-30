@@ -456,9 +456,6 @@ const EngagementPayment = ({
                   {paymentHistoryMember.handle || '-'}
                 </div>
               </div>
-              <span className={styles.assignmentStatus}>
-                {getAssignmentStatusLabel(paymentHistoryMember)}
-              </span>
             </div>
             <div className={styles.historyModalBody}>
               {renderPaymentHistory(paymentHistoryMember)}

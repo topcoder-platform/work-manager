@@ -76,10 +76,10 @@ class ApplicationsListContainer extends Component {
     return isAdmin || isManager || isProjectManager
   }
 
-  async handleUpdateStatus (applicationId, newStatus) {
+  async handleUpdateStatus (applicationId, newStatus, assignmentDetails) {
     const { engagementId, projectId } = this.getParams()
     try {
-      await this.props.updateApplicationStatus(applicationId, newStatus)
+      await this.props.updateApplicationStatus(applicationId, newStatus, assignmentDetails)
       await this.props.loadApplications(engagementId)
       await this.props.loadEngagementDetails(projectId, engagementId)
     } catch (error) {
