@@ -611,7 +611,7 @@ const EngagementEditor = ({
                       label: engagement.status,
                       value: engagement.status
                     } : null}
-                    options={['Open', 'Pending Assignment', 'Active', 'Cancelled', 'Closed'].map(status => ({
+                    options={['Open', 'Active', 'Cancelled', 'Closed'].map(status => ({
                       label: status,
                       value: status
                     }))}
