@@ -2,7 +2,8 @@ import _ from 'lodash'
 import {
   fetchApplications,
   fetchApplication,
-  updateApplicationStatus as updateApplicationStatusAPI
+  updateApplicationStatus as updateApplicationStatusAPI,
+  approveApplication as approveApplicationAPI
 } from '../services/engagements'
 import {
   LOAD_APPLICATIONS_PENDING,
@@ -85,15 +86,19 @@ export function loadApplicationDetails (applicationId) {
  * Updates application status
  * @param {String|Number} applicationId
  * @param {String} status
+ * @param {Object} assignmentDetails
  */
-export function updateApplicationStatus (applicationId, status) {
+export function updateApplicationStatus (applicationId, status, assignmentDetails) {
   return async (dispatch) => {
     dispatch({
       type: UPDATE_APPLICATION_STATUS_PENDING
     })
 
     try {
-      const response = await updateApplicationStatusAPI(applicationId, status)
+      const normalizedStatus = (status || '').toString().toUpperCase()
+      const response = normalizedStatus === 'ACCEPTED'
+        ? await approveApplicationAPI(applicationId, assignmentDetails)
+        : await updateApplicationStatusAPI(applicationId, status)
       return dispatch({
         type: UPDATE_APPLICATION_STATUS_SUCCESS,
         application: _.get(response, 'data', {})

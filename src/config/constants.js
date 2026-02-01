@@ -261,6 +261,17 @@ export const PROJECT_MEMBER_INVITE_STATUS_REQUESTED = 'requested'
 export const PROJECT_MEMBER_INVITE_STATUS_REQUEST_APPROVED = 'request_approved'
 export const PROJECT_MEMBER_INVITE_STATUS_REQUEST_REJECTED = 'request_rejected'
 
+// Groups action types
+export const BULK_SEARCH_MEMBERS_PENDING = 'BULK_SEARCH_MEMBERS_PENDING'
+export const BULK_SEARCH_MEMBERS_SUCCESS = 'BULK_SEARCH_MEMBERS_SUCCESS'
+export const BULK_SEARCH_MEMBERS_FAILURE = 'BULK_SEARCH_MEMBERS_FAILURE'
+
+export const BULK_CREATE_GROUP_PENDING = 'BULK_CREATE_GROUP_PENDING'
+export const BULK_CREATE_GROUP_SUCCESS = 'BULK_CREATE_GROUP_SUCCESS'
+export const BULK_CREATE_GROUP_FAILURE = 'BULK_CREATE_GROUP_FAILURE'
+
+export const RESET_GROUPS_STATE = 'RESET_GROUPS_STATE'
+
 // Name of challenge tracks
 export const CHALLENGE_TRACKS = {
   DESIGN: DES_TRACK_ID,
@@ -427,6 +438,8 @@ export const downloadAttachmentURL = (challengeId, attachmentId, token) =>
 export const PAGE_SIZE = 10
 
 export const PROJECTS_PAGE_SIZE = 20
+
+export const ENGAGEMENTS_PAGE_SIZE = 20
 
 /**
  * The minimal number of characters to enter before starting showing autocomplete suggestions

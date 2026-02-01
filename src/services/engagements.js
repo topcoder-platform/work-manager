@@ -103,6 +103,15 @@ export function updateApplicationStatus (applicationId, status) {
 }
 
 /**
+ * Api request for approving application
+ * @param {String|Number} applicationId
+ * @returns {Promise<*>}
+ */
+export function approveApplication (applicationId, assignmentDetails = {}) {
+  return axiosInstance.patch(`${APPLICATIONS_API_URL}/${applicationId}/approve`, assignmentDetails)
+}
+
+/**
  * Api request for fetching feedback for an engagement assignment
  * @param {String|Number} engagementId
  * @param {String|Number} assignmentId
@@ -142,4 +151,18 @@ export function createEngagementFeedback (engagementId, assignmentId, data) {
  */
 export function generateEngagementFeedbackLink (engagementId, assignmentId, data) {
   return axiosInstance.post(`${ENGAGEMENTS_ROOT_API_URL}/${engagementId}/assignments/${assignmentId}/feedback/generate-link`, data)
+}
+
+/**
+ * Api request for updating an engagement assignment status
+ * @param {String|Number} engagementId
+ * @param {String|Number} assignmentId
+ * @param {String} status
+ * @returns {Promise<*>}
+ */
+export function updateEngagementAssignmentStatus (engagementId, assignmentId, status, terminationReason) {
+  return axiosInstance.patch(
+    `${ENGAGEMENTS_ROOT_API_URL}/${engagementId}/assignments/${assignmentId}/status`,
+    { status, terminationReason }
+  )
 }

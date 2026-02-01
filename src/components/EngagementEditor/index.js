@@ -300,7 +300,7 @@ const EngagementEditor = ({
             <OutlineButton
               text='Pay'
               type='info'
-              link={`/projects/${projectId}/engagements/${engagement.id}/pay`}
+              link={`/projects/${projectId}/engagements/${engagement.id}/assignments`}
               disabled={isSaving}
             />
           )}
@@ -611,7 +611,7 @@ const EngagementEditor = ({
                       label: engagement.status,
                       value: engagement.status
                     } : null}
-                    options={['Open', 'Pending Assignment', 'Active', 'Cancelled', 'Closed'].map(status => ({
+                    options={['Open', 'Active', 'Cancelled', 'Closed'].map(status => ({
                       label: status,
                       value: status
                     }))}

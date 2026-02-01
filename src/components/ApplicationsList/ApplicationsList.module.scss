@@ -72,6 +72,32 @@
   font-weight: 600;
 }
 
+.assignedHeader {
+  width: 60px;
+  text-align: center;
+}
+
+.assignedCell {
+  width: 60px;
+  text-align: center;
+}
+
+.assignedIndicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: $tc-green-20;
+  border: 1px solid $tc-green-40;
+}
+
+.assignedIcon {
+  color: $tc-green-50;
+  font-size: 12px;
+}
+
 .status {
   padding: 4px 8px;
   border-radius: 12px;
@@ -115,4 +141,82 @@
   padding: 40px;
   text-align: center;
   color: $tc-gray-70;
+}
+
+.acceptModal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 360px;
+}
+
+.acceptTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: $challenges-title;
+}
+
+.acceptSubtitle {
+  font-size: 13px;
+  color: $tc-gray-70;
+}
+
+.acceptGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.acceptField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.acceptFieldFull {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  grid-column: 1 / -1;
+}
+
+.acceptLabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: $tc-gray-60;
+}
+
+.acceptDateInput {
+  :global(.rdt) {
+    width: 100%;
+  }
+
+  :global(.form-control) {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid $tc-gray-20;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+}
+
+.acceptInput {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid $tc-gray-20;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.acceptError {
+  color: $tc-red;
+  font-size: 12px;
+}
+
+.acceptActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
 }

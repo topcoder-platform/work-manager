@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCheck } from '@fortawesome/free-solid-svg-icons'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import Loader from '../Loader'
 import Modal from '../Modal'
@@ -78,20 +80,106 @@ const getPaymentDate = (payment) => {
   return payment.createdAt || payment.updatedAt || payment.date || payment.created || payment.updated || null
 }
 
+const getAssignmentStatus = (member) => {
+  if (!member || typeof member !== 'object') {
+    return ''
+  }
+  return member.assignmentStatus ||
+    member.assignment_status ||
+    member.assignmentState ||
+    member.status ||
+    ''
+}
+
+const normalizeAssignmentStatus = (status) => {
+  if (!status) {
+    return ''
+  }
+  const normalized = status.toString().trim()
+  if (!normalized) {
+    return ''
+  }
+  const withSpaces = normalized
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+  return withSpaces
+    .split(' ')
+    .map((word) => (word ? `${word[0].toUpperCase()}${word.slice(1).toLowerCase()}` : ''))
+    .join(' ')
+}
+
+const getAssignmentRate = (member) => {
+  if (!member || typeof member !== 'object') {
+    return ''
+  }
+  return member.agreementRate ||
+    member.agreement_rate ||
+    member.rate ||
+    member.agreedRate ||
+    ''
+}
+
+const getAssignmentDate = (member, key) => {
+  if (!member || typeof member !== 'object') {
+    return null
+  }
+  if (key === 'start') {
+    return member.startDate || member.start_date || member.start || null
+  }
+  if (key === 'end') {
+    return member.endDate || member.end_date || member.end || null
+  }
+  return null
+}
+
+const getTermsAccepted = (member) => {
+  if (!member || typeof member !== 'object') {
+    return null
+  }
+  const value = member.termsAccepted != null
+    ? member.termsAccepted
+    : member.terms_accepted
+  if (value == null) {
+    return null
+  }
+  if (typeof value === 'boolean') {
+    return value
+  }
+  if (typeof value === 'number') {
+    return value !== 0
+  }
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase()
+    if (['true', 'yes', '1'].includes(normalized)) {
+      return true
+    }
+    if (['false', 'no', '0'].includes(normalized)) {
+      return false
+    }
+  }
+  return Boolean(value)
+}
+
 const EngagementPayment = ({
   engagement,
   assignedMembers,
   isLoading,
   isPaymentProcessing,
   paymentsByAssignment,
+  terminatingAssignments,
   projectId,
   showPaymentModal,
   selectedMember,
   onOpenPaymentModal,
   onClosePaymentModal,
-  onSubmitPayment
+  onSubmitPayment,
+  onTerminateAssignment
 }) => {
-  const [expandedAssignments, setExpandedAssignments] = useState({})
+  const [paymentHistoryMember, setPaymentHistoryMember] = useState(null)
+  const [terminationMember, setTerminationMember] = useState(null)
+  const [terminationReason, setTerminationReason] = useState('')
   if (isLoading) {
     return <Loader />
   }
@@ -101,15 +189,49 @@ const EngagementPayment = ({
   const engagementTitle = engagement && engagement.title ? engagement.title : 'Engagement'
   const backUrl = projectId ? `/projects/${projectId}/engagements` : '/projects'
 
-  const togglePaymentHistory = (assignmentId) => {
+  const closePaymentHistoryModal = () => {
+    setPaymentHistoryMember(null)
+  }
+
+  const openPaymentHistoryModal = (member) => {
+    const assignmentId = member && member.assignmentId != null ? member.assignmentId : null
     if (assignmentId == null || assignmentId === '') {
       return
     }
-    const key = String(assignmentId)
-    setExpandedAssignments((prevState) => ({
-      ...prevState,
-      [key]: !prevState[key]
-    }))
+    setPaymentHistoryMember(member)
+  }
+
+  const closeTerminationModal = () => {
+    setTerminationMember(null)
+    setTerminationReason('')
+  }
+
+  const openTerminationModal = (member) => {
+    setTerminationMember(member)
+    setTerminationReason('')
+  }
+
+  const submitTermination = async () => {
+    if (!terminationMember) {
+      return
+    }
+    const trimmedReason = terminationReason.trim()
+    if (!trimmedReason) {
+      return
+    }
+    const wasSuccessful = await onTerminateAssignment(
+      terminationMember,
+      trimmedReason
+    )
+    if (wasSuccessful) {
+      closeTerminationModal()
+    }
+  }
+
+  const getAssignmentStatusLabel = (member) => {
+    const rawStatus = getAssignmentStatus(member)
+    const normalizedStatus = normalizeAssignmentStatus(rawStatus)
+    return normalizedStatus || 'Unknown'
   }
 
   const renderPaymentHistory = (member) => {
@@ -171,10 +293,21 @@ const EngagementPayment = ({
     )
   }
 
+  const terminationAssignmentId = terminationMember && terminationMember.assignmentId != null
+    ? String(terminationMember.assignmentId)
+    : null
+  const terminationHandle = terminationMember
+    ? (terminationMember.handle || terminationMember.memberHandle || '-')
+    : '-'
+  const isTerminationProcessing = terminationAssignmentId && terminatingAssignments
+    ? Boolean(terminatingAssignments[terminationAssignmentId])
+    : false
+  const isTerminationReasonValid = Boolean(terminationReason.trim())
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <div className={styles.title}>Payment for: {engagementTitle}</div>
+        <div className={styles.title}>{engagementTitle} Assignees</div>
         <OutlineButton text='Back' type='info' link={backUrl} className={styles.actionButton} />
       </div>
       {hasMembers ? (
@@ -182,36 +315,76 @@ const EngagementPayment = ({
           {members.map((member) => {
             const assignmentId = member && member.assignmentId != null ? member.assignmentId : null
             const assignmentKey = assignmentId != null && assignmentId !== '' ? String(assignmentId) : null
-            const isExpanded = assignmentKey ? Boolean(expandedAssignments[assignmentKey]) : false
-            const historyId = assignmentKey ? `payment-history-${assignmentKey}` : undefined
             const hasAssignmentId = Boolean(assignmentKey)
             const canPay = Boolean(member && member.id && hasAssignmentId && !isPaymentProcessing)
+            const assignmentStatusLabel = getAssignmentStatusLabel(member)
+            const assignmentStatusRaw = getAssignmentStatus(member)
+            const isRowTerminating = assignmentKey && terminatingAssignments
+              ? Boolean(terminatingAssignments[assignmentKey])
+              : false
+            const termsAccepted = getTermsAccepted(member)
+            const assignmentRate = getAssignmentRate(member)
+            const startDate = formatDate(getAssignmentDate(member, 'start'))
+            const endDate = formatDate(getAssignmentDate(member, 'end'))
+            const rateDisplay = assignmentRate !== '' && assignmentRate != null
+              ? formatCurrency(assignmentRate)
+              : '-'
 
             return (
-              <div
-                key={member.key}
-                className={`${styles.memberRow} ${isExpanded ? styles.memberRowExpanded : ''}`}
-              >
+              <div key={member.key} className={styles.memberRow}>
                 <div className={styles.memberRowHeader}>
                   <div className={styles.memberInfo}>
-                    <div className={styles.memberHandle}>{member.handle || '-'}</div>
+                    <div className={styles.memberHeader}>
+                      <div className={styles.memberHandle}>{member.handle || '-'}</div>
+                      <span
+                        className={styles.assignmentStatus}
+                        title={assignmentStatusRaw || assignmentStatusLabel}
+                      >
+                        {assignmentStatusLabel}
+                      </span>
+                    </div>
                     {!member.id && (
                       <div className={styles.memberNote}>Resolving member ID...</div>
                     )}
                     {!hasAssignmentId && (
                       <div className={styles.memberNote}>Payment unavailable: missing assignment ID.</div>
                     )}
+                    <div className={styles.memberMeta}>
+                      <div className={styles.memberMetaItem}>
+                        <span className={styles.memberMetaLabel}>Terms Accepted</span>
+                        <span className={styles.memberMetaValue}>
+                          {termsAccepted ? (
+                            <span className={styles.termsIndicator} title='Accepted'>
+                              <FontAwesomeIcon className={styles.termsIcon} icon={faCheck} />
+                            </span>
+                          ) : (
+                            '-'
+                          )}
+                        </span>
+                      </div>
+                      <div className={styles.memberMetaItem}>
+                        <span className={styles.memberMetaLabel}>Agreed Rate</span>
+                        <span className={styles.memberMetaValue}>{rateDisplay}</span>
+                      </div>
+                      <div className={styles.memberMetaItem}>
+                        <span className={styles.memberMetaLabel}>Start</span>
+                        <span className={styles.memberMetaValue}>{startDate}</span>
+                      </div>
+                      <div className={styles.memberMetaItem}>
+                        <span className={styles.memberMetaLabel}>End</span>
+                        <span className={styles.memberMetaValue}>{endDate}</span>
+                      </div>
+                    </div>
                   </div>
                   <div className={styles.memberActions}>
                     <button
                       type='button'
                       className={styles.toggleButton}
-                      onClick={() => togglePaymentHistory(assignmentId)}
+                      onClick={() => openPaymentHistoryModal(member)}
                       disabled={!assignmentKey}
-                      aria-expanded={isExpanded}
-                      aria-controls={historyId}
+                      aria-haspopup='dialog'
                     >
-                      {isExpanded ? 'Hide history' : 'Show history'}
+                      Show Payment History
                     </button>
                     <PrimaryButton
                       text='Pay'
@@ -220,20 +393,75 @@ const EngagementPayment = ({
                       onClick={() => onOpenPaymentModal(member)}
                       disabled={!canPay}
                     />
+                    <PrimaryButton
+                      text={isRowTerminating ? 'Terminating...' : 'Terminate'}
+                      type='danger'
+                      className={styles.actionButton}
+                      onClick={() => openTerminationModal(member)}
+                      disabled={!hasAssignmentId || isRowTerminating}
+                    />
                   </div>
                 </div>
-                {isExpanded && (
-                  <div className={styles.paymentHistorySection} id={historyId}>
-                    <div className={styles.paymentHistoryHeader}>Payment history</div>
-                    {renderPaymentHistory(member)}
-                  </div>
-                )}
               </div>
             )
           })}
         </div>
       ) : (
         <div className={styles.emptyState}>No assigned members found.</div>
+      )}
+      {terminationMember && (
+        <Modal onCancel={closeTerminationModal}>
+          <div className={styles.terminationModal}>
+            <div className={styles.terminationTitle}>Terminate Assignment</div>
+            <div className={styles.terminationMessage}>
+              {`Are you sure you want to terminate the assignment for ${terminationHandle} on this engagement?`}
+            </div>
+            <div className={styles.terminationField}>
+              <label htmlFor='terminationReason' className={styles.terminationLabel}>
+                Termination Reason (required)
+              </label>
+              <textarea
+                id='terminationReason'
+                className={styles.terminationTextarea}
+                placeholder='Add a reason for terminating this assignment'
+                value={terminationReason}
+                onChange={(event) => setTerminationReason(event.target.value)}
+              />
+            </div>
+            <div className={styles.terminationActions}>
+              <OutlineButton
+                text='Cancel'
+                type='info'
+                className={styles.terminationButton}
+                onClick={closeTerminationModal}
+              />
+              <PrimaryButton
+                text={isTerminationProcessing ? 'Terminating...' : 'Terminate'}
+                type='danger'
+                className={styles.terminationButton}
+                onClick={submitTermination}
+                disabled={isTerminationProcessing || !isTerminationReasonValid}
+              />
+            </div>
+          </div>
+        </Modal>
+      )}
+      {paymentHistoryMember && (
+        <Modal onCancel={closePaymentHistoryModal}>
+          <div className={styles.historyModal}>
+            <div className={styles.historyModalHeader}>
+              <div>
+                <div className={styles.historyModalTitle}>Payment History</div>
+                <div className={styles.historyModalSubtitle}>
+                  {paymentHistoryMember.handle || '-'}
+                </div>
+              </div>
+            </div>
+            <div className={styles.historyModalBody}>
+              {renderPaymentHistory(paymentHistoryMember)}
+            </div>
+          </div>
+        </Modal>
       )}
       {showPaymentModal && (
         <Modal onCancel={onClosePaymentModal}>
@@ -257,12 +485,14 @@ EngagementPayment.defaultProps = {
   isLoading: false,
   isPaymentProcessing: false,
   paymentsByAssignment: {},
+  terminatingAssignments: {},
   projectId: null,
   showPaymentModal: false,
   selectedMember: null,
   onOpenPaymentModal: () => {},
   onClosePaymentModal: () => {},
-  onSubmitPayment: () => {}
+  onSubmitPayment: () => {},
+  onTerminateAssignment: () => {}
 }
 
 EngagementPayment.propTypes = {
@@ -274,7 +504,14 @@ EngagementPayment.propTypes = {
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     assignmentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     handle: PropTypes.string,
-    key: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    key: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    status: PropTypes.string,
+    assignmentStatus: PropTypes.string,
+    termsAccepted: PropTypes.oneOfType([PropTypes.bool, PropTypes.string, PropTypes.number]),
+    agreementRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    terminationReason: PropTypes.string,
+    startDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
+    endDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)])
   })),
   isLoading: PropTypes.bool,
   isPaymentProcessing: PropTypes.bool,
@@ -283,16 +520,25 @@ EngagementPayment.propTypes = {
     payments: PropTypes.arrayOf(PropTypes.object),
     error: PropTypes.string
   })),
+  terminatingAssignments: PropTypes.objectOf(PropTypes.bool),
   projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   showPaymentModal: PropTypes.bool,
   selectedMember: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     assignmentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    handle: PropTypes.string
+    handle: PropTypes.string,
+    status: PropTypes.string,
+    assignmentStatus: PropTypes.string,
+    termsAccepted: PropTypes.oneOfType([PropTypes.bool, PropTypes.string, PropTypes.number]),
+    agreementRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    terminationReason: PropTypes.string,
+    startDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
+    endDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)])
   }),
   onOpenPaymentModal: PropTypes.func,
   onClosePaymentModal: PropTypes.func,
-  onSubmitPayment: PropTypes.func
+  onSubmitPayment: PropTypes.func,
+  onTerminateAssignment: PropTypes.func
 }
 
 export default EngagementPayment
