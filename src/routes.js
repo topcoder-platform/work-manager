@@ -32,9 +32,11 @@ import {
   checkReadOnlyRoles,
   checkAdmin,
   checkCopilot,
+  checkManager,
   checkAdminOrPmOrTaskManager
 } from './util/tc'
 import Users from './containers/Users'
+import Groups from './containers/Groups'
 import { isBetaMode, removeFromLocalStorage, saveToLocalStorage } from './util/localstorage'
 import ProjectEditor from './containers/ProjectEditor'
 import ProjectInvitations from './containers/ProjectInvitations'
@@ -197,6 +199,18 @@ class Routes extends React.Component {
               <Route exact path='/users'
                 render={() => renderApp(
                   <Users />,
+                  <TopBarContainer />,
+                  <Tab />,
+                  <FooterContainer />
+                )()}
+              />
+            )
+          }
+          {
+            !isReadOnly && (isCopilot || isAdmin || checkManager(this.props.token)) && (
+              <Route exact path='/groups'
+                render={() => renderApp(
+                  <Groups />,
                   <TopBarContainer />,
                   <Tab />,
                   <FooterContainer />

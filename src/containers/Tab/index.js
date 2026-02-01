@@ -69,8 +69,9 @@ class TabContainer extends Component {
     this.setState({ currentTab: this.getTabFromPath(nextProps.history.location.pathname, projectId, canViewAssets) })
     if (
       isLoading ||
-      // do not fetch projects for users page
-      nextProps.history.location.pathname === '/users'
+      // do not fetch projects for users or groups page
+      nextProps.history.location.pathname === '/users' ||
+      nextProps.history.location.pathname === '/groups'
     ) {
       return
     }
@@ -134,6 +135,9 @@ class TabContainer extends Component {
     if (pathname === '/taas') {
       return 5
     }
+    if (pathname === '/groups') {
+      return 6
+    }
     return 0
   }
   loadProjects (props) {
@@ -188,6 +192,9 @@ class TabContainer extends Component {
       history.push('/taas')
       this.props.unloadProjects()
       this.setState({ currentTab: 5 })
+    } else if (tab === 6) {
+      history.push('/groups')
+      this.setState({ currentTab: 6 })
     }
 
     resetSidebarActiveParams()

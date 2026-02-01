@@ -22,7 +22,8 @@ const Tab = ({
       { id: 2, label: 'Projects' },
       { id: 3, label: 'Users' },
       { id: 4, label: 'Self-Service' },
-      { id: 5, label: 'TaaS' }
+      { id: 5, label: 'TaaS' },
+      { id: 6, label: 'Groups' }
     ]
 
   const handleBack = () => {
