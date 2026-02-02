@@ -180,7 +180,7 @@ class Groups extends Component {
       showValidationResults: false
     })
 
-    this.props.bulkSearchUsers(parsedHandlesEmails)
+    this.props.bulkSearchUsers(parsedHandlesEmails).catch(() => null)
   }
 
   handleReupload () {
@@ -250,7 +250,7 @@ class Groups extends Component {
       matchedUserIds,
       selfRegister,
       privateGroup
-    )
+    ).catch(() => null)
   }
 
   getResultInput (result) {

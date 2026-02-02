@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import {
   bulkSearchMembers as bulkSearchMembersAPI,
   bulkCreateGroup as bulkCreateGroupAPI
@@ -13,6 +14,50 @@ import {
 } from '../config/constants'
 import { toastFailure } from '../util/toaster'
 
+const getApiErrorMessage = (error, fallbackMessage) => {
+  if (!error) {
+    return fallbackMessage
+  }
+
+  const responseData = _.get(error, 'response.data')
+  const status = _.get(error, 'response.status')
+  const statusText = _.get(error, 'response.statusText')
+  const errorList = _.get(responseData, 'errors')
+  let message = _.get(responseData, 'message') ||
+    _.get(responseData, 'error') ||
+    _.get(responseData, 'details') ||
+    _.get(responseData, 'description') ||
+    _.get(responseData, 'title')
+
+  if (!message && Array.isArray(errorList) && errorList.length > 0) {
+    const firstError = errorList[0]
+    if (typeof firstError === 'string') {
+      message = firstError
+    } else {
+      message = _.get(firstError, 'message') || _.get(firstError, 'detail')
+    }
+  }
+
+  if (!message && _.isString(responseData)) {
+    message = responseData
+  }
+
+  if (!message) {
+    message = error.message || error.toString()
+  }
+
+  if (!message || message === '[object Object]') {
+    message = fallbackMessage
+  }
+
+  if (status) {
+    const statusLabel = statusText ? `${status} ${statusText}` : status
+    return `${message} (HTTP ${statusLabel})`
+  }
+
+  return message
+}
+
 /**
  * Bulk search members by handles/emails.
  * @param {Array<string>} identifiers
@@ -24,18 +69,21 @@ export function bulkSearchMembers (identifiers) {
     })
 
     try {
-      const validationResults = await bulkSearchMembersAPI(identifiers)
+      const response = await bulkSearchMembersAPI(identifiers)
+      const validationResults = Array.isArray(response)
+        ? response
+        : (response && Array.isArray(response.results) ? response.results : [])
       dispatch({
         type: BULK_SEARCH_MEMBERS_SUCCESS,
         validationResults
       })
       return validationResults
     } catch (error) {
-      const errorDetails = (error && (error.message || error.toString())) || 'Unknown error'
+      const errorDetails = getApiErrorMessage(error, 'Unable to validate members.')
       toastFailure('Member search failed', errorDetails)
       dispatch({
         type: BULK_SEARCH_MEMBERS_FAILURE,
-        error
+        error: errorDetails
       })
       return Promise.reject(error)
     }
@@ -70,11 +118,11 @@ export function bulkCreateGroup (name, description, userIds, selfRegister = fals
       })
       return createdGroup
     } catch (error) {
-      const errorDetails = (error && (error.message || error.toString())) || 'Unknown error'
+      const errorDetails = getApiErrorMessage(error, 'Unable to create group.')
       toastFailure('Group creation failed', errorDetails)
       dispatch({
         type: BULK_CREATE_GROUP_FAILURE,
-        error
+        error: errorDetails
       })
       return Promise.reject(error)
     }
