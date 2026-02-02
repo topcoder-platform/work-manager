@@ -1,15 +1,17 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import AsyncSelect from '../../Select/AsyncSelect'
-import { Link } from 'react-router-dom'
+import Modal from '../../Modal'
 import cn from 'classnames'
 import styles from './Groups-Field.module.scss'
 import _ from 'lodash'
 import { fetchGroups } from '../../../services/challenges'
 import { AUTOCOMPLETE_MIN_LENGTH, AUTOCOMPLETE_DEBOUNCE_TIME_MS } from '../../../config/constants'
+import GroupsContainer from '../../../containers/Groups'
 
 const GroupsField = ({ onUpdateMultiSelect, challenge }) => {
   const [groups, setGroups] = React.useState([])
+  const [isCreateGroupModalOpen, setIsCreateGroupModalOpen] = React.useState(false)
 
   const onInputChange = React.useCallback(_.debounce(async (inputValue, callback) => {
     if (!inputValue) return
@@ -37,6 +39,14 @@ const GroupsField = ({ onUpdateMultiSelect, challenge }) => {
     }).catch(console.error)
   }, [])
 
+  const openCreateGroupModal = React.useCallback(() => {
+    setIsCreateGroupModalOpen(true)
+  }, [])
+
+  const closeCreateGroupModal = React.useCallback(() => {
+    setIsCreateGroupModalOpen(false)
+  }, [])
+
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
@@ -59,10 +69,21 @@ const GroupsField = ({ onUpdateMultiSelect, challenge }) => {
             }}
           />
         </div>
-        <Link className={styles.createGroupLink} to='/groups'>
+        <button
+          type='button'
+          className={styles.createGroupLink}
+          onClick={openCreateGroupModal}
+        >
           Create Group
-        </Link>
+        </button>
       </div>
+      {isCreateGroupModalOpen && (
+        <Modal onCancel={closeCreateGroupModal}>
+          <div className={styles.createGroupModal}>
+            <GroupsContainer />
+          </div>
+        </Modal>
+      )}
     </div>
   )
 }

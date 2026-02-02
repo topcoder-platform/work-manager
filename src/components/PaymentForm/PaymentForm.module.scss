@@ -33,6 +33,10 @@
   color: $tc-gray-80;
 }
 
+.clickableLabel {
+  cursor: pointer;
+}
+
 .field {
   flex: 1;
   display: flex;

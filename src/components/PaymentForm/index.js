@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import PropTypes from 'prop-types'
 import moment from 'moment'
 import { PrimaryButton, OutlineButton } from '../Buttons'
@@ -88,6 +88,7 @@ const isWeekEndingFriday = (value) => {
 
 const PaymentForm = ({ member, availableMembers, isProcessing, onSubmit, onCancel }) => {
   const defaultWeekEndingDate = useMemo(() => getDefaultWeekEndingDate(), [])
+  const weekEndingInputId = useRef(`week-ending-input-${Math.random().toString(36).slice(2, 9)}`)
   const [weekEndingDate, setWeekEndingDate] = useState(defaultWeekEndingDate)
   const [amount, setAmount] = useState('')
   const [remarks, setRemarks] = useState('')
@@ -233,7 +234,12 @@ const PaymentForm = ({ member, availableMembers, isProcessing, onSubmit, onCance
         </div>
       </div>
       <div className={styles.row}>
-        <div className={styles.label}>Week ending:</div>
+        <label
+          className={`${styles.label} ${styles.clickableLabel}`}
+          htmlFor={weekEndingInputId.current}
+        >
+          Week ending:
+        </label>
         <div className={styles.field}>
           <DateInput
             className={styles.dateInput}
@@ -242,6 +248,7 @@ const PaymentForm = ({ member, availableMembers, isProcessing, onSubmit, onCance
             isValidDate={isWeekEndingFriday}
             dateFormat='MM/dd/yyyy'
             timeFormat={false}
+            inputId={weekEndingInputId.current}
           />
           {weekEndingTitle && <div className={styles.weekEndingPreview}>{weekEndingTitle}</div>}
           {titleError && <div className={styles.error}>{titleError}</div>}

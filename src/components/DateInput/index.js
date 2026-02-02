@@ -12,7 +12,8 @@ const DateInput = forwardRef(({
   dateFormat,
   timeFormat,
   className,
-  minDateTime
+  minDateTime,
+  inputId
 }, ref) => {
   const [localValue, setLocalValue] = useState(value)
   const latestValueRef = useRef(value)
@@ -63,6 +64,7 @@ const DateInput = forwardRef(({
   return (
     <DateTime
       className={className}
+      id={inputId}
       value={localValue}
       onChange={newValue => {
         const normalizedValue = normalizeDateTimeValue(newValue)
@@ -95,7 +97,8 @@ DateInput.defaultProps = {
   dateFormat: null,
   timeFormat: null,
   className: null,
-  minDateTime: null
+  minDateTime: null,
+  inputId: null
 }
 
 DateInput.propTypes = {
@@ -105,6 +108,7 @@ DateInput.propTypes = {
   dateFormat: PropTypes.string,
   timeFormat: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   className: PropTypes.string,
-  minDateTime: PropTypes.oneOfType([PropTypes.instanceOf(Date), PropTypes.func])
+  minDateTime: PropTypes.oneOfType([PropTypes.instanceOf(Date), PropTypes.func]),
+  inputId: PropTypes.string
 }
 export default DateInput

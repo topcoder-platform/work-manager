@@ -197,9 +197,6 @@ const EngagementPayment = ({
   const experienceUrl = showEngagementLinks
     ? `/projects/${projectId}/engagements/${resolvedEngagementId}/experience`
     : null
-  const paymentUrl = showEngagementLinks
-    ? `/projects/${projectId}/engagements/${resolvedEngagementId}/assignments`
-    : null
 
   const closePaymentHistoryModal = () => {
     setPaymentHistoryMember(null)
@@ -333,12 +330,6 @@ const EngagementPayment = ({
                 text='Experience'
                 type='info'
                 link={experienceUrl}
-                className={styles.actionButton}
-              />
-              <OutlineButton
-                text='Pay'
-                type='info'
-                link={paymentUrl}
                 className={styles.actionButton}
               />
             </>

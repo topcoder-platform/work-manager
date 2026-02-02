@@ -56,7 +56,9 @@ class Groups extends Component {
       (createFinished && !createError)
 
     if (createSucceeded) {
-      const matchedUserIds = this.getMatchedUserIds(this.state.validationResults)
+      const matchedUserIds = this.state.showValidationResults
+        ? this.getMatchedUserIds(this.state.validationResults)
+        : []
       const successGroupName = this.state.groupName.trim()
       this.resetForm({
         showSuccessModal: true,
@@ -226,10 +228,13 @@ class Groups extends Component {
       groupName,
       groupDescription,
       validationResults,
+      showValidationResults,
       selfRegister,
       privateGroup
     } = this.state
-    const matchedUserIds = this.getMatchedUserIds(validationResults)
+    const matchedUserIds = showValidationResults
+      ? this.getMatchedUserIds(validationResults)
+      : []
     const errors = {}
 
     if (!groupName.trim()) {
@@ -245,16 +250,6 @@ class Groups extends Component {
         errors: {
           ...prevState.errors,
           ...errors
-        }
-      }))
-      return
-    }
-
-    if (!validationResults.length || matchedUserIds.length === 0) {
-      this.setState((prevState) => ({
-        errors: {
-          ...prevState.errors,
-          validation: 'Please validate at least one matching user before creating a group.'
         }
       }))
       return
@@ -366,6 +361,8 @@ class Groups extends Component {
       groupDescription,
       selfRegister,
       privateGroup,
+      parsedHandlesEmails,
+      uploadedFile,
       showValidationResults,
       isUploading,
       isCreating,
@@ -376,9 +373,10 @@ class Groups extends Component {
     } = this.state
     const { isSearching, searchError, createError, auth, token } = this.props
 
-    const matchedUserIds = this.getMatchedUserIds(this.state.validationResults)
     const isCreatingInFlight = this.props.isCreating || isCreating
-    const canCreate = showValidationResults && matchedUserIds.length > 0
+    const hasRequiredFields = groupName.trim().length > 0 && groupDescription.trim().length > 0
+    const hasUserList = parsedHandlesEmails.length > 0 || Boolean(uploadedFile)
+    const canCreate = hasRequiredFields && (!hasUserList || showValidationResults)
     const apiError = searchError || createError
     const showLoader = isUploading || isCreatingInFlight
     const hasAuth = Boolean(auth && auth.user)
@@ -395,7 +393,9 @@ class Groups extends Component {
         {showSuccessModal && (
           <AlertModal
             title='Success'
-            message={`${successGroupName} group created successfully and ${successMemberCount} members added`}
+            message={successMemberCount > 0
+              ? `${successGroupName} group created successfully and ${successMemberCount} members added`
+              : `${successGroupName} group created successfully`}
             closeText='OK'
             onClose={this.handleSuccessModalClose}
           />
@@ -483,7 +483,7 @@ class Groups extends Component {
         <div className={cn(styles.row)}>
           <div className={cn(styles.field, styles.input1)}>
             <label htmlFor='groupFile'>
-              Upload User List (CSV/TXT) <span className={styles.required}>*</span>
+              Upload User List (CSV/TXT)
             </label>
           </div>
           <div className={cn(styles.field, styles.input2)}>
@@ -497,7 +497,9 @@ class Groups extends Component {
               className={styles.fileUpload}
               aria-label='Upload user list file'
             />
-            <span className={styles.helperText}>One handle or email per line</span>
+            <span className={styles.helperText}>
+              Optional. One handle or email per line. Validate to add members.
+            </span>
             {errors.file && (
               <div className={styles.fieldError}>{errors.file}</div>
             )}
