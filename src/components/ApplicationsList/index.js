@@ -10,6 +10,7 @@ import ApplicationDetail from '../ApplicationDetail'
 import Modal from '../Modal'
 import DateInput from '../DateInput'
 import styles from './ApplicationsList.module.scss'
+import { PROFILE_URL } from '../../config/constants'
 
 const STATUS_OPTIONS = [
   { label: 'All', value: 'all' },
@@ -69,6 +70,21 @@ const getStatusLabel = (status) => {
     return '-'
   }
   return status.toString().replace(/_/g, ' ')
+}
+
+const getApplicationHandle = (application) => {
+  if (!application) {
+    return null
+  }
+  return [
+    application.handle,
+    application.memberHandle,
+    application.userHandle,
+    application.username,
+    application.userName,
+    application.member && application.member.handle,
+    application.user && application.user.handle
+  ].find(Boolean) || null
 }
 
 const ApplicationsList = ({
@@ -320,6 +336,7 @@ const ApplicationsList = ({
           <thead>
             <tr>
               <th className={styles.assignedHeader}>Assigned</th>
+              <th className={styles.handleHeader}>Handle</th>
               <th>Applicant Name</th>
               <th>Email</th>
               <th>Applied Date</th>
@@ -336,6 +353,7 @@ const ApplicationsList = ({
               const statusOption = STATUS_UPDATE_OPTIONS.find(option => option.value === application.status) || null
               const applicationUserId = application.userId || application.user_id || application.memberId || application.member_id
               const isAssigned = applicationUserId != null && assignedMemberIds.has(String(applicationUserId))
+              const applicationHandle = getApplicationHandle(application)
 
               return (
                 <tr key={application.id || application.email}>
@@ -344,6 +362,20 @@ const ApplicationsList = ({
                       <span className={styles.assignedIndicator} title='Assigned'>
                         <FontAwesomeIcon className={styles.assignedIcon} icon={faCheck} />
                       </span>
+                    )}
+                  </td>
+                  <td className={styles.handleCell}>
+                    {applicationHandle ? (
+                      <a
+                        className={styles.handleLink}
+                        href={`${PROFILE_URL}${applicationHandle}`}
+                        target='_blank'
+                        rel='noopener noreferrer'
+                      >
+                        {applicationHandle}
+                      </a>
+                    ) : (
+                      '-'
                     )}
                   </td>
                   <td>{application.name || '-'}</td>

@@ -4,7 +4,6 @@ import moment from 'moment-timezone'
 import { Link } from 'react-router-dom'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import Tooltip from '../Tooltip'
-import ConfirmationModal from '../Modal/ConfirmationModal'
 import Loader from '../Loader'
 import Select from '../Select'
 import { formatTimeZoneList } from '../../util/timezones'
@@ -230,15 +229,12 @@ const EngagementsList = ({
   projectId,
   projectDetail,
   isLoading,
-  canManage,
-  onDeleteEngagement
+  canManage
 }) => {
   const [searchText, setSearchText] = useState('')
   const [statusFilter, setStatusFilter] = useState(DEFAULT_STATUS_OPTION)
   const [sortBy, setSortBy] = useState(SORT_OPTIONS[0])
   const [sortOrder, setSortOrder] = useState(SORT_ORDER_OPTIONS[0])
-  const [pendingDelete, setPendingDelete] = useState(null)
-  const [isDeleting, setIsDeleting] = useState(false)
 
   const filteredOpportunities = useMemo(() => {
     let results = engagements || []
@@ -261,35 +257,12 @@ const EngagementsList = ({
     return sorted
   }, [engagements, statusFilter, searchText, sortBy, sortOrder])
 
-  const handleDelete = async () => {
-    if (!pendingDelete) {
-      return
-    }
-    try {
-      setIsDeleting(true)
-      await onDeleteEngagement(pendingDelete.id, projectId)
-      setIsDeleting(false)
-      setPendingDelete(null)
-    } catch (error) {
-      setIsDeleting(false)
-    }
-  }
-
   if (isLoading) {
     return <Loader />
   }
 
   return (
     <div className={styles.container}>
-      {pendingDelete && (
-        <ConfirmationModal
-          title='Confirm Delete'
-          message={`Do you want to delete "${pendingDelete.title || 'this engagement'}"?`}
-          isProcessing={isDeleting}
-          onCancel={() => setPendingDelete(null)}
-          onConfirm={handleDelete}
-        />
-      )}
       <div className={styles.header}>
         <div className={styles.title}>
           {projectDetail && projectDetail.name ? `${projectDetail.name} Engagements` : 'Engagements'}
@@ -437,30 +410,6 @@ const EngagementsList = ({
                           type='info'
                           link={`/projects/${projectId}/engagements/${engagement.id}`}
                         />
-                        <OutlineButton
-                          text='Feedback'
-                          type='info'
-                          link={`/projects/${projectId}/engagements/${engagement.id}/feedback`}
-                        />
-                        {assignedMembersCount > 0 && (
-                          <OutlineButton
-                            text='Experience Log'
-                            type='info'
-                            link={`/projects/${projectId}/engagements/${engagement.id}/experience`}
-                          />
-                        )}
-                        {assignedMembersCount > 0 && (
-                          <OutlineButton
-                            text='Pay'
-                            type='info'
-                            link={`/projects/${projectId}/engagements/${engagement.id}/assignments`}
-                          />
-                        )}
-                        <OutlineButton
-                          text='Delete'
-                          type='danger'
-                          onClick={() => setPendingDelete(engagement)}
-                        />
                       </div>
                     </td>
                   )}
@@ -478,8 +427,7 @@ EngagementsList.defaultProps = {
   engagements: [],
   projectDetail: null,
   isLoading: false,
-  canManage: false,
-  onDeleteEngagement: () => {}
+  canManage: false
 }
 
 EngagementsList.propTypes = {
@@ -489,8 +437,7 @@ EngagementsList.propTypes = {
     name: PropTypes.string
   }),
   isLoading: PropTypes.bool,
-  canManage: PropTypes.bool,
-  onDeleteEngagement: PropTypes.func
+  canManage: PropTypes.bool
 }
 
 export default EngagementsList

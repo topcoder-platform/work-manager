@@ -240,7 +240,7 @@ const PaymentForm = ({ member, availableMembers, isProcessing, onSubmit, onCance
             value={weekEndingDate}
             onChange={onWeekEndingChange}
             isValidDate={isWeekEndingFriday}
-            dateFormat='MM/DD/YYYY'
+            dateFormat='MM/dd/yyyy'
             timeFormat={false}
           />
           {weekEndingTitle && <div className={styles.weekEndingPreview}>{weekEndingTitle}</div>}

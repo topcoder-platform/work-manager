@@ -170,6 +170,7 @@ const EngagementPayment = ({
   paymentsByAssignment,
   terminatingAssignments,
   projectId,
+  engagementId,
   showPaymentModal,
   selectedMember,
   onOpenPaymentModal,
@@ -188,6 +189,17 @@ const EngagementPayment = ({
   const hasMembers = members.length > 0
   const engagementTitle = engagement && engagement.title ? engagement.title : 'Engagement'
   const backUrl = projectId ? `/projects/${projectId}/engagements` : '/projects'
+  const resolvedEngagementId = engagementId != null ? engagementId : (engagement && engagement.id != null ? engagement.id : null)
+  const showEngagementLinks = Boolean(projectId && resolvedEngagementId)
+  const feedbackUrl = showEngagementLinks
+    ? `/projects/${projectId}/engagements/${resolvedEngagementId}/feedback`
+    : null
+  const experienceUrl = showEngagementLinks
+    ? `/projects/${projectId}/engagements/${resolvedEngagementId}/experience`
+    : null
+  const paymentUrl = showEngagementLinks
+    ? `/projects/${projectId}/engagements/${resolvedEngagementId}/assignments`
+    : null
 
   const closePaymentHistoryModal = () => {
     setPaymentHistoryMember(null)
@@ -308,7 +320,31 @@ const EngagementPayment = ({
     <div className={styles.container}>
       <div className={styles.header}>
         <div className={styles.title}>{engagementTitle} Assignees</div>
-        <OutlineButton text='Back' type='info' link={backUrl} className={styles.actionButton} />
+        <div className={styles.headerActions}>
+          {showEngagementLinks && (
+            <>
+              <OutlineButton
+                text='Feedback'
+                type='info'
+                link={feedbackUrl}
+                className={styles.actionButton}
+              />
+              <OutlineButton
+                text='Experience'
+                type='info'
+                link={experienceUrl}
+                className={styles.actionButton}
+              />
+              <OutlineButton
+                text='Pay'
+                type='info'
+                link={paymentUrl}
+                className={styles.actionButton}
+              />
+            </>
+          )}
+          <OutlineButton text='Back' type='info' link={backUrl} className={styles.actionButton} />
+        </div>
       </div>
       {hasMembers ? (
         <div className={styles.membersList}>
@@ -487,6 +523,7 @@ EngagementPayment.defaultProps = {
   paymentsByAssignment: {},
   terminatingAssignments: {},
   projectId: null,
+  engagementId: null,
   showPaymentModal: false,
   selectedMember: null,
   onOpenPaymentModal: () => {},
@@ -522,6 +559,7 @@ EngagementPayment.propTypes = {
   })),
   terminatingAssignments: PropTypes.objectOf(PropTypes.bool),
   projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  engagementId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   showPaymentModal: PropTypes.bool,
   selectedMember: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),

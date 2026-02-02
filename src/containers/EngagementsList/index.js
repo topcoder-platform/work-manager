@@ -4,7 +4,7 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import EngagementsList from '../../components/EngagementsList'
-import { loadEngagements, deleteEngagement } from '../../actions/engagements'
+import { loadEngagements } from '../../actions/engagements'
 import { loadProject } from '../../actions/projects'
 import { checkAdminOrPmOrTaskManager } from '../../util/tc'
 
@@ -65,7 +65,6 @@ class EngagementsListContainer extends Component {
         isLoading={this.props.isLoading}
         canManage={this.canManage()}
         currentUser={this.props.auth.user}
-        onDeleteEngagement={this.props.deleteEngagement}
       />
     )
   }
@@ -91,7 +90,6 @@ EngagementsListContainer.propTypes = {
     })
   }).isRequired,
   loadEngagements: PropTypes.func.isRequired,
-  deleteEngagement: PropTypes.func.isRequired,
   loadProject: PropTypes.func.isRequired
 }
 
@@ -104,7 +102,6 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = {
   loadEngagements,
-  deleteEngagement,
   loadProject
 }
 

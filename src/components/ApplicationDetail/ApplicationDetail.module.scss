@@ -54,6 +54,35 @@
   color: $tc-gray-80;
 }
 
+.handleRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.handleLink {
+  color: $tc-blue-20;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.downloadButton {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: $tc-gray-70;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.downloadButton:hover {
+  color: $tc-blue-20;
+}
+
 .status {
   padding: 4px 8px;
   border-radius: 12px;

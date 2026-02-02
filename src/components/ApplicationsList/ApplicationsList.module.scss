@@ -82,6 +82,23 @@
   text-align: center;
 }
 
+.handleHeader {
+  min-width: 140px;
+}
+
+.handleCell {
+  white-space: nowrap;
+}
+
+.handleLink {
+  color: $tc-blue-20;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .assignedIndicator {
   display: inline-flex;
   align-items: center;

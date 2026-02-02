@@ -440,6 +440,7 @@ class EngagementPaymentContainer extends Component {
 
   render () {
     const projectId = this.getProjectId()
+    const engagementId = this.getEngagementId()
     const { isLoading, payments, paymentsByAssignment } = this.props
     const assignedMembersForPayment = this.getAssignedMembersForPayment()
     const isPaymentProcessing = Boolean(payments && payments.isProcessing)
@@ -454,6 +455,7 @@ class EngagementPaymentContainer extends Component {
         paymentsByAssignment={paymentsByAssignment}
         terminatingAssignments={this.state.terminatingAssignments}
         projectId={projectId}
+        engagementId={engagementId}
         showPaymentModal={shouldShowPaymentModal}
         selectedMember={this.state.selectedMember}
         onOpenPaymentModal={this.onOpenPaymentModal}

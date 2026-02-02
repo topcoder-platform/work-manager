@@ -1,9 +1,14 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import moment from 'moment-timezone'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faDownload } from '@fortawesome/free-solid-svg-icons'
 import Modal from '../Modal'
 import { OutlineButton } from '../Buttons'
 import styles from './ApplicationDetail.module.scss'
+import { PROFILE_URL } from '../../config/constants'
+import { downloadMemberProfile } from '../../services/user'
+import { isValidDownloadFile } from '../../util/topcoder-react-lib'
 
 const STATUS_OPTIONS = [
   { label: 'Submitted', value: 'SUBMITTED' },
@@ -83,6 +88,21 @@ const getStatusLabel = (status) => {
   return status.toString().replace(/_/g, ' ')
 }
 
+const getApplicationHandle = (application) => {
+  if (!application) {
+    return null
+  }
+  return [
+    application.handle,
+    application.memberHandle,
+    application.userHandle,
+    application.username,
+    application.userName,
+    application.member && application.member.handle,
+    application.user && application.user.handle
+  ].find(Boolean) || null
+}
+
 const ApplicationDetail = ({ application, engagement, onClose }) => {
   if (!application) {
     return null
@@ -91,6 +111,36 @@ const ApplicationDetail = ({ application, engagement, onClose }) => {
   const statusLabel = getStatusLabel(application.status)
   const statusClass = getStatusClass(application.status)
   const portfolioUrls = Array.isArray(application.portfolioUrls) ? application.portfolioUrls : []
+  const applicationHandle = getApplicationHandle(application)
+  const profileUrl = applicationHandle ? `${PROFILE_URL}${applicationHandle}` : null
+
+  const handleProfileDownload = async () => {
+    if (!applicationHandle) {
+      return
+    }
+
+    try {
+      const blob = await downloadMemberProfile(applicationHandle)
+      const validation = await isValidDownloadFile(blob)
+      if (!validation.success) {
+        if (validation.message) {
+          console.error(validation.message)
+        }
+        return
+      }
+
+      const url = window.URL.createObjectURL(new window.Blob([blob]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', `${applicationHandle}-profile.pdf`)
+      document.body.appendChild(link)
+      link.click()
+      link.parentNode.removeChild(link)
+      window.URL.revokeObjectURL(url)
+    } catch (error) {
+      console.error('Failed to download member profile.', error)
+    }
+  }
 
   return (
     <Modal onCancel={onClose}>
@@ -112,6 +162,34 @@ const ApplicationDetail = ({ application, engagement, onClose }) => {
             <div className={styles.detailItem}>
               <div className={styles.label}>Email</div>
               <div className={styles.value}>{application.email || '-'}</div>
+            </div>
+            <div className={styles.detailItem}>
+              <div className={styles.label}>Handle</div>
+              <div className={styles.value}>
+                {applicationHandle ? (
+                  <div className={styles.handleRow}>
+                    <a
+                      className={styles.handleLink}
+                      href={profileUrl}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                    >
+                      {applicationHandle}
+                    </a>
+                    <button
+                      className={styles.downloadButton}
+                      type='button'
+                      onClick={handleProfileDownload}
+                      aria-label='Download profile PDF'
+                      title='Download profile PDF'
+                    >
+                      <FontAwesomeIcon icon={faDownload} />
+                    </button>
+                  </div>
+                ) : (
+                  '-'
+                )}
+              </div>
             </div>
             <div className={styles.detailItem}>
               <div className={styles.label}>Mobile Number</div>
