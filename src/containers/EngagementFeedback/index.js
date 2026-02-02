@@ -5,15 +5,6 @@ import { withRouter } from 'react-router-dom'
 import _ from 'lodash'
 import moment from 'moment-timezone'
 import { toastr } from 'react-redux-toastr'
-import ReactMarkdown from 'react-markdown'
-import remarkBreaks from 'remark-breaks'
-import remarkFrontmatter from 'remark-frontmatter'
-import remarkGfm from 'remark-gfm'
-import remarkMath from 'remark-math'
-import remarkParse from 'remark-parse'
-import rehypeKatex from 'rehype-katex'
-import rehypeRaw from 'rehype-raw'
-import rehypeStringify from 'rehype-stringify'
 
 import Loader from '../../components/Loader'
 import Modal from '../../components/Modal'
@@ -423,21 +414,6 @@ const EngagementFeedback = ({
       <div className={styles.header}>
         <div>
           <div className={styles.title}>{feedbackTitle}</div>
-          {engagementDetails && engagementDetails.description && (
-            <ReactMarkdown
-              remarkPlugins={[
-                remarkMath,
-                remarkFrontmatter,
-                remarkParse,
-                [remarkGfm, { singleTilde: false }],
-                remarkBreaks
-              ]}
-              rehypePlugins={[rehypeKatex, rehypeStringify, rehypeRaw]}
-              className={styles.subtitle}
-            >
-              {String(engagementDetails.description)}
-            </ReactMarkdown>
-          )}
         </div>
         <div className={styles.meta}>
           <div className={styles.metaItem}>
