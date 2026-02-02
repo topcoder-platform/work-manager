@@ -1,5 +1,6 @@
 import {
   BULK_SEARCH_MEMBERS_PENDING,
+  BULK_SEARCH_MEMBERS_PROGRESS,
   BULK_SEARCH_MEMBERS_SUCCESS,
   BULK_SEARCH_MEMBERS_FAILURE,
   BULK_CREATE_GROUP_PENDING,
@@ -26,6 +27,13 @@ export default function (state = initialState, action) {
         isSearching: true,
         searchError: null
       }
+    case BULK_SEARCH_MEMBERS_PROGRESS:
+      return {
+        ...state,
+        validationResults: action.validationResults,
+        isSearching: true,
+        searchError: null
+      }
     case BULK_SEARCH_MEMBERS_SUCCESS:
       return {
         ...state,
@@ -35,7 +43,7 @@ export default function (state = initialState, action) {
     case BULK_SEARCH_MEMBERS_FAILURE:
       return {
         ...state,
-        validationResults: [],
+        validationResults: action.validationResults || [],
         searchError: action.error,
         isSearching: false
       }

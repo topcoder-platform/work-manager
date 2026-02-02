@@ -5,8 +5,10 @@ import {
 } from '../services/groups'
 import {
   BULK_SEARCH_MEMBERS_PENDING,
+  BULK_SEARCH_MEMBERS_PROGRESS,
   BULK_SEARCH_MEMBERS_SUCCESS,
   BULK_SEARCH_MEMBERS_FAILURE,
+  BULK_SEARCH_MEMBERS_CHUNK_SIZE,
   BULK_CREATE_GROUP_PENDING,
   BULK_CREATE_GROUP_SUCCESS,
   BULK_CREATE_GROUP_FAILURE,
@@ -58,6 +60,18 @@ const getApiErrorMessage = (error, fallbackMessage) => {
   return message
 }
 
+const normalizeValidationResults = (response) => {
+  if (Array.isArray(response)) {
+    return response
+  }
+
+  if (response && Array.isArray(response.results)) {
+    return response.results
+  }
+
+  return []
+}
+
 /**
  * Bulk search members by handles/emails.
  * @param {Array<string>} identifiers
@@ -68,11 +82,31 @@ export function bulkSearchMembers (identifiers) {
       type: BULK_SEARCH_MEMBERS_PENDING
     })
 
+    const validationResults = []
+
     try {
-      const response = await bulkSearchMembersAPI(identifiers)
-      const validationResults = Array.isArray(response)
-        ? response
-        : (response && Array.isArray(response.results) ? response.results : [])
+      const chunks = _.chunk(identifiers, BULK_SEARCH_MEMBERS_CHUNK_SIZE)
+
+      if (chunks.length === 0) {
+        dispatch({
+          type: BULK_SEARCH_MEMBERS_SUCCESS,
+          validationResults
+        })
+        return validationResults
+      }
+
+      for (let index = 0; index < chunks.length; index += 1) {
+        const response = await bulkSearchMembersAPI(chunks[index])
+        const chunkResults = normalizeValidationResults(response)
+        validationResults.push(...chunkResults)
+        dispatch({
+          type: BULK_SEARCH_MEMBERS_PROGRESS,
+          validationResults: [...validationResults],
+          chunkIndex: index,
+          chunkCount: chunks.length
+        })
+      }
+
       dispatch({
         type: BULK_SEARCH_MEMBERS_SUCCESS,
         validationResults
@@ -83,7 +117,8 @@ export function bulkSearchMembers (identifiers) {
       toastFailure('Member search failed', errorDetails)
       dispatch({
         type: BULK_SEARCH_MEMBERS_FAILURE,
-        error: errorDetails
+        error: errorDetails,
+        validationResults
       })
       return Promise.reject(error)
     }
