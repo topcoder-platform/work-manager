@@ -6,6 +6,7 @@ import { PrimaryButton, OutlineButton } from '../Buttons'
 import Tooltip from '../Tooltip'
 import Loader from '../Loader'
 import Select from '../Select'
+import { ENGAGEMENTS_APP_URL } from '../../config/constants'
 import { formatTimeZoneList } from '../../util/timezones'
 import styles from './EngagementsList.module.scss'
 
@@ -405,6 +406,14 @@ const EngagementsList = ({
                   {canManage && (
                     <td className={styles.actionsColumn}>
                       <div className={styles.actions}>
+                        {engagement.id && (
+                          <OutlineButton
+                            text='View'
+                            type='info'
+                            url={`${ENGAGEMENTS_APP_URL}/${engagement.id}`}
+                            target='_blank'
+                          />
+                        )}
                         <OutlineButton
                           text='Edit'
                           type='info'

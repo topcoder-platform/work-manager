@@ -9,7 +9,7 @@ import Select from '../Select'
 import SkillsField from '../ChallengeEditor/SkillsField'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import Loader from '../Loader'
-import { ENGAGEMENTS_APP_URL, JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
+import { JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
 import { suggestProfiles } from '../../services/user'
 import { formatTimeZoneLabel, formatTimeZoneList } from '../../util/timezones'
 import styles from './EngagementEditor.module.scss'
@@ -278,31 +278,6 @@ const EngagementEditor = ({
           </div>
         </div>
         <div className={styles.actions}>
-          {engagement.id && canEdit && (
-            <OutlineButton
-              text='Delete'
-              type='danger'
-              onClick={onToggleDelete}
-              disabled={isSaving}
-            />
-          )}
-          {engagement.id && !isNew && (
-            <OutlineButton
-              text='View'
-              type='info'
-              url={`${ENGAGEMENTS_APP_URL}/${engagement.id}`}
-              target='_blank'
-              disabled={isSaving}
-            />
-          )}
-          {engagement.id && !isNew && showAssignedMembers && canEdit && (
-            <OutlineButton
-              text='Pay'
-              type='info'
-              link={`/projects/${projectId}/engagements/${engagement.id}/assignments`}
-              disabled={isSaving}
-            />
-          )}
           <OutlineButton
             text='Cancel'
             type='info'
