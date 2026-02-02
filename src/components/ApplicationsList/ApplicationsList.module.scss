@@ -133,7 +133,7 @@
   color: $tc-gray-90;
 }
 
-.statusAccepted {
+.statusSelected {
   background: $tc-green-20;
   color: $tc-gray-90;
 }
@@ -178,6 +178,21 @@
   color: $tc-gray-70;
 }
 
+.acceptHandleLine {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.acceptHandle {
+  font-weight: 600;
+}
+
+.acceptDivider {
+  color: $tc-gray-60;
+}
+
 .acceptGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -216,6 +231,10 @@
     border-radius: 4px;
     font-size: 14px;
   }
+
+  :global(.rdtPicker) {
+    z-index: 1100;
+  }
 }
 
 .acceptInput {
@@ -224,6 +243,15 @@
   border: 1px solid $tc-gray-20;
   border-radius: 4px;
   font-size: 14px;
+}
+
+.acceptTextarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid $tc-gray-20;
+  border-radius: 4px;
+  font-size: 14px;
+  resize: vertical;
 }
 
 .acceptError {

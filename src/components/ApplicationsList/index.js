@@ -9,6 +9,7 @@ import Select from '../Select'
 import ApplicationDetail from '../ApplicationDetail'
 import Modal from '../Modal'
 import DateInput from '../DateInput'
+import Handle from '../Handle'
 import styles from './ApplicationsList.module.scss'
 import { PROFILE_URL } from '../../config/constants'
 
@@ -16,7 +17,7 @@ const STATUS_OPTIONS = [
   { label: 'All', value: 'all' },
   { label: 'Submitted', value: 'SUBMITTED' },
   { label: 'Under Review', value: 'UNDER_REVIEW' },
-  { label: 'Accepted', value: 'ACCEPTED' },
+  { label: 'Selected', value: 'SELECTED' },
   { label: 'Rejected', value: 'REJECTED' }
 ]
 
@@ -52,8 +53,8 @@ const getStatusClass = (status) => {
   if (normalized === 'under_review') {
     return styles.statusUnderReview
   }
-  if (normalized === 'accepted') {
-    return styles.statusAccepted
+  if (normalized === 'selected') {
+    return styles.statusSelected
   }
   if (normalized === 'rejected') {
     return styles.statusRejected
@@ -87,6 +88,30 @@ const getApplicationHandle = (application) => {
   ].find(Boolean) || null
 }
 
+const getApplicationRating = (application) => {
+  if (!application) {
+    return undefined
+  }
+  const rating = [
+    application.rating,
+    application.maxRating,
+    application.memberRating,
+    application.member && application.member.rating,
+    application.member && application.member.maxRating && application.member.maxRating.rating,
+    application.member && application.member.maxRating,
+    application.user && application.user.rating,
+    application.user && application.user.maxRating && application.user.maxRating.rating,
+    application.user && application.user.maxRating
+  ].find(value => value !== undefined && value !== null && value !== '')
+
+  if (rating === undefined || rating === null || rating === '') {
+    return undefined
+  }
+
+  const parsed = Number(rating)
+  return Number.isFinite(parsed) ? parsed : undefined
+}
+
 const ApplicationsList = ({
   applications,
   engagement,
@@ -100,9 +125,28 @@ const ApplicationsList = ({
   const [acceptStartDate, setAcceptStartDate] = useState(null)
   const [acceptEndDate, setAcceptEndDate] = useState(null)
   const [acceptRate, setAcceptRate] = useState('')
+  const [acceptOtherRemarks, setAcceptOtherRemarks] = useState('')
   const [acceptErrors, setAcceptErrors] = useState({})
   const [isAccepting, setIsAccepting] = useState(false)
   const menuPortalTarget = typeof document === 'undefined' ? undefined : document.body
+  const acceptHandle = getApplicationHandle(acceptApplication)
+  const acceptRating = getApplicationRating(acceptApplication)
+  const acceptName = acceptApplication
+    ? (acceptApplication.name || acceptApplication.email || 'Selected applicant')
+    : 'Selected applicant'
+  const acceptSubtitle = acceptHandle ? (
+    <div className={styles.acceptHandleLine}>
+      <Handle
+        handle={acceptHandle}
+        rating={acceptRating}
+        className={styles.acceptHandle}
+      />
+      {acceptName && (
+        <span className={styles.acceptDivider}>/</span>
+      )}
+      <span>{acceptName}</span>
+    </div>
+  ) : acceptName
 
   const assignedMemberIds = useMemo(() => {
     const assignedMembers = Array.isArray(engagement && engagement.assignedMembers)
@@ -135,6 +179,7 @@ const ApplicationsList = ({
     setAcceptStartDate(null)
     setAcceptEndDate(null)
     setAcceptRate('')
+    setAcceptOtherRemarks('')
     setAcceptErrors({})
     setIsAccepting(false)
   }
@@ -148,6 +193,7 @@ const ApplicationsList = ({
     setAcceptStartDate(null)
     setAcceptEndDate(null)
     setAcceptRate('')
+    setAcceptOtherRemarks('')
     setAcceptErrors({})
     setIsAccepting(false)
   }
@@ -161,6 +207,7 @@ const ApplicationsList = ({
     const parsedStart = acceptStartDate ? moment(acceptStartDate) : null
     const parsedEnd = acceptEndDate ? moment(acceptEndDate) : null
     const normalizedRate = acceptRate != null ? String(acceptRate).trim() : ''
+    const normalizedOtherRemarks = acceptOtherRemarks != null ? String(acceptOtherRemarks).trim() : ''
 
     if (!parsedStart || !parsedStart.isValid()) {
       nextErrors.startDate = 'Start date is required.'
@@ -182,10 +229,11 @@ const ApplicationsList = ({
 
     setIsAccepting(true)
     try {
-      await onUpdateStatus(acceptApplication.id, 'ACCEPTED', {
+      await onUpdateStatus(acceptApplication.id, 'SELECTED', {
         startDate: parsedStart.toISOString(),
         endDate: parsedEnd.toISOString(),
-        agreementRate: normalizedRate
+        agreementRate: normalizedRate,
+        ...(normalizedOtherRemarks ? { otherRemarks: normalizedOtherRemarks } : {})
       })
       resetAcceptState()
     } catch (error) {
@@ -197,8 +245,8 @@ const ApplicationsList = ({
     if (!option) {
       return
     }
-    if (option.value === 'ACCEPTED') {
-      if (application.status === 'ACCEPTED') {
+    if (option.value === 'SELECTED') {
+      if (application.status === 'SELECTED') {
         return
       }
       openAcceptModal(application)
@@ -221,7 +269,7 @@ const ApplicationsList = ({
           <div className={styles.acceptModal}>
             <div className={styles.acceptTitle}>Accept Application</div>
             <div className={styles.acceptSubtitle}>
-              {acceptApplication.name || acceptApplication.email || 'Selected applicant'}
+              {acceptSubtitle}
             </div>
             <div className={styles.acceptGrid}>
               <div className={styles.acceptField}>
@@ -280,6 +328,15 @@ const ApplicationsList = ({
                   <div className={styles.acceptError}>{acceptErrors.rate}</div>
                 )}
               </div>
+              <div className={styles.acceptFieldFull}>
+                <label className={styles.acceptLabel}>Other remarks</label>
+                <textarea
+                  className={styles.acceptTextarea}
+                  rows={3}
+                  value={acceptOtherRemarks}
+                  onChange={(event) => setAcceptOtherRemarks(event.target.value)}
+                />
+              </div>
             </div>
             <div className={styles.acceptActions}>
               <OutlineButton
@@ -305,9 +362,6 @@ const ApplicationsList = ({
               ? `${engagement.title} Applications`
               : 'Applications'}
           </div>
-          {engagement && engagement.description && (
-            <div className={styles.subtitle}>{engagement.description}</div>
-          )}
         </div>
         <div className={styles.meta}>
           <div className={styles.metaItem}>

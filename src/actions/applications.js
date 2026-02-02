@@ -96,7 +96,7 @@ export function updateApplicationStatus (applicationId, status, assignmentDetail
 
     try {
       const normalizedStatus = (status || '').toString().toUpperCase()
-      const response = normalizedStatus === 'ACCEPTED'
+      const response = normalizedStatus === 'SELECTED'
         ? await approveApplicationAPI(applicationId, assignmentDetails)
         : await updateApplicationStatusAPI(applicationId, status)
       return dispatch({

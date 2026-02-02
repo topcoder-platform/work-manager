@@ -13,7 +13,7 @@ import { isValidDownloadFile } from '../../util/topcoder-react-lib'
 const STATUS_OPTIONS = [
   { label: 'Submitted', value: 'SUBMITTED' },
   { label: 'Under Review', value: 'UNDER_REVIEW' },
-  { label: 'Accepted', value: 'ACCEPTED' },
+  { label: 'Selected', value: 'SELECTED' },
   { label: 'Rejected', value: 'REJECTED' }
 ]
 
@@ -68,8 +68,8 @@ const getStatusClass = (status) => {
   if (normalized === 'under_review') {
     return styles.statusUnderReview
   }
-  if (normalized === 'accepted') {
-    return styles.statusAccepted
+  if (normalized === 'selected') {
+    return styles.statusSelected
   }
   if (normalized === 'rejected') {
     return styles.statusRejected

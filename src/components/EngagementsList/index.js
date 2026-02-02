@@ -13,7 +13,6 @@ import styles from './EngagementsList.module.scss'
 const STATUS_OPTIONS = [
   { label: 'All', value: 'all' },
   { label: 'Open', value: 'Open' },
-  { label: 'Pending Assignment', value: 'Pending Assignment' },
   { label: 'Active', value: 'Active' },
   { label: 'Cancelled', value: 'Cancelled' },
   { label: 'Closed', value: 'Closed' }

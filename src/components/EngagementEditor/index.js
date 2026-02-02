@@ -418,7 +418,7 @@ const EngagementEditor = ({
 
             <div className={styles.row}>
               <div className={cn(styles.field, styles.col1)}>
-                <label htmlFor='compensationRange'>Weekly Compensation Range :</label>
+                <label className={styles.wrapLabel} htmlFor='compensationRange'>Weekly Compensation Range :</label>
               </div>
               <div className={cn(styles.field, styles.col2)}>
                 {canEdit ? (
