@@ -47,15 +47,23 @@ export function bulkSearchMembers (identifiers) {
  * @param {String} name
  * @param {String} description
  * @param {Array<string|number>} userIds
+ * @param {boolean} selfRegister
+ * @param {boolean} privateGroup
  */
-export function bulkCreateGroup (name, description, userIds) {
+export function bulkCreateGroup (name, description, userIds, selfRegister = false, privateGroup = true) {
   return async (dispatch) => {
     dispatch({
       type: BULK_CREATE_GROUP_PENDING
     })
 
     try {
-      const createdGroup = await bulkCreateGroupAPI({ name, description, userIds })
+      const createdGroup = await bulkCreateGroupAPI({
+        name,
+        description,
+        userIds,
+        selfRegister,
+        privateGroup
+      })
       dispatch({
         type: BULK_CREATE_GROUP_SUCCESS,
         createdGroup
