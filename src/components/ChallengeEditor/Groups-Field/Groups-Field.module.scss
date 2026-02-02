@@ -39,7 +39,37 @@
       margin-top: auto;
       display: flex;
       flex-direction: row;
-      width: 600px;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      flex: 1 1 auto;
+
+      @include upto-sm {
+        align-items: flex-start;
+        gap: 8px;
+      }
     }
+  }
+}
+
+.selectWrapper {
+  flex: 1 1 600px;
+  max-width: 600px;
+  min-width: 240px;
+
+  @include upto-sm {
+    width: 100%;
+  }
+}
+
+.createGroupLink {
+  font-size: 14px;
+  font-weight: 500;
+  color: $link-color;
+  text-decoration: none;
+
+  &:hover,
+  &:focus {
+    text-decoration: underline;
   }
 }

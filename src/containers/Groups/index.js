@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import PT from 'prop-types'
 import { withRouter } from 'react-router-dom'
 import GroupsComponent from '../../components/Groups'
+import { bulkCreateGroup, bulkSearchMembers } from '../../actions/groups'
 
 class Groups extends Component {
   render () {
@@ -42,7 +43,7 @@ const mapStateToProps = ({ groups = {}, auth }) => ({
   auth,
   token: auth.token,
   isSearching: groups.isSearching,
-  searchResults: groups.searchResults,
+  searchResults: groups.validationResults,
   searchError: groups.searchError,
   isCreating: groups.isCreating,
   createError: groups.createError,
@@ -50,13 +51,9 @@ const mapStateToProps = ({ groups = {}, auth }) => ({
 })
 
 const mapDispatchToProps = (dispatch) => ({
-  bulkSearchUsers: (handlesEmails) =>
-    dispatch({ type: 'GROUPS/BULK_SEARCH_USERS', payload: handlesEmails }),
-  bulkCreateGroup: (name, description, userIds) =>
-    dispatch({
-      type: 'GROUPS/BULK_CREATE_GROUP',
-      payload: { name, description, userIds }
-    })
+  bulkSearchUsers: (handlesEmails) => dispatch(bulkSearchMembers(handlesEmails)),
+  bulkCreateGroup: (name, description, userIds, selfRegister, privateGroup) =>
+    dispatch(bulkCreateGroup(name, description, userIds, selfRegister, privateGroup))
 })
 
 Groups.propTypes = {

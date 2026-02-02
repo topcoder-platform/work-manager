@@ -12,6 +12,8 @@ class Groups extends Component {
     this.state = {
       groupName: '',
       groupDescription: '',
+      selfRegister: false,
+      privateGroup: true,
       uploadedFile: null,
       parsedHandlesEmails: [],
       validationResults: [],
@@ -25,6 +27,8 @@ class Groups extends Component {
 
     this.handleGroupNameChange = this.handleGroupNameChange.bind(this)
     this.handleDescriptionChange = this.handleDescriptionChange.bind(this)
+    this.handleSelfRegisterChange = this.handleSelfRegisterChange.bind(this)
+    this.handlePrivateGroupChange = this.handlePrivateGroupChange.bind(this)
     this.handleFileChange = this.handleFileChange.bind(this)
     this.handleValidate = this.handleValidate.bind(this)
     this.handleReupload = this.handleReupload.bind(this)
@@ -62,6 +66,8 @@ class Groups extends Component {
     this.setState({
       groupName: '',
       groupDescription: '',
+      selfRegister: false,
+      privateGroup: true,
       uploadedFile: null,
       parsedHandlesEmails: [],
       validationResults: [],
@@ -89,7 +95,23 @@ class Groups extends Component {
   }
 
   handleDescriptionChange (event) {
-    this.setState({ groupDescription: event.target.value })
+    const groupDescription = event.target.value
+    this.setState((prevState) => ({
+      groupDescription,
+      errors: {
+        ...prevState.errors,
+        groupDescription: null,
+        validation: null
+      }
+    }))
+  }
+
+  handleSelfRegisterChange (event) {
+    this.setState({ selfRegister: event.target.checked })
+  }
+
+  handlePrivateGroupChange (event) {
+    this.setState({ privateGroup: event.target.checked })
   }
 
   handleFileChange (event) {
@@ -176,14 +198,29 @@ class Groups extends Component {
   }
 
   handleCreateGroup () {
-    const { groupName, groupDescription, validationResults } = this.state
+    const {
+      groupName,
+      groupDescription,
+      validationResults,
+      selfRegister,
+      privateGroup
+    } = this.state
     const matchedUserIds = this.getMatchedUserIds(validationResults)
+    const errors = {}
 
     if (!groupName.trim()) {
+      errors.groupName = 'Group name is required.'
+    }
+
+    if (!groupDescription.trim()) {
+      errors.groupDescription = 'Description is required.'
+    }
+
+    if (Object.keys(errors).length > 0) {
       this.setState((prevState) => ({
         errors: {
           ...prevState.errors,
-          groupName: 'Group name is required.'
+          ...errors
         }
       }))
       return
@@ -210,7 +247,9 @@ class Groups extends Component {
     this.props.bulkCreateGroup(
       groupName.trim(),
       groupDescription.trim(),
-      matchedUserIds
+      matchedUserIds,
+      selfRegister,
+      privateGroup
     )
   }
 
@@ -301,6 +340,8 @@ class Groups extends Component {
     const {
       groupName,
       groupDescription,
+      selfRegister,
+      privateGroup,
       showValidationResults,
       isUploading,
       isCreating,
@@ -312,7 +353,7 @@ class Groups extends Component {
     const isCreatingInFlight = this.props.isCreating || isCreating
     const canCreate = showValidationResults && matchedUserIds.length > 0
     const apiError = searchError || createError
-    const showLoader = isSearching || isUploading || isCreatingInFlight
+    const showLoader = isUploading || isCreatingInFlight
     const hasAuth = Boolean(auth && auth.user)
     const hasToken = Boolean(token)
 
@@ -352,7 +393,9 @@ class Groups extends Component {
 
         <div className={cn(styles.row)}>
           <div className={cn(styles.field, styles.input1)}>
-            <label htmlFor='groupDescription'>Description</label>
+            <label htmlFor='groupDescription'>
+              Description <span className={styles.required}>*</span>
+            </label>
           </div>
           <div className={cn(styles.field, styles.input2)}>
             <textarea
@@ -361,6 +404,43 @@ class Groups extends Component {
               value={groupDescription}
               onChange={this.handleDescriptionChange}
             />
+            {errors.groupDescription && (
+              <div className={styles.fieldError}>{errors.groupDescription}</div>
+            )}
+          </div>
+        </div>
+
+        <div className={cn(styles.row)}>
+          <div className={cn(styles.field, styles.input1)}>
+            <label>Group Options</label>
+          </div>
+          <div className={cn(styles.field, styles.input2)}>
+            <div className={styles.checkboxGroup}>
+              <div className={styles.tcCheckbox}>
+                <input
+                  id='selfRegister'
+                  name='selfRegister'
+                  type='checkbox'
+                  checked={selfRegister}
+                  onChange={this.handleSelfRegisterChange}
+                />
+                <label htmlFor='selfRegister'>
+                  <div className={styles.checkboxLabel}>Self Registration</div>
+                </label>
+              </div>
+              <div className={styles.tcCheckbox}>
+                <input
+                  id='privateGroup'
+                  name='privateGroup'
+                  type='checkbox'
+                  checked={privateGroup}
+                  onChange={this.handlePrivateGroupChange}
+                />
+                <label htmlFor='privateGroup'>
+                  <div className={styles.checkboxLabel}>Private</div>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -389,12 +469,18 @@ class Groups extends Component {
         </div>
 
         <div className={styles.buttonGroup}>
-          <PrimaryButton
-            text='Validate'
-            type='info'
-            onClick={this.handleValidate}
-            disabled={isSearching || isUploading}
-          />
+          {isSearching ? (
+            <div className={styles.validateSpinner} aria-live='polite' aria-busy='true'>
+              <Loader classsName={styles.validateLoader} />
+            </div>
+          ) : (
+            <PrimaryButton
+              text='Validate'
+              type='info'
+              onClick={this.handleValidate}
+              disabled={isSearching || isUploading}
+            />
+          )}
           {showValidationResults && (
             <PrimaryButton
               text='Re-upload File'

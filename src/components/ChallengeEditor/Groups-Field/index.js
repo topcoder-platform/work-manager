@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import AsyncSelect from '../../Select/AsyncSelect'
+import { Link } from 'react-router-dom'
 import cn from 'classnames'
 import styles from './Groups-Field.module.scss'
 import _ from 'lodash'
@@ -42,20 +43,25 @@ const GroupsField = ({ onUpdateMultiSelect, challenge }) => {
         <label htmlFor='type'>Groups :</label>
       </div>
       <div className={cn(styles.field, styles.col2)}>
-        <AsyncSelect
-          name='group'
-          isMulti
-          loadOptions={(inputValue, callback) => {
-            onInputChange(inputValue, callback)
-          }}
-          simpleValue
-          value={groups}
-          placeholder='Search groups'
-          onChange={(e) => {
-            onUpdateMultiSelect(e, 'groups')
-            setGroups(e)
-          }}
-        />
+        <div className={styles.selectWrapper}>
+          <AsyncSelect
+            name='group'
+            isMulti
+            loadOptions={(inputValue, callback) => {
+              onInputChange(inputValue, callback)
+            }}
+            simpleValue
+            value={groups}
+            placeholder='Search groups'
+            onChange={(e) => {
+              onUpdateMultiSelect(e, 'groups')
+              setGroups(e)
+            }}
+          />
+        </div>
+        <Link className={styles.createGroupLink} to='/groups'>
+          Create Group
+        </Link>
       </div>
     </div>
   )
