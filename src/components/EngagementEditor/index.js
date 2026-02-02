@@ -5,7 +5,6 @@ import moment from 'moment-timezone'
 import cn from 'classnames'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import DescriptionField from './DescriptionField'
-import DateInput from '../DateInput'
 import Select from '../Select'
 import SkillsField from '../ChallengeEditor/SkillsField'
 import ConfirmationModal from '../Modal/ConfirmationModal'
@@ -16,8 +15,11 @@ import { formatTimeZoneLabel, formatTimeZoneList } from '../../util/timezones'
 import styles from './EngagementEditor.module.scss'
 
 const ANY_OPTION = { label: 'Any', value: 'Any' }
-const INPUT_DATE_FORMAT = 'MM/dd/yyyy'
-const INPUT_TIME_FORMAT = 'HH:mm'
+const ANTICIPATED_START_OPTIONS = [
+  { label: 'Immediate', value: 'Immediate' },
+  { label: 'In a few days', value: 'In a few days' },
+  { label: 'In a few weeks', value: 'In a few weeks' }
+]
 
 const getEmptyEngagement = () => ({
   title: '',
@@ -29,6 +31,7 @@ const getEmptyEngagement = () => ({
   role: null,
   workload: null,
   compensationRange: '',
+  anticipatedStart: null,
   status: 'Open',
   isPrivate: false,
   requiredMemberCount: '',
@@ -78,7 +81,6 @@ const EngagementEditor = ({
   onUpdateInput,
   onUpdateDescription,
   onUpdateSkills,
-  onUpdateDate,
   onSavePublish,
   onCancel,
   onDelete,
@@ -169,17 +171,6 @@ const EngagementEditor = ({
   const selectedCountries = (engagement.countries || []).map(code => {
     return countryOptionsByValue[code] || { label: code, value: code }
   })
-  const getMinApplicationDeadline = () => {
-    return moment().add(1, 'minute').startOf('minute').toDate()
-  }
-  const isValidApplicationDeadlineDate = (currentDate) => {
-    if (!currentDate) {
-      return false
-    }
-    const minDateTime = getMinApplicationDeadline()
-    return moment(currentDate).isSameOrAfter(minDateTime, 'day')
-  }
-
   const selectedRoleOption = useMemo(() => {
     if (!engagement.role) {
       return null
@@ -194,8 +185,16 @@ const EngagementEditor = ({
     return JOB_WORKLOAD_OPTIONS.find(option => option.value === engagement.workload || option.label === engagement.workload) || null
   }, [engagement.workload])
 
+  const selectedAnticipatedStartOption = useMemo(() => {
+    if (!engagement.anticipatedStart) {
+      return null
+    }
+    return ANTICIPATED_START_OPTIONS.find(option => option.value === engagement.anticipatedStart || option.label === engagement.anticipatedStart) || null
+  }, [engagement.anticipatedStart])
+
   const roleLabel = selectedRoleOption ? selectedRoleOption.label : engagement.role
   const workloadLabel = selectedWorkloadOption ? selectedWorkloadOption.label : engagement.workload
+  const anticipatedStartLabel = selectedAnticipatedStartOption ? selectedAnticipatedStartOption.label : engagement.anticipatedStart
   const assignments = Array.isArray(engagement.assignments) ? engagement.assignments : []
   const assignedMembers = Array.isArray(engagement.assignedMembers) ? engagement.assignedMembers : []
   const assignedMemberHandles = Array.isArray(engagement.assignedMemberHandles) ? engagement.assignedMemberHandles : []
@@ -572,28 +571,30 @@ const EngagementEditor = ({
 
             <div className={styles.row}>
               <div className={cn(styles.field, styles.col1)}>
-                <label>Application Deadline <span>*</span> :</label>
+                <label>Anticipated Start <span>*</span> :</label>
               </div>
               <div className={cn(styles.field, styles.col2)}>
                 {canEdit ? (
-                  <DateInput
+                  <Select
                     className={styles.selectInput}
-                    value={engagement.applicationDeadline}
-                    dateFormat={INPUT_DATE_FORMAT}
-                    timeFormat={INPUT_TIME_FORMAT}
-                    onChange={value => onUpdateDate('applicationDeadline', value)}
-                    isValidDate={isValidApplicationDeadlineDate}
-                    minDateTime={getMinApplicationDeadline}
+                    useBottomBorder
+                    options={ANTICIPATED_START_OPTIONS}
+                    value={selectedAnticipatedStartOption}
+                    onChange={(option) => onUpdateInput({
+                      target: {
+                        name: 'anticipatedStart',
+                        value: option ? option.value : null
+                      }
+                    })}
+                    isClearable={false}
                   />
                 ) : (
                   <div className={styles.readOnlyValue}>
-                    {engagement.applicationDeadline
-                      ? moment(engagement.applicationDeadline).format('MMM DD, YYYY HH:mm')
-                      : '-'}
+                    {anticipatedStartLabel || '-'}
                   </div>
                 )}
-                {submitTriggered && validationErrors.applicationDeadline && (
-                  <div className={styles.error}>{validationErrors.applicationDeadline}</div>
+                {submitTriggered && validationErrors.anticipatedStart && (
+                  <div className={styles.error}>{validationErrors.anticipatedStart}</div>
                 )}
               </div>
             </div>
@@ -776,7 +777,6 @@ EngagementEditor.defaultProps = {
   onUpdateInput: () => {},
   onUpdateDescription: () => {},
   onUpdateSkills: () => {},
-  onUpdateDate: () => {},
   onSavePublish: () => {},
   onCancel: () => {},
   onDelete: () => {},
@@ -820,7 +820,7 @@ EngagementEditor.propTypes = {
     timezones: PropTypes.arrayOf(PropTypes.string),
     countries: PropTypes.arrayOf(PropTypes.string),
     skills: PropTypes.arrayOf(PropTypes.shape()),
-    applicationDeadline: PropTypes.any,
+    anticipatedStart: PropTypes.string,
     status: PropTypes.string
   }),
   projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
@@ -833,7 +833,7 @@ EngagementEditor.propTypes = {
     title: PropTypes.string,
     description: PropTypes.string,
     durationWeeks: PropTypes.string,
-    applicationDeadline: PropTypes.string,
+    anticipatedStart: PropTypes.string,
     skills: PropTypes.string,
     timezones: PropTypes.string,
     countries: PropTypes.string,
@@ -846,7 +846,6 @@ EngagementEditor.propTypes = {
   onUpdateInput: PropTypes.func,
   onUpdateDescription: PropTypes.func,
   onUpdateSkills: PropTypes.func,
-  onUpdateDate: PropTypes.func,
   onSavePublish: PropTypes.func,
   onCancel: PropTypes.func,
   onDelete: PropTypes.func,

@@ -23,11 +23,24 @@ const STATUS_UPDATE_OPTIONS = STATUS_OPTIONS.filter(option => option.value !== '
 const INPUT_DATE_FORMAT = 'MM/dd/yyyy'
 const INPUT_TIME_FORMAT = 'HH:mm'
 
+const ANTICIPATED_START_LABELS = {
+  IMMEDIATE: 'Immediate',
+  FEW_DAYS: 'In a few days',
+  FEW_WEEKS: 'In a few weeks'
+}
+
 const formatDateTime = (value) => {
   if (!value) {
     return '-'
   }
   return moment(value).format('MMM DD, YYYY HH:mm')
+}
+
+const formatAnticipatedStart = (value) => {
+  if (!value) {
+    return '-'
+  }
+  return ANTICIPATED_START_LABELS[value] || value
 }
 
 const getStatusClass = (status) => {
@@ -286,8 +299,8 @@ const ApplicationsList = ({
             <span>{engagement && engagement.status ? engagement.status : '-'}</span>
           </div>
           <div className={styles.metaItem}>
-            <span className={styles.metaLabel}>Application Deadline:</span>
-            <span>{formatDateTime(engagement && engagement.applicationDeadline)}</span>
+            <span className={styles.metaLabel}>Anticipated Start:</span>
+            <span>{formatAnticipatedStart(engagement && engagement.anticipatedStart)}</span>
           </div>
         </div>
       </div>
@@ -387,7 +400,7 @@ ApplicationsList.propTypes = {
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     title: PropTypes.string,
     description: PropTypes.string,
-    applicationDeadline: PropTypes.any,
+    anticipatedStart: PropTypes.string,
     assignedMembers: PropTypes.arrayOf(
       PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     ),

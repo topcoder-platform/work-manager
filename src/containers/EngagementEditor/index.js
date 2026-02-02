@@ -1,5 +1,4 @@
 import _ from 'lodash'
-import moment from 'moment-timezone'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -18,8 +17,10 @@ import { PROJECT_ROLES } from '../../config/constants'
 import { fetchProfile } from '../../services/user'
 import {
   normalizeEngagement as normalizeEngagementShape,
+  fromEngagementAnticipatedStartApi,
   fromEngagementRoleApi,
   fromEngagementWorkloadApi,
+  toEngagementAnticipatedStartApi,
   toEngagementRoleApi,
   toEngagementWorkloadApi,
   toEngagementStatusApi
@@ -36,7 +37,7 @@ const getEmptyEngagement = () => ({
   timezones: [],
   countries: [],
   skills: [],
-  applicationDeadline: null,
+  anticipatedStart: null,
   status: 'Open',
   isPrivate: false,
   requiredMemberCount: '',
@@ -119,7 +120,6 @@ class EngagementEditorContainer extends Component {
     this.onUpdateInput = this.onUpdateInput.bind(this)
     this.onUpdateDescription = this.onUpdateDescription.bind(this)
     this.onUpdateSkills = this.onUpdateSkills.bind(this)
-    this.onUpdateDate = this.onUpdateDate.bind(this)
     this.onSavePublish = this.onSavePublish.bind(this)
     this.onCancel = this.onCancel.bind(this)
     this.onDelete = this.onDelete.bind(this)
@@ -215,25 +215,16 @@ class EngagementEditorContainer extends Component {
       role: fromEngagementRoleApi(normalized.role),
       workload: fromEngagementWorkloadApi(normalized.workload),
       compensationRange: normalized.compensationRange || '',
+      anticipatedStart: fromEngagementAnticipatedStartApi(normalized.anticipatedStart),
       isPrivate: normalized.isPrivate || false,
       requiredMemberCount: normalized.requiredMemberCount || '',
       assignments,
       assignedMembers,
       assignedMemberHandles,
-      applicationDeadline: normalized.applicationDeadline ? moment(normalized.applicationDeadline).toDate() : null,
       timezones: normalized.timezones || [],
       countries: normalized.countries || [],
       skills: normalized.skills || []
     }
-  }
-
-  normalizeDateValue (value) {
-    if (!value) {
-      return null
-    }
-    const rawValue = value && value.target ? value.target.value : value
-    const parsed = moment(rawValue)
-    return parsed.isValid() ? parsed.toDate() : null
   }
 
   onUpdateInput (event) {
@@ -269,18 +260,7 @@ class EngagementEditorContainer extends Component {
     }))
   }
 
-  onUpdateDate (field, value) {
-    const normalized = this.normalizeDateValue(value)
-    this.setState((prevState) => ({
-      engagement: {
-        ...prevState.engagement,
-        [field]: normalized
-      }
-    }))
-  }
-
-  getValidationErrors (engagement, options = {}) {
-    const { requireFutureDeadline = false } = options
+  getValidationErrors (engagement) {
     const errors = {}
 
     if (!engagement.title || !engagement.title.trim()) {
@@ -303,15 +283,8 @@ class EngagementEditorContainer extends Component {
       errors.durationWeeks = 'Duration must be at least 4 weeks'
     }
 
-    if (!engagement.applicationDeadline) {
-      errors.applicationDeadline = 'Application deadline is required'
-    } else if (requireFutureDeadline) {
-      const deadlineMoment = moment(engagement.applicationDeadline)
-      if (!deadlineMoment.isValid()) {
-        errors.applicationDeadline = 'Application deadline must be a valid date'
-      } else if (deadlineMoment.isSameOrBefore(moment())) {
-        errors.applicationDeadline = 'Application deadline must be in the future'
-      }
+    if (!engagement.anticipatedStart) {
+      errors.anticipatedStart = 'Anticipated start is required'
     }
 
     if (!engagement.skills || !engagement.skills.length) {
@@ -398,9 +371,7 @@ class EngagementEditorContainer extends Component {
       timeZones: engagement.timezones || [],
       countries: engagement.countries || [],
       requiredSkills,
-      applicationDeadline: engagement.applicationDeadline
-        ? moment(engagement.applicationDeadline).toISOString()
-        : null,
+      anticipatedStart: toEngagementAnticipatedStartApi(engagement.anticipatedStart),
       status: toEngagementStatusApi(status)
     }
 
@@ -493,7 +464,7 @@ class EngagementEditorContainer extends Component {
     const projectId = this.getProjectId(match)
 
     if (!isDraft) {
-      const validationErrors = this.getValidationErrors(engagement, { requireFutureDeadline: !engagement.id })
+      const validationErrors = this.getValidationErrors(engagement)
       if (Object.keys(validationErrors).length) {
         this.setState({ submitTriggered: true, validationErrors })
         return
@@ -632,7 +603,6 @@ class EngagementEditorContainer extends Component {
         onUpdateInput={this.onUpdateInput}
         onUpdateDescription={this.onUpdateDescription}
         onUpdateSkills={this.onUpdateSkills}
-        onUpdateDate={this.onUpdateDate}
         onSavePublish={this.onSavePublish}
         onCancel={this.onCancel}
         onDelete={this.onDelete}

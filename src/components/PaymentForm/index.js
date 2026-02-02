@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import moment from 'moment'
 import { PrimaryButton, OutlineButton } from '../Buttons'
+import DateInput from '../DateInput'
 import Select from '../Select'
 import styles from './PaymentForm.module.scss'
 
@@ -44,16 +45,52 @@ const isSameMember = (left, right) => {
   return leftHandle && rightHandle && leftHandle === rightHandle
 }
 
-const getDefaultTitle = (engagementTitle) => {
-  const title = engagementTitle || 'Engagement'
-  return `Payment for ${title} - ${moment().format('MMM DD, YYYY')}`
+const formatWeekEndingTitle = (value) => {
+  if (!value) {
+    return ''
+  }
+  return `Week ending: ${moment(value).format('MMM DD, YYYY')}`
 }
 
-const PaymentForm = ({ engagement, member, availableMembers, isProcessing, onSubmit, onCancel }) => {
-  const engagementTitle = engagement ? engagement.title : ''
-  const defaultTitle = useMemo(() => getDefaultTitle(engagementTitle), [engagementTitle])
-  const [paymentTitle, setPaymentTitle] = useState(defaultTitle)
+const getDefaultWeekEndingDate = () => {
+  const today = moment().startOf('day')
+  let nextFriday = moment(today).isoWeekday(5)
+  if (nextFriday.isBefore(today, 'day')) {
+    nextFriday = nextFriday.add(1, 'week')
+  }
+  return nextFriday.toDate()
+}
+
+const normalizeWeekEndingDate = (value) => {
+  if (!value) {
+    return null
+  }
+  if (moment.isMoment(value)) {
+    return value.toDate()
+  }
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value
+  }
+  const parsed = new Date(value)
+  return Number.isNaN(parsed.getTime()) ? null : parsed
+}
+
+const isWeekEndingFriday = (value) => {
+  if (!value) {
+    return false
+  }
+  const parsed = moment(value)
+  if (!parsed.isValid()) {
+    return false
+  }
+  return parsed.isoWeekday() === 5
+}
+
+const PaymentForm = ({ member, availableMembers, isProcessing, onSubmit, onCancel }) => {
+  const defaultWeekEndingDate = useMemo(() => getDefaultWeekEndingDate(), [])
+  const [weekEndingDate, setWeekEndingDate] = useState(defaultWeekEndingDate)
   const [amount, setAmount] = useState('')
+  const [remarks, setRemarks] = useState('')
   const [validationError, setValidationError] = useState('')
   const [memberError, setMemberError] = useState('')
   const [titleError, setTitleError] = useState('')
@@ -95,11 +132,12 @@ const PaymentForm = ({ engagement, member, availableMembers, isProcessing, onSub
   }, [memberOptions, selectedMember])
 
   useEffect(() => {
-    setPaymentTitle(defaultTitle)
+    setWeekEndingDate(defaultWeekEndingDate)
     setAmount('')
+    setRemarks('')
     setValidationError('')
     setTitleError('')
-  }, [defaultTitle, member])
+  }, [defaultWeekEndingDate, member])
 
   useEffect(() => {
     setSelectedMember((prev) => {
@@ -124,8 +162,10 @@ const PaymentForm = ({ engagement, member, availableMembers, isProcessing, onSub
   const memberHandle = getMemberHandle(selectedMember)
   const parsedAmount = Number(amount)
   const isAmountValid = Number.isFinite(parsedAmount) && parsedAmount > 0
-  const trimmedTitle = paymentTitle.trim()
-  const isTitleValid = trimmedTitle.length > 0
+  const isWeekEndingValid = isWeekEndingFriday(weekEndingDate)
+  const weekEndingTitle = isWeekEndingValid ? formatWeekEndingTitle(weekEndingDate) : ''
+  const trimmedTitle = weekEndingTitle.trim()
+  const isTitleValid = isWeekEndingValid && trimmedTitle.length > 0
 
   const onSubmitForm = (event) => {
     event.preventDefault()
@@ -136,8 +176,12 @@ const PaymentForm = ({ engagement, member, availableMembers, isProcessing, onSub
       setMemberError('Select a member to pay')
       return
     }
-    if (!isTitleValid) {
-      setTitleError('Payment title is required')
+    if (!weekEndingDate) {
+      setTitleError('Week ending date is required')
+      return
+    }
+    if (!isWeekEndingValid) {
+      setTitleError('Week ending date must be a Friday')
       return
     }
     if (!isAmountValid) {
@@ -147,7 +191,7 @@ const PaymentForm = ({ engagement, member, availableMembers, isProcessing, onSub
     setValidationError('')
     setMemberError('')
     setTitleError('')
-    onSubmit(selectedMember, trimmedTitle, parsedAmount)
+    onSubmit(selectedMember, trimmedTitle, parsedAmount, remarks.trim())
   }
 
   const onAmountChange = (event) => {
@@ -161,6 +205,13 @@ const PaymentForm = ({ engagement, member, availableMembers, isProcessing, onSub
     setSelectedMember(option ? normalizeMember(option.member) : null)
     if (memberError) {
       setMemberError('')
+    }
+  }
+
+  const onWeekEndingChange = (value) => {
+    setWeekEndingDate(normalizeWeekEndingDate(value))
+    if (titleError) {
+      setTitleError('')
     }
   }
 
@@ -182,19 +233,17 @@ const PaymentForm = ({ engagement, member, availableMembers, isProcessing, onSub
         </div>
       </div>
       <div className={styles.row}>
-        <div className={styles.label}>Payment Title</div>
+        <div className={styles.label}>Week ending:</div>
         <div className={styles.field}>
-          <input
-            className={styles.input}
-            type='text'
-            value={paymentTitle}
-            onChange={(event) => {
-              setPaymentTitle(event.target.value)
-              if (titleError) {
-                setTitleError('')
-              }
-            }}
+          <DateInput
+            className={styles.dateInput}
+            value={weekEndingDate}
+            onChange={onWeekEndingChange}
+            isValidDate={isWeekEndingFriday}
+            dateFormat='MM/DD/YYYY'
+            timeFormat={false}
           />
+          {weekEndingTitle && <div className={styles.weekEndingPreview}>{weekEndingTitle}</div>}
           {titleError && <div className={styles.error}>{titleError}</div>}
         </div>
       </div>
@@ -212,6 +261,18 @@ const PaymentForm = ({ engagement, member, availableMembers, isProcessing, onSub
           {validationError && <div className={styles.error}>{validationError}</div>}
         </div>
       </div>
+      <div className={styles.row}>
+        <div className={styles.label}>Remarks</div>
+        <div className={styles.field}>
+          <textarea
+            className={styles.textarea}
+            value={remarks}
+            onChange={(event) => setRemarks(event.target.value)}
+            placeholder='Optional'
+            rows={3}
+          />
+        </div>
+      </div>
       <div className={styles.actions}>
         <OutlineButton text='Cancel' type='info' onClick={onCancel} disabled={isProcessing} />
         <PrimaryButton
@@ -226,7 +287,6 @@ const PaymentForm = ({ engagement, member, availableMembers, isProcessing, onSub
 }
 
 PaymentForm.defaultProps = {
-  engagement: null,
   member: null,
   availableMembers: [],
   isProcessing: false,
@@ -235,10 +295,6 @@ PaymentForm.defaultProps = {
 }
 
 PaymentForm.propTypes = {
-  engagement: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    title: PropTypes.string
-  }),
   member: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     handle: PropTypes.string
