@@ -16,8 +16,11 @@ class Groups extends Component {
       isCreating,
       createError,
       createSuccess,
+      createdGroup,
       bulkSearchUsers,
       bulkCreateGroup,
+      onCreateSuccess,
+      onSuccessModalClose,
       history
     } = this.props
 
@@ -31,8 +34,11 @@ class Groups extends Component {
         isCreating={isCreating}
         createError={createError}
         createSuccess={createSuccess}
+        createdGroup={createdGroup}
         bulkSearchUsers={bulkSearchUsers}
         bulkCreateGroup={bulkCreateGroup}
+        onCreateSuccess={onCreateSuccess}
+        onSuccessModalClose={onSuccessModalClose}
         history={history}
       />
     )
@@ -47,7 +53,8 @@ const mapStateToProps = ({ groups = {}, auth }) => ({
   searchError: groups.searchError,
   isCreating: groups.isCreating,
   createError: groups.createError,
-  createSuccess: groups.createSuccess
+  createSuccess: groups.createSuccess,
+  createdGroup: groups.createdGroup
 })
 
 const mapDispatchToProps = (dispatch) => ({
@@ -65,8 +72,14 @@ Groups.propTypes = {
   isCreating: PT.bool,
   createError: PT.string,
   createSuccess: PT.bool,
+  createdGroup: PT.shape({
+    id: PT.oneOfType([PT.string, PT.number]),
+    name: PT.string
+  }),
   bulkSearchUsers: PT.func.isRequired,
   bulkCreateGroup: PT.func.isRequired,
+  onCreateSuccess: PT.func,
+  onSuccessModalClose: PT.func,
   history: PT.object.isRequired
 }
 

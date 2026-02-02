@@ -47,6 +47,25 @@ const GroupsField = ({ onUpdateMultiSelect, challenge }) => {
     setIsCreateGroupModalOpen(false)
   }, [])
 
+  const handleGroupCreated = React.useCallback((createdGroup) => {
+    if (!createdGroup || !createdGroup.id) {
+      return
+    }
+
+    const newGroupOption = {
+      label: createdGroup.name,
+      value: createdGroup.id
+    }
+
+    setGroups((prevGroups) => {
+      const currentGroups = Array.isArray(prevGroups) ? prevGroups : []
+      const exists = currentGroups.some((group) => group.value === newGroupOption.value)
+      const updatedGroups = exists ? currentGroups : [...currentGroups, newGroupOption]
+      onUpdateMultiSelect(updatedGroups, 'groups')
+      return updatedGroups
+    })
+  }, [onUpdateMultiSelect])
+
   return (
     <div className={styles.row}>
       <div className={cn(styles.field, styles.col1)}>
@@ -80,7 +99,10 @@ const GroupsField = ({ onUpdateMultiSelect, challenge }) => {
       {isCreateGroupModalOpen && (
         <Modal onCancel={closeCreateGroupModal}>
           <div className={styles.createGroupModal}>
-            <GroupsContainer />
+            <GroupsContainer
+              onCreateSuccess={handleGroupCreated}
+              onSuccessModalClose={closeCreateGroupModal}
+            />
           </div>
         </Modal>
       )}

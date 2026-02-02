@@ -65,6 +65,10 @@ class Groups extends Component {
         successGroupName,
         successMemberCount: matchedUserIds.length
       })
+
+      if (typeof nextProps.onCreateSuccess === 'function' && nextProps.createdGroup) {
+        nextProps.onCreateSuccess(nextProps.createdGroup)
+      }
     }
 
     if (this.props.createError !== createError && createError) {
@@ -105,6 +109,10 @@ class Groups extends Component {
       showSuccessModal: false,
       successGroupName: '',
       successMemberCount: 0
+    }, () => {
+      if (typeof this.props.onSuccessModalClose === 'function') {
+        this.props.onSuccessModalClose()
+      }
     })
   }
 
@@ -557,7 +565,13 @@ Groups.propTypes = {
   createError: PropTypes.string,
   createSuccess: PropTypes.bool,
   bulkSearchUsers: PropTypes.func.isRequired,
-  bulkCreateGroup: PropTypes.func.isRequired
+  bulkCreateGroup: PropTypes.func.isRequired,
+  createdGroup: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    name: PropTypes.string
+  }),
+  onCreateSuccess: PropTypes.func,
+  onSuccessModalClose: PropTypes.func
 }
 
 export default Groups
