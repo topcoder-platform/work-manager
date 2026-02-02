@@ -10,7 +10,7 @@ const { MEMBER_API_URL, GROUPS_API_URL } = process.env
  */
 export function bulkSearchMembers (identifiers) {
   return axiosInstance
-    .post(`${MEMBER_API_URL}/bulk-search`, identifiers)
+    .post(`${MEMBER_API_URL}/bulk-search`, { identifiers })
     .then((response) => _.get(response, 'data'))
 }
 
