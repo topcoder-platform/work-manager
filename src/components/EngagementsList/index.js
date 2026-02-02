@@ -20,7 +20,7 @@ const STATUS_OPTIONS = [
 ]
 
 const SORT_OPTIONS = [
-  { label: 'Application Deadline', value: 'deadline' },
+  { label: 'Anticipated Start', value: 'anticipatedStart' },
   { label: 'Created Date', value: 'createdAt' }
 ]
 
@@ -31,6 +31,22 @@ const SORT_ORDER_OPTIONS = [
 
 const DEFAULT_STATUS_OPTION = STATUS_OPTIONS.find((option) => option.value === 'Open') || STATUS_OPTIONS[0]
 
+const ANTICIPATED_START_LABELS = {
+  IMMEDIATE: 'Immediate',
+  FEW_DAYS: 'In a few days',
+  FEW_WEEKS: 'In a few weeks'
+}
+
+const ANTICIPATED_START_ORDER = {
+  Immediate: 1,
+  'In a few days': 2,
+  'In a few weeks': 3,
+  ...Object.keys(ANTICIPATED_START_LABELS).reduce((acc, key, index) => {
+    acc[key] = index + 1
+    return acc
+  }, {})
+}
+
 const formatDate = (value) => {
   if (!value) {
     return '-'
@@ -38,11 +54,33 @@ const formatDate = (value) => {
   return moment(value).format('MMM DD, YYYY')
 }
 
+const formatAnticipatedStart = (value) => {
+  if (!value) {
+    return '-'
+  }
+  return ANTICIPATED_START_LABELS[value] || value
+}
+
 const getSortValue = (engagement, sortBy) => {
-  if (sortBy === 'deadline') {
-    return engagement.applicationDeadline || engagement.application_deadline || null
+  if (sortBy === 'anticipatedStart') {
+    const anticipatedStart = engagement.anticipatedStart || engagement.anticipated_start || null
+    if (!anticipatedStart) {
+      return null
+    }
+    return ANTICIPATED_START_ORDER[anticipatedStart] || 0
   }
   return engagement.createdAt || engagement.createdOn || engagement.created || null
+}
+
+const getSortComparable = (value) => {
+  if (value == null) {
+    return null
+  }
+  if (typeof value === 'number') {
+    return value
+  }
+  const parsed = new Date(value).getTime()
+  return Number.isNaN(parsed) ? null : parsed
 }
 
 const getDurationLabel = (engagement) => {
@@ -214,9 +252,11 @@ const EngagementsList = ({
     const sorted = [...results].sort((a, b) => {
       const valueA = getSortValue(a, sortBy.value)
       const valueB = getSortValue(b, sortBy.value)
-      const dateA = valueA ? new Date(valueA).getTime() : 0
-      const dateB = valueB ? new Date(valueB).getTime() : 0
-      return sortOrder.value === 'asc' ? dateA - dateB : dateB - dateA
+      const comparableA = getSortComparable(valueA)
+      const comparableB = getSortComparable(valueB)
+      const normalizedA = comparableA == null ? 0 : comparableA
+      const normalizedB = comparableB == null ? 0 : comparableB
+      return sortOrder.value === 'asc' ? normalizedA - normalizedB : normalizedB - normalizedA
     })
     return sorted
   }, [engagements, statusFilter, searchText, sortBy, sortOrder])
@@ -309,7 +349,7 @@ const EngagementsList = ({
               <th>Title</th>
               <th>Duration</th>
               <th>Location</th>
-              <th>Application Deadline</th>
+              <th>Anticipated Start</th>
               {canManage && <th>Applications</th>}
               {canManage && <th>Visibility</th>}
               {canManage && <th>Members Required</th>}
@@ -341,7 +381,7 @@ const EngagementsList = ({
                   <td>{engagement.title || '-'}</td>
                   <td>{duration}</td>
                   <td>{location}</td>
-                  <td>{formatDate(engagement.applicationDeadline)}</td>
+                  <td>{formatAnticipatedStart(engagement.anticipatedStart)}</td>
                   {canManage && (
                     <td>
                       {engagement.id ? (

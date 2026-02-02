@@ -14,6 +14,7 @@ import {
  * @param {String|Number} memberId
  * @param {String} memberHandle
  * @param {String} paymentTitle
+ * @param {String} description
  * @param {String|Number} amount
  * @param {String|Number} billingAccountId
  */
@@ -22,6 +23,7 @@ export function createMemberPayment (
   memberId,
   memberHandle,
   paymentTitle,
+  description,
   amount,
   billingAccountId
 ) {
@@ -31,13 +33,14 @@ export function createMemberPayment (
     })
 
     const parsedAmount = Number(amount)
+    const trimmedDescription = typeof description === 'string' ? description.trim() : ''
     const payload = {
       winnerId: String(memberId),
       type: 'PAYMENT',
       origin: 'Topcoder',
       category: 'ENGAGEMENT_PAYMENT',
       title: paymentTitle,
-      description: paymentTitle,
+      description: trimmedDescription,
       externalId: String(assignmentId),
       attributes: {
         memberHandle,

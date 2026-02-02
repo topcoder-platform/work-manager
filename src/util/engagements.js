@@ -38,6 +38,18 @@ const WORKLOAD_FROM_API = {
   FRACTIONAL: 'Fractional'
 }
 
+const ANTICIPATED_START_TO_API = {
+  Immediate: 'IMMEDIATE',
+  'In a few days': 'FEW_DAYS',
+  'In a few weeks': 'FEW_WEEKS'
+}
+
+const ANTICIPATED_START_FROM_API = {
+  IMMEDIATE: 'Immediate',
+  FEW_DAYS: 'In a few days',
+  FEW_WEEKS: 'In a few weeks'
+}
+
 export const toEngagementStatusApi = (status) => {
   if (!status) {
     return status
@@ -107,6 +119,29 @@ export const fromEngagementWorkloadApi = (workload) => {
   return WORKLOAD_FROM_API[normalized] || workload
 }
 
+export const toEngagementAnticipatedStartApi = (anticipatedStart) => {
+  if (!anticipatedStart) {
+    return anticipatedStart
+  }
+  const normalized = anticipatedStart.toString().trim()
+  if (ANTICIPATED_START_TO_API[normalized]) {
+    return ANTICIPATED_START_TO_API[normalized]
+  }
+  const upper = normalized.toUpperCase().replace(/\s+/g, '_')
+  if (ANTICIPATED_START_FROM_API[upper]) {
+    return upper
+  }
+  return anticipatedStart
+}
+
+export const fromEngagementAnticipatedStartApi = (anticipatedStart) => {
+  if (!anticipatedStart) {
+    return anticipatedStart
+  }
+  const normalized = anticipatedStart.toString().trim().toUpperCase().replace(/\s+/g, '_')
+  return ANTICIPATED_START_FROM_API[normalized] || anticipatedStart
+}
+
 const normalizeSkill = (skill) => {
   if (!skill) {
     return null
@@ -130,6 +165,9 @@ export const normalizeEngagement = (engagement = {}) => {
   const role = fromEngagementRoleApi(engagement.role)
   const workload = fromEngagementWorkloadApi(engagement.workload)
   const compensationRange = engagement.compensationRange || ''
+  const anticipatedStart = fromEngagementAnticipatedStartApi(
+    engagement.anticipatedStart || engagement.anticipated_start
+  )
 
   const durationWeeks = engagement.durationWeeks
   const durationMonths = engagement.durationMonths
@@ -212,6 +250,7 @@ export const normalizeEngagement = (engagement = {}) => {
     role,
     workload,
     compensationRange,
+    anticipatedStart,
     assignments: assignmentsData,
     assignedMembers: finalAssignedMembers,
     assignedMemberHandles: finalAssignedMemberHandles

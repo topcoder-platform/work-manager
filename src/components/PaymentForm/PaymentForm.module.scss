@@ -48,6 +48,38 @@
   box-sizing: border-box;
 }
 
+.dateInput {
+  :global(.rdt) {
+    width: 100%;
+  }
+
+  :global(.form-control) {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid $tc-gray-30;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+}
+
+.weekEndingPreview {
+  margin-top: 6px;
+  font-size: 13px;
+  color: $tc-gray-70;
+}
+
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid $tc-gray-30;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+  resize: vertical;
+  min-height: 78px;
+}
+
 .selectInput {
   width: 100%;
 }
