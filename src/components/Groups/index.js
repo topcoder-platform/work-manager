@@ -4,7 +4,7 @@ import cn from 'classnames'
 import styles from './Groups.module.scss'
 import PrimaryButton from '../Buttons/PrimaryButton'
 import Loader from '../Loader'
-import { toastSuccess } from '../../util/toaster'
+import AlertModal from '../Modal/AlertModal'
 
 class Groups extends Component {
   constructor (props) {
@@ -20,7 +20,10 @@ class Groups extends Component {
       showValidationResults: false,
       isUploading: false,
       isCreating: false,
-      errors: {}
+      errors: {},
+      showSuccessModal: false,
+      successGroupName: '',
+      successMemberCount: 0
     }
 
     this.fileInputRef = React.createRef()
@@ -35,6 +38,7 @@ class Groups extends Component {
     this.handleCreateGroup = this.handleCreateGroup.bind(this)
     this.renderValidationResults = this.renderValidationResults.bind(this)
     this.resetForm = this.resetForm.bind(this)
+    this.handleSuccessModalClose = this.handleSuccessModalClose.bind(this)
   }
 
   componentWillReceiveProps (nextProps) {
@@ -47,10 +51,18 @@ class Groups extends Component {
       })
     }
 
-    if (!this.props.createSuccess && createSuccess) {
-      toastSuccess('Success', 'Group created successfully.')
-      this.resetForm()
-      this.props.history.push('/groups')
+    const createFinished = this.props.isCreating && !isCreating
+    const createSucceeded = (!this.props.createSuccess && createSuccess) ||
+      (createFinished && !createError)
+
+    if (createSucceeded) {
+      const matchedUserIds = this.getMatchedUserIds(this.state.validationResults)
+      const successGroupName = this.state.groupName.trim()
+      this.resetForm({
+        showSuccessModal: true,
+        successGroupName,
+        successMemberCount: matchedUserIds.length
+      })
     }
 
     if (this.props.createError !== createError && createError) {
@@ -62,7 +74,7 @@ class Groups extends Component {
     }
   }
 
-  resetForm () {
+  resetForm (overrides = {}) {
     this.setState({
       groupName: '',
       groupDescription: '',
@@ -74,12 +86,24 @@ class Groups extends Component {
       showValidationResults: false,
       isUploading: false,
       isCreating: false,
-      errors: {}
+      errors: {},
+      showSuccessModal: false,
+      successGroupName: '',
+      successMemberCount: 0,
+      ...overrides
     })
 
     if (this.fileInputRef.current) {
       this.fileInputRef.current.value = ''
     }
+  }
+
+  handleSuccessModalClose () {
+    this.setState({
+      showSuccessModal: false,
+      successGroupName: '',
+      successMemberCount: 0
+    })
   }
 
   handleGroupNameChange (event) {
@@ -345,6 +369,9 @@ class Groups extends Component {
       showValidationResults,
       isUploading,
       isCreating,
+      showSuccessModal,
+      successGroupName,
+      successMemberCount,
       errors
     } = this.state
     const { isSearching, searchError, createError, auth, token } = this.props
@@ -364,6 +391,15 @@ class Groups extends Component {
         data-has-token={hasToken}
       >
         <h2 className={styles.title}>Create Group</h2>
+
+        {showSuccessModal && (
+          <AlertModal
+            title='Success'
+            message={`${successGroupName} group created successfully and ${successMemberCount} members added`}
+            closeText='OK'
+            onClose={this.handleSuccessModalClose}
+          />
+        )}
 
         {apiError && (
           <div className={styles.errorMessage} role='alert'>
@@ -519,8 +555,7 @@ Groups.propTypes = {
   createError: PropTypes.string,
   createSuccess: PropTypes.bool,
   bulkSearchUsers: PropTypes.func.isRequired,
-  bulkCreateGroup: PropTypes.func.isRequired,
-  history: PropTypes.object.isRequired
+  bulkCreateGroup: PropTypes.func.isRequired
 }
 
 export default Groups
