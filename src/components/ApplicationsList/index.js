@@ -88,6 +88,17 @@ const getApplicationHandle = (application) => {
   ].find(Boolean) || null
 }
 
+const getApplicationName = (application) => {
+  if (!application) {
+    return null
+  }
+  const fullName = [application.firstName, application.lastName]
+    .filter(Boolean)
+    .join(' ')
+    .trim()
+  return fullName || application.name || application.email || null
+}
+
 const getApplicationRating = (application) => {
   if (!application) {
     return undefined
@@ -122,6 +133,7 @@ const ApplicationsList = ({
   const [statusFilter, setStatusFilter] = useState(STATUS_OPTIONS[0])
   const [selectedApplication, setSelectedApplication] = useState(null)
   const [acceptApplication, setAcceptApplication] = useState(null)
+  const [acceptSuccess, setAcceptSuccess] = useState(null)
   const [acceptStartDate, setAcceptStartDate] = useState(null)
   const [acceptEndDate, setAcceptEndDate] = useState(null)
   const [acceptRate, setAcceptRate] = useState('')
@@ -132,9 +144,8 @@ const ApplicationsList = ({
   const acceptHandle = getApplicationHandle(acceptApplication)
   const acceptRating = getApplicationRating(acceptApplication)
   const acceptHandleColor = Number.isFinite(acceptRating) ? undefined : '#000'
-  const acceptName = acceptApplication
-    ? (acceptApplication.name || acceptApplication.email || 'Selected applicant')
-    : 'Selected applicant'
+  const acceptName = getApplicationName(acceptApplication) || 'Selected applicant'
+  const acceptSuccessLabel = acceptSuccess ? acceptSuccess.memberLabel : null
   const acceptSubtitle = acceptHandle ? (
     <div className={styles.acceptHandleLine}>
       <Handle
@@ -190,6 +201,10 @@ const ApplicationsList = ({
     resetAcceptState()
   }
 
+  const handleCloseAcceptSuccessModal = () => {
+    setAcceptSuccess(null)
+  }
+
   const openAcceptModal = (application) => {
     setAcceptApplication(application)
     setAcceptStartDate(null)
@@ -237,6 +252,12 @@ const ApplicationsList = ({
         agreementRate: normalizedRate,
         ...(normalizedOtherRemarks ? { otherRemarks: normalizedOtherRemarks } : {})
       })
+      const memberHandle = getApplicationHandle(acceptApplication)
+      const memberName = getApplicationName(acceptApplication) || 'Selected applicant'
+      const memberLabel = memberHandle && memberName
+        ? `${memberHandle} / ${memberName}`
+        : (memberHandle || memberName)
+      setAcceptSuccess({ memberLabel })
       resetAcceptState()
     } catch (error) {
       setIsAccepting(false)
@@ -353,6 +374,19 @@ const ApplicationsList = ({
                 onClick={handleAcceptSubmit}
                 disabled={isAccepting}
               />
+            </div>
+          </div>
+        </Modal>
+      )}
+      {acceptSuccess && (
+        <Modal onCancel={handleCloseAcceptSuccessModal}>
+          <div className={styles.acceptModal}>
+            <div className={styles.acceptTitle}>Application Selected</div>
+            <div className={styles.acceptSuccessMessage}>
+              The application has been selected and member {acceptSuccessLabel} has been notified. The next step is that they will either accept or reject the application.
+            </div>
+            <div className={styles.acceptActions}>
+              <PrimaryButton text='Close' type='info' onClick={handleCloseAcceptSuccessModal} />
             </div>
           </div>
         </Modal>
