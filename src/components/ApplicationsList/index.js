@@ -312,7 +312,7 @@ const ApplicationsList = ({
                 )}
               </div>
               <div className={styles.acceptFieldFull}>
-                <label className={styles.acceptLabel}>Assignment rate</label>
+                <label className={styles.acceptLabel}>Assignment rate (per week)</label>
                 <input
                   className={styles.acceptInput}
                   type='number'
