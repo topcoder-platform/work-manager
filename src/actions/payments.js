@@ -8,24 +8,30 @@ import {
   FETCH_ASSIGNMENT_PAYMENTS_FAILURE
 } from '../config/constants'
 
+const ENGAGEMENT_PAYMENT_STATUS = 'ON_HOLD_ADMIN'
+
 /**
  * Creates a payment for a member
  * @param {String|Number} assignmentId
  * @param {String|Number} memberId
  * @param {String} memberHandle
  * @param {String} paymentTitle
- * @param {String} description
+ * @param {String} remarks
+ * @param {String|Number} agreementRate
  * @param {String|Number} amount
  * @param {String|Number} billingAccountId
+ * @param {String} paymentStatus
  */
 export function createMemberPayment (
   assignmentId,
   memberId,
   memberHandle,
   paymentTitle,
-  description,
+  remarks,
+  agreementRate,
   amount,
-  billingAccountId
+  billingAccountId,
+  paymentStatus = ENGAGEMENT_PAYMENT_STATUS
 ) {
   return async (dispatch) => {
     dispatch({
@@ -33,19 +39,28 @@ export function createMemberPayment (
     })
 
     const parsedAmount = Number(amount)
-    const trimmedDescription = typeof description === 'string' ? description.trim() : ''
+    const trimmedTitle = typeof paymentTitle === 'string'
+      ? paymentTitle.trim()
+      : (paymentTitle != null ? String(paymentTitle) : '')
+    const trimmedRemarks = typeof remarks === 'string' ? remarks.trim() : ''
+    const attributes = {
+      memberHandle,
+      assignmentId,
+      remarks: trimmedRemarks
+    }
+    if (agreementRate !== null && agreementRate !== undefined && agreementRate !== '') {
+      attributes.agreementRate = agreementRate
+    }
     const payload = {
       winnerId: String(memberId),
       type: 'PAYMENT',
       origin: 'Topcoder',
       category: 'ENGAGEMENT_PAYMENT',
-      title: paymentTitle,
-      description: trimmedDescription,
+      title: trimmedTitle,
+      description: trimmedTitle,
       externalId: String(assignmentId),
-      attributes: {
-        memberHandle,
-        assignmentId
-      },
+      attributes,
+      ...(paymentStatus ? { status: paymentStatus } : {}),
       details: [
         {
           totalAmount: parsedAmount,

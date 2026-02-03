@@ -58,6 +58,17 @@ const getMemberId = (member) => {
   return normalizeMemberId(member.id || member.memberId || member.member_id || member.userId || null)
 }
 
+const getAgreementRate = (member) => {
+  if (!member || typeof member !== 'object') {
+    return null
+  }
+  return member.agreementRate ||
+    member.agreement_rate ||
+    member.rate ||
+    member.agreedRate ||
+    null
+}
+
 const normalizeMemberInfo = (member, index, memberIdLookup = {}) => {
   if (!member) {
     return { id: null, handle: '-', key: `member-${index}` }
@@ -241,6 +252,7 @@ class EngagementPaymentContainer extends Component {
       return
     }
     const memberHandle = getMemberHandle(memberToPay)
+    const agreementRate = getAgreementRate(memberToPay)
     let memberId = getMemberId(memberToPay)
     const assignmentIdFromMember = _.get(memberToPay, 'assignmentId', null)
     if (!memberId && memberHandle) {
@@ -278,6 +290,7 @@ class EngagementPaymentContainer extends Component {
         memberHandle,
         paymentTitle,
         remarks,
+        agreementRate,
         amount,
         billingAccountId
       )
