@@ -7,6 +7,7 @@ import Tooltip from '../Tooltip'
 import Loader from '../Loader'
 import Select from '../Select'
 import { ENGAGEMENTS_APP_URL } from '../../config/constants'
+import { getCountableAssignments } from '../../util/engagements'
 import { formatTimeZoneList } from '../../util/timezones'
 import styles from './EngagementsList.module.scss'
 
@@ -173,7 +174,7 @@ const getAssignedMembersCount = (engagement) => {
     return 0
   }
   if (Array.isArray(engagement.assignments) && engagement.assignments.length > 0) {
-    return engagement.assignments.length
+    return getCountableAssignments(engagement.assignments).length
   }
   if (Array.isArray(engagement.assignedMembers) && engagement.assignedMembers.length > 0) {
     return engagement.assignedMembers.length
@@ -206,7 +207,8 @@ const getAssignedMemberHandles = (engagement) => {
   }
   const assignments = Array.isArray(engagement.assignments) ? engagement.assignments : []
   if (assignments.length) {
-    return Array.from(new Set(assignments.map((assignment) => getMemberHandle(assignment)).filter(Boolean)))
+    const countableAssignments = getCountableAssignments(assignments)
+    return Array.from(new Set(countableAssignments.map((assignment) => getMemberHandle(assignment)).filter(Boolean)))
   }
   const assignedMemberHandles = Array.isArray(engagement.assignedMemberHandles)
     ? engagement.assignedMemberHandles

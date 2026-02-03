@@ -50,6 +50,48 @@ const ANTICIPATED_START_FROM_API = {
   FEW_WEEKS: 'In a few weeks'
 }
 
+const ASSIGNMENT_COMPLETION_STATUSES = new Set([
+  'OFFER_REJECTED',
+  'COMPLETED',
+  'TERMINATED'
+])
+
+export const normalizeAssignmentStatus = (status) => {
+  if (!status) {
+    return ''
+  }
+  return status
+    .toString()
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, '_')
+}
+
+export const isAssignmentCompletionStatus = (status) => {
+  const normalized = normalizeAssignmentStatus(status)
+  if (!normalized) {
+    return false
+  }
+  return ASSIGNMENT_COMPLETION_STATUSES.has(normalized)
+}
+
+export const isCountableAssignmentStatus = (status) => {
+  return !isAssignmentCompletionStatus(status)
+}
+
+export const getCountableAssignments = (assignments = []) => {
+  if (!Array.isArray(assignments)) {
+    return []
+  }
+  return assignments.filter((assignment) => {
+    if (!assignment) {
+      return false
+    }
+    const status = assignment.status || assignment.assignmentStatus
+    return isCountableAssignmentStatus(status)
+  })
+}
+
 export const toEngagementStatusApi = (status) => {
   if (!status) {
     return status
@@ -210,6 +252,7 @@ export const normalizeEngagement = (engagement = {}) => {
       : ''
 
   const assignments = Array.isArray(engagement.assignments) ? engagement.assignments : []
+  const countableAssignments = getCountableAssignments(assignments)
   const assignmentsData = assignments.map((assignment) => ({
     id: assignment.id,
     engagementId: assignment.engagementId,
@@ -227,13 +270,18 @@ export const normalizeEngagement = (engagement = {}) => {
     updatedAt: assignment.updatedAt
   }))
 
-  const assignedMembersFromAssignments = assignments.map((assignment) => assignment.memberId).filter(Boolean)
-  const assignedMemberHandlesFromAssignments = assignments.map((assignment) => assignment.memberHandle).filter(Boolean)
+  const assignedMembersFromAssignments = countableAssignments
+    .map((assignment) => assignment.memberId)
+    .filter(Boolean)
+  const assignedMemberHandlesFromAssignments = countableAssignments
+    .map((assignment) => assignment.memberHandle)
+    .filter(Boolean)
 
-  const finalAssignedMembers = assignedMembersFromAssignments.length
+  const hasAssignments = assignments.length > 0
+  const finalAssignedMembers = hasAssignments
     ? assignedMembersFromAssignments
     : (engagement.assignedMembers || [])
-  const finalAssignedMemberHandles = assignedMemberHandlesFromAssignments.length
+  const finalAssignedMemberHandles = hasAssignments
     ? assignedMemberHandlesFromAssignments
     : (engagement.assignedMemberHandles || [])
 

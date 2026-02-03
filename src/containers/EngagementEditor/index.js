@@ -20,6 +20,7 @@ import {
   fromEngagementAnticipatedStartApi,
   fromEngagementRoleApi,
   fromEngagementWorkloadApi,
+  getCountableAssignments,
   toEngagementAnticipatedStartApi,
   toEngagementRoleApi,
   toEngagementWorkloadApi,
@@ -194,9 +195,15 @@ class EngagementEditorContainer extends Component {
     const parsedDurationWeeks = rawDurationWeeks !== '' ? parseInt(rawDurationWeeks, 10) : ''
     const durationWeeks = Number.isNaN(parsedDurationWeeks) ? '' : parsedDurationWeeks
     const assignments = Array.isArray(normalized.assignments) ? normalized.assignments : []
-    const assignedMembersFromAssignments = assignments.map((assignment) => assignment.memberId).filter(Boolean)
-    const assignedMemberHandlesFromAssignments = assignments.map((assignment) => assignment.memberHandle).filter(Boolean)
-    const assignedMembers = assignedMembersFromAssignments.length
+    const countableAssignments = getCountableAssignments(assignments)
+    const assignedMembersFromAssignments = countableAssignments
+      .map((assignment) => assignment.memberId)
+      .filter(Boolean)
+    const assignedMemberHandlesFromAssignments = countableAssignments
+      .map((assignment) => assignment.memberHandle)
+      .filter(Boolean)
+    const hasAssignments = assignments.length > 0
+    const assignedMembers = hasAssignments
       ? assignedMembersFromAssignments
       : (normalized.assignedMembers || [])
     const legacyAssignedMemberHandles = normalized.assignedMemberHandle
@@ -205,7 +212,7 @@ class EngagementEditorContainer extends Component {
     const normalizedAssignedMemberHandles = Array.isArray(normalized.assignedMemberHandles)
       ? normalized.assignedMemberHandles
       : []
-    const assignedMemberHandles = assignedMemberHandlesFromAssignments.length
+    const assignedMemberHandles = hasAssignments
       ? assignedMemberHandlesFromAssignments
       : (normalizedAssignedMemberHandles.length ? normalizedAssignedMemberHandles : legacyAssignedMemberHandles)
     return {

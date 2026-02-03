@@ -11,6 +11,7 @@ import ConfirmationModal from '../Modal/ConfirmationModal'
 import Loader from '../Loader'
 import { JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
 import { suggestProfiles } from '../../services/user'
+import { getCountableAssignments } from '../../util/engagements'
 import { formatTimeZoneLabel, formatTimeZoneList } from '../../util/timezones'
 import styles from './EngagementEditor.module.scss'
 
@@ -196,11 +197,14 @@ const EngagementEditor = ({
   const workloadLabel = selectedWorkloadOption ? selectedWorkloadOption.label : engagement.workload
   const anticipatedStartLabel = selectedAnticipatedStartOption ? selectedAnticipatedStartOption.label : engagement.anticipatedStart
   const assignments = Array.isArray(engagement.assignments) ? engagement.assignments : []
+  const countableAssignments = useMemo(() => {
+    return getCountableAssignments(assignments)
+  }, [assignments])
   const assignedMembers = Array.isArray(engagement.assignedMembers) ? engagement.assignedMembers : []
   const assignedMemberHandles = Array.isArray(engagement.assignedMemberHandles) ? engagement.assignedMemberHandles : []
   const assignedMemberList = useMemo(() => {
-    if (assignments.length > 0) {
-      return assignments.map((assignment, index) => ({
+    if (countableAssignments.length > 0) {
+      return countableAssignments.map((assignment, index) => ({
         id: assignment.memberId,
         handle: assignment.memberHandle,
         key: assignment.id || `assignment-${index}`,
@@ -214,7 +218,7 @@ const EngagementEditor = ({
       return assignedMembers.map((member, index) => normalizeMemberInfo(member, index))
     }
     return assignedMemberHandles.map((member, index) => normalizeMemberInfo(member, index))
-  }, [assignments, resolvedAssignedMembers, assignedMembers, assignedMemberHandles])
+  }, [countableAssignments, resolvedAssignedMembers, assignedMembers, assignedMemberHandles])
   const showAssignedMembers = assignedMemberList.length > 0
   const assignedMemberCount = assignedMemberList.length
   const requiredMemberCountValue = Number(engagement.requiredMemberCount)
