@@ -314,7 +314,7 @@ const ApplicationsList = ({
             </div>
             <div className={styles.acceptGrid}>
               <div className={styles.acceptField}>
-                <label className={styles.acceptLabel}>Start date</label>
+                <label className={styles.acceptLabel}>Tentative start date</label>
                 <DateInput
                   className={styles.acceptDateInput}
                   value={acceptStartDate}
@@ -332,7 +332,7 @@ const ApplicationsList = ({
                 )}
               </div>
               <div className={styles.acceptField}>
-                <label className={styles.acceptLabel}>End date</label>
+                <label className={styles.acceptLabel}>Tentative end date</label>
                 <DateInput
                   className={styles.acceptDateInput}
                   value={acceptEndDate}
