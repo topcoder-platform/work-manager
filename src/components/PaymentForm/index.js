@@ -89,11 +89,11 @@ const formatWeekEndingTitle = (value) => {
 
 const getDefaultWeekEndingDate = () => {
   const today = moment().startOf('day')
-  let nextFriday = moment(today).isoWeekday(5)
-  if (nextFriday.isBefore(today, 'day')) {
-    nextFriday = nextFriday.add(1, 'week')
+  let nextSaturday = moment(today).isoWeekday(6)
+  if (nextSaturday.isBefore(today, 'day')) {
+    nextSaturday = nextSaturday.add(1, 'week')
   }
-  return nextFriday.toDate()
+  return nextSaturday.toDate()
 }
 
 const normalizeWeekEndingDate = (value) => {
@@ -110,7 +110,7 @@ const normalizeWeekEndingDate = (value) => {
   return Number.isNaN(parsed.getTime()) ? null : parsed
 }
 
-const isWeekEndingFriday = (value) => {
+const isWeekEndingSaturday = (value) => {
   if (!value) {
     return false
   }
@@ -118,7 +118,7 @@ const isWeekEndingFriday = (value) => {
   if (!parsed.isValid()) {
     return false
   }
-  return parsed.isoWeekday() === 5
+  return parsed.isoWeekday() === 6
 }
 
 const PaymentForm = ({ member, availableMembers, isProcessing, onSubmit, onCancel }) => {
@@ -206,7 +206,7 @@ const PaymentForm = ({ member, availableMembers, isProcessing, onSubmit, onCance
   const memberHandle = getMemberHandle(selectedMember)
   const parsedAmount = Number(amount)
   const isAmountValid = Number.isFinite(parsedAmount) && parsedAmount > 0
-  const isWeekEndingValid = isWeekEndingFriday(weekEndingDate)
+  const isWeekEndingValid = isWeekEndingSaturday(weekEndingDate)
   const weekEndingTitle = isWeekEndingValid ? formatWeekEndingTitle(weekEndingDate) : ''
   const trimmedTitle = weekEndingTitle.trim()
   const isTitleValid = isWeekEndingValid && trimmedTitle.length > 0
@@ -225,7 +225,7 @@ const PaymentForm = ({ member, availableMembers, isProcessing, onSubmit, onCance
       return
     }
     if (!isWeekEndingValid) {
-      setTitleError('Week ending date must be a Friday')
+      setTitleError('Week ending date must be a Saturday')
       return
     }
     if (!isAmountValid) {
@@ -288,7 +288,7 @@ const PaymentForm = ({ member, availableMembers, isProcessing, onSubmit, onCance
             className={styles.dateInput}
             value={weekEndingDate}
             onChange={onWeekEndingChange}
-            isValidDate={isWeekEndingFriday}
+            isValidDate={isWeekEndingSaturday}
             dateFormat='MM/dd/yyyy'
             timeFormat={false}
             inputId={weekEndingInputId.current}
