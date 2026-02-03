@@ -328,7 +328,11 @@ class Routes extends React.Component {
               render={({ match }) => renderApp(
                 <EngagementPayment projectId={match.params.projectId} engagementId={match.params.engagementId} />,
                 <TopBarContainer projectId={match.params.projectId} />,
-                <Tab projectId={match.params.projectId} menu={'Payment'} />,
+                <Tab
+                  projectId={match.params.projectId}
+                  menu={'Payment'}
+                  backPath={`/projects/${match.params.projectId}/engagements`}
+                />,
                 <FooterContainer />
               )()} />
           )}
@@ -340,7 +344,10 @@ class Routes extends React.Component {
                   warnMessage={'You need Admin, Project Manager, Talent Manager, or Task Manager role to edit engagements'}
                 />,
                 <TopBarContainer />,
-                <Tab projectId={match.params.projectId} />,
+                <Tab
+                  projectId={match.params.projectId}
+                  backPath={`/projects/${match.params.projectId}/engagements`}
+                />,
                 <FooterContainer />
               )()} />
           )}
