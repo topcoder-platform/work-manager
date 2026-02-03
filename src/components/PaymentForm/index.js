@@ -20,6 +20,41 @@ const getMemberId = (member) => {
   return member.id || member.memberId || member.userId || null
 }
 
+const getAgreementRate = (member) => {
+  if (!member || typeof member !== 'object') {
+    return null
+  }
+  return member.agreementRate ||
+    member.agreement_rate ||
+    member.rate ||
+    member.agreedRate ||
+    null
+}
+
+const normalizeAmountValue = (value) => {
+  if (value == null || value === '') {
+    return ''
+  }
+  if (typeof value === 'number') {
+    return Number.isFinite(value) ? value.toString() : ''
+  }
+  const trimmed = String(value).trim()
+  if (!trimmed) {
+    return ''
+  }
+  const sanitized = trimmed.replace(/[^0-9.-]/g, '')
+  if (!sanitized) {
+    return ''
+  }
+  const parsed = Number(sanitized)
+  if (!Number.isFinite(parsed)) {
+    return ''
+  }
+  return parsed.toString()
+}
+
+const getDefaultAmount = (member) => normalizeAmountValue(getAgreementRate(member))
+
 const normalizeMember = (member) => {
   if (!member) {
     return null
@@ -134,11 +169,19 @@ const PaymentForm = ({ member, availableMembers, isProcessing, onSubmit, onCance
 
   useEffect(() => {
     setWeekEndingDate(defaultWeekEndingDate)
-    setAmount('')
+    setAmount(getDefaultAmount(member))
     setRemarks('')
     setValidationError('')
     setTitleError('')
   }, [defaultWeekEndingDate, member])
+
+  useEffect(() => {
+    if (!selectedMember) {
+      setAmount('')
+      return
+    }
+    setAmount(getDefaultAmount(selectedMember))
+  }, [selectedMember])
 
   useEffect(() => {
     setSelectedMember((prev) => {
@@ -304,11 +347,13 @@ PaymentForm.defaultProps = {
 PaymentForm.propTypes = {
   member: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    handle: PropTypes.string
+    handle: PropTypes.string,
+    agreementRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
   }),
   availableMembers: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    handle: PropTypes.string
+    handle: PropTypes.string,
+    agreementRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
   })),
   isProcessing: PropTypes.bool,
   onSubmit: PropTypes.func,
