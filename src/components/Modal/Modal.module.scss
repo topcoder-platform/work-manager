@@ -4,6 +4,10 @@
   body.scrolling-disabled-by-modal {
     overflow: hidden;
   }
+
+  body.scrolling-disabled-by-modal div[data-reach-popover] {
+    z-index: 1100;
+  }
 }
 
 .overlay {
