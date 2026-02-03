@@ -123,6 +123,22 @@ const getApplicationRating = (application) => {
   return Number.isFinite(parsed) ? parsed : undefined
 }
 
+const normalizeAssignmentStatus = (status) => {
+  if (!status) {
+    return ''
+  }
+  return status
+    .toString()
+    .trim()
+    .toUpperCase()
+    .replace(/\s+/g, '_')
+}
+
+const isActiveAssignmentStatus = (status) => {
+  const normalized = normalizeAssignmentStatus(status)
+  return normalized === 'ASSIGNED' || normalized === 'ACTIVE'
+}
+
 const ApplicationsList = ({
   applications,
   engagement,
@@ -161,18 +177,20 @@ const ApplicationsList = ({
     </div>
   ) : acceptName
 
-  const assignedMemberIds = useMemo(() => {
-    const assignedMembers = Array.isArray(engagement && engagement.assignedMembers)
-      ? engagement.assignedMembers
-      : []
+  const activeAssignmentMemberIds = useMemo(() => {
     const assignments = Array.isArray(engagement && engagement.assignments)
       ? engagement.assignments
       : []
-    const assignedFromAssignments = assignments
-      .map((assignment) => assignment && assignment.memberId)
+    const activeAssignmentIds = assignments
+      .filter((assignment) => {
+        if (!assignment) {
+          return false
+        }
+        return isActiveAssignmentStatus(assignment.status || assignment.assignmentStatus)
+      })
+      .map((assignment) => assignment.memberId)
       .filter(Boolean)
-    const source = assignedMembers.length ? assignedMembers : assignedFromAssignments
-    return new Set(source.map((memberId) => String(memberId)))
+    return new Set(activeAssignmentIds.map((memberId) => String(memberId)))
   }, [engagement])
 
   const filteredApplications = useMemo(() => {
@@ -425,7 +443,7 @@ const ApplicationsList = ({
         <table className={styles.table}>
           <thead>
             <tr>
-              <th className={styles.assignedHeader}>Assigned</th>
+              <th className={styles.assignedHeader}>Active</th>
               <th className={styles.handleHeader}>Handle</th>
               <th>Applicant Name</th>
               <th>Email</th>
@@ -442,14 +460,14 @@ const ApplicationsList = ({
               const statusClass = getStatusClass(application.status)
               const statusOption = STATUS_UPDATE_OPTIONS.find(option => option.value === application.status) || null
               const applicationUserId = application.userId || application.user_id || application.memberId || application.member_id
-              const isAssigned = applicationUserId != null && assignedMemberIds.has(String(applicationUserId))
+              const isActive = applicationUserId != null && activeAssignmentMemberIds.has(String(applicationUserId))
               const applicationHandle = getApplicationHandle(application)
 
               return (
                 <tr key={application.id || application.email}>
                   <td className={styles.assignedCell}>
-                    {isAssigned && (
-                      <span className={styles.assignedIndicator} title='Assigned'>
+                    {isActive && (
+                      <span className={styles.assignedIndicator} title='Active'>
                         <FontAwesomeIcon className={styles.assignedIcon} icon={faCheck} />
                       </span>
                     )}
@@ -527,7 +545,9 @@ ApplicationsList.propTypes = {
       PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     ),
     assignments: PropTypes.arrayOf(PropTypes.shape({
-      memberId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+      memberId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      status: PropTypes.string,
+      assignmentStatus: PropTypes.string
     }))
   }),
   isLoading: PropTypes.bool,
