@@ -263,6 +263,7 @@ export const normalizeEngagement = (engagement = {}) => {
       ? assignment.termsAccepted
       : assignment.terms_accepted,
     agreementRate: assignment.agreementRate || assignment.agreement_rate || assignment.rate,
+    otherRemarks: assignment.otherRemarks || assignment.other_remarks,
     terminationReason: assignment.terminationReason || assignment.termination_reason,
     startDate: assignment.startDate || assignment.start_date,
     endDate: assignment.endDate || assignment.end_date,

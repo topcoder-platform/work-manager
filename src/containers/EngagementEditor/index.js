@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import moment from 'moment-timezone'
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
@@ -44,7 +45,8 @@ const getEmptyEngagement = () => ({
   requiredMemberCount: '',
   assignments: [],
   assignedMembers: [],
-  assignedMemberHandles: []
+  assignedMemberHandles: [],
+  assignmentDetails: []
 })
 
 const getMemberHandle = (member) => {
@@ -215,6 +217,31 @@ class EngagementEditorContainer extends Component {
     const assignedMemberHandles = hasAssignments
       ? assignedMemberHandlesFromAssignments
       : (normalizedAssignedMemberHandles.length ? normalizedAssignedMemberHandles : legacyAssignedMemberHandles)
+    const assignmentDetails = assignedMemberHandles.map((handle) => {
+      if (!handle) {
+        return null
+      }
+      const assignmentMatch = countableAssignments.find((assignment) => {
+        const assignmentHandle = getMemberHandle(assignment)
+        return assignmentHandle && assignmentHandle.toLowerCase() === handle.toLowerCase()
+      })
+      if (!assignmentMatch) {
+        return {
+          memberHandle: handle,
+          startDate: null,
+          endDate: null,
+          agreementRate: '',
+          otherRemarks: ''
+        }
+      }
+      return {
+        memberHandle: handle,
+        startDate: assignmentMatch.startDate || null,
+        endDate: assignmentMatch.endDate || null,
+        agreementRate: assignmentMatch.agreementRate || '',
+        otherRemarks: assignmentMatch.otherRemarks || ''
+      }
+    })
     return {
       ...getEmptyEngagement(),
       ...normalized,
@@ -228,6 +255,7 @@ class EngagementEditorContainer extends Component {
       assignments,
       assignedMembers,
       assignedMemberHandles,
+      assignmentDetails,
       timezones: normalized.timezones || [],
       countries: normalized.countries || [],
       skills: normalized.skills || []
@@ -424,6 +452,7 @@ class EngagementEditorContainer extends Component {
     const payloadAssignedMemberHandles = trimmedAssignedMemberHandles.slice(0, assignmentLimit)
     const assignments = Array.isArray(engagement.assignments) ? engagement.assignments : []
     const assignedMembers = Array.isArray(engagement.assignedMembers) ? engagement.assignedMembers : []
+    const assignmentDetails = Array.isArray(engagement.assignmentDetails) ? engagement.assignmentDetails : []
     const memberIdLookup = this.state.memberIdLookup || {}
     const payloadAssignedMemberIds = payloadAssignedMemberHandles.map((handle, index) => {
       const assignmentMatch = assignments.find((assignment) => getMemberHandle(assignment) === handle)
@@ -447,11 +476,50 @@ class EngagementEditorContainer extends Component {
     })
     const hasCompleteAssignedMemberIds = payloadAssignedMemberHandles.length > 0 &&
       payloadAssignedMemberIds.every((id) => id != null)
+    const normalizeAssignmentDate = (value) => {
+      if (!value) {
+        return null
+      }
+      const parsed = moment(value)
+      return parsed.isValid() ? parsed.toISOString() : null
+    }
+    const payloadAssignmentDetails = payloadAssignedMemberHandles.map((handle, index) => {
+      const detail = assignmentDetails[index] || {}
+      const normalizedRate = detail.agreementRate != null ? String(detail.agreementRate).trim() : ''
+      const normalizedOtherRemarks = detail.otherRemarks != null ? String(detail.otherRemarks).trim() : ''
+      const startDate = normalizeAssignmentDate(detail.startDate)
+      const endDate = normalizeAssignmentDate(detail.endDate)
+      const detailPayload = {
+        memberHandle: handle
+      }
+      if (payloadAssignedMemberIds[index] != null) {
+        detailPayload.memberId = String(payloadAssignedMemberIds[index])
+      }
+      if (startDate) {
+        detailPayload.startDate = startDate
+      }
+      if (endDate) {
+        detailPayload.endDate = endDate
+      }
+      if (normalizedRate) {
+        detailPayload.agreementRate = normalizedRate
+      }
+      if (normalizedOtherRemarks) {
+        detailPayload.otherRemarks = normalizedOtherRemarks
+      }
+      return detailPayload
+    })
+    const hasAssignmentDetails = payloadAssignmentDetails.some((detail) => (
+      detail.startDate || detail.endDate || detail.agreementRate || detail.otherRemarks
+    ))
 
     if (engagement.isPrivate && payloadAssignedMemberHandles.length) {
       payload.assignedMemberHandles = payloadAssignedMemberHandles
       if (hasCompleteAssignedMemberIds) {
         payload.assignedMemberIds = payloadAssignedMemberIds
+      }
+      if (hasAssignmentDetails) {
+        payload.assignmentDetails = payloadAssignmentDetails
       }
     }
 

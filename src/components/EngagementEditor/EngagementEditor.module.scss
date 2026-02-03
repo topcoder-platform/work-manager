@@ -226,3 +226,114 @@
 .assignmentProgressPartial {
   color: $tc-blue-40;
 }
+
+.acceptModal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 360px;
+}
+
+.acceptTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: $challenges-title;
+}
+
+.acceptSubtitle {
+  font-size: 13px;
+  color: $tc-gray-70;
+}
+
+.acceptHandleLine {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.acceptHandle {
+  font-weight: 600;
+}
+
+.acceptDivider {
+  color: $tc-gray-60;
+}
+
+.acceptGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.acceptField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.acceptFieldFull {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  grid-column: 1 / -1;
+}
+
+.acceptLabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: $tc-gray-60;
+}
+
+.acceptRequired {
+  color: $tc-red;
+  margin-left: 4px;
+}
+
+.acceptDateInput {
+  :global(.rdt) {
+    width: 100%;
+  }
+
+  :global(.form-control) {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid $tc-gray-20;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  :global(.rdtPicker) {
+    z-index: 1100;
+  }
+}
+
+.acceptInput {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid $tc-gray-20;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.acceptTextarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid $tc-gray-20;
+  border-radius: 4px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.acceptError {
+  color: $tc-red;
+  font-size: 12px;
+}
+
+.acceptActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}

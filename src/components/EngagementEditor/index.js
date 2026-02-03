@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import moment from 'moment-timezone'
@@ -9,6 +9,9 @@ import Select from '../Select'
 import SkillsField from '../ChallengeEditor/SkillsField'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import Loader from '../Loader'
+import Modal from '../Modal'
+import DateInput from '../DateInput'
+import Handle from '../Handle'
 import { JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
 import { suggestProfiles } from '../../services/user'
 import { getCountableAssignments } from '../../util/engagements'
@@ -16,6 +19,8 @@ import { formatTimeZoneLabel, formatTimeZoneList } from '../../util/timezones'
 import styles from './EngagementEditor.module.scss'
 
 const ANY_OPTION = { label: 'Any', value: 'Any' }
+const INPUT_DATE_FORMAT = 'MM/dd/yyyy'
+const INPUT_TIME_FORMAT = 'HH:mm'
 const ANTICIPATED_START_OPTIONS = [
   { label: 'Immediate', value: 'Immediate' },
   { label: 'In a few days', value: 'In a few days' },
@@ -36,7 +41,8 @@ const getEmptyEngagement = () => ({
   status: 'Open',
   isPrivate: false,
   requiredMemberCount: '',
-  assignedMemberHandles: []
+  assignedMemberHandles: [],
+  assignmentDetails: []
 })
 
 const normalizeAnySelection = (selectedOptions) => {
@@ -68,6 +74,17 @@ const normalizeMemberInfo = (member, index) => {
   }
 }
 
+const toValidMoment = (value) => {
+  if (!value) {
+    return null
+  }
+  if (moment.isMoment(value)) {
+    return value.isValid() ? value : null
+  }
+  const parsed = moment(value)
+  return parsed.isValid() ? parsed : null
+}
+
 const EngagementEditor = ({
   engagement,
   projectId,
@@ -87,6 +104,12 @@ const EngagementEditor = ({
   onDelete,
   resolvedAssignedMembers
 }) => {
+  const [assignModal, setAssignModal] = useState(null)
+  const [assignStartDate, setAssignStartDate] = useState(null)
+  const [assignEndDate, setAssignEndDate] = useState(null)
+  const [assignRate, setAssignRate] = useState('')
+  const [assignOtherRemarks, setAssignOtherRemarks] = useState('')
+  const [assignErrors, setAssignErrors] = useState({})
   const { timeZoneOptions, timeZoneOptionByZone } = useMemo(() => {
     const optionByLabel = new Map()
     moment.tz.names().forEach((zone) => {
@@ -202,6 +225,20 @@ const EngagementEditor = ({
   }, [assignments])
   const assignedMembers = Array.isArray(engagement.assignedMembers) ? engagement.assignedMembers : []
   const assignedMemberHandles = Array.isArray(engagement.assignedMemberHandles) ? engagement.assignedMemberHandles : []
+  const assignmentDetails = Array.isArray(engagement.assignmentDetails) ? engagement.assignmentDetails : []
+  const assignmentDetailsByHandle = useMemo(() => {
+    return assignmentDetails.reduce((acc, detail) => {
+      const handle = detail && detail.memberHandle
+      if (!handle) {
+        return acc
+      }
+      const key = handle.toLowerCase()
+      if (!acc[key]) {
+        acc[key] = detail
+      }
+      return acc
+    }, {})
+  }, [assignmentDetails])
   const assignedMemberList = useMemo(() => {
     if (countableAssignments.length > 0) {
       return countableAssignments.map((assignment, index) => ({
@@ -244,6 +281,45 @@ const EngagementEditor = ({
     styles.assignmentProgress,
     isFullyStaffed ? styles.assignmentProgressComplete : styles.assignmentProgressPartial
   )
+  const assignHandle = assignModal ? assignModal.handle : null
+  const assignHandleColor = assignHandle ? '#000' : undefined
+  const today = moment().startOf('day')
+  const parsedAssignStart = assignStartDate ? moment(assignStartDate) : null
+  const parsedAssignStartDay = parsedAssignStart && parsedAssignStart.isValid()
+    ? parsedAssignStart.clone().startOf('day')
+    : null
+  const minAssignEndDay = parsedAssignStartDay && parsedAssignStartDay.isAfter(today) ? parsedAssignStartDay : today
+  const isAssignStartDateValid = (current) => {
+    const currentMoment = toValidMoment(current)
+    if (!currentMoment) {
+      return false
+    }
+    return currentMoment.isSameOrAfter(today, 'day')
+  }
+  const isAssignEndDateValid = (current) => {
+    const currentMoment = toValidMoment(current)
+    if (!currentMoment) {
+      return false
+    }
+    return currentMoment.isSameOrAfter(minAssignEndDay, 'day')
+  }
+  const getMinAssignStartDateTime = () => moment().toDate()
+  const getMinAssignEndDateTime = () => {
+    const now = moment()
+    if (parsedAssignStart && parsedAssignStart.isValid() && parsedAssignStart.isAfter(now)) {
+      return parsedAssignStart.toDate()
+    }
+    return now.toDate()
+  }
+  const assignSubtitle = assignHandle ? (
+    <div className={styles.acceptHandleLine}>
+      <Handle
+        handle={assignHandle}
+        color={assignHandleColor}
+        className={styles.acceptHandle}
+      />
+    </div>
+  ) : null
 
   const loadMemberOptions = (inputValue) => {
     if (!inputValue) {
@@ -257,6 +333,91 @@ const EngagementEditor = ({
         })
         .filter(Boolean)
     })
+  }
+
+  const resetAssignState = () => {
+    setAssignModal(null)
+    setAssignStartDate(null)
+    setAssignEndDate(null)
+    setAssignRate('')
+    setAssignOtherRemarks('')
+    setAssignErrors({})
+  }
+
+  const openAssignModal = (index, handle) => {
+    const normalizedHandle = handle ? handle.toLowerCase() : null
+    const existingDetails = normalizedHandle ? assignmentDetailsByHandle[normalizedHandle] : null
+    setAssignModal({ index, handle })
+    setAssignStartDate(existingDetails ? existingDetails.startDate || null : null)
+    setAssignEndDate(existingDetails ? existingDetails.endDate || null : null)
+    setAssignRate(existingDetails ? existingDetails.agreementRate || '' : '')
+    setAssignOtherRemarks(existingDetails ? existingDetails.otherRemarks || '' : '')
+    setAssignErrors({})
+  }
+
+  const handleCloseAssignModal = () => {
+    resetAssignState()
+  }
+
+  const handleAssignSubmit = () => {
+    if (!assignModal) {
+      return
+    }
+
+    const nextErrors = {}
+    const parsedStart = assignStartDate ? moment(assignStartDate) : null
+    const parsedEnd = assignEndDate ? moment(assignEndDate) : null
+    const normalizedRate = assignRate != null ? String(assignRate).trim() : ''
+    const normalizedOtherRemarks = assignOtherRemarks != null ? String(assignOtherRemarks).trim() : ''
+
+    if (!parsedStart || !parsedStart.isValid()) {
+      nextErrors.startDate = 'Start date is required.'
+    }
+    if (!parsedEnd || !parsedEnd.isValid()) {
+      nextErrors.endDate = 'End date is required.'
+    }
+    if (!normalizedRate) {
+      nextErrors.rate = 'Assignment rate is required.'
+    }
+    if (parsedStart && parsedEnd && parsedStart.isValid() && parsedEnd.isValid() && parsedEnd.isBefore(parsedStart)) {
+      nextErrors.endDate = 'End date must be after start date.'
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setAssignErrors(nextErrors)
+      return
+    }
+
+    const nextAssignedMemberHandles = Array.from(
+      { length: assignmentFieldCount },
+      (_, handleIndex) => assignedMemberHandles[handleIndex] || ''
+    )
+    const nextAssignmentDetails = Array.from(
+      { length: assignmentFieldCount },
+      (_, detailIndex) => assignmentDetails[detailIndex] || null
+    )
+    nextAssignedMemberHandles[assignModal.index] = assignModal.handle
+    nextAssignmentDetails[assignModal.index] = {
+      memberHandle: assignModal.handle,
+      startDate: parsedStart.toISOString(),
+      endDate: parsedEnd.toISOString(),
+      agreementRate: normalizedRate,
+      otherRemarks: normalizedOtherRemarks
+    }
+
+    onUpdateInput({
+      target: {
+        name: 'assignedMemberHandles',
+        value: nextAssignedMemberHandles
+      }
+    })
+    onUpdateInput({
+      target: {
+        name: 'assignmentDetails',
+        value: nextAssignmentDetails
+      }
+    })
+    resetAssignState()
   }
 
   if (isLoading) {
@@ -274,6 +435,109 @@ const EngagementEditor = ({
           onCancel={onToggleDelete}
           onConfirm={onDelete}
         />
+      )}
+      {assignModal && (
+        <Modal onCancel={handleCloseAssignModal}>
+          <div className={styles.acceptModal}>
+            <div className={styles.acceptTitle}>Assign Member</div>
+            {assignSubtitle && (
+              <div className={styles.acceptSubtitle}>
+                {assignSubtitle}
+              </div>
+            )}
+            <div className={styles.acceptGrid}>
+              <div className={styles.acceptField}>
+                <label className={styles.acceptLabel}>
+                  Tentative start date
+                  <span className={styles.acceptRequired}>*</span>
+                </label>
+                <DateInput
+                  className={styles.acceptDateInput}
+                  value={assignStartDate}
+                  dateFormat={INPUT_DATE_FORMAT}
+                  timeFormat={INPUT_TIME_FORMAT}
+                  minDateTime={getMinAssignStartDateTime}
+                  isValidDate={isAssignStartDateValid}
+                  onChange={(value) => {
+                    setAssignStartDate(value)
+                    if (assignErrors.startDate) {
+                      setAssignErrors(prev => ({ ...prev, startDate: '' }))
+                    }
+                  }}
+                />
+                {assignErrors.startDate && (
+                  <div className={styles.acceptError}>{assignErrors.startDate}</div>
+                )}
+              </div>
+              <div className={styles.acceptField}>
+                <label className={styles.acceptLabel}>
+                  Tentative end date
+                  <span className={styles.acceptRequired}>*</span>
+                </label>
+                <DateInput
+                  className={styles.acceptDateInput}
+                  value={assignEndDate}
+                  dateFormat={INPUT_DATE_FORMAT}
+                  timeFormat={INPUT_TIME_FORMAT}
+                  minDateTime={getMinAssignEndDateTime}
+                  isValidDate={isAssignEndDateValid}
+                  onChange={(value) => {
+                    setAssignEndDate(value)
+                    if (assignErrors.endDate) {
+                      setAssignErrors(prev => ({ ...prev, endDate: '' }))
+                    }
+                  }}
+                />
+                {assignErrors.endDate && (
+                  <div className={styles.acceptError}>{assignErrors.endDate}</div>
+                )}
+              </div>
+              <div className={styles.acceptFieldFull}>
+                <label className={styles.acceptLabel}>
+                  Assignment rate (per week)
+                  <span className={styles.acceptRequired}>*</span>
+                </label>
+                <input
+                  className={styles.acceptInput}
+                  type='number'
+                  min='0'
+                  step='0.01'
+                  value={assignRate}
+                  onChange={(event) => {
+                    setAssignRate(event.target.value)
+                    if (assignErrors.rate) {
+                      setAssignErrors(prev => ({ ...prev, rate: '' }))
+                    }
+                  }}
+                />
+                {assignErrors.rate && (
+                  <div className={styles.acceptError}>{assignErrors.rate}</div>
+                )}
+              </div>
+              <div className={styles.acceptFieldFull}>
+                <label className={styles.acceptLabel}>Other remarks</label>
+                <textarea
+                  className={styles.acceptTextarea}
+                  rows={3}
+                  value={assignOtherRemarks}
+                  onChange={(event) => setAssignOtherRemarks(event.target.value)}
+                />
+              </div>
+            </div>
+            <div className={styles.acceptActions}>
+              <OutlineButton
+                text='Cancel'
+                type='info'
+                onClick={handleCloseAssignModal}
+              />
+              <PrimaryButton
+                text='Confirm'
+                type='info'
+                onClick={handleAssignSubmit}
+              />
+            </div>
+          </div>
+        </Modal>
       )}
       <div className={styles.topContainer}>
         <div className={styles.leftContainer}>
@@ -690,6 +954,10 @@ const EngagementEditor = ({
                 { length: assignmentFieldCount },
                 (_, handleIndex) => assignedMemberHandles[handleIndex] || ''
               )
+              const nextAssignmentDetails = Array.from(
+                { length: assignmentFieldCount },
+                (_, detailIndex) => assignmentDetails[detailIndex] || null
+              )
               return (
                 <div key={`assign-member-${index}`} className={styles.row}>
                   <div className={cn(styles.field, styles.col1)}>
@@ -709,14 +977,29 @@ const EngagementEditor = ({
                         }
                         : null}
                       onChange={(option) => {
-                        const updatedHandles = [...nextAssignedMemberHandles]
-                        updatedHandles[index] = option ? option.value : ''
-                        onUpdateInput({
-                          target: {
-                            name: 'assignedMemberHandles',
-                            value: updatedHandles
-                          }
-                        })
+                        if (!option) {
+                          const updatedHandles = [...nextAssignedMemberHandles]
+                          const updatedDetails = [...nextAssignmentDetails]
+                          updatedHandles[index] = ''
+                          updatedDetails[index] = null
+                          onUpdateInput({
+                            target: {
+                              name: 'assignedMemberHandles',
+                              value: updatedHandles
+                            }
+                          })
+                          onUpdateInput({
+                            target: {
+                              name: 'assignmentDetails',
+                              value: updatedDetails
+                            }
+                          })
+                          return
+                        }
+                        if (option.value === selectedHandle) {
+                          return
+                        }
+                        openAssignModal(index, option.value)
                       }}
                       isClearable
                     />
@@ -796,6 +1079,13 @@ EngagementEditor.propTypes = {
       })
     ])),
     assignedMemberHandles: PropTypes.arrayOf(PropTypes.string),
+    assignmentDetails: PropTypes.arrayOf(PropTypes.shape({
+      memberHandle: PropTypes.string,
+      startDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
+      endDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
+      agreementRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      otherRemarks: PropTypes.string
+    })),
     timezones: PropTypes.arrayOf(PropTypes.string),
     countries: PropTypes.arrayOf(PropTypes.string),
     skills: PropTypes.arrayOf(PropTypes.shape()),
