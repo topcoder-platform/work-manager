@@ -308,7 +308,7 @@ class Routes extends React.Component {
               <Tab
                 projectId={match.params.projectId}
                 menu={'Experience'}
-                backPath={`/projects/${match.params.projectId}/engagements`}
+                backPath={`/projects/${match.params.projectId}/engagements/${match.params.engagementId}/assignments`}
               />,
               <FooterContainer />
             )()} />
@@ -319,7 +319,7 @@ class Routes extends React.Component {
               <Tab
                 projectId={match.params.projectId}
                 menu={'Feedback'}
-                backPath={`/projects/${match.params.projectId}/engagements`}
+                backPath={`/projects/${match.params.projectId}/engagements/${match.params.engagementId}/assignments`}
               />,
               <FooterContainer />
             )()} />

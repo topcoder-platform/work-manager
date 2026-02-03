@@ -85,6 +85,13 @@ const toValidMoment = (value) => {
   return parsed.isValid() ? parsed : null
 }
 
+const formatAssignmentDate = (value) => {
+  if (!value) {
+    return '-'
+  }
+  return moment(value).format('MMM DD, YYYY HH:mm')
+}
+
 const EngagementEditor = ({
   engagement,
   projectId,
@@ -949,6 +956,13 @@ const EngagementEditor = ({
                 ? `Assign to Member ${index + 1}`
                 : 'Assign to Member'
               const selectedHandle = assignedMemberHandles[index]
+              const assignmentDetail = selectedHandle
+                ? assignmentDetailsByHandle[selectedHandle.toLowerCase()]
+                : null
+              const hasAssignmentDetail = Boolean(
+                assignmentDetail &&
+                (assignmentDetail.startDate || assignmentDetail.endDate || assignmentDetail.agreementRate)
+              )
               const fieldError = validationErrors[`assignedMemberHandle${index}`]
               const nextAssignedMemberHandles = Array.from(
                 { length: assignmentFieldCount },
@@ -1003,6 +1017,34 @@ const EngagementEditor = ({
                       }}
                       isClearable
                     />
+                    {hasAssignmentDetail && (
+                      <div className={styles.assignmentDetails}>
+                        <div className={styles.assignmentDetailsText}>
+                          <span>
+                            <span className={styles.assignmentDetailLabel}>Start:</span>
+                            {' '}
+                            {formatAssignmentDate(assignmentDetail.startDate)}
+                          </span>
+                          <span>
+                            <span className={styles.assignmentDetailLabel}>End:</span>
+                            {' '}
+                            {formatAssignmentDate(assignmentDetail.endDate)}
+                          </span>
+                          <span>
+                            <span className={styles.assignmentDetailLabel}>Rate:</span>
+                            {' '}
+                            {assignmentDetail.agreementRate || '-'}
+                          </span>
+                        </div>
+                        <button
+                          type='button'
+                          className={styles.assignmentEditButton}
+                          onClick={() => openAssignModal(index, selectedHandle)}
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    )}
                     {submitTriggered && fieldError && (
                       <div className={styles.error}>{fieldError}</div>
                     )}

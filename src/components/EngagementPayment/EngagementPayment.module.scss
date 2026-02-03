@@ -291,6 +291,13 @@
   color: $tc-gray-80;
 }
 
+.paymentRemarks {
+  font-size: 12px;
+  color: $tc-gray-60;
+  line-height: 1.4;
+  white-space: pre-line;
+}
+
 .paymentMeta {
   display: flex;
   align-items: center;

@@ -227,6 +227,41 @@
   color: $tc-blue-40;
 }
 
+.assignmentDetails {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: $tc-gray-70;
+}
+
+.assignmentDetailsText {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.assignmentDetailLabel {
+  font-weight: 600;
+  color: $tc-gray-80;
+}
+
+.assignmentEditButton {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: $tc-blue-20;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .acceptModal {
   display: flex;
   flex-direction: column;

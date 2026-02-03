@@ -80,6 +80,28 @@ const getPaymentDate = (payment) => {
   return payment.createdAt || payment.updatedAt || payment.date || payment.created || payment.updated || null
 }
 
+const getPaymentRemarks = (payment) => {
+  if (!payment) {
+    return ''
+  }
+  const attributes = payment.attributes && typeof payment.attributes === 'object'
+    ? payment.attributes
+    : null
+  const value = attributes && Object.prototype.hasOwnProperty.call(attributes, 'remarks')
+    ? attributes.remarks
+    : payment.remarks
+  if (value == null) {
+    return ''
+  }
+  if (typeof value === 'string') {
+    return value.trim()
+  }
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value)
+  }
+  return ''
+}
+
 const getAssignmentStatus = (member) => {
   if (!member || typeof member !== 'object') {
     return ''
@@ -279,11 +301,13 @@ const EngagementPayment = ({
           const normalizedStatus = typeof status === 'string' ? status.trim().toLowerCase() : ''
           const showStatus = normalizedStatus && normalizedStatus !== 'unknown'
           const title = getPaymentTitle(payment)
+          const remarks = getPaymentRemarks(payment)
           return (
             <div key={paymentKey} className={styles.paymentItem}>
               <div className={styles.paymentAmount}>{amount}</div>
               <div className={styles.paymentDetails}>
                 <div className={styles.paymentTitle}>{title}</div>
+                {remarks && <div className={styles.paymentRemarks}>{remarks}</div>}
                 <div className={styles.paymentMeta}>
                   <span className={styles.paymentDate}>{date}</span>
                   {showStatus && <span className={styles.paymentStatus}>{status}</span>}

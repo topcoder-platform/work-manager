@@ -162,7 +162,7 @@ export function generateEngagementFeedbackLink (engagementId, assignmentId, data
  */
 export function updateEngagementAssignmentStatus (engagementId, assignmentId, status, terminationReason) {
   return axiosInstance.patch(
-    `${ENGAGEMENTS_ROOT_API_URL}/${engagementId}/assignments/${assignmentId}/status`,
+    `${ENGAGEMENTS_API_URL}/${engagementId}/assignments/${assignmentId}/status`,
     { status, terminationReason }
   )
 }
