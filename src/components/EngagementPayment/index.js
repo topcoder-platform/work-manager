@@ -237,12 +237,6 @@ const EngagementPayment = ({
     }
   }
 
-  const getAssignmentStatusLabel = (member) => {
-    const rawStatus = getAssignmentStatus(member)
-    const normalizedStatus = normalizeAssignmentStatus(rawStatus)
-    return normalizedStatus || 'Unknown'
-  }
-
   const renderPaymentHistory = (member) => {
     const assignmentId = member && member.assignmentId != null ? member.assignmentId : null
     if (assignmentId == null || assignmentId === '') {
@@ -344,8 +338,10 @@ const EngagementPayment = ({
             const assignmentKey = assignmentId != null && assignmentId !== '' ? String(assignmentId) : null
             const hasAssignmentId = Boolean(assignmentKey)
             const canPay = Boolean(member && member.id && hasAssignmentId && !isPaymentProcessing)
-            const assignmentStatusLabel = getAssignmentStatusLabel(member)
             const assignmentStatusRaw = getAssignmentStatus(member)
+            const normalizedAssignmentStatus = normalizeAssignmentStatus(assignmentStatusRaw)
+            const assignmentStatusLabel = normalizedAssignmentStatus || 'Unknown'
+            const isAssignedStatus = normalizedAssignmentStatus.toLowerCase() === 'assigned'
             const isRowTerminating = assignmentKey && terminatingAssignments
               ? Boolean(terminatingAssignments[assignmentKey])
               : false
@@ -404,29 +400,33 @@ const EngagementPayment = ({
                     </div>
                   </div>
                   <div className={styles.memberActions}>
-                    <button
-                      type='button'
-                      className={styles.toggleButton}
-                      onClick={() => openPaymentHistoryModal(member)}
-                      disabled={!assignmentKey}
-                      aria-haspopup='dialog'
-                    >
-                      Show Payment History
-                    </button>
-                    <PrimaryButton
-                      text='Pay'
-                      type='info'
-                      className={styles.actionButton}
-                      onClick={() => onOpenPaymentModal(member)}
-                      disabled={!canPay}
-                    />
-                    <PrimaryButton
-                      text={isRowTerminating ? 'Terminating...' : 'Terminate'}
-                      type='danger'
-                      className={styles.actionButton}
-                      onClick={() => openTerminationModal(member)}
-                      disabled={!hasAssignmentId || isRowTerminating}
-                    />
+                    {isAssignedStatus && (
+                      <>
+                        <button
+                          type='button'
+                          className={styles.toggleButton}
+                          onClick={() => openPaymentHistoryModal(member)}
+                          disabled={!assignmentKey}
+                          aria-haspopup='dialog'
+                        >
+                          Show Payment History
+                        </button>
+                        <PrimaryButton
+                          text='Pay'
+                          type='info'
+                          className={styles.actionButton}
+                          onClick={() => onOpenPaymentModal(member)}
+                          disabled={!canPay}
+                        />
+                        <PrimaryButton
+                          text={isRowTerminating ? 'Terminating...' : 'Terminate'}
+                          type='danger'
+                          className={styles.actionButton}
+                          onClick={() => openTerminationModal(member)}
+                          disabled={!hasAssignmentId || isRowTerminating}
+                        />
+                      </>
+                    )}
                   </div>
                 </div>
               </div>

@@ -162,6 +162,22 @@ const ApplicationsList = ({
   const acceptHandleColor = Number.isFinite(acceptRating) ? undefined : '#000'
   const acceptName = getApplicationName(acceptApplication) || 'Selected applicant'
   const acceptSuccessLabel = acceptSuccess ? acceptSuccess.memberLabel : null
+  const today = moment().startOf('day')
+  const parsedAcceptStart = acceptStartDate ? moment(acceptStartDate) : null
+  const parsedAcceptStartDay = parsedAcceptStart && parsedAcceptStart.isValid()
+    ? parsedAcceptStart.clone().startOf('day')
+    : null
+  const minEndDay = parsedAcceptStartDay && parsedAcceptStartDay.isAfter(today) ? parsedAcceptStartDay : today
+  const isAcceptStartDateValid = (current) => current.isSameOrAfter(today, 'day')
+  const isAcceptEndDateValid = (current) => current.isSameOrAfter(minEndDay, 'day')
+  const getMinStartDateTime = () => moment().toDate()
+  const getMinEndDateTime = () => {
+    const now = moment()
+    if (parsedAcceptStart && parsedAcceptStart.isValid() && parsedAcceptStart.isAfter(now)) {
+      return parsedAcceptStart.toDate()
+    }
+    return now.toDate()
+  }
   const acceptSubtitle = acceptHandle ? (
     <div className={styles.acceptHandleLine}>
       <Handle
@@ -314,12 +330,17 @@ const ApplicationsList = ({
             </div>
             <div className={styles.acceptGrid}>
               <div className={styles.acceptField}>
-                <label className={styles.acceptLabel}>Tentative start date</label>
+                <label className={styles.acceptLabel}>
+                  Tentative start date
+                  <span className={styles.acceptRequired}>*</span>
+                </label>
                 <DateInput
                   className={styles.acceptDateInput}
                   value={acceptStartDate}
                   dateFormat={INPUT_DATE_FORMAT}
                   timeFormat={INPUT_TIME_FORMAT}
+                  minDateTime={getMinStartDateTime}
+                  isValidDate={isAcceptStartDateValid}
                   onChange={(value) => {
                     setAcceptStartDate(value)
                     if (acceptErrors.startDate) {
@@ -332,13 +353,17 @@ const ApplicationsList = ({
                 )}
               </div>
               <div className={styles.acceptField}>
-                <label className={styles.acceptLabel}>Tentative end date</label>
+                <label className={styles.acceptLabel}>
+                  Tentative end date
+                  <span className={styles.acceptRequired}>*</span>
+                </label>
                 <DateInput
                   className={styles.acceptDateInput}
                   value={acceptEndDate}
                   dateFormat={INPUT_DATE_FORMAT}
                   timeFormat={INPUT_TIME_FORMAT}
-                  minDateTime={acceptStartDate ? moment(acceptStartDate).toDate() : null}
+                  minDateTime={getMinEndDateTime}
+                  isValidDate={isAcceptEndDateValid}
                   onChange={(value) => {
                     setAcceptEndDate(value)
                     if (acceptErrors.endDate) {
@@ -351,7 +376,10 @@ const ApplicationsList = ({
                 )}
               </div>
               <div className={styles.acceptFieldFull}>
-                <label className={styles.acceptLabel}>Assignment rate (per week)</label>
+                <label className={styles.acceptLabel}>
+                  Assignment rate (per week)
+                  <span className={styles.acceptRequired}>*</span>
+                </label>
                 <input
                   className={styles.acceptInput}
                   type='number'

@@ -225,6 +225,11 @@
   color: $tc-gray-60;
 }
 
+.acceptRequired {
+  color: $tc-red;
+  margin-left: 4px;
+}
+
 .acceptDateInput {
   :global(.rdt) {
     width: 100%;
