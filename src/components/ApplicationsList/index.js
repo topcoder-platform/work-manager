@@ -131,6 +131,7 @@ const ApplicationsList = ({
   const menuPortalTarget = typeof document === 'undefined' ? undefined : document.body
   const acceptHandle = getApplicationHandle(acceptApplication)
   const acceptRating = getApplicationRating(acceptApplication)
+  const acceptHandleColor = Number.isFinite(acceptRating) ? undefined : '#000'
   const acceptName = acceptApplication
     ? (acceptApplication.name || acceptApplication.email || 'Selected applicant')
     : 'Selected applicant'
@@ -139,6 +140,7 @@ const ApplicationsList = ({
       <Handle
         handle={acceptHandle}
         rating={acceptRating}
+        color={acceptHandleColor}
         className={styles.acceptHandle}
       />
       {acceptName && (
