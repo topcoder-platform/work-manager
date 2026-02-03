@@ -134,6 +134,17 @@ const normalizeAssignmentStatus = (status) => {
     .replace(/\s+/g, '_')
 }
 
+const toValidMoment = (value) => {
+  if (!value) {
+    return null
+  }
+  if (moment.isMoment(value)) {
+    return value.isValid() ? value : null
+  }
+  const parsed = moment(value)
+  return parsed.isValid() ? parsed : null
+}
+
 const isActiveAssignmentStatus = (status) => {
   const normalized = normalizeAssignmentStatus(status)
   return normalized === 'ASSIGNED' || normalized === 'ACTIVE'
@@ -168,8 +179,20 @@ const ApplicationsList = ({
     ? parsedAcceptStart.clone().startOf('day')
     : null
   const minEndDay = parsedAcceptStartDay && parsedAcceptStartDay.isAfter(today) ? parsedAcceptStartDay : today
-  const isAcceptStartDateValid = (current) => current.isSameOrAfter(today, 'day')
-  const isAcceptEndDateValid = (current) => current.isSameOrAfter(minEndDay, 'day')
+  const isAcceptStartDateValid = (current) => {
+    const currentMoment = toValidMoment(current)
+    if (!currentMoment) {
+      return false
+    }
+    return currentMoment.isSameOrAfter(today, 'day')
+  }
+  const isAcceptEndDateValid = (current) => {
+    const currentMoment = toValidMoment(current)
+    if (!currentMoment) {
+      return false
+    }
+    return currentMoment.isSameOrAfter(minEndDay, 'day')
+  }
   const getMinStartDateTime = () => moment().toDate()
   const getMinEndDateTime = () => {
     const now = moment()
