@@ -1,0 +1,278 @@
+@use '../../styles/includes' as *;
+
+.container {
+  padding: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: $challenges-title;
+}
+
+.subtitle {
+  margin-top: 6px;
+  color: $tc-gray-70;
+  font-size: 14px;
+  max-width: 720px;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.metaItem {
+  font-size: 13px;
+  color: $tc-gray-70;
+}
+
+.metaLabel {
+  font-weight: 600;
+  margin-right: 6px;
+  color: $tc-gray-80;
+}
+
+.filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: $white;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 12px 16px;
+  border-bottom: 1px solid $tc-gray-20;
+  font-size: 14px;
+  vertical-align: top;
+}
+
+.table th {
+  background: $tc-gray-10;
+  font-weight: 600;
+}
+
+.assignedHeader {
+  width: 60px;
+  text-align: center;
+}
+
+.assignedCell {
+  width: 60px;
+  text-align: center;
+}
+
+.handleHeader {
+  min-width: 140px;
+}
+
+.handleCell {
+  white-space: nowrap;
+}
+
+.handleLink {
+  color: $tc-blue-20;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.assignedIndicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  background: $tc-green-20;
+  border: 1px solid $tc-green-40;
+}
+
+.assignedIcon {
+  color: $tc-green-50;
+  font-size: 12px;
+}
+
+.status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  display: inline-block;
+  text-transform: capitalize;
+}
+
+.statusSubmitted {
+  background: $tc-gray-20;
+  color: $tc-gray-80;
+}
+
+.statusUnderReview {
+  background: $tc-yellow;
+  color: $tc-gray-90;
+}
+
+.statusSelected {
+  background: $tc-green-20;
+  color: $tc-gray-90;
+}
+
+.statusRejected {
+  background: $tc-red;
+  color: $white;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.statusSelect {
+  min-width: 160px;
+}
+
+.emptyState {
+  padding: 40px;
+  text-align: center;
+  color: $tc-gray-70;
+}
+
+.acceptModal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 360px;
+}
+
+.acceptTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: $challenges-title;
+}
+
+.acceptSubtitle {
+  font-size: 13px;
+  color: $tc-gray-70;
+}
+
+.acceptSuccessMessage {
+  font-size: 14px;
+  color: $tc-gray-70;
+  line-height: 1.5;
+}
+
+.acceptHandleLine {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.acceptHandle {
+  font-weight: 600;
+}
+
+.acceptDivider {
+  color: $tc-gray-60;
+}
+
+.acceptGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.acceptField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.acceptFieldFull {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  grid-column: 1 / -1;
+}
+
+.acceptLabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: $tc-gray-60;
+}
+
+.acceptRequired {
+  color: $tc-red;
+  margin-left: 4px;
+}
+
+.acceptDateInput {
+  :global(.rdt) {
+    width: 100%;
+  }
+
+  :global(.form-control) {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid $tc-gray-20;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  :global(.rdtPicker) {
+    z-index: 1100;
+  }
+}
+
+.acceptInput {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid $tc-gray-20;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.acceptTextarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid $tc-gray-20;
+  border-radius: 4px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.acceptError {
+  color: $tc-red;
+  font-size: 12px;
+}
+
+.acceptActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}

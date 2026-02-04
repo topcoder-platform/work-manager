@@ -1,0 +1,156 @@
+@use '../../styles/includes' as *;
+
+.container {
+  width: 100%;
+  max-width: 900px;
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  color: $challenges-title;
+}
+
+.subtitle {
+  margin-top: 6px;
+  color: $tc-gray-70;
+  font-size: 14px;
+}
+
+.section {
+  margin-bottom: 24px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: $tc-gray-80;
+  margin-bottom: 12px;
+}
+
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px 20px;
+}
+
+.detailItem {
+  font-size: 14px;
+}
+
+.label {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: $tc-gray-60;
+  margin-bottom: 4px;
+}
+
+.value {
+  color: $tc-gray-80;
+}
+
+.handleRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.handleLink {
+  color: $tc-blue-20;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.downloadButton {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: $tc-gray-70;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+}
+
+.downloadButton:hover {
+  color: $tc-blue-20;
+}
+
+.status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  display: inline-block;
+  text-transform: capitalize;
+}
+
+.statusSubmitted {
+  background: $tc-gray-20;
+  color: $tc-gray-80;
+}
+
+.statusUnderReview {
+  background: $tc-yellow;
+  color: $tc-gray-90;
+}
+
+.statusSelected {
+  background: $tc-green-20;
+  color: $tc-gray-90;
+}
+
+.statusRejected {
+  background: $tc-red;
+  color: $white;
+}
+
+.statusControl {
+  min-width: 200px;
+}
+
+.links {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.linkRow {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.linkLabel {
+  min-width: 80px;
+  font-weight: 600;
+  color: $tc-gray-70;
+}
+
+.linkList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.coverLetter {
+  background: $tc-gray-10;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 14px;
+  color: $tc-gray-80;
+  white-space: pre-wrap;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+}

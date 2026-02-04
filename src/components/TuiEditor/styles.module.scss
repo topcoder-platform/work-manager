@@ -2,31 +2,30 @@
 
 
 .editor {
-
-  > div {
+  :global(.tui-editor-contents) {
     h1 {
       all: revert;
       font-size: 24px;
     }
-  }
 
-  b,
-  i,
-  s,
-  hr,
-  blockquote,
-  ul,
-  li,
-  ol,
-  table,
-  thead,
-  tr,
-  th,
-  img,
-  a,
-  code,
-  pre {
-    all: revert;
+    b,
+    i,
+    s,
+    hr,
+    blockquote,
+    ul,
+    li,
+    ol,
+    table,
+    thead,
+    tr,
+    th,
+    img,
+    a,
+    code,
+    pre {
+      all: revert;
+    }
   }
 
   :global {

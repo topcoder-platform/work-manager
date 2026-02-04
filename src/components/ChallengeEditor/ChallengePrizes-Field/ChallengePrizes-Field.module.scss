@@ -121,3 +121,28 @@
   height: 40px;
   align-self: flex-start;
 }
+
+.prizeTypeToggle {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.prizeTypeButton {
+  @include roboto();
+
+  border: 1px solid $tc-gray-30;
+  border-radius: 4px;
+  background: $tc-gray-00;
+  color: $tc-gray-80;
+  cursor: pointer;
+  height: 32px;
+  min-width: 80px;
+  padding: 4px 12px;
+}
+
+.active {
+  background: $tc-blue-30;
+  border-color: $tc-blue-30;
+  color: $tc-gray-00;
+}

@@ -1,0 +1,374 @@
+@use '../../styles/includes' as *;
+
+:global {
+  div[data-reach-popover] {
+    z-index: 10;
+  }
+}
+
+.wrapper {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.topContainer {
+  margin-top: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+}
+
+.leftContainer {
+  display: flex;
+  align-items: center;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 29px;
+  margin-right: 5px;
+  color: $challenges-title;
+}
+
+.textRequired {
+  @include roboto-medium();
+
+  color: $tc-red;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 14px;
+  align-self: flex-end;
+  margin-top: 30px;
+  margin-right: 30px;
+  margin-bottom: 2px;
+}
+
+.container {
+  width: 100%;
+
+  .formContainer {
+    box-sizing: border-box;
+    margin: 0 30px 30px 30px;
+    @include form-container-default();
+
+    form {
+      width: 100%;
+    }
+
+    .descriptionRow {
+      align-items: flex-start;
+
+      .field {
+        &.col1 {
+          margin-top: 8px;
+          margin-bottom: 0;
+          padding-top: 0;
+          align-items: flex-start;
+        }
+
+        &.col2 {
+          width: 100%;
+          max-width: none;
+          min-width: 0;
+          flex-direction: column;
+          align-self: stretch;
+        }
+      }
+    }
+  }
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  margin: 20px 30px;
+}
+
+.field {
+  &.col1 {
+    max-width: 185px;
+    min-width: 185px;
+    margin-right: 14px;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+
+    span {
+      color: $tc-red;
+    }
+  }
+
+  &.col2 {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.wrapLabel {
+  white-space: normal;
+}
+
+.input,
+.textarea,
+.selectInput {
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  border-bottom: 1px solid $tc-gray-20;
+  border-radius: 0;
+  font-size: 14px;
+  background-color: transparent;
+}
+
+.textarea {
+  min-height: 140px;
+}
+
+.inlineFields {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.inlineField {
+  flex: 1 1 200px;
+  min-width: 200px;
+}
+
+.durationDivider {
+  margin: 10px 0;
+  color: $tc-gray-60;
+  font-size: 12px;
+}
+
+.error {
+  color: $tc-red;
+  font-size: 12px;
+  margin-top: 6px;
+  margin-left: 12px;
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 12px;
+}
+
+.editor {
+  border: 1px solid $tc-gray-30;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.readOnlyValue {
+  padding: 10px 0;
+  color: $tc-gray-80;
+}
+
+.memberList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.memberRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid $tc-gray-20;
+  border-radius: 4px;
+  background-color: $white;
+}
+
+.memberHandle {
+  color: $tc-gray-80;
+  font-weight: 500;
+}
+
+.memberActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.memberNote {
+  font-size: 12px;
+  color: $tc-red;
+}
+
+.assignmentProgress {
+  margin-top: 6px;
+  margin-left: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.assignmentProgressComplete {
+  color: $tc-green-40;
+}
+
+.assignmentProgressPartial {
+  color: $tc-blue-40;
+}
+
+.assignmentDetails {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: $tc-gray-70;
+}
+
+.assignmentDetailsText {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.assignmentDetailLabel {
+  font-weight: 600;
+  color: $tc-gray-80;
+}
+
+.assignmentEditButton {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: $tc-blue-20;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.acceptModal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 360px;
+}
+
+.acceptTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: $challenges-title;
+}
+
+.acceptSubtitle {
+  font-size: 13px;
+  color: $tc-gray-70;
+}
+
+.acceptHandleLine {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.acceptHandle {
+  font-weight: 600;
+}
+
+.acceptDivider {
+  color: $tc-gray-60;
+}
+
+.acceptGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.acceptField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.acceptFieldFull {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  grid-column: 1 / -1;
+}
+
+.acceptLabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: $tc-gray-60;
+}
+
+.acceptRequired {
+  color: $tc-red;
+  margin-left: 4px;
+}
+
+.acceptDateInput {
+  :global(.rdt) {
+    width: 100%;
+  }
+
+  :global(.form-control) {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid $tc-gray-20;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  :global(.rdtPicker) {
+    z-index: 1100;
+  }
+}
+
+.acceptInput {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid $tc-gray-20;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.acceptTextarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid $tc-gray-20;
+  border-radius: 4px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.acceptError {
+  color: $tc-red;
+  font-size: 12px;
+}
+
+.acceptActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}

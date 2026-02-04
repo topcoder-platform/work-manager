@@ -4,6 +4,10 @@
   body.scrolling-disabled-by-modal {
     overflow: hidden;
   }
+
+  body.scrolling-disabled-by-modal div[data-reach-popover] {
+    z-index: 1100;
+  }
 }
 
 .overlay {
@@ -40,9 +44,12 @@
   border-radius: 4px;
   max-height: 95vh;
   max-width: $screen-md;
-  overflow: hidden;
+  min-width: 480px;
+  width: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 40px;
-  width: 480px;
   position: fixed;
   top: 50%;
   left: 50%;
@@ -51,6 +58,7 @@
 
   @include xs-to-lg {
     max-width: 95vw;
+    min-width: 0;
   }
 
   @include xs-to-sm {

@@ -58,3 +58,18 @@ export async function suggestProfiles (partialHandle) {
   const response = await axiosInstance.get(`${MEMBER_API_URL}/autocomplete?term=${encodeURIComponent(partialHandle)}`)
   return _.get(response, 'data')
 }
+
+/**
+ * Api request for downloading a member profile pdf
+ * @returns {Promise<Blob>}
+ */
+export async function downloadMemberProfile (handle) {
+  const encodedHandle = encodeURIComponent(handle)
+  const response = await axiosInstance.get(`${MEMBER_API_URL}/${encodedHandle}/profileDownload`, {
+    responseType: 'blob',
+    headers: {
+      Accept: 'application/pdf'
+    }
+  })
+  return _.get(response, 'data')
+}

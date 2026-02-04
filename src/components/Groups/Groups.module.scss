@@ -1,0 +1,284 @@
+@use '../../styles/includes' as *;
+
+.contentContainer {
+  margin: 0 20px;
+  padding-left: 15px;
+}
+
+.title {
+  @include roboto-bold();
+  font-size: 20px;
+  line-height: 24px;
+  color: $tc-gray-80;
+  margin: 10px 0 20px;
+}
+
+.row {
+  display: flex;
+  margin-bottom: 16px;
+  align-items: flex-start;
+
+  @include upto-sm {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.field {
+  @include upto-sm {
+    display: block;
+    padding-bottom: 10px;
+  }
+
+  label {
+    @include roboto-bold();
+
+    font-size: 16px;
+    line-height: 19px;
+    font-weight: 500;
+    color: $tc-gray-80;
+  }
+
+  &.input1 {
+    max-width: 185px;
+    min-width: 185px;
+    margin-right: 14px;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+
+    @include upto-sm {
+      max-width: none;
+      min-width: 0;
+      margin-right: 0;
+    }
+  }
+
+  &.input2 {
+    align-self: flex-end;
+    width: 50%;
+    margin-bottom: auto;
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 520px;
+    min-width: 520px;
+
+    @include upto-sm {
+      width: 100%;
+      max-width: none;
+      min-width: 0;
+    }
+  }
+}
+
+input,
+textarea {
+  border: 1px solid $tc-gray-40;
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 14px;
+  color: $tc-gray-80;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+.checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tcCheckbox {
+  @include tc-checkbox;
+
+  height: 18px;
+  width: 220px;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  display: inline-block;
+
+  input[type='checkbox'] {
+    display: none;
+  }
+
+  label {
+    @include roboto();
+
+    line-height: 17px;
+    font-weight: 400;
+    cursor: pointer;
+    position: absolute;
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    top: 0;
+    left: 0;
+    border: none;
+    box-shadow: none;
+    background: $tc-gray-30;
+    transition: all 0.15s ease-in-out;
+
+    &::after {
+      opacity: 0;
+      content: '';
+      position: absolute;
+      width: 9px;
+      height: 5px;
+      background: transparent;
+      top: 2px;
+      left: 2px;
+      border-top: none;
+      border-right: none;
+      transform: rotate(-45deg);
+      transition: all 0.15s ease-in-out;
+    }
+
+    &:hover::after {
+      opacity: 0.3;
+    }
+
+    div {
+      margin-left: 24px;
+      white-space: nowrap;
+    }
+  }
+
+  input[type='checkbox']:checked ~ label {
+    background: $tc-blue-20;
+  }
+
+  input[type='checkbox']:checked + label::after {
+    border-color: $white;
+  }
+}
+
+.checkboxLabel {
+  @include roboto();
+
+  font-size: 14px;
+  color: $tc-gray-80;
+}
+
+.fileUpload {
+  padding: 4px 0;
+}
+
+.helperText {
+  font-size: 12px;
+  color: $tc-gray-60;
+}
+
+.validationResults {
+  margin-top: 24px;
+  background-color: $white;
+  border: 1px solid $tc-gray-30;
+  border-radius: 6px;
+  padding: 16px;
+}
+
+.validationTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 12px;
+
+  th {
+    text-align: left;
+    background-color: $light-bg;
+    padding: 10px;
+    border-bottom: 1px solid $tc-gray-30;
+  }
+
+  td {
+    padding: 10px;
+    border-bottom: 1px solid $tc-gray-20;
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.matched {
+  color: $tc-green-40;
+  font-weight: 500;
+}
+
+.notMatched {
+  color: $tc-red;
+  font-weight: 500;
+}
+
+.errorMessage {
+  background-color: $tc-red-20;
+  border: 1px solid $tc-red;
+  color: $tc-red;
+  padding: 10px 12px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.fieldError {
+  color: $tc-red;
+  font-size: 12px;
+}
+
+.buttonGroup {
+  display: flex;
+  gap: 12px;
+  margin: 12px 0 8px;
+  max-width: 520px;
+
+  @include upto-sm {
+    flex-direction: column;
+    max-width: none;
+  }
+
+  button,
+  a {
+    height: 40px;
+  }
+}
+
+.validateSpinner {
+  height: 40px;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid $tc-gray-30;
+  border-radius: 4px;
+  background: $tc-gray-10;
+}
+
+.validateLoader {
+  width: 40px;
+  height: 40px;
+
+  svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.summaryText {
+  font-size: 14px;
+  color: $tc-gray-80;
+}
+
+.required {
+  color: $tc-red;
+}
+
+.loader {
+  margin: 16px 0;
+}

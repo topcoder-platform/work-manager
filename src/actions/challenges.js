@@ -335,8 +335,8 @@ export function updateChallengeDetails (challengeId, challengeDetails, projectId
     if (hasMilestone) {
       delete challengeDetails.milestoneId
     }
-    if (challengeDetails.status === 'Completed') {
-      // Cannot update prizeSets for challenges with status: Completed!
+    if (challengeDetails.status === CHALLENGE_STATUS.COMPLETED) {
+      // Cannot update prizeSets for challenges with status: COMPLETED!
       delete challengeDetails.prizeSets
     }
     return updateChallenge(challengeId, challengeDetails).then(async challenge => {

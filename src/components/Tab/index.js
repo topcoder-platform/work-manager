@@ -5,132 +5,95 @@ import styles from './Tab.module.scss'
 
 const Tab = ({
   currentTab,
-  selectTab
+  selectTab,
+  projectId,
+  canViewAssets,
+  onBack
 }) => {
-  const onActiveClick = () => {
-    if (currentTab === 1) {
-      return
-    }
-    selectTab(1)
+  const projectTabs = [
+    { id: 1, label: 'Challenges' },
+    { id: 2, label: 'Engagements' },
+    ...(canViewAssets ? [{ id: 3, label: 'Assets' }] : [])
+  ]
+  const tabs = projectId
+    ? projectTabs
+    : [
+      { id: 1, label: 'All Work' },
+      { id: 2, label: 'Projects' },
+      { id: 3, label: 'Users' },
+      { id: 4, label: 'Self-Service' },
+      { id: 5, label: 'TaaS' },
+      { id: 6, label: 'Groups' }
+    ]
+
+  const handleBack = () => {
+    onBack()
   }
 
-  const onPastChallengesClick = () => {
-    if (currentTab === 2) {
+  const handleBackKeyDown = (event) => {
+    if (event.key !== 'Enter' && event.key !== ' ') {
       return
     }
-    selectTab(2)
+    event.preventDefault()
+    handleBack()
   }
-
-  const onUsersClick = () => {
-    if (currentTab === 3) {
-      return
-    }
-    selectTab(3)
-  }
-
-  const onSelfServiceClick = () => {
-    if (currentTab === 4) {
-      return
-    }
-    selectTab(4)
-  }
-
-  const onTaaSClick = () => {
-    if (currentTab === 5) {
-      return
-    }
-    selectTab(5)
-  }
-
-  const tabComponent = (
-    <ul className={styles.challengeTab}>
-      <li
-        key='tab-item-active'
-        className={cn(styles.item, { [styles.active]: currentTab === 1 })}
-        onClick={onActiveClick}
-        onKeyDown={e => {
-          if (e.key !== 'Enter') {
-            return
-          }
-          onActiveClick()
-        }}
-        role='presentation'
-      >
-        All Work
-      </li>
-      <li
-        key='tab-item-past'
-        className={cn(styles.item, { [styles.active]: currentTab === 2 })}
-        onClick={onPastChallengesClick}
-        onKeyDown={e => {
-          if (e.key !== 'Enter') {
-            return
-          }
-          onPastChallengesClick()
-        }}
-        role='presentation'
-      >
-        Projects
-      </li>
-      <li
-        key='tab-item-users'
-        className={cn(styles.item, { [styles.active]: currentTab === 3 })}
-        onClick={onUsersClick}
-        onKeyDown={e => {
-          if (e.key !== 'Enter') {
-            return
-          }
-          onUsersClick()
-        }}
-        role='presentation'
-      >
-        Users
-      </li>
-      <li
-        key='tab-item-self-service'
-        className={cn(styles.item, { [styles.active]: currentTab === 4 })}
-        onClick={onSelfServiceClick}
-        onKeyDown={e => {
-          if (e.key !== 'Enter') {
-            return
-          }
-          onSelfServiceClick()
-        }}
-        role='presentation'
-      >
-        Self-Service
-      </li>
-      <li
-        key='tab-item-taas'
-        className={cn(styles.item, { [styles.active]: currentTab === 5 })}
-        onClick={onTaaSClick}
-        onKeyDown={e => {
-          if (e.key !== 'Enter') {
-            return
-          }
-          onTaaSClick()
-        }}
-        role='presentation'
-      >
-        TaaS
-      </li>
-    </ul>
-  )
 
   return (
     <div className={styles.tabs}>
-      {tabComponent}
+      <ul className={styles.challengeTab}>
+        {projectId && (
+          <li
+            className={cn(styles.item, styles.backItem)}
+            onClick={handleBack}
+            onKeyDown={handleBackKeyDown}
+            role='button'
+            tabIndex={0}
+          >
+            {'< Back'}
+          </li>
+        )}
+        {tabs.map((tab) => (
+          <li
+            key={`tab-item-${tab.id}`}
+            className={cn(styles.item, { [styles.active]: currentTab === tab.id })}
+            onClick={() => {
+              if (currentTab === tab.id) {
+                return
+              }
+              selectTab(tab.id)
+            }}
+            onKeyDown={e => {
+              if (e.key !== 'Enter') {
+                return
+              }
+              if (currentTab === tab.id) {
+                return
+              }
+              selectTab(tab.id)
+            }}
+            role='presentation'
+          >
+            {tab.label}
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
 
 Tab.defaultProps = {
-  selectTab: () => {}
+  selectTab: () => {},
+  projectId: null,
+  canViewAssets: true,
+  onBack: () => {}
 }
 
 Tab.propTypes = {
   selectTab: PT.func.isRequired,
-  currentTab: PT.number.isRequired
+  currentTab: PT.number.isRequired,
+  projectId: PT.oneOfType([PT.string, PT.number]),
+  canViewAssets: PT.bool,
+  onBack: PT.func
 }
 
 export default Tab

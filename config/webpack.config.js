@@ -37,6 +37,7 @@ module.exports = function (webpackEnv) {
   const isEnvDevelopment = webpackEnv === 'development'
   const isEnvProduction = webpackEnv === 'production'
   const WM_DEBUG = /^(1|true|on|yes)$/i.test(String(process.env.WM_DEBUG || ''))
+  const reactDevUtilsContextRegExp = /[\\/]react-dev-utils[\\/]/
 
   // Webpack uses `publicPath` to determine where the app is being served from.
   // It requires a trailing slash, or the file assets will get an incorrect path.
@@ -60,6 +61,14 @@ module.exports = function (webpackEnv) {
 
   // common function to get style loaders
   const getStyleLoaders = (cssOptions, preProcessor) => {
+    const resolvedCssOptions = Object.assign(
+      {
+        url: {
+          filter: url => !url.toLowerCase().startsWith('data:')
+        }
+      },
+      cssOptions
+    )
     const loaders = [
       isEnvDevelopment && require.resolve('style-loader'),
       isEnvProduction && {
@@ -71,7 +80,7 @@ module.exports = function (webpackEnv) {
       },
       {
         loader: require.resolve('css-loader'),
-        options: cssOptions
+        options: resolvedCssOptions
       },
       {
         // Options for PostCSS as we reference these options twice
@@ -476,6 +485,13 @@ module.exports = function (webpackEnv) {
       // This gives some necessary context to module not found errors, such as
       // the requesting resource.
       new ModuleNotFoundPlugin(paths.appPath),
+      // Ensure the dev client tolerates webpack 5 warning/error objects.
+      isEnvDevelopment &&
+        new webpack.NormalModuleReplacementPlugin(/\.\/formatWebpackMessages$/, (resource) => {
+          if (reactDevUtilsContextRegExp.test(resource.context || '')) {
+            resource.request = path.resolve(__dirname, 'formatWebpackMessages')
+          }
+        }),
       // (DefinePlugin already added above with merged env)
       // This is necessary to emit hot updates (currently CSS only):
       isEnvDevelopment && new webpack.HotModuleReplacementPlugin(),

@@ -1,0 +1,107 @@
+@use '../../styles/includes' as *;
+
+.experienceList {
+  display: grid;
+  gap: 12px;
+}
+
+.experienceItem {
+  border: 1px solid $tc-gray-20;
+  border-radius: 6px;
+  padding: 12px;
+  background: $white;
+  display: grid;
+  gap: 10px;
+}
+
+.experienceContent {
+  color: $tc-gray-90;
+  font-size: 14px;
+  line-height: 1.6;
+  max-height: 320px;
+  overflow: auto;
+
+  :global {
+    p {
+      margin: 0 0 10px;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+      margin: 0 0 8px;
+      color: $tc-gray-90;
+    }
+
+    ul,
+    ol {
+      margin: 0 0 10px 20px;
+    }
+
+    pre {
+      background: $tc-gray-10;
+      padding: 10px 12px;
+      border-radius: 4px;
+      overflow: auto;
+      font-size: 13px;
+      margin: 0 0 10px;
+    }
+
+    code {
+      font-family: Consolas, 'Liberation Mono', Menlo, Courier, monospace;
+    }
+
+    table {
+      display: block;
+      width: 100%;
+      overflow: auto;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+    }
+
+    th,
+    td {
+      padding: 6px 10px;
+      border: 1px solid $tc-gray-20;
+      text-align: left;
+      font-size: 13px;
+    }
+  }
+}
+
+.experienceMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: $tc-gray-70;
+  align-items: center;
+}
+
+.experienceDate {
+  color: $tc-gray-70;
+}
+
+.loadingState,
+.emptyState {
+  padding: 20px;
+  text-align: center;
+  color: $tc-gray-70;
+  font-size: 14px;
+}
+
+.errorState {
+  padding: 12px;
+  border-radius: 4px;
+  background: rgba($tc-red, 0.08);
+  color: $tc-gray-80;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  font-size: 14px;
+}

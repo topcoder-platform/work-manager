@@ -26,10 +26,15 @@ module.exports = {
   ACCOUNTS_APP_CONNECTOR_URL: `https://accounts-auth0.${DOMAIN}`,
   ACCOUNTS_APP_LOGIN_URL: `https://accounts-auth0.${DOMAIN}`,
   COMMUNITY_APP_URL: `https://www.${DOMAIN}`,
+  ENGAGEMENTS_APP_URL: 'https://engagements.topcoder-dev.com',
 
   // Local service URLs
   MEMBER_API_URL: `${LOCAL_MEMBER_API}/members`,
   CHALLENGE_API_URL: `${LOCAL_CHALLENGE_API}/challenges`,
+  ENGAGEMENTS_API_URL: `${LOCAL_CHALLENGE_API}/engagements/engagements`,
+  ENGAGEMENTS_ROOT_API_URL: `${LOCAL_CHALLENGE_API}/engagements`,
+  APPLICATIONS_API_URL: `${LOCAL_CHALLENGE_API}/engagements/applications`,
+  TC_FINANCE_API_URL: process.env.TC_FINANCE_API_URL || 'http://localhost:3009/v6/finance',
   CHALLENGE_DEFAULT_REVIEWERS_URL: `${LOCAL_CHALLENGE_API.replace(/\/v6$/, '')}/v6/challenge/default-reviewers`,
   CHALLENGE_API_VERSION: '1.1.0',
   CHALLENGE_TIMELINE_TEMPLATES_URL: `${LOCAL_CHALLENGE_API}/timeline-templates`,
@@ -90,6 +95,7 @@ module.exports = {
 
   // Standardized skills API on local
   SKILLS_V5_API_URL: `${LOCAL_SKILLS_API_V5}/skills/autocomplete`,
+  SKILLS_V5_SKILLS_URL: `${LOCAL_SKILLS_API_V5}/skills`,
   UPDATE_SKILLS_V5_API_URL: `${LOCAL_SKILLS_API_V5}/challenge-skills`,
 
   SALESFORCE_BILLING_ACCOUNT_LINK: 'https://c.cs18.visual.force.com/apex/baredirect?id=',

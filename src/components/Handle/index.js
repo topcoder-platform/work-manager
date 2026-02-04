@@ -9,8 +9,11 @@ import { getRatingColor } from '../../util/tc'
 import styles from './Handle.module.scss'
 
 const Handle = ({ handle, rating, color, className }) => {
-  if (!color && rating) {
-    color = getRatingColor(rating)
+  const numericRating = rating !== null && rating !== undefined && rating !== ''
+    ? Number(rating)
+    : NaN
+  if (color == null && Number.isFinite(numericRating)) {
+    color = getRatingColor(numericRating)
   }
   const link = getTCMemberURL(handle)
   if (SYSTEM_USERS.includes(handle)) return <span style={{ color: color }} className={cn(styles.handle, className)} >{handle}</span>
