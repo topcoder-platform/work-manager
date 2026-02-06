@@ -93,6 +93,10 @@ class ChallengeReviewerField extends Component {
     )
   }
 
+  isPublicOpportunityOpen (reviewer) {
+    return reviewer && reviewer.shouldOpenOpportunity === true
+  }
+
   getMissingRequiredPhases () {
     const { challenge } = this.props
     // Marathon Match does not require review configuration
@@ -747,7 +751,8 @@ class ChallengeReviewerField extends Component {
                     fixedAmount: currentReviewer.fixedAmount || 0,
                     baseCoefficient: currentReviewer.baseCoefficient || '0',
                     incrementalCoefficient: currentReviewer.incrementalCoefficient || 0,
-                    type: isAI ? undefined : (currentReviewer.type || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW)
+                    type: isAI ? undefined : (currentReviewer.type || REVIEW_OPPORTUNITY_TYPES.REGULAR_REVIEW),
+                    shouldOpenOpportunity: isAI ? undefined : false
                   }
 
                   if (isAI) {
@@ -972,7 +977,7 @@ class ChallengeReviewerField extends Component {
                   <input
                     type='checkbox'
                     disabled={readOnly}
-                    checked={reviewer.shouldOpenOpportunity !== false}
+                    checked={this.isPublicOpportunityOpen(reviewer)}
                     onChange={(e) => {
                       const next = !!e.target.checked
                       this.handleToggleShouldOpen(index, next)
@@ -988,7 +993,7 @@ class ChallengeReviewerField extends Component {
         )}
 
         {/* Assignment controls when public opportunity is OFF */}
-        {!this.isAIReviewer(reviewer) && (reviewer.shouldOpenOpportunity === false) && (
+        {!this.isAIReviewer(reviewer) && !this.isPublicOpportunityOpen(reviewer) && (
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label>Assign member(s):</label>
