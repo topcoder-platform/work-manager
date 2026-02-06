@@ -243,6 +243,14 @@ class ChallengeEditor extends Component {
         const isOpenAdvanceSettings = challengeDetail.groups.length > 0 || isRequiredNda
         if (!challengeDetail.reviewers) {
           challengeDetail.reviewers = []
+        } else if (challengeDetail.trackId === DES_TRACK_ID) {
+          // Design challenges do not expose public review opportunities in UI.
+          // Normalize member reviewers so assignment controls remain available.
+          challengeDetail.reviewers = challengeDetail.reviewers.map(reviewer => (
+            reviewer && reviewer.isMemberReview !== false
+              ? { ...reviewer, shouldOpenOpportunity: false }
+              : reviewer
+          ))
         }
         setState({
           challenge: challengeDetail,

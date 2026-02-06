@@ -992,8 +992,8 @@ class ChallengeReviewerField extends Component {
           </div>
         )}
 
-        {/* Assignment controls when public opportunity is OFF */}
-        {!this.isAIReviewer(reviewer) && !this.isPublicOpportunityOpen(reviewer) && (
+        {/* Design challenges do not expose public opportunity toggles, so always allow member assignment there. */}
+        {!this.isAIReviewer(reviewer) && (isDesignChallenge || !this.isPublicOpportunityOpen(reviewer)) && (
           <div className={styles.formRow}>
             <div className={styles.formGroup}>
               <label>Assign member(s):</label>
