@@ -28,7 +28,7 @@ module.exports = {
   CHALLENGE_PHASES_URL: `${DEV_API_HOSTNAME}/v6/challenge-phases`,
   CHALLENGE_TIMELINES_URL: `${DEV_API_HOSTNAME}/v6/challenge-timelines`,
   COPILOTS_URL: 'https://copilots.topcoder-dev.com',
-  PROJECT_API_URL: `http://localhost:3002/v6/projects`,
+  PROJECT_API_URL: `${DEV_API_HOSTNAME}/v6/projects`,
   GROUPS_API_URL: `${DEV_API_HOSTNAME}/v6/groups`,
   TERMS_API_URL: `${DEV_API_HOSTNAME}/v5/terms`,
   RESOURCES_API_URL: `${DEV_API_HOSTNAME}/v6/resources`,
