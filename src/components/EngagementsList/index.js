@@ -30,6 +30,7 @@ const SORT_ORDER_OPTIONS = [
 ]
 
 const DEFAULT_STATUS_OPTION = STATUS_OPTIONS.find((option) => option.value === 'Open') || STATUS_OPTIONS[0]
+const ALL_STATUS_OPTION = STATUS_OPTIONS.find((option) => option.value === 'all') || STATUS_OPTIONS[0]
 
 const ANTICIPATED_START_LABELS = {
   IMMEDIATE: 'Immediate',
@@ -242,7 +243,7 @@ const EngagementsList = ({
   canManage
 }) => {
   const [searchText, setSearchText] = useState('')
-  const [statusFilter, setStatusFilter] = useState(DEFAULT_STATUS_OPTION)
+  const [statusFilter, setStatusFilter] = useState(allEngagements ? ALL_STATUS_OPTION : DEFAULT_STATUS_OPTION)
   const [sortBy, setSortBy] = useState(SORT_OPTIONS[0])
   const [sortOrder, setSortOrder] = useState(SORT_ORDER_OPTIONS[0])
 
