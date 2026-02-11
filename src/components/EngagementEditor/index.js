@@ -931,12 +931,13 @@ const EngagementEditor = ({
             )}
 
             {canEdit && (
-              <div className={styles.row}>
+              <div className={cn(styles.row, styles.privateEngagementRow)}>
                 <div className={cn(styles.field, styles.col1)}>
                   <label htmlFor='isPrivate'>Private Engagement :</label>
                 </div>
-                <div className={cn(styles.field, styles.col2)}>
+                <div className={cn(styles.field, styles.col2, styles.privateEngagementField)}>
                   <input
+                    className={styles.privateEngagementCheckbox}
                     id='isPrivate'
                     name='isPrivate'
                     type='checkbox'
