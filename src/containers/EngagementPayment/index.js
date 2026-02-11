@@ -133,7 +133,8 @@ class EngagementPaymentContainer extends Component {
       showPaymentModal: false,
       selectedMember: null,
       memberIdLookup: {},
-      terminatingAssignments: {}
+      terminatingAssignments: {},
+      completingAssignments: {}
     }
 
     this.onOpenPaymentModal = this.onOpenPaymentModal.bind(this)
@@ -143,6 +144,7 @@ class EngagementPaymentContainer extends Component {
     this.fetchPaymentsForAssignments = this.fetchPaymentsForAssignments.bind(this)
     this.getPaymentEntries = this.getPaymentEntries.bind(this)
     this.onTerminateAssignment = this.onTerminateAssignment.bind(this)
+    this.onCompleteAssignment = this.onCompleteAssignment.bind(this)
   }
 
   static getDerivedStateFromProps (nextProps, prevState) {
@@ -391,6 +393,42 @@ class EngagementPaymentContainer extends Component {
     }
   }
 
+  async onCompleteAssignment (member) {
+    const assignmentId = _.get(member, 'assignmentId', null)
+    if (_.isNil(assignmentId) || assignmentId === '') {
+      toastFailure('Error', 'Assignment ID is required to complete an assignment')
+      return false
+    }
+
+    const memberHandle = getMemberHandle(member) || 'this member'
+    this.setState((prevState) => ({
+      completingAssignments: {
+        ...prevState.completingAssignments,
+        [assignmentId]: true
+      }
+    }))
+
+    try {
+      await updateEngagementAssignmentStatus(
+        this.getEngagementId(),
+        assignmentId,
+        'COMPLETED'
+      )
+      await this.props.loadEngagementDetails(this.getProjectId(), this.getEngagementId())
+      toastSuccess('Success', `Assignment for ${memberHandle} marked as completed.`)
+      return true
+    } catch (error) {
+      toastFailure('Error', (error && error.message) || 'Failed to complete assignment')
+      return false
+    } finally {
+      this.setState((prevState) => {
+        const next = { ...prevState.completingAssignments }
+        delete next[assignmentId]
+        return { completingAssignments: next }
+      })
+    }
+  }
+
   getPaymentEntries (engagement) {
     if (!engagement) {
       return []
@@ -469,6 +507,7 @@ class EngagementPaymentContainer extends Component {
         isPaymentProcessing={isPaymentProcessing}
         paymentsByAssignment={paymentsByAssignment}
         terminatingAssignments={this.state.terminatingAssignments}
+        completingAssignments={this.state.completingAssignments}
         projectId={projectId}
         engagementId={engagementId}
         showPaymentModal={shouldShowPaymentModal}
@@ -477,6 +516,7 @@ class EngagementPaymentContainer extends Component {
         onClosePaymentModal={this.onClosePaymentModal}
         onSubmitPayment={this.onSubmitPayment}
         onTerminateAssignment={this.onTerminateAssignment}
+        onCompleteAssignment={this.onCompleteAssignment}
       />
     )
   }

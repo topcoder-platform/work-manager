@@ -12,6 +12,7 @@ import DateInput from '../DateInput'
 import Handle from '../Handle'
 import styles from './ApplicationsList.module.scss'
 import { PROFILE_URL } from '../../config/constants'
+import { serializeTentativeAssignmentDate } from '../../util/assignmentDates'
 
 const STATUS_OPTIONS = [
   { label: 'All', value: 'all' },
@@ -318,9 +319,11 @@ const ApplicationsList = ({
 
     setIsAccepting(true)
     try {
+      const startDate = serializeTentativeAssignmentDate(parsedStart)
+      const endDate = serializeTentativeAssignmentDate(parsedEnd)
       await onUpdateStatus(acceptApplication.id, 'SELECTED', {
-        startDate: parsedStart.toISOString(),
-        endDate: parsedEnd.toISOString(),
+        startDate,
+        endDate,
         agreementRate: normalizedRate,
         ...(normalizedOtherRemarks ? { otherRemarks: normalizedOtherRemarks } : {})
       })

@@ -15,6 +15,7 @@ import Handle from '../Handle'
 import { JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
 import { suggestProfiles } from '../../services/user'
 import { getCountableAssignments } from '../../util/engagements'
+import { serializeTentativeAssignmentDate } from '../../util/assignmentDates'
 import { formatTimeZoneLabel, formatTimeZoneList } from '../../util/timezones'
 import styles from './EngagementEditor.module.scss'
 
@@ -406,8 +407,8 @@ const EngagementEditor = ({
     nextAssignedMemberHandles[assignModal.index] = assignModal.handle
     nextAssignmentDetails[assignModal.index] = {
       memberHandle: assignModal.handle,
-      startDate: parsedStart.toISOString(),
-      endDate: parsedEnd.toISOString(),
+      startDate: serializeTentativeAssignmentDate(parsedStart),
+      endDate: serializeTentativeAssignmentDate(parsedEnd),
       agreementRate: normalizedRate,
       otherRemarks: normalizedOtherRemarks
     }
