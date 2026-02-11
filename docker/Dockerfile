@@ -1,5 +1,5 @@
 # Use Node.js 22 base image
-FROM node:24.13.0
+FROM node:22.22.0
 RUN useradd -m -s /bin/bash appuser
 ARG NODE_ENV
 ARG BABEL_ENV
