@@ -8,6 +8,7 @@ const Tab = ({
   selectTab,
   projectId,
   canViewAssets,
+  canViewEngagements,
   onBack
 }) => {
   const projectTabs = [
@@ -20,10 +21,11 @@ const Tab = ({
     : [
       { id: 1, label: 'All Work' },
       { id: 2, label: 'Projects' },
-      { id: 3, label: 'Users' },
-      { id: 4, label: 'Self-Service' },
-      { id: 5, label: 'TaaS' },
-      { id: 6, label: 'Groups' }
+      ...(canViewEngagements ? [{ id: 3, label: 'Engagements' }] : []),
+      { id: 4, label: 'Users' },
+      { id: 5, label: 'Self-Service' },
+      { id: 6, label: 'TaaS' },
+      { id: 7, label: 'Groups' }
     ]
 
   const handleBack = () => {
@@ -85,6 +87,7 @@ Tab.defaultProps = {
   selectTab: () => {},
   projectId: null,
   canViewAssets: true,
+  canViewEngagements: false,
   onBack: () => {}
 }
 
@@ -93,6 +96,7 @@ Tab.propTypes = {
   currentTab: PT.number.isRequired,
   projectId: PT.oneOfType([PT.string, PT.number]),
   canViewAssets: PT.bool,
+  canViewEngagements: PT.bool,
   onBack: PT.func
 }
 

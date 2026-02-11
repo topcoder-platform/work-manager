@@ -12,6 +12,7 @@ import DateInput from '../DateInput'
 import Handle from '../Handle'
 import styles from './ApplicationsList.module.scss'
 import { PROFILE_URL } from '../../config/constants'
+import { serializeTentativeAssignmentDate } from '../../util/assignmentDates'
 
 const STATUS_OPTIONS = [
   { label: 'All', value: 'all' },
@@ -97,6 +98,21 @@ const getApplicationName = (application) => {
     .join(' ')
     .trim()
   return fullName || application.name || application.email || null
+}
+
+const getApplicationMobileNumber = (application) => {
+  if (!application) {
+    return null
+  }
+
+  const value = [
+    application.mobileNumber,
+    application.mobile_number,
+    application.phoneNumber,
+    application.phone
+  ].find((phoneNumber) => phoneNumber != null && `${phoneNumber}`.trim() !== '')
+
+  return value ? `${value}`.trim() : null
 }
 
 const getApplicationRating = (application) => {
@@ -303,9 +319,11 @@ const ApplicationsList = ({
 
     setIsAccepting(true)
     try {
+      const startDate = serializeTentativeAssignmentDate(parsedStart)
+      const endDate = serializeTentativeAssignmentDate(parsedEnd)
       await onUpdateStatus(acceptApplication.id, 'SELECTED', {
-        startDate: parsedStart.toISOString(),
-        endDate: parsedEnd.toISOString(),
+        startDate,
+        endDate,
         agreementRate: normalizedRate,
         ...(normalizedOtherRemarks ? { otherRemarks: normalizedOtherRemarks } : {})
       })
@@ -500,7 +518,7 @@ const ApplicationsList = ({
               <th>Email</th>
               <th>Applied Date</th>
               <th>Years of Experience</th>
-              <th>Availability</th>
+              <th>Phone Number</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -541,7 +559,7 @@ const ApplicationsList = ({
                   <td>{application.email || '-'}</td>
                   <td>{formatDateTime(application.createdAt)}</td>
                   <td>{application.yearsOfExperience != null ? application.yearsOfExperience : '-'}</td>
-                  <td>{application.availability || '-'}</td>
+                  <td>{getApplicationMobileNumber(application) || '-'}</td>
                   <td>
                     <span className={`${styles.status} ${statusClass}`}>
                       {statusLabel}

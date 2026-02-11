@@ -80,6 +80,18 @@
         }
       }
     }
+
+    .privateEngagementRow {
+      .field {
+        &.col2.privateEngagementField {
+          width: 100%;
+          max-width: none;
+          min-width: 0;
+          align-items: flex-start;
+          justify-content: flex-start;
+        }
+      }
+    }
   }
 }
 
@@ -225,6 +237,11 @@
 
 .assignmentProgressPartial {
   color: $tc-blue-40;
+}
+
+.privateEngagementCheckbox {
+  align-self: flex-start;
+  margin: 0;
 }
 
 .assignmentDetails {
