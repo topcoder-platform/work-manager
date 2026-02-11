@@ -99,6 +99,21 @@ const getApplicationName = (application) => {
   return fullName || application.name || application.email || null
 }
 
+const getApplicationMobileNumber = (application) => {
+  if (!application) {
+    return null
+  }
+
+  const value = [
+    application.mobileNumber,
+    application.mobile_number,
+    application.phoneNumber,
+    application.phone
+  ].find((phoneNumber) => phoneNumber != null && `${phoneNumber}`.trim() !== '')
+
+  return value ? `${value}`.trim() : null
+}
+
 const getApplicationRating = (application) => {
   if (!application) {
     return undefined
@@ -500,7 +515,7 @@ const ApplicationsList = ({
               <th>Email</th>
               <th>Applied Date</th>
               <th>Years of Experience</th>
-              <th>Availability</th>
+              <th>Phone Number</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -541,7 +556,7 @@ const ApplicationsList = ({
                   <td>{application.email || '-'}</td>
                   <td>{formatDateTime(application.createdAt)}</td>
                   <td>{application.yearsOfExperience != null ? application.yearsOfExperience : '-'}</td>
-                  <td>{application.availability || '-'}</td>
+                  <td>{getApplicationMobileNumber(application) || '-'}</td>
                   <td>
                     <span className={`${styles.status} ${statusClass}`}>
                       {statusLabel}

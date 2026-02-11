@@ -1,7 +1,5 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCheck } from '@fortawesome/free-solid-svg-icons'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import Loader from '../Loader'
 import Modal from '../Modal'
@@ -156,36 +154,30 @@ const getAssignmentDate = (member, key) => {
   return null
 }
 
-const getTermsAccepted = (member) => {
+const getAssignmentRemarks = (member) => {
   if (!member || typeof member !== 'object') {
-    return null
+    return ''
   }
-  const value = member.termsAccepted != null
-    ? member.termsAccepted
-    : member.terms_accepted
+  const value = member.otherRemarks != null
+    ? member.otherRemarks
+    : member.other_remarks != null
+      ? member.other_remarks
+      : member.remarks
   if (value == null) {
-    return null
-  }
-  if (typeof value === 'boolean') {
-    return value
-  }
-  if (typeof value === 'number') {
-    return value !== 0
+    return ''
   }
   if (typeof value === 'string') {
-    const normalized = value.trim().toLowerCase()
-    if (['true', 'yes', '1'].includes(normalized)) {
-      return true
-    }
-    if (['false', 'no', '0'].includes(normalized)) {
-      return false
-    }
+    return value.trim()
   }
-  return Boolean(value)
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value)
+  }
+  return ''
 }
 
 const EngagementPayment = ({
   engagement,
+  projectName,
   assignedMembers,
   isLoading,
   isPaymentProcessing,
@@ -369,7 +361,7 @@ const EngagementPayment = ({
             const isRowTerminating = assignmentKey && terminatingAssignments
               ? Boolean(terminatingAssignments[assignmentKey])
               : false
-            const termsAccepted = getTermsAccepted(member)
+            const assignmentRemarks = getAssignmentRemarks(member)
             const assignmentRate = getAssignmentRate(member)
             const startDate = formatDate(getAssignmentDate(member, 'start'))
             const endDate = formatDate(getAssignmentDate(member, 'end'))
@@ -398,15 +390,9 @@ const EngagementPayment = ({
                     )}
                     <div className={styles.memberMeta}>
                       <div className={styles.memberMetaItem}>
-                        <span className={styles.memberMetaLabel}>Terms Accepted</span>
+                        <span className={styles.memberMetaLabel}>Remarks</span>
                         <span className={styles.memberMetaValue}>
-                          {termsAccepted ? (
-                            <span className={styles.termsIndicator} title='Accepted'>
-                              <FontAwesomeIcon className={styles.termsIcon} icon={faCheck} />
-                            </span>
-                          ) : (
-                            '-'
-                          )}
+                          {assignmentRemarks || '-'}
                         </span>
                       </div>
                       <div className={styles.memberMetaItem}>
@@ -414,11 +400,11 @@ const EngagementPayment = ({
                         <span className={styles.memberMetaValue}>{rateDisplay}</span>
                       </div>
                       <div className={styles.memberMetaItem}>
-                        <span className={styles.memberMetaLabel}>Start</span>
+                        <span className={styles.memberMetaLabel}>Tentative Start</span>
                         <span className={styles.memberMetaValue}>{startDate}</span>
                       </div>
                       <div className={styles.memberMetaItem}>
-                        <span className={styles.memberMetaLabel}>End</span>
+                        <span className={styles.memberMetaLabel}>Tentative End</span>
                         <span className={styles.memberMetaValue}>{endDate}</span>
                       </div>
                     </div>
@@ -518,6 +504,7 @@ const EngagementPayment = ({
         <Modal onCancel={onClosePaymentModal}>
           <PaymentForm
             engagement={engagement}
+            projectName={projectName}
             member={selectedMember}
             availableMembers={members}
             isProcessing={isPaymentProcessing}
@@ -532,6 +519,7 @@ const EngagementPayment = ({
 
 EngagementPayment.defaultProps = {
   engagement: null,
+  projectName: '',
   assignedMembers: [],
   isLoading: false,
   isPaymentProcessing: false,
@@ -552,6 +540,7 @@ EngagementPayment.propTypes = {
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     title: PropTypes.string
   }),
+  projectName: PropTypes.string,
   assignedMembers: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     assignmentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),

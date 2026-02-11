@@ -226,10 +226,18 @@ const getAssignedMemberHandles = (engagement) => {
   return []
 }
 
+const getEngagementProjectId = (engagement, fallbackProjectId = null) => {
+  if (engagement && engagement.projectId) {
+    return engagement.projectId
+  }
+  return fallbackProjectId
+}
+
 const EngagementsList = ({
   engagements,
   projectId,
   projectDetail,
+  allEngagements,
   isLoading,
   canManage
 }) => {
@@ -267,9 +275,11 @@ const EngagementsList = ({
     <div className={styles.container}>
       <div className={styles.header}>
         <div className={styles.title}>
-          {projectDetail && projectDetail.name ? `${projectDetail.name} Engagements` : 'Engagements'}
+          {allEngagements
+            ? 'All Engagements'
+            : (projectDetail && projectDetail.name ? `${projectDetail.name} Engagements` : 'Engagements')}
         </div>
-        {canManage && (
+        {canManage && projectId && (
           <div className={styles.headerAction}>
             <PrimaryButton
               text='New Engagement'
@@ -322,6 +332,7 @@ const EngagementsList = ({
           <thead>
             <tr>
               <th>Title</th>
+              {allEngagements && <th>Project ID</th>}
               <th>Duration</th>
               <th>Location</th>
               <th>Anticipated Start</th>
@@ -339,6 +350,7 @@ const EngagementsList = ({
               const location = getLocationLabel(engagement)
               const applicationsCount = getApplicationsCount(engagement)
               const statusClass = getStatusClass(engagement.status)
+              const engagementProjectId = getEngagementProjectId(engagement, projectId)
               const assignedMembersCount = getAssignedMembersCount(engagement)
               const assignedMemberHandles = getAssignedMemberHandles(engagement)
               const assignedMembersTooltip = assignedMemberHandles.length ? (
@@ -354,15 +366,16 @@ const EngagementsList = ({
               return (
                 <tr key={engagement.id || engagement.title}>
                   <td>{engagement.title || '-'}</td>
+                  {allEngagements && <td>{engagementProjectId || '-'}</td>}
                   <td>{duration}</td>
                   <td>{location}</td>
                   <td>{formatAnticipatedStart(engagement.anticipatedStart)}</td>
                   {canManage && (
                     <td>
-                      {engagement.id ? (
+                      {engagement.id && engagementProjectId ? (
                         <Link
                           className={styles.applicationsLink}
-                          to={`/projects/${projectId}/engagements/${engagement.id}/applications`}
+                          to={`/projects/${engagementProjectId}/engagements/${engagement.id}/applications`}
                         >
                           {applicationsCount}
                         </Link>
@@ -383,12 +396,12 @@ const EngagementsList = ({
                   )}
                   {canManage && (
                     <td>
-                      {engagement.id && assignedMembersCount > 0 ? (
+                      {engagement.id && engagementProjectId && assignedMembersCount > 0 ? (
                         <Tooltip content={assignedMembersTooltip}>
                           <span>
                             <Link
                               className={styles.applicationsLink}
-                              to={`/projects/${projectId}/engagements/${engagement.id}/assignments`}
+                              to={`/projects/${engagementProjectId}/engagements/${engagement.id}/assignments`}
                             >
                               {assignedMembersCount}
                             </Link>
@@ -418,7 +431,8 @@ const EngagementsList = ({
                         <OutlineButton
                           text='Edit'
                           type='info'
-                          link={`/projects/${projectId}/engagements/${engagement.id}`}
+                          link={engagementProjectId ? `/projects/${engagementProjectId}/engagements/${engagement.id}` : null}
+                          disabled={!engagementProjectId}
                         />
                       </div>
                     </td>
@@ -435,17 +449,20 @@ const EngagementsList = ({
 
 EngagementsList.defaultProps = {
   engagements: [],
+  projectId: null,
   projectDetail: null,
+  allEngagements: false,
   isLoading: false,
   canManage: false
 }
 
 EngagementsList.propTypes = {
   engagements: PropTypes.arrayOf(PropTypes.shape()),
-  projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
+  projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   projectDetail: PropTypes.shape({
     name: PropTypes.string
   }),
+  allEngagements: PropTypes.bool,
   isLoading: PropTypes.bool,
   canManage: PropTypes.bool
 }

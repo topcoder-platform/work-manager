@@ -33,7 +33,8 @@ import {
   checkAdmin,
   checkCopilot,
   checkManager,
-  checkAdminOrPmOrTaskManager
+  checkAdminOrPmOrTaskManager,
+  checkAdminOrTalentManager
 } from './util/tc'
 import Users from './containers/Users'
 import Groups from './containers/Groups'
@@ -125,6 +126,7 @@ class Routes extends React.Component {
     const isCopilot = checkCopilot(this.props.token)
     const isAdmin = checkAdmin(this.props.token)
     const canManageEngagements = checkAdminOrPmOrTaskManager(this.props.token, null)
+    const canViewAllEngagements = checkAdminOrTalentManager(this.props.token)
 
     return (
       <React.Fragment>
@@ -156,6 +158,29 @@ class Routes extends React.Component {
               <FooterContainer />
             )()}
           />
+          {canViewAllEngagements && (
+            <Route exact path='/engagements'
+              render={() => renderApp(
+                <EngagementsList allEngagements />,
+                <TopBarContainer />,
+                <Tab />,
+                <FooterContainer />
+              )()}
+            />
+          )}
+          {!canViewAllEngagements && (
+            <Route exact path='/engagements'
+              render={() => renderApp(
+                <Challenges
+                  menu='NULL'
+                  warnMessage={'You need Admin or Talent Manager role to view all engagements'}
+                />,
+                <TopBarContainer />,
+                <Tab />,
+                <FooterContainer />
+              )()}
+            />
+          )}
           <Route exact path='/projects/new'
             render={() => renderApp(
               <ProjectEditor />,

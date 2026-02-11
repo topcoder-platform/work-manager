@@ -34,11 +34,13 @@ class EngagementsListContainer extends Component {
 
   loadData () {
     const projectId = this.getProjectId()
-    const { loadProject, loadEngagements } = this.props
-    if (!projectId) {
+    const { loadProject, loadEngagements, allEngagements } = this.props
+    if (projectId) {
+      loadProject(projectId)
+    }
+    if (!projectId && !allEngagements) {
       return
     }
-    loadProject(projectId)
     loadEngagements(projectId, 'all', '', this.canIncludePrivate())
   }
 
@@ -62,6 +64,7 @@ class EngagementsListContainer extends Component {
         engagements={this.props.engagements}
         projectId={projectId}
         projectDetail={this.props.projectDetail}
+        allEngagements={this.props.allEngagements}
         isLoading={this.props.isLoading}
         canManage={this.canManage()}
         currentUser={this.props.auth.user}
@@ -71,6 +74,7 @@ class EngagementsListContainer extends Component {
 }
 
 EngagementsListContainer.propTypes = {
+  allEngagements: PropTypes.bool,
   projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   match: PropTypes.shape({
     params: PropTypes.shape({
@@ -91,6 +95,10 @@ EngagementsListContainer.propTypes = {
   }).isRequired,
   loadEngagements: PropTypes.func.isRequired,
   loadProject: PropTypes.func.isRequired
+}
+
+EngagementsListContainer.defaultProps = {
+  allEngagements: false
 }
 
 const mapStateToProps = (state) => ({

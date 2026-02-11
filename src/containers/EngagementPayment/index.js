@@ -454,14 +454,16 @@ class EngagementPaymentContainer extends Component {
   render () {
     const projectId = this.getProjectId()
     const engagementId = this.getEngagementId()
-    const { isLoading, payments, paymentsByAssignment } = this.props
+    const { isLoading, payments, paymentsByAssignment, projectDetail } = this.props
     const assignedMembersForPayment = this.getAssignedMembersForPayment()
     const isPaymentProcessing = Boolean(payments && payments.isProcessing)
     const shouldShowPaymentModal = this.state.showPaymentModal && this.state.selectedMember
+    const projectName = _.get(projectDetail, 'name', '')
 
     return (
       <EngagementPayment
         engagement={this.state.engagement}
+        projectName={projectName}
         assignedMembers={assignedMembersForPayment}
         isLoading={isLoading}
         isPaymentProcessing={isPaymentProcessing}
@@ -500,6 +502,7 @@ EngagementPaymentContainer.propTypes = {
     error: PropTypes.string
   })),
   projectDetail: PropTypes.shape({
+    name: PropTypes.string,
     billingAccountId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
   }),
   currentBillingAccount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
