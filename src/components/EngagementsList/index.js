@@ -210,7 +210,11 @@ const EngagementsList = ({
           />
         </div>
         <div className={styles.filterItem}>
+          <label className={styles.filterLabel} htmlFor='engagement-status-filter'>
+            Engagement Status
+          </label>
           <Select
+            inputId='engagement-status-filter'
             options={STATUS_OPTIONS}
             value={statusFilter}
             onChange={(option) => setStatusFilter(option || STATUS_OPTIONS[0])}
@@ -218,7 +222,11 @@ const EngagementsList = ({
           />
         </div>
         <div className={styles.filterItem}>
+          <label className={styles.filterLabel} htmlFor='engagement-visibility-filter'>
+            Visibility
+          </label>
           <Select
+            inputId='engagement-visibility-filter'
             options={VISIBILITY_OPTIONS}
             value={visibilityFilter}
             onChange={(option) => setVisibilityFilter(option || DEFAULT_VISIBILITY_OPTION)}
