@@ -27,7 +27,7 @@ const fetchSkills = _.debounce((inputValue, callback) => {
 
 const SkillsField = ({ readOnly, challenge, onUpdateSkills, embedded }) => {
   const [isLoadingAI, setIsLoadingAI] = useState(false)
-  
+
   const selectedSkills = useMemo(() => (challenge.skills || []).map(skill => ({
     label: skill.name,
     value: skill.id
@@ -37,27 +37,27 @@ const SkillsField = ({ readOnly, challenge, onUpdateSkills, embedded }) => {
   const normalizedBillingAccountId = _.isNil(billingAccountId) ? null : String(billingAccountId)
   const skillsRequired = normalizedBillingAccountId ? !SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS.includes(normalizedBillingAccountId) : true
   const showRequiredError = !readOnly && skillsRequired && challenge.submitTriggered && (!selectedSkills || !selectedSkills.length)
-  
+
   // Check if description exists to show AI button
   const hasDescription = challenge.description && challenge.description.trim().length > 0
-  
+
   const handleAISuggest = async () => {
     if (!hasDescription || isLoadingAI) {
       return
     }
-    
+
     setIsLoadingAI(true)
     try {
       const result = await extractSkillsFromText(challenge.description)
       const matches = result.matches || []
-      
+
       if (matches.length === 0) {
         toastFailure('No Skills Found', 'No matching standardized skills found based on the description.')
       } else {
         // Merge with existing skills, avoiding duplicates
         const existingSkillIds = new Set((challenge.skills || []).map(s => s.id))
         const newSkills = matches.filter(skill => !existingSkillIds.has(skill.id))
-        
+
         if (newSkills.length === 0) {
           toastSuccess('Skills Already Added', 'All suggested skills are already in your selection.')
         } else {
