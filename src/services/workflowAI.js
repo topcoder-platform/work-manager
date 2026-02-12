@@ -20,7 +20,7 @@ async function startWorkflowRun (workflowId, input) {
     const runResponse = await axiosInstance.post(
       `${TC_AI_API_BASE_URL}/workflows/${workflowId}/create-run`
     )
-    const runId = runResponse.data?.runId
+    const runId = runResponse.data && runResponse.data.runId
 
     if (!runId) {
       throw new Error('No runId returned from workflow creation')
@@ -64,16 +64,16 @@ async function pollWorkflowRunStatus (workflowId, runId, maxAttempts = null) {
       const response = await axiosInstance.get(
         `${TC_AI_API_BASE_URL}/workflows/${workflowId}/runs/${runId}`
       )
-      
-      const result = response.data
-      const status = result?.status
+
+      const result = response.data || {}
+      const status = result.status
 
       if (status === 'success') {
         return result
       }
 
       if (status === 'failed') {
-        const errorMsg = result?.error?.message || 'Workflow execution failed'
+        const errorMsg = (result.error && result.error.message) || 'Workflow execution failed'
         throw new Error(`Workflow failed: ${errorMsg}`)
       }
 
@@ -107,6 +107,14 @@ async function pollWorkflowRunStatus (workflowId, runId, maxAttempts = null) {
 
 /**
  * Extract skills from text using AI workflow
+ *
+ * @example
+ * try {
+ *   const result = await extractSkillsFromText('I have experience with JavaScript, React, and Node.js')
+ *   console.log('Extracted skills:', result.matches) // {id: string; name: string}[]
+ * } catch (error) {
+ *   console.error('Skills extraction failed:', error.message)
+ * }
  */
 export async function extractSkillsFromText (description, workflowId = null) {
   if (!description || typeof description !== 'string') {
@@ -126,24 +134,9 @@ export async function extractSkillsFromText (description, workflowId = null) {
     const result = await pollWorkflowRunStatus(workflowIdToUse, runId)
     console.log('Workflow completed successfully')
 
-    return result.result ?? {}
+    return result.result || {}
   } catch (error) {
     console.error('Skills extraction workflow failed:', error.message)
     throw error
-  }
-}
-
-/**
- * Health check for the AI API server
- *
- * @returns {Promise<Boolean>} - True if server is reachable
- */
-export async function checkAIAPIHealth () {
-  try {
-    const response = await axiosInstance.get('/health', { timeout: 5000 })
-    return response.status === 200
-  } catch (error) {
-    console.warn('AI API health check failed:', error.message)
-    return false
   }
 }
