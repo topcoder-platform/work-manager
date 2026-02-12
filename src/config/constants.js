@@ -41,12 +41,20 @@ export const {
   SALESFORCE_BILLING_ACCOUNT_LINK,
   PROFILE_URL,
   TC_FINANCE_API_URL,
+  TC_AI_API_BASE_URL,
+  TC_AI_SKILLS_EXTRACTION_WORKFLOW_ID,
   ENGAGEMENTS_APP_URL
 } = process.env
 
 export const CREATE_FORUM_TYPE_IDS = typeof process.env.CREATE_FORUM_TYPE_IDS === 'string' ? process.env.CREATE_FORUM_TYPE_IDS.split(',') : process.env.CREATE_FORUM_TYPE_IDS
 export const PROJECTS_API_URL = process.env.PROJECTS_API_URL || process.env.PROJECT_API_URL
 export const SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS = ['80000062']
+
+/**
+ * AI Workflow Service config
+ */
+export const AI_WORKFLOW_POLL_INTERVAL = 1000 // 1 second in milliseconds
+export const AI_WORKFLOW_POLL_TIMEOUT = 5 * 60000 // 5 * 60 seconds in milliseconds
 
 /**
  * Filepicker config
