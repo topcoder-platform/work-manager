@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
-import moment from 'moment-timezone'
 import { Link } from 'react-router-dom'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import Tooltip from '../Tooltip'
@@ -8,7 +7,6 @@ import Loader from '../Loader'
 import Select from '../Select'
 import { ENGAGEMENTS_APP_URL } from '../../config/constants'
 import { getCountableAssignments } from '../../util/engagements'
-import { formatTimeZoneList } from '../../util/timezones'
 import styles from './EngagementsList.module.scss'
 
 const STATUS_OPTIONS = [
@@ -19,121 +17,15 @@ const STATUS_OPTIONS = [
   { label: 'Closed', value: 'Closed' }
 ]
 
-const SORT_OPTIONS = [
-  { label: 'Anticipated Start', value: 'anticipatedStart' },
-  { label: 'Created Date', value: 'createdAt' }
-]
-
-const SORT_ORDER_OPTIONS = [
-  { label: 'Ascending', value: 'asc' },
-  { label: 'Descending', value: 'desc' }
+const VISIBILITY_OPTIONS = [
+  { label: 'All', value: 'all' },
+  { label: 'Public', value: 'public' },
+  { label: 'Private', value: 'private' }
 ]
 
 const DEFAULT_STATUS_OPTION = STATUS_OPTIONS.find((option) => option.value === 'Open') || STATUS_OPTIONS[0]
 const ALL_STATUS_OPTION = STATUS_OPTIONS.find((option) => option.value === 'all') || STATUS_OPTIONS[0]
-
-const ANTICIPATED_START_LABELS = {
-  IMMEDIATE: 'Immediate',
-  FEW_DAYS: 'In a few days',
-  FEW_WEEKS: 'In a few weeks'
-}
-
-const ANTICIPATED_START_ORDER = {
-  Immediate: 1,
-  'In a few days': 2,
-  'In a few weeks': 3,
-  ...Object.keys(ANTICIPATED_START_LABELS).reduce((acc, key, index) => {
-    acc[key] = index + 1
-    return acc
-  }, {})
-}
-
-const formatDate = (value) => {
-  if (!value) {
-    return '-'
-  }
-  return moment(value).format('MMM DD, YYYY')
-}
-
-const formatAnticipatedStart = (value) => {
-  if (!value) {
-    return '-'
-  }
-  return ANTICIPATED_START_LABELS[value] || value
-}
-
-const getSortValue = (engagement, sortBy) => {
-  if (sortBy === 'anticipatedStart') {
-    const anticipatedStart = engagement.anticipatedStart || engagement.anticipated_start || null
-    if (!anticipatedStart) {
-      return null
-    }
-    return ANTICIPATED_START_ORDER[anticipatedStart] || 0
-  }
-  return engagement.createdAt || engagement.createdOn || engagement.created || null
-}
-
-const getSortComparable = (value) => {
-  if (value == null) {
-    return null
-  }
-  if (typeof value === 'number') {
-    return value
-  }
-  const parsed = new Date(value).getTime()
-  return Number.isNaN(parsed) ? null : parsed
-}
-
-const getDurationLabel = (engagement) => {
-  if (!engagement) {
-    return '-'
-  }
-  const hasDateRange = engagement.startDate && engagement.endDate
-  if (hasDateRange) {
-    return `${formatDate(engagement.startDate)} - ${formatDate(engagement.endDate)}`
-  }
-  if (engagement.duration && engagement.duration.amount) {
-    return `${engagement.duration.amount} ${engagement.duration.unit}`
-  }
-  if (engagement.durationAmount) {
-    return `${engagement.durationAmount} ${engagement.durationUnit || ''}`.trim()
-  }
-  return '-'
-}
-
-const getLocationLabel = (engagement) => {
-  if (!engagement) {
-    return '-'
-  }
-  const normalizeValues = (values) => (
-    Array.isArray(values)
-      ? values.map(value => String(value).trim()).filter(Boolean)
-      : []
-  )
-  const isAnyValue = (value) => value.toLowerCase() === 'any'
-
-  const rawTimezones = normalizeValues(engagement.timezones)
-  const rawCountries = normalizeValues(engagement.countries)
-  const hasAnyLocation = rawTimezones.some(isAnyValue) || rawCountries.some(isAnyValue)
-  const filteredTimezones = rawTimezones.filter(value => !isAnyValue(value))
-  const filteredCountries = rawCountries.filter(value => !isAnyValue(value))
-
-  const timezones = formatTimeZoneList(filteredTimezones, '')
-  const countryLabel = hasAnyLocation || (!filteredCountries.length && !timezones)
-    ? 'Remote'
-    : (filteredCountries.length ? filteredCountries.join(', ') : '')
-
-  if (timezones && countryLabel) {
-    return `${timezones} / ${countryLabel}`
-  }
-  if (timezones) {
-    return timezones
-  }
-  if (countryLabel) {
-    return countryLabel
-  }
-  return 'Remote'
-}
+const DEFAULT_VISIBILITY_OPTION = VISIBILITY_OPTIONS[0]
 
 const getStatusClass = (status) => {
   if (status === 'Open') {
@@ -234,6 +126,19 @@ const getEngagementProjectId = (engagement, fallbackProjectId = null) => {
   return fallbackProjectId
 }
 
+const getEngagementProjectName = (engagement, fallbackProjectName = null) => {
+  if (engagement && engagement.projectName) {
+    return engagement.projectName
+  }
+  if (engagement && engagement.project && engagement.project.name) {
+    return engagement.project.name
+  }
+  if (fallbackProjectName) {
+    return fallbackProjectName
+  }
+  return null
+}
+
 const EngagementsList = ({
   engagements,
   projectId,
@@ -242,31 +147,35 @@ const EngagementsList = ({
   isLoading,
   canManage
 }) => {
-  const [searchText, setSearchText] = useState('')
+  const [searchProjectName, setSearchProjectName] = useState('')
   const [statusFilter, setStatusFilter] = useState(allEngagements ? ALL_STATUS_OPTION : DEFAULT_STATUS_OPTION)
-  const [sortBy, setSortBy] = useState(SORT_OPTIONS[0])
-  const [sortOrder, setSortOrder] = useState(SORT_ORDER_OPTIONS[0])
+  const [visibilityFilter, setVisibilityFilter] = useState(DEFAULT_VISIBILITY_OPTION)
 
   const filteredOpportunities = useMemo(() => {
+    const fallbackProjectName = !allEngagements && projectDetail && projectDetail.name
+      ? projectDetail.name
+      : null
     let results = engagements || []
+
     if (statusFilter && statusFilter.value !== 'all') {
       results = results.filter(engagement => (engagement.status || '') === statusFilter.value)
     }
-    if (searchText.trim()) {
-      const query = searchText.trim().toLowerCase()
-      results = results.filter(engagement => (engagement.title || '').toLowerCase().includes(query))
+
+    if (visibilityFilter && visibilityFilter.value !== 'all') {
+      const isPrivate = visibilityFilter.value === 'private'
+      results = results.filter(engagement => Boolean(engagement.isPrivate) === isPrivate)
     }
-    const sorted = [...results].sort((a, b) => {
-      const valueA = getSortValue(a, sortBy.value)
-      const valueB = getSortValue(b, sortBy.value)
-      const comparableA = getSortComparable(valueA)
-      const comparableB = getSortComparable(valueB)
-      const normalizedA = comparableA == null ? 0 : comparableA
-      const normalizedB = comparableB == null ? 0 : comparableB
-      return sortOrder.value === 'asc' ? normalizedA - normalizedB : normalizedB - normalizedA
-    })
-    return sorted
-  }, [engagements, statusFilter, searchText, sortBy, sortOrder])
+
+    if (searchProjectName.trim()) {
+      const query = searchProjectName.trim().toLowerCase()
+      results = results.filter((engagement) => {
+        const projectName = getEngagementProjectName(engagement, fallbackProjectName) || ''
+        return projectName.toLowerCase().includes(query)
+      })
+    }
+
+    return results
+  }, [engagements, statusFilter, visibilityFilter, searchProjectName, projectDetail, allEngagements])
 
   if (isLoading) {
     return <Loader />
@@ -295,9 +204,9 @@ const EngagementsList = ({
           <input
             className={styles.filterInput}
             type='text'
-            value={searchText}
-            onChange={(event) => setSearchText(event.target.value)}
-            placeholder='Search by title'
+            value={searchProjectName}
+            onChange={(event) => setSearchProjectName(event.target.value)}
+            placeholder='Search by project name'
           />
         </div>
         <div className={styles.filterItem}>
@@ -310,17 +219,9 @@ const EngagementsList = ({
         </div>
         <div className={styles.filterItem}>
           <Select
-            options={SORT_OPTIONS}
-            value={sortBy}
-            onChange={(option) => setSortBy(option || SORT_OPTIONS[0])}
-            isClearable={false}
-          />
-        </div>
-        <div className={styles.filterItem}>
-          <Select
-            options={SORT_ORDER_OPTIONS}
-            value={sortOrder}
-            onChange={(option) => setSortOrder(option || SORT_ORDER_OPTIONS[0])}
+            options={VISIBILITY_OPTIONS}
+            value={visibilityFilter}
+            onChange={(option) => setVisibilityFilter(option || DEFAULT_VISIBILITY_OPTION)}
             isClearable={false}
           />
         </div>
@@ -332,26 +233,24 @@ const EngagementsList = ({
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Title</th>
-              {allEngagements && <th>Project ID</th>}
-              <th>Duration</th>
-              <th>Location</th>
-              <th>Anticipated Start</th>
-              {canManage && <th>Applications</th>}
-              {canManage && <th>Visibility</th>}
-              {canManage && <th>Members Required</th>}
-              {canManage && <th>Members Assigned</th>}
+              <th>Project Name</th>
+              <th>Engagement Title</th>
+              <th>Visibility</th>
               <th>Status</th>
-              {canManage && <th className={styles.actionsColumn}>Actions</th>}
+              <th>Applications</th>
+              <th>Members Assigned</th>
+              <th className={styles.actionsColumn}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filteredOpportunities.map((engagement) => {
-              const duration = getDurationLabel(engagement)
-              const location = getLocationLabel(engagement)
+              const fallbackProjectName = !allEngagements && projectDetail && projectDetail.name
+                ? projectDetail.name
+                : null
               const applicationsCount = getApplicationsCount(engagement)
               const statusClass = getStatusClass(engagement.status)
               const engagementProjectId = getEngagementProjectId(engagement, projectId)
+              const projectName = getEngagementProjectName(engagement, fallbackProjectName) || engagementProjectId || '-'
               const assignedMembersCount = getAssignedMembersCount(engagement)
               const assignedMemberHandles = getAssignedMemberHandles(engagement)
               const assignedMembersTooltip = assignedMemberHandles.length ? (
@@ -366,60 +265,55 @@ const EngagementsList = ({
 
               return (
                 <tr key={engagement.id || engagement.title}>
+                  <td>
+                    {engagementProjectId ? (
+                      <Link
+                        className={styles.projectLink}
+                        to={`/projects/${engagementProjectId}/challenges`}
+                      >
+                        {projectName}
+                      </Link>
+                    ) : (
+                      projectName
+                    )}
+                  </td>
                   <td>{engagement.title || '-'}</td>
-                  {allEngagements && <td>{engagementProjectId || '-'}</td>}
-                  <td>{duration}</td>
-                  <td>{location}</td>
-                  <td>{formatAnticipatedStart(engagement.anticipatedStart)}</td>
-                  {canManage && (
-                    <td>
-                      {engagement.id && engagementProjectId ? (
-                        <Link
-                          className={styles.applicationsLink}
-                          to={`/projects/${engagementProjectId}/engagements/${engagement.id}/applications`}
-                        >
-                          {applicationsCount}
-                        </Link>
-                      ) : (
-                        applicationsCount
-                      )}
-                    </td>
-                  )}
-                  {canManage && (
-                    <td>
-                      {engagement.isPrivate ? 'Private' : 'Public'}
-                    </td>
-                  )}
-                  {canManage && (
-                    <td>
-                      {engagement.requiredMemberCount != null ? engagement.requiredMemberCount : '-'}
-                    </td>
-                  )}
-                  {canManage && (
-                    <td>
-                      {engagement.id && engagementProjectId && assignedMembersCount > 0 ? (
-                        <Tooltip content={assignedMembersTooltip}>
-                          <span>
-                            <Link
-                              className={styles.applicationsLink}
-                              to={`/projects/${engagementProjectId}/engagements/${engagement.id}/assignments`}
-                            >
-                              {assignedMembersCount}
-                            </Link>
-                          </span>
-                        </Tooltip>
-                      ) : (
-                        assignedMembersCount
-                      )}
-                    </td>
-                  )}
+                  <td>{engagement.isPrivate ? 'Private' : 'Public'}</td>
                   <td>
                     <span className={`${styles.status} ${statusClass}`}>
                       {engagement.status || '-'}
                     </span>
                   </td>
-                  {canManage && (
-                    <td className={styles.actionsColumn}>
+                  <td>
+                    {engagement.id && engagementProjectId ? (
+                      <Link
+                        className={styles.applicationsLink}
+                        to={`/projects/${engagementProjectId}/engagements/${engagement.id}/applications`}
+                      >
+                        {applicationsCount}
+                      </Link>
+                    ) : (
+                      applicationsCount
+                    )}
+                  </td>
+                  <td>
+                    {engagement.id && engagementProjectId && assignedMembersCount > 0 ? (
+                      <Tooltip content={assignedMembersTooltip}>
+                        <span>
+                          <Link
+                            className={styles.applicationsLink}
+                            to={`/projects/${engagementProjectId}/engagements/${engagement.id}/assignments`}
+                          >
+                            {assignedMembersCount}
+                          </Link>
+                        </span>
+                      </Tooltip>
+                    ) : (
+                      assignedMembersCount
+                    )}
+                  </td>
+                  <td className={styles.actionsColumn}>
+                    {canManage ? (
                       <div className={styles.actions}>
                         {engagement.id && (
                           <OutlineButton
@@ -432,12 +326,14 @@ const EngagementsList = ({
                         <OutlineButton
                           text='Edit'
                           type='info'
-                          link={engagementProjectId ? `/projects/${engagementProjectId}/engagements/${engagement.id}` : null}
-                          disabled={!engagementProjectId}
+                          link={engagementProjectId && engagement.id ? `/projects/${engagementProjectId}/engagements/${engagement.id}` : null}
+                          disabled={!engagementProjectId || !engagement.id}
                         />
                       </div>
-                    </td>
-                  )}
+                    ) : (
+                      '-'
+                    )}
+                  </td>
                 </tr>
               )
             })}

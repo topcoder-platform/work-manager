@@ -114,12 +114,12 @@ class TabContainer extends Component {
     this.loadProjects(nextProps)
   }
 
-  getProjectTabFromPath (pathname, projectId, canViewAssets = true) {
+  getProjectTabFromPath (pathname, projectId, canViewAssets = true, canViewEngagements = false) {
     if (!projectId) {
       return 0
     }
     if (pathname.includes(`/projects/${projectId}/engagements`)) {
-      return 2
+      return canViewEngagements ? 2 : 0
     }
     if (pathname.includes(`/projects/${projectId}/assets`)) {
       return canViewAssets ? 3 : 0
@@ -132,7 +132,7 @@ class TabContainer extends Component {
 
   getTabFromPath (pathname, projectId, canViewAssets = true, canViewEngagements = false) {
     if (projectId) {
-      return this.getProjectTabFromPath(pathname, projectId, canViewAssets)
+      return this.getProjectTabFromPath(pathname, projectId, canViewAssets, canViewEngagements)
     }
     if (pathname === '/') {
       return 1
@@ -180,13 +180,13 @@ class TabContainer extends Component {
     const canViewAssets = this.getCanViewAssets()
     const canViewEngagements = this.getCanViewEngagements()
     if (projectId) {
-      if (tab === 3 && !canViewAssets) {
+      if ((tab === 2 && !canViewEngagements) || (tab === 3 && !canViewAssets)) {
         return
       }
       if (tab === 1) {
         history.push(`/projects/${projectId}/challenges`)
         this.setState({ currentTab: 1 })
-      } else if (tab === 2) {
+      } else if (tab === 2 && canViewEngagements) {
         history.push(`/projects/${projectId}/engagements`)
         this.setState({ currentTab: 2 })
       } else if (tab === 3) {

@@ -7,6 +7,7 @@ import {
   patchEngagement,
   deleteEngagement as deleteEngagementAPI
 } from '../services/engagements'
+import { fetchProjectById } from '../services/projects'
 import { fetchSkillsByIds } from '../services/skills'
 import {
   normalizeEngagement,
@@ -32,6 +33,8 @@ import {
   DELETE_ENGAGEMENT_SUCCESS,
   DELETE_ENGAGEMENT_FAILURE
 } from '../config/constants'
+
+const projectNameCache = {}
 
 const getSkillId = (skill) => {
   if (!skill) {
@@ -91,6 +94,70 @@ const withSkillDetails = (engagement, skillsMap) => {
     ...engagement,
     skills
   }
+}
+
+const getProjectId = (engagement) => {
+  if (!engagement || !engagement.projectId) {
+    return null
+  }
+  return String(engagement.projectId)
+}
+
+const getProjectName = (project) => {
+  if (!project || typeof project !== 'object') {
+    return null
+  }
+  if (typeof project.name === 'string' && project.name.trim()) {
+    return project.name
+  }
+  if (typeof project.projectName === 'string' && project.projectName.trim()) {
+    return project.projectName
+  }
+  return null
+}
+
+const hydrateEngagementProjectNames = async (engagements = []) => {
+  if (!Array.isArray(engagements) || !engagements.length) {
+    return []
+  }
+
+  const projectIds = Array.from(new Set(
+    engagements
+      .map(getProjectId)
+      .filter(Boolean)
+  ))
+
+  if (!projectIds.length) {
+    return engagements
+  }
+
+  const uncachedProjectIds = projectIds.filter((projectId) => !projectNameCache[projectId])
+  if (uncachedProjectIds.length) {
+    const projectNameEntries = await Promise.all(
+      uncachedProjectIds.map(async (projectId) => {
+        try {
+          const project = await fetchProjectById(projectId)
+          return [projectId, getProjectName(project)]
+        } catch (error) {
+          return [projectId, null]
+        }
+      })
+    )
+
+    projectNameEntries.forEach(([projectId, projectName]) => {
+      if (projectName) {
+        projectNameCache[projectId] = projectName
+      }
+    })
+  }
+
+  return engagements.map((engagement) => {
+    const projectId = getProjectId(engagement)
+    return {
+      ...engagement,
+      projectName: (projectId && projectNameCache[projectId]) || engagement.projectName || null
+    }
+  })
 }
 
 const hydrateEngagementSkills = async (engagements = []) => {
@@ -206,7 +273,8 @@ export function loadEngagements (projectId, status = 'all', filterName = '', inc
       } while (!totalPages || page <= totalPages)
 
       const hydratedEngagements = await hydrateEngagementSkills(engagements)
-      const normalizedEngagements = normalizeEngagements(hydratedEngagements)
+      const engagementsWithProjectNames = await hydrateEngagementProjectNames(hydratedEngagements)
+      const normalizedEngagements = normalizeEngagements(engagementsWithProjectNames)
       dispatch({
         type: LOAD_ENGAGEMENTS_SUCCESS,
         engagements: normalizedEngagements

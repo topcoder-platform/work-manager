@@ -380,6 +380,7 @@ const ApplicationsList = ({
                   value={acceptStartDate}
                   dateFormat={INPUT_DATE_FORMAT}
                   timeFormat={INPUT_TIME_FORMAT}
+                  preventViewportOverflow
                   minDateTime={getMinStartDateTime}
                   isValidDate={isAcceptStartDateValid}
                   onChange={(value) => {
@@ -403,6 +404,7 @@ const ApplicationsList = ({
                   value={acceptEndDate}
                   dateFormat={INPUT_DATE_FORMAT}
                   timeFormat={INPUT_TIME_FORMAT}
+                  preventViewportOverflow
                   minDateTime={getMinEndDateTime}
                   isValidDate={isAcceptEndDateValid}
                   onChange={(value) => {

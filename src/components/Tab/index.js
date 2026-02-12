@@ -13,7 +13,7 @@ const Tab = ({
 }) => {
   const projectTabs = [
     { id: 1, label: 'Challenges' },
-    { id: 2, label: 'Engagements' },
+    ...(canViewEngagements ? [{ id: 2, label: 'Engagements' }] : []),
     ...(canViewAssets ? [{ id: 3, label: 'Assets' }] : [])
   ]
   const tabs = projectId
