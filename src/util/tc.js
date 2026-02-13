@@ -209,6 +209,17 @@ export const checkManager = (token) => {
   return roles.some(val => MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
 }
 
+export const checkTalentManager = (token) => {
+  const tokenData = decodeToken(token)
+  const roles = _.get(tokenData, 'roles')
+  const talentManagerRoles = ['talent manager', 'topcoder talent manager']
+  return roles.some(val => talentManagerRoles.indexOf(val.toLowerCase()) > -1)
+}
+
+export const checkAdminOrTalentManager = (token) => {
+  return checkAdmin(token) || checkTalentManager(token)
+}
+
 export const checkTaskManager = (token) => {
   const tokenData = decodeToken(token)
   const roles = _.get(tokenData, 'roles')

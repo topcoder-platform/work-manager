@@ -125,6 +125,68 @@ const normalizeEngagement = (details) => {
   }
 }
 
+const buildAssignmentPatch = (assignmentUpdate = {}, fallback = {}) => {
+  const patch = {
+    status: assignmentUpdate.status || fallback.status,
+    terminationReason: Object.prototype.hasOwnProperty.call(assignmentUpdate, 'terminationReason')
+      ? assignmentUpdate.terminationReason
+      : Object.prototype.hasOwnProperty.call(assignmentUpdate, 'termination_reason')
+        ? assignmentUpdate.termination_reason
+        : fallback.terminationReason,
+    otherRemarks: Object.prototype.hasOwnProperty.call(assignmentUpdate, 'otherRemarks')
+      ? assignmentUpdate.otherRemarks
+      : Object.prototype.hasOwnProperty.call(assignmentUpdate, 'other_remarks')
+        ? assignmentUpdate.other_remarks
+        : fallback.otherRemarks,
+    startDate: assignmentUpdate.startDate || assignmentUpdate.start_date || fallback.startDate,
+    endDate: assignmentUpdate.endDate || assignmentUpdate.end_date || fallback.endDate,
+    updatedAt: assignmentUpdate.updatedAt || fallback.updatedAt
+  }
+  return Object.keys(patch).reduce((acc, key) => {
+    if (!_.isUndefined(patch[key])) {
+      acc[key] = patch[key]
+    }
+    return acc
+  }, {})
+}
+
+const applyAssignmentUpdate = (engagement, assignmentId, assignmentUpdate = {}, fallback = {}) => {
+  if (!engagement || typeof engagement !== 'object') {
+    return engagement
+  }
+  if (_.isNil(assignmentId) || assignmentId === '') {
+    return engagement
+  }
+  const assignments = Array.isArray(engagement.assignments) ? engagement.assignments : []
+  if (!assignments.length) {
+    return engagement
+  }
+
+  const assignmentIdText = `${assignmentId}`
+  const assignmentPatch = buildAssignmentPatch(assignmentUpdate, fallback)
+  let wasUpdated = false
+
+  const updatedAssignments = assignments.map((assignment) => {
+    if (`${_.get(assignment, 'id', '')}` !== assignmentIdText) {
+      return assignment
+    }
+    wasUpdated = true
+    return {
+      ...assignment,
+      ...assignmentPatch
+    }
+  })
+
+  if (!wasUpdated) {
+    return engagement
+  }
+
+  return normalizeEngagement({
+    ...engagement,
+    assignments: updatedAssignments
+  })
+}
+
 class EngagementPaymentContainer extends Component {
   constructor (props) {
     super(props)
@@ -133,7 +195,9 @@ class EngagementPaymentContainer extends Component {
       showPaymentModal: false,
       selectedMember: null,
       memberIdLookup: {},
-      terminatingAssignments: {}
+      terminatingAssignments: {},
+      completingAssignments: {},
+      lastSyncedEngagementDetails: null
     }
 
     this.onOpenPaymentModal = this.onOpenPaymentModal.bind(this)
@@ -143,19 +207,28 @@ class EngagementPaymentContainer extends Component {
     this.fetchPaymentsForAssignments = this.fetchPaymentsForAssignments.bind(this)
     this.getPaymentEntries = this.getPaymentEntries.bind(this)
     this.onTerminateAssignment = this.onTerminateAssignment.bind(this)
+    this.onCompleteAssignment = this.onCompleteAssignment.bind(this)
   }
 
   static getDerivedStateFromProps (nextProps, prevState) {
     const engagementId = getEngagementIdFromProps(nextProps)
-    const nextEngagementDetailsId = _.get(nextProps.engagementDetails, 'id', null)
+    const nextEngagementDetails = nextProps.engagementDetails
+    const nextEngagementDetailsId = _.get(nextEngagementDetails, 'id', null)
 
     if (
       engagementId &&
       nextEngagementDetailsId &&
       `${nextEngagementDetailsId}` === `${engagementId}` &&
-      `${prevState.engagement.id}` !== `${nextEngagementDetailsId}`
+      prevState.lastSyncedEngagementDetails !== nextEngagementDetails
     ) {
-      return { engagement: normalizeEngagement(nextProps.engagementDetails) }
+      const normalizedEngagement = normalizeEngagement(nextEngagementDetails)
+      if (_.isEqual(prevState.engagement, normalizedEngagement)) {
+        return { lastSyncedEngagementDetails: nextEngagementDetails }
+      }
+      return {
+        engagement: normalizedEngagement,
+        lastSyncedEngagementDetails: nextEngagementDetails
+      }
     }
 
     return null
@@ -370,13 +443,21 @@ class EngagementPaymentContainer extends Component {
     }))
 
     try {
-      await updateEngagementAssignmentStatus(
+      const response = await updateEngagementAssignmentStatus(
         this.getEngagementId(),
         assignmentId,
         'TERMINATED',
         terminationReason
       )
-      await this.props.loadEngagementDetails(this.getProjectId(), this.getEngagementId())
+      const assignmentUpdate = _.get(response, 'data', response)
+      this.setState((prevState) => ({
+        engagement: applyAssignmentUpdate(
+          prevState.engagement,
+          assignmentId,
+          assignmentUpdate,
+          { status: 'TERMINATED', terminationReason }
+        )
+      }))
       toastSuccess('Success', `Assignment for ${memberHandle} terminated.`)
       return true
     } catch (error) {
@@ -387,6 +468,50 @@ class EngagementPaymentContainer extends Component {
         const next = { ...prevState.terminatingAssignments }
         delete next[assignmentId]
         return { terminatingAssignments: next }
+      })
+    }
+  }
+
+  async onCompleteAssignment (member) {
+    const assignmentId = _.get(member, 'assignmentId', null)
+    if (_.isNil(assignmentId) || assignmentId === '') {
+      toastFailure('Error', 'Assignment ID is required to complete an assignment')
+      return false
+    }
+
+    const memberHandle = getMemberHandle(member) || 'this member'
+    this.setState((prevState) => ({
+      completingAssignments: {
+        ...prevState.completingAssignments,
+        [assignmentId]: true
+      }
+    }))
+
+    try {
+      const response = await updateEngagementAssignmentStatus(
+        this.getEngagementId(),
+        assignmentId,
+        'COMPLETED'
+      )
+      const assignmentUpdate = _.get(response, 'data', response)
+      this.setState((prevState) => ({
+        engagement: applyAssignmentUpdate(
+          prevState.engagement,
+          assignmentId,
+          assignmentUpdate,
+          { status: 'COMPLETED' }
+        )
+      }))
+      toastSuccess('Success', `Assignment for ${memberHandle} marked as completed.`)
+      return true
+    } catch (error) {
+      toastFailure('Error', (error && error.message) || 'Failed to complete assignment')
+      return false
+    } finally {
+      this.setState((prevState) => {
+        const next = { ...prevState.completingAssignments }
+        delete next[assignmentId]
+        return { completingAssignments: next }
       })
     }
   }
@@ -454,19 +579,22 @@ class EngagementPaymentContainer extends Component {
   render () {
     const projectId = this.getProjectId()
     const engagementId = this.getEngagementId()
-    const { isLoading, payments, paymentsByAssignment } = this.props
+    const { isLoading, payments, paymentsByAssignment, projectDetail } = this.props
     const assignedMembersForPayment = this.getAssignedMembersForPayment()
     const isPaymentProcessing = Boolean(payments && payments.isProcessing)
     const shouldShowPaymentModal = this.state.showPaymentModal && this.state.selectedMember
+    const projectName = _.get(projectDetail, 'name', '')
 
     return (
       <EngagementPayment
         engagement={this.state.engagement}
+        projectName={projectName}
         assignedMembers={assignedMembersForPayment}
         isLoading={isLoading}
         isPaymentProcessing={isPaymentProcessing}
         paymentsByAssignment={paymentsByAssignment}
         terminatingAssignments={this.state.terminatingAssignments}
+        completingAssignments={this.state.completingAssignments}
         projectId={projectId}
         engagementId={engagementId}
         showPaymentModal={shouldShowPaymentModal}
@@ -475,6 +603,7 @@ class EngagementPaymentContainer extends Component {
         onClosePaymentModal={this.onClosePaymentModal}
         onSubmitPayment={this.onSubmitPayment}
         onTerminateAssignment={this.onTerminateAssignment}
+        onCompleteAssignment={this.onCompleteAssignment}
       />
     )
   }
@@ -500,6 +629,7 @@ EngagementPaymentContainer.propTypes = {
     error: PropTypes.string
   })),
   projectDetail: PropTypes.shape({
+    name: PropTypes.string,
     billingAccountId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
   }),
   currentBillingAccount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),

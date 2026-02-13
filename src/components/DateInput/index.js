@@ -5,6 +5,9 @@ import 'rc-time-picker/assets/index.css'
 import DateTime from '@nateradebaugh/react-datetime'
 import '@nateradebaugh/react-datetime/scss/styles.scss'
 
+const VIEWPORT_PADDING = 8
+const MAX_POPOVER_ADJUST_ATTEMPTS = 8
+
 const DateInput = forwardRef(({
   onChange,
   value,
@@ -13,7 +16,8 @@ const DateInput = forwardRef(({
   timeFormat,
   className,
   minDateTime,
-  inputId
+  inputId,
+  preventViewportOverflow
 }, ref) => {
   const [localValue, setLocalValue] = useState(value)
   const latestValueRef = useRef(value)
@@ -61,6 +65,52 @@ const DateInput = forwardRef(({
     return valueAsDate.getTime() < minAsDate.getTime() ? minAsDate : valueAsDate
   }
 
+  const adjustPopoverToViewport = () => {
+    if (!preventViewportOverflow || typeof window === 'undefined' || typeof document === 'undefined') {
+      return
+    }
+
+    let attempts = 0
+    const adjust = () => {
+      attempts += 1
+      const popovers = Array.from(document.querySelectorAll('[data-reach-popover]'))
+        .filter(popover => popover.querySelector('.rdtPicker'))
+
+      if (popovers.length === 0) {
+        if (attempts < MAX_POPOVER_ADJUST_ATTEMPTS) {
+          window.requestAnimationFrame(adjust)
+        }
+        return
+      }
+
+      const popover = popovers[popovers.length - 1]
+      popover.style.transform = ''
+      popover.style.maxHeight = ''
+      popover.style.overflowY = ''
+
+      const initialRect = popover.getBoundingClientRect()
+      const maxBottom = window.innerHeight - VIEWPORT_PADDING
+
+      if (initialRect.bottom > maxBottom) {
+        const overflow = initialRect.bottom - maxBottom
+        const maxShift = Math.max(0, initialRect.top - VIEWPORT_PADDING)
+        const shift = Math.min(overflow, maxShift)
+        if (shift > 0) {
+          popover.style.transform = `translateY(-${Math.ceil(shift)}px)`
+        }
+      }
+
+      const adjustedRect = popover.getBoundingClientRect()
+      const maxHeight = Math.floor(window.innerHeight - VIEWPORT_PADDING - Math.max(adjustedRect.top, VIEWPORT_PADDING))
+      if (maxHeight > 0 && adjustedRect.height > maxHeight) {
+        popover.style.maxHeight = `${maxHeight}px`
+        popover.style.overflowY = 'auto'
+      }
+    }
+
+    window.requestAnimationFrame(adjust)
+  }
+
   return (
     <DateTime
       className={className}
@@ -83,6 +133,7 @@ const DateInput = forwardRef(({
         }
         onChange(newValue)
       }}
+      onFocus={adjustPopoverToViewport}
       isValidDate={isValidDate}
       dateFormat={dateFormat}
       timeFormat={timeFormat}
@@ -98,7 +149,8 @@ DateInput.defaultProps = {
   timeFormat: null,
   className: null,
   minDateTime: null,
-  inputId: null
+  inputId: null,
+  preventViewportOverflow: false
 }
 
 DateInput.propTypes = {
@@ -109,6 +161,7 @@ DateInput.propTypes = {
   timeFormat: PropTypes.oneOfType([PropTypes.string, PropTypes.bool]),
   className: PropTypes.string,
   minDateTime: PropTypes.oneOfType([PropTypes.instanceOf(Date), PropTypes.func]),
-  inputId: PropTypes.string
+  inputId: PropTypes.string,
+  preventViewportOverflow: PropTypes.bool
 }
 export default DateInput

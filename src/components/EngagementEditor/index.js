@@ -15,6 +15,7 @@ import Handle from '../Handle'
 import { JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
 import { suggestProfiles } from '../../services/user'
 import { getCountableAssignments } from '../../util/engagements'
+import { serializeTentativeAssignmentDate } from '../../util/assignmentDates'
 import { formatTimeZoneLabel, formatTimeZoneList } from '../../util/timezones'
 import styles from './EngagementEditor.module.scss'
 
@@ -406,8 +407,8 @@ const EngagementEditor = ({
     nextAssignedMemberHandles[assignModal.index] = assignModal.handle
     nextAssignmentDetails[assignModal.index] = {
       memberHandle: assignModal.handle,
-      startDate: parsedStart.toISOString(),
-      endDate: parsedEnd.toISOString(),
+      startDate: serializeTentativeAssignmentDate(parsedStart),
+      endDate: serializeTentativeAssignmentDate(parsedEnd),
       agreementRate: normalizedRate,
       otherRemarks: normalizedOtherRemarks
     }
@@ -930,12 +931,13 @@ const EngagementEditor = ({
             )}
 
             {canEdit && (
-              <div className={styles.row}>
+              <div className={cn(styles.row, styles.privateEngagementRow)}>
                 <div className={cn(styles.field, styles.col1)}>
                   <label htmlFor='isPrivate'>Private Engagement :</label>
                 </div>
-                <div className={cn(styles.field, styles.col2)}>
+                <div className={cn(styles.field, styles.col2, styles.privateEngagementField)}>
                   <input
+                    className={styles.privateEngagementCheckbox}
                     id='isPrivate'
                     name='isPrivate'
                     type='checkbox'

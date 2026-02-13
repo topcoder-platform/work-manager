@@ -60,6 +60,19 @@
   min-width: 0;
 }
 
+.filterItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filterLabel {
+  color: $tc-gray-70;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}
+
 .filterInput {
   width: 100%;
   min-width: 0;
@@ -145,6 +158,10 @@
   }
 }
 
+.projectLink {
+  @extend .applicationsLink;
+}
+
 .assignedMembersTooltip {
   display: flex;
   flex-direction: column;
@@ -164,8 +181,8 @@
 
   .filters {
     display: grid;
-    grid-template-columns: minmax(240px, 2fr) repeat(3, minmax(160px, 1fr));
-    align-items: center;
+    grid-template-columns: minmax(240px, 2fr) repeat(2, minmax(160px, 1fr));
+    align-items: end;
   }
 
   .filterSearch,
