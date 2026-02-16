@@ -12,6 +12,7 @@ node_modules
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store
@@ -33,3 +34,5 @@ yarn-error.log*
 # e2e test case
 test-automation/temp
 test-automation/test-results
+
+dist

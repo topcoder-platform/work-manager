@@ -33,7 +33,7 @@ import {
   checkAdmin,
   checkCopilot,
   checkManager,
-  checkAdminOrPmOrTaskManager
+  checkAdminOrTalentManager
 } from './util/tc'
 import Users from './containers/Users'
 import Groups from './containers/Groups'
@@ -124,7 +124,7 @@ class Routes extends React.Component {
     const isReadOnly = checkReadOnlyRoles(this.props.token)
     const isCopilot = checkCopilot(this.props.token)
     const isAdmin = checkAdmin(this.props.token)
-    const canManageEngagements = checkAdminOrPmOrTaskManager(this.props.token, null)
+    const canAccessEngagements = checkAdminOrTalentManager(this.props.token)
 
     return (
       <React.Fragment>
@@ -156,6 +156,29 @@ class Routes extends React.Component {
               <FooterContainer />
             )()}
           />
+          {canAccessEngagements && (
+            <Route exact path='/engagements'
+              render={() => renderApp(
+                <EngagementsList allEngagements />,
+                <TopBarContainer />,
+                <Tab />,
+                <FooterContainer />
+              )()}
+            />
+          )}
+          {!canAccessEngagements && (
+            <Route exact path='/engagements'
+              render={() => renderApp(
+                <Challenges
+                  menu='NULL'
+                  warnMessage={'You need Admin or Talent Manager role to view all engagements'}
+                />,
+                <TopBarContainer />,
+                <Tab />,
+                <FooterContainer />
+              )()}
+            />
+          )}
           <Route exact path='/projects/new'
             render={() => renderApp(
               <ProjectEditor />,
@@ -262,14 +285,16 @@ class Routes extends React.Component {
               }
             />
           )}
-          <Route exact path='/projects/:projectId/engagements'
-            render={({ match }) => renderApp(
-              <EngagementsList projectId={match.params.projectId} />,
-              <TopBarContainer projectId={match.params.projectId} />,
-              <Tab projectId={match.params.projectId} />,
-              <FooterContainer />
-            )()} />
-          {canManageEngagements && (
+          {canAccessEngagements && (
+            <Route exact path='/projects/:projectId/engagements'
+              render={({ match }) => renderApp(
+                <EngagementsList projectId={match.params.projectId} />,
+                <TopBarContainer projectId={match.params.projectId} />,
+                <Tab projectId={match.params.projectId} />,
+                <FooterContainer />
+              )()} />
+          )}
+          {canAccessEngagements && (
             <Route exact path='/projects/:projectId/engagements/new'
               render={({ match }) => renderApp(
                 <EngagementEditor />,
@@ -278,52 +303,46 @@ class Routes extends React.Component {
                 <FooterContainer />
               )()} />
           )}
-          {!canManageEngagements && (
-            <Route exact path='/projects/:projectId/engagements/new'
+          {canAccessEngagements && (
+            <Route exact path='/projects/:projectId/engagements/:engagementId/applications'
               render={({ match }) => renderApp(
-                <Challenges
-                  menu='NULL'
-                  warnMessage={'You need Admin, Project Manager, Talent Manager, or Task Manager role to create engagements'}
+                <ApplicationsList projectId={match.params.projectId} engagementId={match.params.engagementId} />,
+                <TopBarContainer projectId={match.params.projectId} />,
+                <Tab
+                  projectId={match.params.projectId}
+                  menu={'Applications'}
+                  backPath={`/projects/${match.params.projectId}/engagements`}
                 />,
-                <TopBarContainer />,
-                <Tab projectId={match.params.projectId} />,
                 <FooterContainer />
               )()} />
           )}
-          <Route exact path='/projects/:projectId/engagements/:engagementId/applications'
-            render={({ match }) => renderApp(
-              <ApplicationsList projectId={match.params.projectId} engagementId={match.params.engagementId} />,
-              <TopBarContainer projectId={match.params.projectId} />,
-              <Tab
-                projectId={match.params.projectId}
-                menu={'Applications'}
-                backPath={`/projects/${match.params.projectId}/engagements`}
-              />,
-              <FooterContainer />
-            )()} />
-          <Route exact path='/projects/:projectId/engagements/:engagementId/experience'
-            render={({ match }) => renderApp(
-              <EngagementExperience projectId={match.params.projectId} engagementId={match.params.engagementId} />,
-              <TopBarContainer projectId={match.params.projectId} />,
-              <Tab
-                projectId={match.params.projectId}
-                menu={'Experience'}
-                backPath={`/projects/${match.params.projectId}/engagements/${match.params.engagementId}/assignments`}
-              />,
-              <FooterContainer />
-            )()} />
-          <Route exact path='/projects/:projectId/engagements/:engagementId/feedback'
-            render={({ match }) => renderApp(
-              <EngagementFeedback projectId={match.params.projectId} engagementId={match.params.engagementId} />,
-              <TopBarContainer projectId={match.params.projectId} />,
-              <Tab
-                projectId={match.params.projectId}
-                menu={'Feedback'}
-                backPath={`/projects/${match.params.projectId}/engagements/${match.params.engagementId}/assignments`}
-              />,
-              <FooterContainer />
-            )()} />
-          {canManageEngagements && (
+          {canAccessEngagements && (
+            <Route exact path='/projects/:projectId/engagements/:engagementId/experience'
+              render={({ match }) => renderApp(
+                <EngagementExperience projectId={match.params.projectId} engagementId={match.params.engagementId} />,
+                <TopBarContainer projectId={match.params.projectId} />,
+                <Tab
+                  projectId={match.params.projectId}
+                  menu={'Experience'}
+                  backPath={`/projects/${match.params.projectId}/engagements/${match.params.engagementId}/assignments`}
+                />,
+                <FooterContainer />
+              )()} />
+          )}
+          {canAccessEngagements && (
+            <Route exact path='/projects/:projectId/engagements/:engagementId/feedback'
+              render={({ match }) => renderApp(
+                <EngagementFeedback projectId={match.params.projectId} engagementId={match.params.engagementId} />,
+                <TopBarContainer projectId={match.params.projectId} />,
+                <Tab
+                  projectId={match.params.projectId}
+                  menu={'Feedback'}
+                  backPath={`/projects/${match.params.projectId}/engagements/${match.params.engagementId}/assignments`}
+                />,
+                <FooterContainer />
+              )()} />
+          )}
+          {canAccessEngagements && (
             <Route exact path='/projects/:projectId/engagements/:engagementId/assignments'
               render={({ match }) => renderApp(
                 <EngagementPayment projectId={match.params.projectId} engagementId={match.params.engagementId} />,
@@ -336,29 +355,16 @@ class Routes extends React.Component {
                 <FooterContainer />
               )()} />
           )}
-          {!canManageEngagements && (
-            <Route exact path='/projects/:projectId/engagements/:engagementId/assignments'
+          {canAccessEngagements && (
+            <Route exact path='/projects/:projectId/engagements/:engagementId/view'
               render={({ match }) => renderApp(
-                <Challenges
-                  menu='NULL'
-                  warnMessage={'You need Admin, Project Manager, Talent Manager, or Task Manager role to edit engagements'}
-                />,
-                <TopBarContainer />,
-                <Tab
-                  projectId={match.params.projectId}
-                  backPath={`/projects/${match.params.projectId}/engagements`}
-                />,
+                <EngagementEditor />,
+                <TopBarContainer projectId={match.params.projectId} />,
+                <Tab projectId={match.params.projectId} menu={'Engagement'} />,
                 <FooterContainer />
               )()} />
           )}
-          <Route exact path='/projects/:projectId/engagements/:engagementId/view'
-            render={({ match }) => renderApp(
-              <EngagementEditor />,
-              <TopBarContainer projectId={match.params.projectId} />,
-              <Tab projectId={match.params.projectId} menu={'Engagement'} />,
-              <FooterContainer />
-            )()} />
-          {canManageEngagements && (
+          {canAccessEngagements && (
             <Route path='/projects/:projectId/engagements/:engagementId'
               render={({ match }) => renderApp(
                 <EngagementEditor />,
@@ -367,12 +373,12 @@ class Routes extends React.Component {
                 <FooterContainer />
               )()} />
           )}
-          {!canManageEngagements && (
-            <Route path='/projects/:projectId/engagements/:engagementId'
+          {!canAccessEngagements && (
+            <Route path='/projects/:projectId/engagements'
               render={({ match }) => renderApp(
                 <Challenges
                   menu='NULL'
-                  warnMessage={'You need Admin, Project Manager, Talent Manager, or Task Manager role to edit engagements'}
+                  warnMessage={'You need Admin or Talent Manager role to view engagements'}
                 />,
                 <TopBarContainer />,
                 <Tab projectId={match.params.projectId} />,

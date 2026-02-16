@@ -461,9 +461,11 @@ export default class Resources extends React.Component {
               {sortedResources.map(r => {
                 return (
                   <tr className={styles.rowTable} key={r.id} role='row'>
-                    <td className={styles['col-2Table']}>
-                      <span role='cell'>{r.role}</span>
-                    </td>
+                    {!isDesign && (
+                      <td className={styles['col-2Table']}>
+                        <span role='cell'>{r.role}</span>
+                      </td>
+                    )}
                     <td className={styles['col-3Table']}>
                       <span role='cell'>
                         <a

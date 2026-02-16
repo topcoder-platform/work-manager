@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 import PropTypes from 'prop-types'
 import Select from '../../Select'
 import { searchSkills } from '../../../services/skills'
@@ -6,6 +6,10 @@ import cn from 'classnames'
 import styles from './styles.module.scss'
 import { AUTOCOMPLETE_DEBOUNCE_TIME_MS, SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS } from '../../../config/constants'
 import _ from 'lodash'
+import { extractSkillsFromText } from '../../../services/workflowAI'
+import { toastSuccess, toastFailure } from '../../../util/toaster'
+import { OutlineButton } from '../../Buttons'
+import Loader from '../../Loader'
 
 const fetchSkills = _.debounce((inputValue, callback) => {
   searchSkills(inputValue).then(
@@ -22,6 +26,8 @@ const fetchSkills = _.debounce((inputValue, callback) => {
 }, AUTOCOMPLETE_DEBOUNCE_TIME_MS)
 
 const SkillsField = ({ readOnly, challenge, onUpdateSkills, embedded }) => {
+  const [isLoadingAI, setIsLoadingAI] = useState(false)
+
   const selectedSkills = useMemo(() => (challenge.skills || []).map(skill => ({
     label: skill.name,
     value: skill.id
@@ -32,29 +38,85 @@ const SkillsField = ({ readOnly, challenge, onUpdateSkills, embedded }) => {
   const skillsRequired = normalizedBillingAccountId ? !SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS.includes(normalizedBillingAccountId) : true
   const showRequiredError = !readOnly && skillsRequired && challenge.submitTriggered && (!selectedSkills || !selectedSkills.length)
 
+  // Check if description exists to show AI button
+  const hasDescription = challenge.description && challenge.description.trim().length > 0
+
+  const handleAISuggest = async () => {
+    if (!hasDescription || isLoadingAI) {
+      return
+    }
+
+    setIsLoadingAI(true)
+    try {
+      const result = await extractSkillsFromText(challenge.description)
+      const matches = result.matches || []
+
+      if (matches.length === 0) {
+        toastFailure('No Skills Found', 'No matching standardized skills found based on the description.')
+      } else {
+        // Merge with existing skills, avoiding duplicates
+        const existingSkillIds = new Set((challenge.skills || []).map(s => s.id))
+        const newSkills = matches.filter(skill => !existingSkillIds.has(skill.id))
+
+        if (newSkills.length === 0) {
+          toastSuccess('Skills Already Added', 'All suggested skills are already in your selection.')
+        } else {
+          const updatedSkills = [...(challenge.skills || []), ...newSkills]
+          onUpdateSkills(updatedSkills)
+          toastSuccess('Skills Added', `${newSkills.length} skill(s) were added from AI suggestions.`)
+        }
+      }
+    } catch (error) {
+      console.error('AI skill extraction error:', error)
+      toastFailure('Error', 'Failed to extract skills. Please try again or add skills manually.')
+    } finally {
+      setIsLoadingAI(false)
+    }
+  }
+
   if (embedded) {
     return (
       <div className={styles.embeddedWrapper}>
         <input type='hidden' />
-        {readOnly ? (
-          <div className={styles.embeddedReadOnly}>{existingSkills || '-'}</div>
-        ) : (
-          <Select
-            id='skill-select'
-            isMulti
-            simpleValue
-            isAsync
-            value={selectedSkills}
-            onChange={(values) => {
-              onUpdateSkills((values || []).map(value => ({
-                name: value.label,
-                id: value.value
-              })))
-            }}
-            cacheOptions
-            loadOptions={fetchSkills}
-          />
-        )}
+        <div className={styles.embeddedContent}>
+          {isLoadingAI && (
+            <div className={styles.loadingOverlay}>
+              <Loader />
+              <span className={styles.loadingText}>Generating skill suggestions...</span>
+            </div>
+          )}
+          {readOnly ? (
+            <div className={styles.embeddedReadOnly}>{existingSkills || '-'}</div>
+          ) : (
+            <>
+              <Select
+                id='skill-select'
+                isMulti
+                simpleValue
+                isAsync
+                value={selectedSkills}
+                onChange={(values) => {
+                  onUpdateSkills((values || []).map(value => ({
+                    name: value.label,
+                    id: value.value
+                  })))
+                }}
+                cacheOptions
+                loadOptions={fetchSkills}
+                isDisabled={isLoadingAI}
+              />
+              {hasDescription && (
+                <OutlineButton
+                  type='info'
+                  text='AI Suggest'
+                  onClick={handleAISuggest}
+                  disabled={isLoadingAI}
+                  className={styles.aiSuggestButton}
+                />
+              )}
+            </>
+          )}
+        </div>
         {showRequiredError && (
           <div className={styles.embeddedError}>Select at least one skill</div>
         )}
@@ -70,25 +132,45 @@ const SkillsField = ({ readOnly, challenge, onUpdateSkills, embedded }) => {
         </div>
         <div className={cn(styles.field, styles.col2)}>
           <input type='hidden' />
-          {readOnly ? (
-            <span>{existingSkills}</span>
-          ) : (
-            <Select
-              id='skill-select'
-              isMulti
-              simpleValue
-              isAsync
-              value={selectedSkills}
-              onChange={(values) => {
-                onUpdateSkills((values || []).map(value => ({
-                  name: value.label,
-                  id: value.value
-                })))
-              }}
-              cacheOptions
-              loadOptions={fetchSkills}
-            />
-          )}
+          <div className={styles.skillsFieldWrapper}>
+            {isLoadingAI && (
+              <div className={styles.loadingOverlay}>
+                <Loader />
+                <span className={styles.loadingText}>Generating skill suggestions...</span>
+              </div>
+            )}
+            {readOnly ? (
+              <span>{existingSkills}</span>
+            ) : (
+              <>
+                <Select
+                  id='skill-select'
+                  isMulti
+                  simpleValue
+                  isAsync
+                  value={selectedSkills}
+                  onChange={(values) => {
+                    onUpdateSkills((values || []).map(value => ({
+                      name: value.label,
+                      id: value.value
+                    })))
+                  }}
+                  cacheOptions
+                  loadOptions={fetchSkills}
+                  isDisabled={isLoadingAI}
+                />
+                {hasDescription && (
+                  <OutlineButton
+                    type='info'
+                    text='AI Suggest'
+                    onClick={handleAISuggest}
+                    disabled={isLoadingAI}
+                    className={styles.aiSuggestButton}
+                  />
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 

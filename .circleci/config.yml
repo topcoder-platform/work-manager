@@ -9,7 +9,7 @@ parameters:
 
 defaults: &defaults
   docker:
-    - image: cimg/python:3.11.11-browsers
+    - image: cimg/python:3.12.12-browsers
 
 test_defaults: &test_defaults
   docker:

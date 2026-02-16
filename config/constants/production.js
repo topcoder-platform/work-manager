@@ -19,6 +19,8 @@ module.exports = {
   ENGAGEMENTS_ROOT_API_URL: `${PROD_API_HOSTNAME}/v6/engagements`,
   APPLICATIONS_API_URL: `${PROD_API_HOSTNAME}/v6/engagements/applications`,
   TC_FINANCE_API_URL: process.env.TC_FINANCE_API_URL || `${API_V6}/finance`,
+  TC_AI_API_BASE_URL: process.env.TC_AI_API_BASE_URL || `${API_V6}/ai`,
+  TC_AI_SKILLS_EXTRACTION_WORKFLOW_ID: process.env.TC_AI_SKILLS_EXTRACTION_WORKFLOW_ID || 'skillExtractionWorkflow',
   CHALLENGE_DEFAULT_REVIEWERS_URL: `${PROD_API_HOSTNAME}/v6/challenge/default-reviewers`,
   CHALLENGE_API_VERSION: '1.1.0',
   CHALLENGE_TIMELINE_TEMPLATES_URL: `${PROD_API_HOSTNAME}/v6/timeline-templates`,
