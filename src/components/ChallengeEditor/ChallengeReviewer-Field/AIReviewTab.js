@@ -2,7 +2,8 @@ import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
 import { PrimaryButton, OutlineButton } from '../../Buttons'
-import styles from './ChallengeReviewer-Field.module.scss'
+import AIWorkflowCard from './AIWorkflowCard'
+import styles from './AIReviewTab.module.scss'
 
 class AIReviewTab extends Component {
   constructor (props) {
@@ -10,13 +11,117 @@ class AIReviewTab extends Component {
     this.state = {
       error: null,
       selectedTemplate: null,
-      aiReviewConfigs: [] // Will manage AI review configs separately
+      aiReviewConfigs: [], // Will manage AI review configs separately
+      configurationMode: null // 'template' or 'manual' or null
     }
 
     this.addAIReviewer = this.addAIReviewer.bind(this)
     this.removeAIReviewer = this.removeAIReviewer.bind(this)
     this.updateAIReviewer = this.updateAIReviewer.bind(this)
     this.renderAIReviewerForm = this.renderAIReviewerForm.bind(this)
+    this.isInitialState = this.isInitialState.bind(this)
+    this.renderInitialState = this.renderInitialState.bind(this)
+    this.handleTemplateSelection = this.handleTemplateSelection.bind(this)
+    this.handleManualConfiguration = this.handleManualConfiguration.bind(this)
+    this.getAssignedWorkflows = this.getAssignedWorkflows.bind(this)
+  }
+
+  /**
+   * Checks if we're in the initial state:
+   * - AI workflows are assigned (from DefaultChallengeReviewer)
+   * - But no aiReviewConfig has been created yet
+   */
+  isInitialState () {
+    const { challenge } = this.props
+    const aiReviewers = (challenge.reviewers || []).filter(r => this.isAIReviewer(r))
+    // Initial state: has AI reviewers but no aiReviewConfig
+    // TODO: Update this check based on actual aiReviewConfig property once defined
+    return aiReviewers.length > 0 && !this.state.configurationMode
+  }
+
+  /**
+   * Get workflows assigned to this challenge
+   */
+  getAssignedWorkflows () {
+    const { challenge, metadata = {} } = this.props
+    const { workflows = [] } = metadata
+    const aiReviewers = (challenge.reviewers || []).filter(r => this.isAIReviewer(r))
+    
+    return aiReviewers.map(reviewer => {
+      const workflow = workflows.find(w => w.id === reviewer.aiWorkflowId)
+      return {
+        reviewer,
+        workflow,
+        scorecardId: reviewer.scorecardId
+      }
+    })
+  }
+
+  handleTemplateSelection () {
+    this.setState({ configurationMode: 'template' })
+  }
+
+  handleManualConfiguration () {
+    this.setState({ configurationMode: 'manual' })
+  }
+
+  renderInitialState () {
+    const assignedWorkflows = this.getAssignedWorkflows()
+
+    return (
+      <div className={styles.initialStateContainer}>
+        <div className={styles.warningBox}>
+          <div className={styles.warningIcon}>⚠️</div>
+          <div className={styles.warningContent}>
+            <h3>AI workflows are assigned but no AI Review Config has been created</h3>
+            <p>Workflows will run but scoring, gating, and thresholds are not defined.</p>
+            <p><strong>Choose how to configure:</strong></p>
+          </div>
+        </div>
+
+        <div className={styles.configurationOptions}>
+          <div className={styles.optionCard}>
+            <h4>📋 Use a Template</h4>
+            <p>Pre-fill from a standard config for this track & type.</p>
+            <button
+              className={styles.optionButton}
+              onClick={this.handleTemplateSelection}
+            >
+              Use Template
+            </button>
+          </div>
+
+          <div className={styles.optionCard}>
+            <h4>✏️ Configure Manually</h4>
+            <p>Set up each workflow weight, mode, and threshold yourself.</p>
+            <button
+              className={styles.optionButton}
+              onClick={this.handleManualConfiguration}
+            >
+              Configure Manually
+            </button>
+          </div>
+        </div>
+
+        <div className={styles.assignedWorkflowsSection}>
+          <h3>Assigned AI Workflows</h3>
+          <p>These AI workflows are assigned to this challenge from the default reviewer configuration.</p>
+
+          <div className={styles.workflowsList}>
+            {assignedWorkflows.map((item, index) => (
+              <AIWorkflowCard
+                key={`workflow-${index}`}
+                workflow={item.workflow || { name: item.reviewer.aiWorkflowId }}
+                scorecardId={item.scorecardId}
+                description=''
+                onRemove={() => this.removeAIReviewer(index)}
+                readOnly={false}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   addAIReviewer () {
@@ -231,11 +336,20 @@ class AIReviewTab extends Component {
 
   render () {
     const { challenge, isLoading, readOnly = false } = this.props
-    const { error } = this.state
+    const { error, configurationMode } = this.state
     const aiReviewers = (challenge.reviewers || []).filter(r => this.isAIReviewer(r))
 
     if (isLoading) {
       return <div className={styles.loading}>Loading...</div>
+    }
+
+    // Show initial state if workflows are assigned but no configuration mode selected yet
+    if (this.isInitialState()) {
+      return (
+        <div className={styles.tabContent}>
+          {this.renderInitialState()}
+        </div>
+      )
     }
 
     return (

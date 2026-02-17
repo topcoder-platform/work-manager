@@ -1,0 +1,139 @@
+@use '../../../styles/includes' as *;
+@import './shared.module.scss';
+
+.initialStateContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.warningBox {
+  display: flex;
+  gap: 16px;
+  background-color: #fff8e1;
+  border: 2px solid #ffd54f;
+  border-radius: 8px;
+  padding: 20px;
+  align-items: flex-start;
+}
+
+.warningIcon {
+  font-size: 28px;
+  flex-shrink: 0;
+}
+
+.warningContent {
+  flex: 1;
+
+  h3 {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  p {
+    margin: 8px 0;
+    color: #555;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  p strong {
+    font-weight: 600;
+  }
+}
+
+.configurationOptions {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+}
+
+.optionCard {
+  flex: 1;
+  min-width: 250px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 24px;
+  text-align: center;
+  transition: all 0.3s ease;
+  background-color: #fafafa;
+
+  &:hover {
+    border-color: #0066cc;
+    box-shadow: 0 4px 12px rgba(0, 102, 204, 0.15);
+  }
+
+  h4 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  p {
+    margin: 0 0 16px 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
+.optionIcon {
+  font-size: 36px;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.optionButton {
+  padding: 10px 24px;
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #0052a3;
+  }
+
+  &:active {
+    background-color: #004080;
+  }
+}
+
+.assignedWorkflowsSection {
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+
+  h3 {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  p {
+    margin: 0 0 16px 0;
+    color: #666;
+    font-size: 14px;
+  }
+}
+
+.workflowsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
