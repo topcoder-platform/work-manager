@@ -38,6 +38,13 @@ class TabContainer extends Component {
     return !!resolvedToken && checkAdminOrTalentManager(resolvedToken)
   }
 
+  getIsAdmin (props = this.props) {
+    const { token: currentToken } = this.props
+    const { token } = props
+    const resolvedToken = token || currentToken
+    return !!resolvedToken && checkAdmin(resolvedToken)
+  }
+
   componentDidMount () {
     const {
       projectId,
@@ -63,8 +70,9 @@ class TabContainer extends Component {
 
     const canViewAssets = this.getCanViewAssets()
     const canViewEngagements = this.getCanViewEngagements()
+    const isAdmin = this.getIsAdmin()
     this.setState({
-      currentTab: this.getTabFromPath(history.location.pathname, projectId, canViewAssets, canViewEngagements)
+      currentTab: this.getTabFromPath(history.location.pathname, projectId, canViewAssets, canViewEngagements, isAdmin)
     })
   }
 
@@ -77,8 +85,9 @@ class TabContainer extends Component {
 
     const canViewAssets = this.getCanViewAssets(nextProps)
     const canViewEngagements = this.getCanViewEngagements(nextProps)
+    const isAdmin = this.getIsAdmin(nextProps)
     this.setState({
-      currentTab: this.getTabFromPath(nextProps.history.location.pathname, projectId, canViewAssets, canViewEngagements)
+      currentTab: this.getTabFromPath(nextProps.history.location.pathname, projectId, canViewAssets, canViewEngagements, isAdmin)
     })
     if (
       isLoading ||
@@ -130,7 +139,7 @@ class TabContainer extends Component {
     return 0
   }
 
-  getTabFromPath (pathname, projectId, canViewAssets = true, canViewEngagements = false) {
+  getTabFromPath (pathname, projectId, canViewAssets = true, canViewEngagements = false, isAdmin = false) {
     if (projectId) {
       return this.getProjectTabFromPath(pathname, projectId, canViewAssets, canViewEngagements)
     }
@@ -141,7 +150,7 @@ class TabContainer extends Component {
       return 2
     }
     if (pathname === '/engagements') {
-      return canViewEngagements ? 3 : 0
+      return isAdmin ? 3 : 0
     }
     if (pathname === '/users') {
       return 4
@@ -178,7 +187,8 @@ class TabContainer extends Component {
   onTabChange (tab) {
     const { history, resetSidebarActiveParams, projectId } = this.props
     const canViewAssets = this.getCanViewAssets()
-    const canViewEngagements = this.getCanViewEngagements()
+    const canViewEngagements = this.getCanViewEngagements() // admin OR TM
+    const isAdmin = this.getIsAdmin() // admin
     if (projectId) {
       if ((tab === 2 && !canViewEngagements) || (tab === 3 && !canViewAssets)) {
         return
@@ -200,7 +210,7 @@ class TabContainer extends Component {
       history.push('/projects')
       this.props.unloadProjects()
       this.setState({ currentTab: 2 })
-    } else if (tab === 3 && canViewEngagements) {
+    } else if (tab === 3 && isAdmin) {
       history.push('/engagements')
       this.setState({ currentTab: 3 })
     } else if (tab === 4) {
@@ -225,6 +235,7 @@ class TabContainer extends Component {
     const { currentTab } = this.state
     const canViewAssets = this.getCanViewAssets()
     const canViewEngagements = this.getCanViewEngagements()
+    const isAdmin = this.getIsAdmin()
 
     return (
       <Tab
@@ -233,6 +244,7 @@ class TabContainer extends Component {
         projectId={this.props.projectId}
         canViewAssets={canViewAssets}
         canViewEngagements={canViewEngagements}
+        isAdmin={isAdmin}
         onBack={this.onBackToHome}
       />
     )
