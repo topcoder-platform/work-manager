@@ -46,6 +46,50 @@
   }
 }
 
+// Tabs styling
+.tabsContainer {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #fff;
+}
+
+.tabsHeader {
+  display: flex;
+  border-bottom: 2px solid #ddd;
+  background-color: #f9f9f9;
+}
+
+.tabButton {
+  flex: 1;
+  padding: 12px 16px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #666;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  margin-bottom: -1px;
+  
+  &:hover {
+    background-color: #f0f0f0;
+    color: #333;
+  }
+  
+  &.active {
+    color: #0066cc;
+    border-bottom-color: #0066cc;
+    background-color: #fff;
+  }
+}
+
+.tabContent {
+  padding: 20px;
+}
+
 .description {
   color: #666;
   margin-bottom: 20px;
@@ -75,6 +119,27 @@
   margin: 0 0 15px 0;
   color: #1976d2;
   font-style: normal;
+}
+
+.applyDefaultBtn,
+.addReviewerBtn {
+  padding: 8px 16px;
+  background-color: #0066cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+
+  &:hover {
+    background-color: #0052a3;
+  }
+
+  &:active {
+    background-color: #004080;
+  }
 }
 
 .reviewerForm {
@@ -130,6 +195,14 @@
   border-radius: 4px;
   font-size: 14px;
   background-color: white;
+}
+
+.formGroup input[type="checkbox"] {
+  width: auto;
+}
+
+.formGroup.mtop {
+  margin-top: 32px;
 }
 
 .formGroup input:focus,
@@ -227,4 +300,14 @@
     align-items: flex-start;
     gap: 10px;
   }
+
+  .tabsHeader {
+    flex-direction: row;
+  }
+
+  .tabButton {
+    padding: 10px 8px;
+    font-size: 13px;
+  }
 }
+
