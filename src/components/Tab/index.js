@@ -8,7 +8,8 @@ const Tab = ({
   selectTab,
   projectId,
   canViewAssets,
-  canViewEngagements,
+  canViewEngagements, // Admin or TM
+  isAdmin, // Only admin
   onBack
 }) => {
   const projectTabs = [
@@ -21,7 +22,7 @@ const Tab = ({
     : [
       { id: 1, label: 'All Work' },
       { id: 2, label: 'Projects' },
-      ...(canViewEngagements ? [{ id: 3, label: 'Engagements' }] : []),
+      ...(isAdmin ? [{ id: 3, label: 'Engagements' }] : []),
       { id: 4, label: 'Users' },
       { id: 5, label: 'Self-Service' },
       { id: 6, label: 'TaaS' },
@@ -88,6 +89,7 @@ Tab.defaultProps = {
   projectId: null,
   canViewAssets: true,
   canViewEngagements: false,
+  isAdmin: false,
   onBack: () => {}
 }
 
@@ -97,6 +99,7 @@ Tab.propTypes = {
   projectId: PT.oneOfType([PT.string, PT.number]),
   canViewAssets: PT.bool,
   canViewEngagements: PT.bool,
+  isAdmin: PT.bool,
   onBack: PT.func
 }
 
