@@ -1,0 +1,171 @@
+{
+  "templates": [
+    {
+      "id": "template_001",
+      "challengeTrack": "dev",
+      "challengeType": "code",
+      "title": "Development Code Challenge - Standard",
+      "description": "Standard AI review configuration for development track code challenges. Combines code quality and security checks with gating mechanism.",
+      "minPassingThreshold": 75.00,
+      "mode": "AI_GATING",
+      "autoFinalize": false,
+      "formula": {
+        "type": "gating",
+        "gates": [
+          {
+            "workflowId": "wf_001_security",
+            "threshold": 80,
+            "isMandatory": true
+          }
+        ],
+        "scoring": {
+          "type": "weighted",
+          "weights": {
+            "wf_001_security": 0.4,
+            "wf_002_quality": 0.6
+          }
+        }
+      },
+      "workflows": [
+        {
+          "id": "tcwf_001",
+          "configId": "template_001",
+          "workflowId": "wf_001_security",
+          "weightPercent": 40.00,
+          "isGating": true,
+          "workflow": {
+            "id": "wf_001_security",
+            "name": "Security Code Review",
+            "description": "Analyzes code for security vulnerabilities",
+            "scorecardId": "scorecard_sec_001"
+          }
+        },
+        {
+          "id": "tcwf_002",
+          "configId": "template_001",
+          "workflowId": "wf_002_quality",
+          "weightPercent": 60.00,
+          "isGating": false,
+          "workflow": {
+            "id": "wf_002_quality",
+            "name": "Code Quality Check",
+            "description": "Evaluates code quality metrics",
+            "scorecardId": "scorecard_quality_001"
+          }
+        }
+      ],
+      "createdAt": "2026-01-15T10:30:00Z",
+      "createdBy": "admin_user_001",
+      "updatedAt": "2026-02-10T14:20:00Z",
+      "updatedBy": "admin_user_002"
+    },
+    {
+      "id": "template_002",
+      "challengeTrack": "design",
+      "challengeType": "design",
+      "title": "Design Challenge - AI Only",
+      "description": "AI-only review for design challenges. No human review required - AI makes final decisions.",
+      "minPassingThreshold": 70.00,
+      "mode": "AI_ONLY",
+      "autoFinalize": true,
+      "formula": {
+        "type": "weighted",
+        "weights": {
+          "wf_003_design": 0.5,
+          "wf_004_usability": 0.5
+        }
+      },
+      "workflows": [
+        {
+          "id": "tcwf_003",
+          "configId": "template_002",
+          "workflowId": "wf_003_design",
+          "weightPercent": 50.00,
+          "isGating": false,
+          "workflow": {
+            "id": "wf_003_design",
+            "name": "Design Review",
+            "description": "Reviews design assets and composition",
+            "scorecardId": "scorecard_design_001"
+          }
+        },
+        {
+          "id": "tcwf_004",
+          "configId": "template_002",
+          "workflowId": "wf_004_usability",
+          "weightPercent": 50.00,
+          "isGating": false,
+          "workflow": {
+            "id": "wf_004_usability",
+            "name": "Usability Assessment",
+            "description": "Evaluates usability and UX principles",
+            "scorecardId": "scorecard_usability_001"
+          }
+        }
+      ],
+      "createdAt": "2026-01-20T09:00:00Z",
+      "createdBy": "admin_user_001",
+      "updatedAt": "2026-02-05T16:45:00Z",
+      "updatedBy": "admin_user_001"
+    },
+    {
+      "id": "template_003",
+      "challengeTrack": "data-science",
+      "challengeType": "data-science",
+      "title": "Data Science Challenge - Gating",
+      "description": "Data science challenge with AI gating for submissions. AI filters low-quality submissions; humans review the rest.",
+      "minPassingThreshold": 80.00,
+      "mode": "AI_GATING",
+      "autoFinalize": false,
+      "formula": {
+        "type": "gating",
+        "gates": [
+          {
+            "workflowId": "wf_005_accuracy",
+            "threshold": 75,
+            "isMandatory": true
+          }
+        ],
+        "scoring": {
+          "type": "weighted",
+          "weights": {
+            "wf_005_accuracy": 0.5,
+            "wf_006_methodology": 0.5
+          }
+        }
+      },
+      "workflows": [
+        {
+          "id": "tcwf_005",
+          "configId": "template_003",
+          "workflowId": "wf_005_accuracy",
+          "weightPercent": 50.00,
+          "isGating": true,
+          "workflow": {
+            "id": "wf_005_accuracy",
+            "name": "Model Accuracy Validator",
+            "description": "Validates machine learning model accuracy",
+            "scorecardId": "scorecard_accuracy_001"
+          }
+        },
+        {
+          "id": "tcwf_006",
+          "configId": "template_003",
+          "workflowId": "wf_006_methodology",
+          "weightPercent": 50.00,
+          "isGating": false,
+          "workflow": {
+            "id": "wf_006_methodology",
+            "name": "Methodology Review",
+            "description": "Reviews data science methodology",
+            "scorecardId": "scorecard_methodology_001"
+          }
+        }
+      ],
+      "createdAt": "2026-02-01T11:15:00Z",
+      "createdBy": "admin_user_002",
+      "updatedAt": "2026-02-15T13:30:00Z",
+      "updatedBy": "admin_user_002"
+    }
+  ]
+}

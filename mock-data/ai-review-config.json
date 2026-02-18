@@ -1,0 +1,48 @@
+{
+  "id": "config_challenge_001",
+  "challengeId": "challenge_12345",
+  "minPassingThreshold": 75.00,
+  "autoFinalize": false,
+  "mode": "AI_GATING",
+  "formula": {
+    "type": "gating",
+    "gates": [
+      {
+        "workflowId": "wf_001_security",
+        "threshold": 80,
+        "isMandatory": true
+      }
+    ],
+    "scoring": {
+      "type": "weighted",
+      "weights": {
+        "wf_001_security": 0.4,
+        "wf_002_quality": 0.6
+      }
+    }
+  },
+  "workflows": [
+    {
+      "id": "config_wf_001",
+      "configId": "config_challenge_001",
+      "workflowId": "wf_001_security",
+      "weightPercent": 40.00,
+      "isGating": true,
+      "createdAt": "2026-02-10T10:00:00Z",
+      "createdBy": "user_123"
+    },
+    {
+      "id": "config_wf_002",
+      "configId": "config_challenge_001",
+      "workflowId": "wf_002_quality",
+      "weightPercent": 60.00,
+      "isGating": false,
+      "createdAt": "2026-02-10T10:00:00Z",
+      "createdBy": "user_123"
+    }
+  ],
+  "createdAt": "2026-02-10T10:00:00Z",
+  "createdBy": "user_123",
+  "updatedAt": "2026-02-15T14:30:00Z",
+  "updatedBy": "user_123"
+}
