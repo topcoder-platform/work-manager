@@ -4,7 +4,7 @@
  * Helper functions to integrate AI review templates into React components.
  */
 
-import * as templateService from '../aiReviewTemplates'
+import * as templateService from './aiReviewTemplates'
 
 /**
  * Hook-like function to manage AI review templates
@@ -13,7 +13,7 @@ import * as templateService from '../aiReviewTemplates'
 export const createTemplateManager = (useDevConfig = false) => {
   // In development, you can set useDevConfig = true to use mock data
   const service = useDevConfig 
-    ? require('./aiReviewTemplates.mock')
+    ? require('./mocks/aiReviewTemplates.mock')
     : templateService
 
   return {

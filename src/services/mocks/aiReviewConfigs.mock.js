@@ -5,7 +5,7 @@
  * Used for development and testing without making actual API calls.
  */
 
-import configData from '../../mock-data/ai-review-config.json'
+import configData from '../../../mock-data/ai-review-config.json'
 
 /**
  * Simulates a delay for API calls

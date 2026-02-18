@@ -9,7 +9,7 @@
  */
 export const createConfigManager = (useDevConfig = false) => {
   const service = useDevConfig 
-    ? require('./aiReviewConfigs.mock')
+    ? require('./mocks/aiReviewConfigs.mock')
     : require('./aiReviewConfigs')
 
   return {

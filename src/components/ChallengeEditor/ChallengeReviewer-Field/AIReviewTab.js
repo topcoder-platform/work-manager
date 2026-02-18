@@ -1,51 +1,76 @@
-import React, { Component } from 'react'
+import React, { useState, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
-import { PrimaryButton, OutlineButton } from '../../Buttons'
+import { OutlineButton } from '../../Buttons'
 import AIWorkflowCard from './AIWorkflowCard'
+import { createTemplateManager } from '../../../services/aiReviewTemplateHelpers'
+import { createConfigManager } from '../../../services/aiReviewConfigHelpers'
 import styles from './AIReviewTab.module.scss'
 
-class AIReviewTab extends Component {
-  constructor (props) {
-    super(props)
-    this.state = {
-      error: null,
-      selectedTemplate: null,
-      aiReviewConfigs: [], // Will manage AI review configs separately
-      configurationMode: null // 'template' or 'manual' or null
-    }
+const AIReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, readOnly = false }) => {
+  const [error, setError] = useState(null)
+  const [selectedTemplate, setSelectedTemplate] = useState(null)
+  const [aiReviewConfigs, setAiReviewConfigs] = useState([])
+  const [configurationMode, setConfigurationMode] = useState(null)
+  const [templates, setTemplates] = useState([])
+  const [templatesLoading, setTemplatesLoading] = useState(false)
+  const [configuration, setConfiguration] = useState({
+    mode: 'AI_GATING',
+    minPassingThreshold: 75,
+    autoFinalize: false,
+    workflows: []
+  })
 
-    this.addAIReviewer = this.addAIReviewer.bind(this)
-    this.removeAIReviewer = this.removeAIReviewer.bind(this)
-    this.updateAIReviewer = this.updateAIReviewer.bind(this)
-    this.renderAIReviewerForm = this.renderAIReviewerForm.bind(this)
-    this.isInitialState = this.isInitialState.bind(this)
-    this.renderInitialState = this.renderInitialState.bind(this)
-    this.handleTemplateSelection = this.handleTemplateSelection.bind(this)
-    this.handleManualConfiguration = this.handleManualConfiguration.bind(this)
-    this.getAssignedWorkflows = this.getAssignedWorkflows.bind(this)
-  }
+  const templateManager = useMemo(() => createTemplateManager(true), [])
+  const configManager = useMemo(() => createConfigManager(true), [])
 
   /**
    * Checks if we're in the initial state:
    * - AI workflows are assigned (from DefaultChallengeReviewer)
    * - But no aiReviewConfig has been created yet
    */
-  isInitialState () {
-    const { challenge } = this.props
-    const aiReviewers = (challenge.reviewers || []).filter(r => this.isAIReviewer(r))
+  const isAIReviewer = (reviewer) => {
+    return reviewer && (
+      (reviewer.aiWorkflowId && reviewer.aiWorkflowId.trim() !== '') ||
+      (reviewer.isMemberReview === false)
+    )
+  }
+
+  const isInitialState = () => {
+    const aiReviewers = (challenge.reviewers || []).filter(r => isAIReviewer(r))
     // Initial state: has AI reviewers but no aiReviewConfig
     // TODO: Update this check based on actual aiReviewConfig property once defined
-    return aiReviewers.length > 0 && !this.state.configurationMode
+    return aiReviewers.length > 0 && !configurationMode
+  }
+
+  /**
+   * Load templates based on challenge track and type
+   */
+  const loadTemplates = async () => {
+    setTemplatesLoading(true)
+    setError(null)
+
+    try {
+      const fetchedTemplates = await templateManager.fetchAll({
+        challengeTrack: challenge.track.name,
+        challengeType: challenge.type.name,
+      })
+
+      setTemplates(fetchedTemplates || [])
+      setTemplatesLoading(false)
+    } catch (error) {
+      console.error('Error loading templates:', error)
+      setError('Failed to load templates')
+      setTemplatesLoading(false)
+    }
   }
 
   /**
    * Get workflows assigned to this challenge
    */
-  getAssignedWorkflows () {
-    const { challenge, metadata = {} } = this.props
+  const getAssignedWorkflows = () => {
     const { workflows = [] } = metadata
-    const aiReviewers = (challenge.reviewers || []).filter(r => this.isAIReviewer(r))
+    const aiReviewers = (challenge.reviewers || []).filter(r => isAIReviewer(r))
     
     return aiReviewers.map(reviewer => {
       const workflow = workflows.find(w => w.id === reviewer.aiWorkflowId)
@@ -57,16 +82,325 @@ class AIReviewTab extends Component {
     })
   }
 
-  handleTemplateSelection () {
-    this.setState({ configurationMode: 'template' })
+  const handleTemplateSelection = () => {
+    setConfigurationMode('template')
+    // Load templates after setting the mode
+    loadTemplates()
   }
 
-  handleManualConfiguration () {
-    this.setState({ configurationMode: 'manual' })
+  const handleManualConfiguration = () => {
+    setConfigurationMode('manual')
   }
 
-  renderInitialState () {
-    const assignedWorkflows = this.getAssignedWorkflows()
+  const handleSwitchConfigurationMode = (newMode) => {
+    setConfigurationMode(newMode)
+    setSelectedTemplate(null)
+    setConfiguration({
+      mode: 'AI_GATING',
+      minPassingThreshold: 75,
+      autoFinalize: false,
+      workflows: []
+    })
+    
+    if (newMode === 'template') {
+      loadTemplates()
+    }
+  }
+
+  const handleTemplateChange = (templateId) => {
+    const template = templates.find(t => t.id === templateId)
+
+    if (template) {
+      setSelectedTemplate(template)
+      applyTemplateToConfiguration(template)
+    }
+  }
+
+  const applyTemplateToConfiguration = (template) => {
+    if (!template) return
+
+    const newConfiguration = {
+      mode: template.mode || 'AI_GATING',
+      minPassingThreshold: template.minPassingThreshold || 75,
+      autoFinalize: template.autoFinalize || false,
+      workflows: template.workflows || []
+    }
+
+    setConfiguration(newConfiguration)
+  }
+
+  const updateConfiguration = (field, value) => {
+    setConfiguration(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
+  const renderTemplateConfiguration = () => {
+    const { workflows: availableWorkflows = [] } = metadata
+
+    return (
+      <div className={styles.templateConfiguration}>
+        {/* Configuration Source Selector */}
+        <div className={styles.configurationSourceSelector}>
+          <h4>Configuration Source:</h4>
+          <div className={styles.sourceOptions}>
+            <label className={styles.radioLabel}>
+              <input
+                type='radio'
+                name='configSource'
+                value='template'
+                checked={true}
+                disabled
+              />
+              <span>Template</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type='radio'
+                name='configSource'
+                value='manual'
+                checked={false}
+                disabled
+              />
+              <span>Manual</span>
+            </label>
+            {!readOnly && (
+              <button
+                className={styles.switchButton}
+                onClick={() => handleSwitchConfigurationMode('manual')}
+              >
+                Switch
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Template Selection Section */}
+        <div className={styles.templateSection}>
+          <h3>📋 AI Review Template</h3>
+
+          <div className={styles.templateSelector}>
+            <select
+              value={selectedTemplate?.id || ''}
+              onChange={(e) => handleTemplateChange(e.target.value)}
+              disabled={readOnly || templatesLoading}
+              className={styles.templateDropdown}
+            >
+              <option value=''>Select a template...</option>
+              {templates.map(template => (
+                <option key={template.id} value={template.id}>
+                  {template.title}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {selectedTemplate && (
+            <div className={styles.templateDescription}>
+              <p>{selectedTemplate.description}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Review Settings Section */}
+        {selectedTemplate && (
+          <div className={styles.reviewSettingsSection}>
+            <h3>⚙️ Review Settings</h3>
+
+            <div className={styles.settingsGrid}>
+              {/* Review Mode */}
+              <div className={styles.setting}>
+                <label>Review Mode:</label>
+                <select
+                  value={configuration.mode}
+                  onChange={(e) => updateConfiguration('mode', e.target.value)}
+                  disabled={readOnly}
+                  className={styles.modeDropdown}
+                >
+                  <option value='AI_GATING'>AI_GATING</option>
+                  <option value='AI_ONLY'>AI_ONLY</option>
+                </select>
+                <p className={styles.modeInfo}>
+                  {configuration.mode === 'AI_GATING'
+                    ? 'AI gates low-quality submissions; humans review the rest.'
+                    : 'AI makes the final decision on all submissions.'}
+                </p>
+              </div>
+
+              {/* Auto-Finalize */}
+              <div className={styles.setting}>
+                <label>Auto-Finalize:</label>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type='checkbox'
+                    checked={configuration.autoFinalize}
+                    onChange={(e) => updateConfiguration('autoFinalize', e.target.checked)}
+                    disabled={readOnly || configuration.mode !== 'AI_ONLY'}
+                  />
+                  <span>{configuration.autoFinalize ? 'On' : 'Off'}</span>
+                </label>
+                <p className={styles.autoFinalizeInfo}>
+                  Only available in AI_ONLY mode
+                </p>
+              </div>
+            </div>
+
+            {/* Min Passing Threshold Slider */}
+            <div className={styles.thresholdSection}>
+              <label>Min Passing Threshold:</label>
+              <div className={styles.thresholdSlider}>
+                <input
+                  type='range'
+                  min='0'
+                  max='100'
+                  value={configuration.minPassingThreshold}
+                  onChange={(e) => updateConfiguration('minPassingThreshold', parseInt(e.target.value, 10))}
+                  disabled={readOnly}
+                  className={styles.slider}
+                />
+                <span className={styles.thresholdValue}>
+                  {configuration.minPassingThreshold} %
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* AI Workflows Section */}
+        {selectedTemplate && configuration.workflows && configuration.workflows.length > 0 && (
+          <div className={styles.workflowsSection}>
+            <h3>AI Workflows <span className={styles.workflowsNote}>(from template)</span></h3>
+
+            <div className={styles.workflowsTable}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Workflow</th>
+                    <th>Weight</th>
+                    <th>Type</th>
+                    <th>Challenge Match</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {configuration.workflows.map((workflow, index) => {
+                    const isAssigned = (challenge.reviewers || []).some(r =>
+                      isAIReviewer(r) && r.aiWorkflowId === workflow.workflowId
+                    )
+                    const workflowDetails = workflow.workflow || {}
+
+                    return (
+                      <tr key={index}>
+                        <td>
+                          <span className={styles.workflowIcon}>🤖</span>
+                          <span className={styles.workflowName}>{workflowDetails.name}</span>
+                          <div className={styles.workflowDescription}>
+                            {workflowDetails.description}
+                          </div>
+                        </td>
+                        <td className={styles.weight}>
+                          {workflow.weightPercent}%
+                        </td>
+                        <td className={styles.type}>
+                          {workflow.isGating ? (
+                            <span className={styles.gatingBadge}>⚡GATE</span>
+                          ) : (
+                            <span className={styles.normalBadge}>✓ Review</span>
+                          )}
+                        </td>
+                        <td className={styles.match}>
+                          {isAssigned ? (
+                            <span className={styles.assignedBadge}>✅ Assigned</span>
+                          ) : (
+                            <span className={styles.notAssignedBadge}>⚠️ Not assigned</span>
+                          )}
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <p className={styles.workflowsInfo}>
+              ✅ = Also assigned as AI Reviewer in this challenge<br />
+              ⚠️ = Not assigned — will be auto-added on save
+            </p>
+          </div>
+        )}
+
+        {/* Summary Section */}
+        {selectedTemplate && (
+          <div className={styles.summarySection}>
+            <h3>Summary</h3>
+            <div className={styles.summaryGrid}>
+              <div className={styles.summaryCard}>
+                <h4>Mode</h4>
+                <div className={styles.summaryValue}>{configuration.mode}</div>
+              </div>
+              <div className={styles.summaryCard}>
+                <h4>Threshold</h4>
+                <div className={styles.summaryValue}>{configuration.minPassingThreshold}%</div>
+              </div>
+              <div className={styles.summaryCard}>
+                <h4>Workflows</h4>
+                <div className={styles.summaryValue}>
+                  {configuration.workflows.length} total
+                  {configuration.workflows.some(w => w.isGating) && (
+                    <div className={styles.summarySubtext}>
+                      {configuration.workflows.filter(w => w.isGating).length} gating
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Remove Configuration Button */}
+        {!readOnly && selectedTemplate && (
+          <div className={styles.removeConfigSection}>
+            <button
+              className={styles.removeConfigButton}
+              onClick={() => {
+                setConfigurationMode(null)
+                setSelectedTemplate(null)
+                setConfiguration({
+                  mode: 'AI_GATING',
+                  minPassingThreshold: 75,
+                  autoFinalize: false,
+                  workflows: []
+                })
+              }}
+            >
+              ✕ Remove AI Review Config
+            </button>
+          </div>
+        )}
+
+        {templatesLoading && (
+          <div className={styles.loading}>Loading templates...</div>
+        )}
+      </div>
+    )
+  }
+
+  const removeAIReviewer = (index) => {
+    const currentReviewers = challenge.reviewers || []
+    
+    // Map the AI reviewer index to the actual index in the full reviewers array
+    const aiReviewers = currentReviewers.filter(r => isAIReviewer(r))
+    const reviewerToRemove = aiReviewers[index]
+    const actualIndex = currentReviewers.indexOf(reviewerToRemove)
+    
+    if (actualIndex !== -1) {
+      const updatedReviewers = currentReviewers.filter((_, i) => i !== actualIndex)
+      onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
+    }
+  }
+
+  const renderInitialState = () => {
+    const assignedWorkflows = getAssignedWorkflows()
 
     return (
       <div className={styles.initialStateContainer}>
@@ -85,7 +419,7 @@ class AIReviewTab extends Component {
             <p>Pre-fill from a standard config for this track & type.</p>
             <button
               className={styles.optionButton}
-              onClick={this.handleTemplateSelection}
+              onClick={handleTemplateSelection}
             >
               Use Template
             </button>
@@ -96,7 +430,7 @@ class AIReviewTab extends Component {
             <p>Set up each workflow weight, mode, and threshold yourself.</p>
             <button
               className={styles.optionButton}
-              onClick={this.handleManualConfiguration}
+              onClick={handleManualConfiguration}
             >
               Configure Manually
             </button>
@@ -114,7 +448,7 @@ class AIReviewTab extends Component {
                 workflow={item.workflow || { name: item.reviewer.aiWorkflowId }}
                 scorecardId={item.scorecardId}
                 description=''
-                onRemove={() => this.removeAIReviewer(index)}
+                onRemove={() => removeAIReviewer(index)}
                 readOnly={false}
               />
             ))}
@@ -124,8 +458,7 @@ class AIReviewTab extends Component {
     )
   }
 
-  addAIReviewer () {
-    const { challenge, onUpdateReviewers, metadata = {} } = this.props
+  const addAIReviewer = () => {
     const { workflows = [] } = metadata
     const currentReviewers = challenge.reviewers || []
 
@@ -156,37 +489,21 @@ class AIReviewTab extends Component {
       aiWorkflowId: (defaultWorkflow && defaultWorkflow.id) || ''
     }
 
-    if (this.state.error) {
-      this.setState({ error: null })
+    if (error) {
+      setError(null)
     }
 
     const updatedReviewers = currentReviewers.concat([newReviewer])
     onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
   }
 
-  removeAIReviewer (index) {
-    const { challenge, onUpdateReviewers } = this.props
-    const currentReviewers = challenge.reviewers || []
-    
-    // Map the AI reviewer index to the actual index in the full reviewers array
-    const aiReviewers = currentReviewers.filter(r => this.isAIReviewer(r))
-    const reviewerToRemove = aiReviewers[index]
-    const actualIndex = currentReviewers.indexOf(reviewerToRemove)
-    
-    if (actualIndex !== -1) {
-      const updatedReviewers = currentReviewers.filter((_, i) => i !== actualIndex)
-      onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
-    }
-  }
-
-  updateAIReviewer (index, field, value) {
-    const { challenge, onUpdateReviewers, metadata = {} } = this.props
+  const updateAIReviewer = (index, field, value) => {
     const currentReviewers = challenge.reviewers || []
     const updatedReviewers = currentReviewers.slice()
     const fieldUpdate = { [field]: value }
 
     // Map the AI reviewer index to the actual index in the full reviewers array
-    const aiReviewers = currentReviewers.filter(r => this.isAIReviewer(r))
+    const aiReviewers = currentReviewers.filter(r => isAIReviewer(r))
     const reviewerToUpdate = aiReviewers[index]
     const actualIndex = currentReviewers.indexOf(reviewerToUpdate)
 
@@ -204,14 +521,7 @@ class AIReviewTab extends Component {
     onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
   }
 
-  isAIReviewer (reviewer) {
-    return reviewer && (
-      (reviewer.aiWorkflowId && reviewer.aiWorkflowId.trim() !== '') ||
-      (reviewer.isMemberReview === false)
-    )
-  }
-
-  validateAIReviewer (reviewer) {
+  const validateAIReviewer = (reviewer) => {
     const errors = {}
 
     if (!reviewer.aiWorkflowId || reviewer.aiWorkflowId.trim() === '') {
@@ -225,10 +535,9 @@ class AIReviewTab extends Component {
     return errors
   }
 
-  renderAIReviewerForm (reviewer, index) {
-    const { challenge, metadata = {}, readOnly = false } = this.props
+  const renderAIReviewerForm = (reviewer, index) => {
     const { workflows = [] } = metadata
-    const validationErrors = challenge.submitTriggered ? this.validateAIReviewer(reviewer) : {}
+    const validationErrors = challenge.submitTriggered ? validateAIReviewer(reviewer) : {}
 
     return (
       <div key={`ai-reviewer-${index}`} className={styles.reviewerForm}>
@@ -239,7 +548,7 @@ class AIReviewTab extends Component {
               minWidth
               text='Remove'
               type='danger'
-              onClick={() => this.removeAIReviewer(index)}
+              onClick={() => removeAIReviewer(index)}
             />
           )}
         </div>
@@ -257,7 +566,7 @@ class AIReviewTab extends Component {
             ) : (
               <select
                 value={reviewer.phaseId || ''}
-                onChange={(e) => this.updateAIReviewer(index, 'phaseId', e.target.value)}
+                onChange={(e) => updateAIReviewer(index, 'phaseId', e.target.value)}
               >
                 <option value=''>Select Phase</option>
                 {(challenge.phases || [])
@@ -302,7 +611,7 @@ class AIReviewTab extends Component {
             ) : (
               <select
                 value={reviewer.aiWorkflowId || ''}
-                onChange={(e) => this.updateAIReviewer(index, 'aiWorkflowId', e.target.value)}
+                onChange={(e) => updateAIReviewer(index, 'aiWorkflowId', e.target.value)}
               >
                 <option value=''>Select AI Workflow</option>
                 {workflows.map(workflow => (
@@ -334,77 +643,83 @@ class AIReviewTab extends Component {
     )
   }
 
-  render () {
-    const { challenge, isLoading, readOnly = false } = this.props
-    const { error, configurationMode } = this.state
-    const aiReviewers = (challenge.reviewers || []).filter(r => this.isAIReviewer(r))
 
-    if (isLoading) {
-      return <div className={styles.loading}>Loading...</div>
-    }
+  const aiReviewers = (challenge.reviewers || []).filter(r => isAIReviewer(r))
 
-    // Show initial state if workflows are assigned but no configuration mode selected yet
-    if (this.isInitialState()) {
-      return (
-        <div className={styles.tabContent}>
-          {this.renderInitialState()}
-        </div>
-      )
-    }
+  if (isLoading) {
+    return <div className={styles.loading}>Loading...</div>
+  }
 
+  // Show template configuration if in template mode
+  if (configurationMode === 'template') {
     return (
       <div className={styles.tabContent}>
-        {!readOnly && (
-          <div className={styles.description}>
-            Configure AI-powered review workflows for this challenge. Select AI templates and assign to phases.
-          </div>
-        )}
-
-        {!readOnly && aiReviewers.length === 0 && (
-          <div className={styles.noReviewers}>
-            <p>No AI review workflows configured. Click "Add AI Reviewer" to get started.</p>
-          </div>
-        )}
-
-        {readOnly && aiReviewers.length === 0 && (
-          <div className={styles.noReviewers}>
-            <p>No AI review workflows configured for this challenge.</p>
-          </div>
-        )}
-
-        {aiReviewers.length > 0 && aiReviewers.map((reviewer, index) =>
-          this.renderAIReviewerForm(reviewer, index)
-        )}
-
-        {aiReviewers.length > 0 && (
-          <div className={styles.summary}>
-            <h4>AI Review Summary</h4>
-            <div className={styles.summaryRow}>
-              <span>Total AI Workflows:</span>
-              <span>{aiReviewers.length}</span>
-            </div>
-          </div>
-        )}
-
-        {!readOnly && (
-          <div className={styles.addButton}>
-            <button
-              className={styles.addReviewerBtn}
-              onClick={this.addAIReviewer}
-            >
-              Add AI Reviewer
-            </button>
-          </div>
-        )}
-
-        {error && !isLoading && (
-          <div className={cn(styles.fieldError, styles.error)}>
-            {error}
-          </div>
-        )}
+        {renderTemplateConfiguration()}
       </div>
     )
   }
+
+  // Show initial state if workflows are assigned but no configuration mode selected yet
+  if (isInitialState()) {
+    return (
+      <div className={styles.tabContent}>
+        {renderInitialState()}
+      </div>
+    )
+  }
+
+  return (
+    <div className={styles.tabContent}>
+      {!readOnly && (
+        <div className={styles.description}>
+          Configure AI-powered review workflows for this challenge. Select AI templates and assign to phases.
+        </div>
+      )}
+
+      {!readOnly && aiReviewers.length === 0 && (
+        <div className={styles.noReviewers}>
+          <p>No AI review workflows configured. Click "Add AI Reviewer" to get started.</p>
+        </div>
+      )}
+
+      {readOnly && aiReviewers.length === 0 && (
+        <div className={styles.noReviewers}>
+          <p>No AI review workflows configured for this challenge.</p>
+        </div>
+      )}
+
+      {aiReviewers.length > 0 && aiReviewers.map((reviewer, index) =>
+        renderAIReviewerForm(reviewer, index)
+      )}
+
+      {aiReviewers.length > 0 && (
+        <div className={styles.summary}>
+          <h4>AI Review Summary</h4>
+          <div className={styles.summaryRow}>
+            <span>Total AI Workflows:</span>
+            <span>{aiReviewers.length}</span>
+          </div>
+        </div>
+      )}
+
+      {!readOnly && (
+        <div className={styles.addButton}>
+          <button
+            className={styles.addReviewerBtn}
+            onClick={addAIReviewer}
+          >
+            Add AI Reviewer
+          </button>
+        </div>
+      )}
+
+      {error && !isLoading && (
+        <div className={cn(styles.fieldError, styles.error)}>
+          {error}
+        </div>
+      )}
+    </div>
+  )
 }
 
 AIReviewTab.propTypes = {

@@ -2,8 +2,8 @@
   "templates": [
     {
       "id": "template_001",
-      "challengeTrack": "dev",
-      "challengeType": "code",
+      "challengeTrack": "Development",
+      "challengeType": "Challenge",
       "title": "Development Code Challenge - Standard",
       "description": "Standard AI review configuration for development track code challenges. Combines code quality and security checks with gating mechanism.",
       "minPassingThreshold": 75.00,
@@ -61,8 +61,8 @@
     },
     {
       "id": "template_002",
-      "challengeTrack": "design",
-      "challengeType": "design",
+      "challengeTrack": "Design",
+      "challengeType": "Challenge",
       "title": "Design Challenge - AI Only",
       "description": "AI-only review for design challenges. No human review required - AI makes final decisions.",
       "minPassingThreshold": 70.00,
@@ -110,8 +110,8 @@
     },
     {
       "id": "template_003",
-      "challengeTrack": "data-science",
-      "challengeType": "data-science",
+      "challengeTrack": "Data Science",
+      "challengeType": "Marathon Match",
       "title": "Data Science Challenge - Gating",
       "description": "Data science challenge with AI gating for submissions. AI filters low-quality submissions; humans review the rest.",
       "minPassingThreshold": 80.00,

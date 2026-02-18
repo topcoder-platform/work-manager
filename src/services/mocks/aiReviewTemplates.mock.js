@@ -6,8 +6,8 @@
  */
 
 // Import mock data
-import templatesData from '../../mock-data/ai-review-templates.json'
-import configData from '../../mock-data/ai-review-config.json'
+import templatesData from '../../../mock-data/ai-review-templates.json'
+import configData from '../../../mock-data/ai-review-config.json'
 
 /**
  * Simulates a delay for API calls
