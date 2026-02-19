@@ -352,34 +352,33 @@ export default class Resources extends React.Component {
           >
             <thead className={styles.headTable} role='row'>
               <tr>
-                {!isDesign && (
-                  <th>
-                    <button
-                      type='button'
-                      onClick={() => {
-                        this.onSortChange({
-                          field: 'Role',
-                          sort: field === 'Role' ? revertSort : 'desc'
-                        })
-                      }}
-                      className={cn(styles['col-2Table'], styles['table-header'])}
-                    >
-                      <span role='columnheader'>Role</span>
-                      <div
-                        className={cn(styles['col-arrow'], {
-                          [styles['col-arrow-sort-asc']]:
+                <th>
+                  <button
+                    type='button'
+                    onClick={() => {
+                      this.onSortChange({
+                        field: 'Role',
+                        sort: field === 'Role' ? revertSort : 'desc'
+                      })
+                    }}
+                    className={cn(styles['col-2Table'], styles['table-header'])}
+                  >
+                    <span role='columnheader'>Role</span>
+                    <div
+                      className={cn(styles['col-arrow'], {
+                        [styles['col-arrow-sort-asc']]:
                             field === 'Role' && sort === 'asc',
-                          [styles['col-arrow-is-sorting']]: field === 'Role'
-                        })}
-                        type='button'
-                      >
-                        <ReactSVG
-                          path={assets(`${ArrowDown}`)}
-                        />
-                      </div>
-                    </button>
-                  </th>
-                )}
+                        [styles['col-arrow-is-sorting']]: field === 'Role'
+                      })}
+                      type='button'
+                    >
+                      <ReactSVG
+                        path={assets(`${ArrowDown}`)}
+                      />
+                    </div>
+                  </button>
+                </th>
+
                 <th>
                   <button
                     onClick={() => {
@@ -461,11 +460,9 @@ export default class Resources extends React.Component {
               {sortedResources.map(r => {
                 return (
                   <tr className={styles.rowTable} key={r.id} role='row'>
-                    {!isDesign && (
-                      <td className={styles['col-2Table']}>
-                        <span role='cell'>{r.role}</span>
-                      </td>
-                    )}
+                    <td className={styles['col-2Table']}>
+                      <span role='cell'>{r.role}</span>
+                    </td>
                     <td className={styles['col-3Table']}>
                       <span role='cell'>
                         <a
