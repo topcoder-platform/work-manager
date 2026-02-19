@@ -618,3 +618,203 @@
     }
   }
 }
+
+// Manual Configuration Styles
+.manualConfiguration {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.manualWorkflowsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+}
+
+.manualWorkflowCard {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #fafafa;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.manualWorkflowHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.manualWorkflowTitle {
+  font-weight: 600;
+  color: #333;
+}
+
+.removeWorkflowButton {
+  padding: 6px 12px;
+  border-radius: 4px;
+  border: 1px solid #dc3545;
+  background-color: #fff;
+  color: #dc3545;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #dc3545;
+    color: white;
+  }
+}
+
+.manualWorkflowBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.manualWorkflowField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+  }
+}
+
+.manualWorkflowRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.workflowSelect,
+.weightInput {
+  padding: 8px 10px;
+  border: 1px solid #d0d0d0;
+  border-radius: 4px;
+  font-size: 14px;
+  background-color: #fff;
+
+  &:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+  }
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #555;
+  margin-top: 10px;
+  margin-bottom: 11px;
+
+  input {
+    cursor: pointer;
+    width: auto;
+  }
+}
+
+.fieldHint {
+  font-size: 12px;
+  color: #888;
+}
+
+.assignmentNotice {
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.assignmentMatch {
+  background-color: #e8f5e9;
+  border: 1px solid #2e7d32;
+  color: #1b5e20;
+}
+
+.assignmentMissing {
+  background-color: #fff8e1;
+  border: 1px solid #f9a825;
+  color: #8d6e00;
+}
+
+.workflowDescriptionHint {
+  font-size: 12px;
+  color: #777;
+  white-space: pre-wrap;
+}
+
+.addWorkflowButton {
+  align-self: flex-start;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: 1px solid #0066cc;
+  background-color: #fff;
+  color: #0066cc;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: #0066cc;
+    color: white;
+  }
+}
+
+.weightValidationSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+  }
+}
+
+.validationCard {
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background-color: #fafafa;
+  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.validationSuccess {
+  border-color: #2e7d32;
+  background-color: #e8f5e9;
+  color: #1b5e20;
+}
+
+.validationWarning {
+  border-color: #f9a825;
+  background-color: #fff8e1;
+  color: #8d6e00;
+}
+
+.validationMessage {
+  font-size: 12px;
+  color: inherit;
+}

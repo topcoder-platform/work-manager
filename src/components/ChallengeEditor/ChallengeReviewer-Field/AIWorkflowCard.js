@@ -35,15 +35,7 @@ const AIWorkflowCard = ({ workflow, scorecardId, description, onRemove, readOnly
         {scorecardId && (
           <div className={styles.workflowScorecard}>
             <strong>Scorecard:</strong>
-            <a
-              href={`#scorecard/${scorecardId}`}
-              target='_blank'
-              rel='noopener noreferrer'
-              className={styles.scorecardLink}
-            >
-              {scorecardId}
-              <span className={styles.externalIcon}> ↗</span>
-            </a>
+            {scorecardId}
           </div>
         )}
       </div>

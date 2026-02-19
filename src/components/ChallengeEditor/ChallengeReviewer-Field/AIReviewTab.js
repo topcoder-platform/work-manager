@@ -5,15 +5,16 @@ import { OutlineButton } from '../../Buttons'
 import AIWorkflowCard from './AIWorkflowCard'
 import { createTemplateManager } from '../../../services/aiReviewTemplateHelpers'
 import { createConfigManager } from '../../../services/aiReviewConfigHelpers'
+import ConfirmationModal from '../../Modal/ConfirmationModal'
 import styles from './AIReviewTab.module.scss'
 
 const AIReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, readOnly = false }) => {
   const [error, setError] = useState(null)
   const [selectedTemplate, setSelectedTemplate] = useState(null)
-  const [aiReviewConfigs, setAiReviewConfigs] = useState([])
   const [configurationMode, setConfigurationMode] = useState(null)
   const [templates, setTemplates] = useState([])
   const [templatesLoading, setTemplatesLoading] = useState(false)
+  const [showSwitchToManualConfirm, setShowSwitchToManualConfirm] = useState(false)
   const [configuration, setConfiguration] = useState({
     mode: 'AI_GATING',
     minPassingThreshold: 75,
@@ -93,18 +94,29 @@ const AIReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
   }
 
   const handleSwitchConfigurationMode = (newMode) => {
+    if (newMode === 'manual' && configurationMode === 'template') {
+      setShowSwitchToManualConfirm(true)
+      return
+    }
+
     setConfigurationMode(newMode)
     setSelectedTemplate(null)
-    setConfiguration({
-      mode: 'AI_GATING',
-      minPassingThreshold: 75,
-      autoFinalize: false,
-      workflows: []
-    })
-    
+
     if (newMode === 'template') {
+      setConfiguration({
+        mode: 'AI_GATING',
+        minPassingThreshold: 75,
+        autoFinalize: false,
+        workflows: []
+      })
       loadTemplates()
     }
+  }
+
+  const confirmSwitchToManual = () => {
+    setShowSwitchToManualConfirm(false)
+    setConfigurationMode('manual')
+    setSelectedTemplate(null)
   }
 
   const handleTemplateChange = (templateId) => {
@@ -133,6 +145,48 @@ const AIReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
     setConfiguration(prev => ({
       ...prev,
       [field]: value
+    }))
+  }
+
+  const addWorkflowToConfiguration = () => {
+    setConfiguration(prev => ({
+      ...prev,
+      workflows: prev.workflows.concat([
+        { workflowId: '', weightPercent: 0, isGating: false }
+      ])
+    }))
+  }
+
+  const updateWorkflowInConfiguration = (index, field, value) => {
+    setConfiguration(prev => {
+      const workflows = prev.workflows.map((workflow, idx) => {
+        if (idx !== index) {
+          return workflow
+        }
+
+        const nextWorkflow = {
+          ...workflow,
+          [field]: value
+        }
+
+        if (field === 'isGating' && value) {
+          nextWorkflow.weightPercent = 0
+        }
+
+        return nextWorkflow
+      })
+
+      return {
+        ...prev,
+        workflows
+      }
+    })
+  }
+
+  const removeWorkflowFromConfiguration = (index) => {
+    setConfiguration(prev => ({
+      ...prev,
+      workflows: prev.workflows.filter((_, idx) => idx !== index)
     }))
   }
 
@@ -385,6 +439,284 @@ const AIReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
     )
   }
 
+  const renderManualConfiguration = () => {
+    const { workflows: availableWorkflows = [] } = metadata
+    const scoringWorkflows = configuration.workflows.filter(workflow => !workflow.isGating)
+    const gatingWorkflows = configuration.workflows.filter(workflow => workflow.isGating)
+    const scoringTotal = scoringWorkflows.reduce((sum, workflow) => sum + (Number(workflow.weightPercent) || 0), 0)
+    const hasScoringWorkflows = scoringWorkflows.length > 0
+    const isWeightValid = !hasScoringWorkflows || Math.abs(scoringTotal - 100) < 0.01
+    const remainingWeight = Math.round((100 - scoringTotal) * 100) / 100
+    const scoringSummary = hasScoringWorkflows
+      ? `${scoringWorkflows.map(workflow => `${Number(workflow.weightPercent) || 0}%`).join(' + ')} = ${scoringTotal}%`
+      : 'no scoring workflows'
+
+    return (
+      <div className={styles.manualConfiguration}>
+        <div className={styles.configurationSourceSelector}>
+          <h4>Configuration Source:</h4>
+          <div className={styles.sourceOptions}>
+            <label className={styles.radioLabel}>
+              <input
+                type='radio'
+                name='configSource'
+                value='template'
+                checked={false}
+                disabled
+              />
+              <span>Template</span>
+            </label>
+            <label className={styles.radioLabel}>
+              <input
+                type='radio'
+                name='configSource'
+                value='manual'
+                checked
+                disabled
+              />
+              <span>Manual</span>
+            </label>
+            {!readOnly && (
+              <button
+                className={styles.switchButton}
+                onClick={() => handleSwitchConfigurationMode('template')}
+              >
+                Switch
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.reviewSettingsSection}>
+          <h3>Review Settings</h3>
+
+          <div className={styles.settingsGrid}>
+            <div className={styles.setting}>
+              <label>Review Mode:</label>
+              <select
+                value={configuration.mode}
+                onChange={(e) => updateConfiguration('mode', e.target.value)}
+                disabled={readOnly}
+                className={styles.modeDropdown}
+              >
+                <option value='AI_GATING'>AI_GATING</option>
+                <option value='AI_ONLY'>AI_ONLY</option>
+              </select>
+              <p className={styles.modeInfo}>
+                {configuration.mode === 'AI_GATING'
+                  ? 'AI gates low-quality submissions; humans review the rest.'
+                  : 'AI makes the final decision on all submissions.'}
+              </p>
+            </div>
+
+            <div className={styles.setting}>
+              <label>Auto-Finalize:</label>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type='checkbox'
+                  checked={configuration.autoFinalize}
+                  onChange={(e) => updateConfiguration('autoFinalize', e.target.checked)}
+                  disabled={readOnly || configuration.mode !== 'AI_ONLY'}
+                />
+                <span>{configuration.autoFinalize ? 'On' : 'Off'}</span>
+              </label>
+              <p className={styles.autoFinalizeInfo}>Only available in AI_ONLY mode</p>
+            </div>
+          </div>
+
+          <div className={styles.thresholdSection}>
+            <label>Min Passing Threshold:</label>
+            <div className={styles.thresholdSlider}>
+              <input
+                type='range'
+                min='0'
+                max='100'
+                value={configuration.minPassingThreshold}
+                onChange={(e) => updateConfiguration('minPassingThreshold', parseInt(e.target.value, 10))}
+                disabled={readOnly}
+                className={styles.slider}
+              />
+              <span className={styles.thresholdValue}>
+                {configuration.minPassingThreshold} %
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className={styles.manualWorkflowsSection}>
+          <h3>AI Workflows <span className={styles.workflowsNote}>(editable)</span></h3>
+
+          {configuration.workflows.map((workflow, index) => {
+            const workflowDetails = availableWorkflows.find(item => item.id === workflow.workflowId) || {}
+            const isAssigned = (challenge.reviewers || []).some(r =>
+              isAIReviewer(r) && r.aiWorkflowId === workflow.workflowId
+            )
+
+            return (
+              <div key={`manual-workflow-${index}`} className={styles.manualWorkflowCard}>
+                <div className={styles.manualWorkflowHeader}>
+                  <div className={styles.manualWorkflowTitle}>Workflow {index + 1}</div>
+                  {!readOnly && (
+                    <button
+                      className={styles.removeWorkflowButton}
+                      onClick={() => removeWorkflowFromConfiguration(index)}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+
+                <div className={styles.manualWorkflowBody}>
+                  <div className={styles.manualWorkflowField}>
+                    <label>AI Workflow:</label>
+                    <select
+                      value={workflow.workflowId || ''}
+                      onChange={(e) => updateWorkflowInConfiguration(index, 'workflowId', e.target.value)}
+                      disabled={readOnly}
+                      className={styles.workflowSelect}
+                    >
+                      <option value=''>Select AI Workflow</option>
+                      {availableWorkflows.map(item => (
+                        <option key={item.id} value={item.id}>
+                          {item.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className={styles.manualWorkflowRow}>
+                    <div className={styles.manualWorkflowField}>
+                      <label>Weight (%):</label>
+                      <input
+                        type='number'
+                        min='0'
+                        max='100'
+                        value={workflow.isGating ? '' : (workflow.weightPercent || 0)}
+                        placeholder={workflow.isGating ? 'N/A (gating)' : '0'}
+                        onChange={(e) => updateWorkflowInConfiguration(
+                          index,
+                          'weightPercent',
+                          parseInt(e.target.value, 10) || 0
+                        )}
+                        disabled={readOnly || workflow.isGating}
+                        className={styles.weightInput}
+                      />
+                      <div className={styles.fieldHint}>Weight for scoring. Ignored if gating.</div>
+                    </div>
+
+                    <div className={styles.manualWorkflowField}>
+                      <label>Gating Workflow:</label>
+                      <label className={styles.toggleLabel}>
+                        <input
+                          type='checkbox'
+                          checked={workflow.isGating}
+                          onChange={(e) => updateWorkflowInConfiguration(index, 'isGating', e.target.checked)}
+                          disabled={readOnly}
+                        />
+                        <span>{workflow.isGating ? 'Yes' : 'No'}</span>
+                      </label>
+                      <div className={styles.fieldHint}>
+                        {workflow.isGating ? '⚡ Pass/fail gate.' : 'Submissions below threshold are locked.'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {workflow.workflowId && (
+                    <div
+                      className={cn(
+                        styles.assignmentNotice,
+                        isAssigned ? styles.assignmentMatch : styles.assignmentMissing
+                      )}
+                    >
+                      {isAssigned
+                        ? 'Matched: This workflow is assigned as AI Reviewer for this challenge.'
+                        : 'Not assigned: will be auto-added on save.'}
+                    </div>
+                  )}
+
+                  {workflowDetails.description && (
+                    <div className={styles.workflowDescriptionHint}>{workflowDetails.description}</div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+
+          {!readOnly && (
+            <button
+              className={styles.addWorkflowButton}
+              onClick={addWorkflowToConfiguration}
+            >
+              + Add AI Workflow
+            </button>
+          )}
+        </div>
+
+        <div className={styles.weightValidationSection}>
+          <h3>Weight Validation</h3>
+          <div className={cn(styles.validationCard, isWeightValid ? styles.validationSuccess : styles.validationWarning)}>
+            <div>
+              Scoring workflows weight total: {scoringSummary} {isWeightValid ? 'OK' : 'Invalid'}
+            </div>
+            {!isWeightValid && hasScoringWorkflows && (
+              <div className={styles.validationMessage}>
+                Scoring workflow weights must total 100%. {remainingWeight > 0
+                  ? `Remaining: ${remainingWeight}% unassigned.`
+                  : `Over by ${Math.abs(remainingWeight)}%.`}
+              </div>
+            )}
+            <div className={styles.validationMessage}>Gating workflows: {gatingWorkflows.length}</div>
+          </div>
+        </div>
+
+        <div className={styles.summarySection}>
+          <h3>Summary</h3>
+          <div className={styles.summaryGrid}>
+            <div className={styles.summaryCard}>
+              <h4>Mode</h4>
+              <div className={styles.summaryValue}>{configuration.mode}</div>
+            </div>
+            <div className={styles.summaryCard}>
+              <h4>Threshold</h4>
+              <div className={styles.summaryValue}>{configuration.minPassingThreshold}%</div>
+            </div>
+            <div className={styles.summaryCard}>
+              <h4>Workflows</h4>
+              <div className={styles.summaryValue}>
+                {configuration.workflows.length} total
+                {configuration.workflows.some(w => w.isGating) && (
+                  <div className={styles.summarySubtext}>
+                    {configuration.workflows.filter(w => w.isGating).length} gating
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {!readOnly && (
+          <div className={styles.removeConfigSection}>
+            <button
+              className={styles.removeConfigButton}
+              onClick={() => {
+                setConfigurationMode(null)
+                setSelectedTemplate(null)
+                setConfiguration({
+                  mode: 'AI_GATING',
+                  minPassingThreshold: 75,
+                  autoFinalize: false,
+                  workflows: []
+                })
+              }}
+            >
+              Remove AI Review Config
+            </button>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   const removeAIReviewer = (index) => {
     const currentReviewers = challenge.reviewers || []
     
@@ -443,14 +775,16 @@ const AIReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
 
           <div className={styles.workflowsList}>
             {assignedWorkflows.map((item, index) => (
-              <AIWorkflowCard
-                key={`workflow-${index}`}
-                workflow={item.workflow || { name: item.reviewer.aiWorkflowId }}
-                scorecardId={item.scorecardId}
-                description=''
-                onRemove={() => removeAIReviewer(index)}
-                readOnly={false}
-              />
+              <>
+                <AIWorkflowCard
+                  key={`workflow-${index}`}
+                  workflow={item.workflow || { name: item.reviewer.aiWorkflowId }}
+                  scorecardId={(item.workflow || item.reviewer).scorecardId}
+                  description=''
+                  onRemove={() => removeAIReviewer(index)}
+                  readOnly={false}
+                />
+              </>
             ))}
           </div>
         </div>
@@ -655,6 +989,30 @@ const AIReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
     return (
       <div className={styles.tabContent}>
         {renderTemplateConfiguration()}
+        {showSwitchToManualConfirm && (
+          <ConfirmationModal
+            title='Switch to Manual Configuration?'
+            message={(
+              <div>
+                <p>The template settings will be copied into editable fields.</p>
+                <p>You can then modify workflows, weights, and settings individually.</p>
+                <p>This will disconnect from the template. Future template updates will not apply.</p>
+              </div>
+            )}
+            cancelText='Cancel'
+            confirmText='Switch to Manual'
+            onCancel={() => setShowSwitchToManualConfirm(false)}
+            onConfirm={confirmSwitchToManual}
+          />
+        )}
+      </div>
+    )
+  }
+
+  if (configurationMode === 'manual') {
+    return (
+      <div className={styles.tabContent}>
+        {renderManualConfiguration()}
       </div>
     )
   }
