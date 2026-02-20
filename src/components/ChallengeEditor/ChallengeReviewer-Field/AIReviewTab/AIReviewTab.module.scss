@@ -1,5 +1,5 @@
-@use '../../../styles/includes' as *;
-@import './shared.module.scss';
+@use '../../../../styles/includes' as *;
+@import '../shared.module.scss';
 
 .initialStateContainer {
   display: flex;
@@ -615,6 +615,33 @@
 
     &:active {
       background-color: #bd2130;
+    }
+  }
+}
+
+.actionButtonsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+
+  .saveConfigButton {
+    padding: 10px 24px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: #218838;
+    }
+
+    &:active {
+      background-color: #1e7e34;
     }
   }
 }

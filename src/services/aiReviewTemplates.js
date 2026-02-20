@@ -1,8 +1,9 @@
 import _ from 'lodash'
 import qs from 'qs'
-import { axiosInstance } from './axiosWithAuth'
 
-const { AI_REVIEW_TEMPLATES_API_URL } = process.env
+import { TC_REVIEWS_API_BASE_URL } from '../config/constants'
+
+import { axiosInstance } from './axiosWithAuth'
 
 /**
  * Fetch all AI review templates with optional filters
@@ -14,7 +15,7 @@ export async function fetchAIReviewTemplates (filters = {}) {
     const queryString = Object.keys(filters).length > 0
       ? `?${qs.stringify(filters, { encode: false })}`
       : ''
-    const response = await axiosInstance.get(`${AI_REVIEW_TEMPLATES_API_URL}/ai-review/templates${queryString}`)
+    const response = await axiosInstance.get(`${TC_REVIEWS_API_BASE_URL}/ai-review/templates${queryString}`)
     return _.get(response, 'data', [])
   } catch (error) {
     console.error('Error fetching AI review templates:', error.message)
@@ -29,7 +30,7 @@ export async function fetchAIReviewTemplates (filters = {}) {
  */
 export async function fetchAIReviewTemplate (templateId) {
   try {
-    const response = await axiosInstance.get(`${AI_REVIEW_TEMPLATES_API_URL}/ai-review/templates/${templateId}`)
+    const response = await axiosInstance.get(`${TC_REVIEWS_API_BASE_URL}/ai-review/templates/${templateId}`)
     return _.get(response, 'data', {})
   } catch (error) {
     console.error(`Error fetching AI review template ${templateId}:`, error.message)
@@ -54,7 +55,7 @@ export async function createAIReviewTemplate (templateData) {
     }
 
     const response = await axiosInstance.post(
-      `${AI_REVIEW_TEMPLATES_API_URL}/ai-review/templates`,
+      `${TC_REVIEWS_API_BASE_URL}/ai-review/templates`,
       templateData
     )
     return _.get(response, 'data', {})
@@ -81,7 +82,7 @@ export async function updateAIReviewTemplate (templateId, templateData) {
     }
 
     const response = await axiosInstance.put(
-      `${AI_REVIEW_TEMPLATES_API_URL}/ai-review/templates/${templateId}`,
+      `${TC_REVIEWS_API_BASE_URL}/ai-review/templates/${templateId}`,
       templateData
     )
     return _.get(response, 'data', {})
@@ -98,7 +99,7 @@ export async function updateAIReviewTemplate (templateId, templateData) {
  */
 export async function deleteAIReviewTemplate (templateId) {
   try {
-    await axiosInstance.delete(`${AI_REVIEW_TEMPLATES_API_URL}/ai-review/templates/${templateId}`)
+    await axiosInstance.delete(`${TC_REVIEWS_API_BASE_URL}/ai-review/templates/${templateId}`)
   } catch (error) {
     console.error(`Error deleting AI review template ${templateId}:`, error.message)
     throw error

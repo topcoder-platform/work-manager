@@ -5,7 +5,7 @@ import cn from 'classnames'
 import { loadScorecards, loadDefaultReviewers, loadWorkflows, replaceResourceInRole, createResource, deleteResource } from '../../../actions/challenges'
 import styles from './ChallengeReviewer-Field.module.scss'
 import HumanReviewTab from './HumanReviewTab'
-import AIReviewTab from './AIReviewTab'
+import { AiReviewTab } from './AiReviewerTab'
 
 // Keep track filters aligned with the scorecards API regardless of legacy values
 const SCORECARD_TRACK_ALIASES = {
@@ -212,7 +212,7 @@ class ChallengeReviewerField extends Component {
               )}
 
               {activeTab === 'ai' && (
-                <AIReviewTab
+                <AiReviewTab
                   challenge={challenge}
                   metadata={metadata}
                   isLoading={isLoading}
