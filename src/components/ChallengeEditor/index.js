@@ -73,6 +73,7 @@ import DiscussionField from './Discussion-Field'
 import CheckpointPrizesField from './CheckpointPrizes-Field'
 import { canChangeDuration } from '../../util/phase'
 import { isBetaMode } from '../../util/localstorage'
+import { fetchAIReviewConfigByChallenge } from '../../services/aiReviewConfigs'
 
 const theme = {
   container: styles.modalContainer
@@ -1365,10 +1366,66 @@ class ChallengeEditor extends Component {
     return challengeId
   }
 
+  /**
+   * Sync AI review config workflows to challenge reviewers array
+   * Maps workflows from AI review config to reviewer objects with aiWorkflowId and isMemberReview=false
+   */
+  async syncAIReviewConfigToReviewers (challengeId) {
+    try {
+      // Fetch the AI review config for this challenge
+      const aiConfig = await fetchAIReviewConfigByChallenge(challengeId)
+      
+      if (!aiConfig || !aiConfig.workflows || aiConfig.workflows.length === 0) {
+        // No AI config or workflows, nothing to sync
+        return
+      }
+
+      // Get current reviewers from state
+      const currentReviewers = this.state.challenge.reviewers || []
+      
+      // Separate AI reviewers from human reviewers
+      const humanReviewers = currentReviewers.filter(r => {
+        const isAI = (r.aiWorkflowId && r.aiWorkflowId.trim() !== '') || r.isMemberReview === false
+        return !isAI
+      })
+      
+      // Create reviewer entries for each workflow in the config
+      const aiReviewers = aiConfig.workflows.map(workflow => ({
+        aiWorkflowId: workflow.workflowId,
+        scorecardId: workflow.workflow.scorecardId,
+        phaseId: '6950164f-3c5e-4bdc-abc8-22aaf5a1bd49',
+        shouldOpenOpportunity: false,
+        isMemberReview: false
+      }))
+      
+      // Combine human reviewers with synced AI reviewers
+      const syncedReviewers = [...humanReviewers, ...aiReviewers]
+      
+      // Update state with synced reviewers
+      await new Promise(resolve => {
+        this.setState(prevState => ({
+          challenge: {
+            ...prevState.challenge,
+            reviewers: syncedReviewers
+          }
+        }), resolve)
+      })
+      
+      console.log('Synced AI review config workflows to reviewers:', aiReviewers.length)
+    } catch (error) {
+      // Log error but don't fail the save operation
+      console.error('Error syncing AI review config to reviewers:', error)
+    }
+  }
+
   async updateAllChallengeInfo (status, cb = () => { }) {
     const { updateChallengeDetails, assignedMemberDetails: oldAssignedMember, projectDetail, challengeDetails } = this.props
     if (this.state.isSaving) return
     this.setState({ isSaving: true }, async () => {
+      // Sync AI review config workflows to reviewers before collecting challenge data
+      const challengeId = this.getCurrentChallengeId()
+      await this.syncAIReviewConfigToReviewers(challengeId)
+      
       let challenge = this.collectChallengeData(status)
       let newChallenge = _.cloneDeep(this.state.challenge)
       newChallenge.status = status

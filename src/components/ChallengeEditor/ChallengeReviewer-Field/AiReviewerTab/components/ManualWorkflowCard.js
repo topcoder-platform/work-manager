@@ -103,10 +103,6 @@ const ManualWorkflowCard = ({
               : 'Not assigned: will be auto-added on save.'}
           </div>
         )}
-
-        {workflowDetails.description && (
-          <div className={styles.workflowDescriptionHint}>{workflowDetails.description}</div>
-        )}
       </div>
     </div>
   )

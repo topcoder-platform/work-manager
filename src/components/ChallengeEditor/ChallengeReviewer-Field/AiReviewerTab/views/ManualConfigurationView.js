@@ -8,6 +8,7 @@ import ManualWorkflowCard from '../components/ManualWorkflowCard'
 import styles from '../AiReviewTab.module.scss'
 import ConfirmationModal from '../../../../Modal/ConfirmationModal'
 import { configHasChanges } from '../../../../../services/aiReviewConfigHelpers'
+import AiWorkflowsTableListing from '../components/AiWorkflowsTableListing'
 
 /**
  * Manual Configuration View - Manually configure AI review settings and workflows
@@ -45,49 +46,63 @@ const ManualConfigurationView = ({
   return (
     <div className={styles.manualConfiguration}>
       {/* Configuration Source Selector */}
-      <ConfigurationSourceSelector
-        mode='manual'
-        onSwitch={handleOnSwitchConfig}
-        readOnly={readOnly}
-      />
+      {!readOnly && (
+        <ConfigurationSourceSelector
+          mode='manual'
+          onSwitch={handleOnSwitchConfig}
+          readOnly={readOnly}
+        />
+      )}
 
       {/* Review Settings Section */}
-      <ReviewSettingsSection
-        configuration={configuration}
-        onUpdateConfiguration={onUpdateConfiguration}
-        readOnly={readOnly}
-        showTitle
-      />
+      {!readOnly && (
+        <ReviewSettingsSection
+          configuration={configuration}
+          onUpdateConfiguration={onUpdateConfiguration}
+          showTitle
+        />
+      )}
 
       {/* Manual Workflows Section */}
-      <div className={styles.manualWorkflowsSection}>
-        <h3>AI Workflows <span className={styles.workflowsNote}>(editable)</span></h3>
+      {!readOnly && (
+        <div className={styles.manualWorkflowsSection}>
+          <h3>AI Workflows <span className={styles.workflowsNote}>(editable)</span></h3>
 
-        {configuration.workflows.map((workflow, index) => (
-          <ManualWorkflowCard
-            key={`manual-workflow-${index}`}
-            workflow={workflow}
-            index={index}
-            availableWorkflows={availableWorkflows}
-            challenge={challenge}
-            onUpdate={onUpdateWorkflow}
-            onRemove={() => onRemoveWorkflow(index)}
-            readOnly={readOnly}
-          />
-        ))}
+          {configuration.workflows.map((workflow, index) => (
+            <ManualWorkflowCard
+              key={`manual-workflow-${index}`}
+              workflow={workflow}
+              index={index}
+              availableWorkflows={availableWorkflows}
+              challenge={challenge}
+              onUpdate={onUpdateWorkflow}
+              onRemove={() => onRemoveWorkflow(index)}
+              readOnly={readOnly}
+            />
+          ))}
 
-        {!readOnly && (
-          <button
-            className={styles.addWorkflowButton}
-            onClick={onAddWorkflow}
-          >
-            + Add AI Workflow
-          </button>
-        )}
-      </div>
+          {!readOnly && (
+            <button
+              className={styles.addWorkflowButton}
+              onClick={onAddWorkflow}
+            >
+              + Add AI Workflow
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Weight Validation Section */}
-      <WeightValidationCard workflows={configuration.workflows} />
+      {!readOnly && (
+        <WeightValidationCard workflows={configuration.workflows} />
+      )}
+
+      {readOnly && (
+        <AiWorkflowsTableListing
+          workflows={configuration.workflows}
+          challenge={challenge}
+        />
+      )}
 
       {/* Summary Section */}
       <SummarySection configuration={configuration} />

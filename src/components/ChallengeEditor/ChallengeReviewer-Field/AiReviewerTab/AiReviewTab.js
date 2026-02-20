@@ -1,4 +1,3 @@
-import cn from 'classnames'
 import React, { useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { isAIReviewer } from './utils';
@@ -9,6 +8,7 @@ import useConfigurationState from './hooks/useConfigurationState';
 import InitialStateView from './views/InitialStateView';
 import TemplateConfigurationView from './views/TemplateConfigurationView';
 import ManualConfigurationView from './views/ManualConfigurationView';
+import { pick } from 'lodash';
 
 /**
  * AiReviewTab - Main component for managing AI review configuration
@@ -59,15 +59,20 @@ const AiReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
 
   const handleSwitchConfigurationMode = useCallback((mode, template) => {
     if (mode === 'manual') {
-      console.log('switch to manual', template)
       if (template) {
-        resetConfiguration(template);
+        applyTemplate(pick(template, [
+          'mode',
+          'minPassingThreshold',
+          'autoFinalize',
+          'formula',
+          'workflows',
+        ]));
       }
     } else {
       resetConfiguration()
     }
     setConfigurationMode(mode);
-  }, [setConfigurationMode]);
+  }, [setConfigurationMode, applyTemplate, resetConfiguration]);
   
   if (isLoading || isLoadingConfigs) {
     return <div className={styles.loading}>Loading...</div>

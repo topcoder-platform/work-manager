@@ -100,15 +100,16 @@ const useConfigurationState = (
     if (!template) return
 
     const newConfiguration = {
+      id: configId,
       mode: template.mode || 'AI_GATING',
       minPassingThreshold: template.minPassingThreshold || 75,
       autoFinalize: template.autoFinalize || false,
       workflows: template.workflows || [],
-      templateId: template.id,
+      templateId: template.id || '',
     }
 
     setConfiguration(newConfiguration)
-  }, [setConfiguration])
+  }, [setConfiguration, configId])
 
 
   // Fetch AI review config when component loads
