@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react'
+import React, { useCallback, useState } from 'react'
 import cn from 'classnames'
 import PropTypes from 'prop-types'
 import styles from '../AiReviewTab.module.scss'
@@ -6,6 +6,7 @@ import useTemplateManager from '../hooks/useTemplateManager'
 import SummarySection from '../components/SummarySection'
 import ReviewSettingsSection from '../../AIReviewTab/components/ReviewSettingsSection'
 import ConfigurationSourceSelector from '../../AIReviewTab/components/ConfigurationSourceSelector'
+import ConfirmationModal from '../../../../Modal/ConfirmationModal'
 
 /**
  * Template Configuration View - Select and configure using a template
@@ -18,9 +19,8 @@ const TemplateConfigurationView = ({
   onSwitchMode,
   onRemoveConfig,
   readOnly,
-  metadata,
+  availableWorkflows: workflows,
 }) => {
-  const { workflows = [] } = metadata
   const {
     templates,
     selectedTemplate,
@@ -33,6 +33,7 @@ const TemplateConfigurationView = ({
     challenge.track.name,
     challenge.type.name,
   )
+  const [showSwitchToManualConfirm, setShowSwitchToManualConfirm] = useState(false)
 
   const handleTemplateChange = useCallback((e) => {
     const templateId = e.target.value
@@ -45,8 +46,22 @@ const TemplateConfigurationView = ({
   const handleRemoveConfig = useCallback(() => {
     clearSelection()
     onRemoveConfig()
-  }, [onRemoveConfig, clearSelection])
+  }, [onRemoveConfig, clearSelection]);
+  
+  const handleConfirmSwitch = useCallback(() => {
+    clearSelection();
+    onSwitchMode('manual', selectedTemplate);
+  }, [onSwitchMode, selectedTemplate]);
 
+  const handleOnSwitchConfig = useCallback(() => {
+    if (selectedTemplate?.id) {
+      setShowSwitchToManualConfirm(true);
+    } else {
+      handleConfirmSwitch();
+    }
+  }, [
+    selectedTemplate, setShowSwitchToManualConfirm, handleConfirmSwitch
+  ]);
 
   if (templateError) {
     return (
@@ -62,7 +77,7 @@ const TemplateConfigurationView = ({
       ConfigurationSourceSelector
       <ConfigurationSourceSelector
         mode='template'
-        onSwitch={() => onSwitchMode('manual')}
+        onSwitch={handleOnSwitchConfig}
         readOnly={readOnly}
       />
 
@@ -182,6 +197,22 @@ const TemplateConfigurationView = ({
       {templatesLoading && (
         <div className={styles.loading}>Loading templates...</div>
       )}
+
+      {showSwitchToManualConfirm && (
+        <ConfirmationModal
+          title='Switch to Manual Configuration?'
+          message={(
+            <div>
+              <p>The template settings will be copied into editable fields.</p>
+              <p>You can then modify workflows, weights, and settings individually.</p>
+            </div>
+          )}
+          cancelText='Cancel'
+          confirmText='Switch to Manual'
+          onCancel={() => setShowSwitchToManualConfirm(false)}
+          onConfirm={handleConfirmSwitch}
+        />
+      )}
     </div>
   )
 }
@@ -199,14 +230,11 @@ TemplateConfigurationView.propTypes = {
   onSwitchMode: PropTypes.func.isRequired,
   onRemoveConfig: PropTypes.func.isRequired,
   readOnly: PropTypes.bool,
-  metadata: PropTypes.shape({
-    workflows: PropTypes.array,
-  }),
+  availableWorkflows: PropTypes.array.isRequired,
 }
 
 TemplateConfigurationView.defaultProps = {
   readOnly: false,
-  metadata: {},
 }
 
 export default TemplateConfigurationView

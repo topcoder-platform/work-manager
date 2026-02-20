@@ -1,7 +1,8 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
-import styles from '../AIReviewTab.module.scss'
+import styles from '../AiReviewTab.module.scss'
+import { isAIReviewer } from '../utils'
 
 /**
  * Manual Workflow Card - Editable workflow configuration card
@@ -15,7 +16,6 @@ const ManualWorkflowCard = ({
   onUpdate,
   onRemove,
   readOnly,
-  isAIReviewer
 }) => {
   const workflowDetails = availableWorkflows.find(item => item.id === workflow.workflowId) || {}
   const isAssigned = (challenge.reviewers || []).some(r =>
@@ -124,7 +124,6 @@ ManualWorkflowCard.propTypes = {
   onUpdate: PropTypes.func.isRequired,
   onRemove: PropTypes.func.isRequired,
   readOnly: PropTypes.bool,
-  isAIReviewer: PropTypes.func.isRequired
 }
 
 ManualWorkflowCard.defaultProps = {

@@ -7,6 +7,7 @@ import sharedStyles from '../shared.module.scss'
 import useConfigurationState from './hooks/useConfigurationState';
 import InitialStateView from './views/InitialStateView';
 import TemplateConfigurationView from './views/TemplateConfigurationView';
+import ManualConfigurationView from './views/ManualConfigurationView';
 
 /**
  * AiReviewTab - Main component for managing AI review configuration
@@ -45,8 +46,19 @@ const AiReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
     setConfigurationMode(null)
     resetConfiguration()
   }, [setConfigurationMode, resetConfiguration])
+
+  const handleSwitchConfigurationMode = useCallback((mode, template) => {
+    if (mode === 'manual') {
+      console.log('switch to manual', template)
+      if (template) {
+        resetConfiguration(template);
+      }
+    } else {
+      resetConfiguration()
+    }
+    setConfigurationMode(mode);
+  }, [setConfigurationMode]);
   
-  // Show loading state
   if (isLoading) {
     return <div className={styles.loading}>Loading...</div>
   }
@@ -60,32 +72,35 @@ const AiReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
           configuration={configuration}
           onTemplateChange={applyTemplate}
           onUpdateConfiguration={updateConfiguration}
-          // onSwitchMode={handleSwitchConfigurationMode}
+          onSwitchMode={handleSwitchConfigurationMode}
           onRemoveConfig={handleRemoveConfiguration}
           readOnly={readOnly}
-          isAIReviewer={isAIReviewer}
-          metadata={metadata}
+          availableWorkflows={metadata.workflows || []}
         />
-        {/* {showSwitchToManualConfirm && (
-          <ConfirmationModal
-            title='Switch to Manual Configuration?'
-            message={(
-              <div>
-                <p>The template settings will be copied into editable fields.</p>
-                <p>You can then modify workflows, weights, and settings individually.</p>
-                <p>This will disconnect from the template. Future template updates will not apply.</p>
-              </div>
-            )}
-            cancelText='Cancel'
-            confirmText='Switch to Manual'
-            onCancel={() => setShowSwitchToManualConfirm(false)}
-            onConfirm={confirmSwitchToManual}
-          />
-        )} */}
       </div>
     )
   }
-  
+
+  // Show manual configuration if in manual mode
+  if (configurationMode === 'manual') {
+    return (
+      <div className={sharedStyles.tabContent}>
+        <ManualConfigurationView
+          challenge={challenge}
+          configuration={configuration}
+          availableWorkflows={metadata.workflows || []}
+          onUpdateConfiguration={updateConfiguration}
+          onAddWorkflow={addWorkflow}
+          onUpdateWorkflow={updateWorkflow}
+          onRemoveWorkflow={removeWorkflow}
+          onSwitchMode={handleSwitchConfigurationMode}
+          onRemoveConfig={handleRemoveConfiguration}
+          readOnly={readOnly}
+        />
+      </div>
+    )
+  }
+
   // initial state (no configuration mode was selected: template/manual)
   return (
     <div className={sharedStyles.tabContent}>

@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
-import styles from '../AIReviewTab.module.scss'
+import styles from '../AiReviewTab.module.scss'
 
 /**
  * Weight Validation Card - Validates that scoring workflow weights total 100%
