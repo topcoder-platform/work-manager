@@ -15,6 +15,7 @@ import ManualConfigurationView from './views/ManualConfigurationView';
  */
 const AiReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, readOnly = false }) => {
   const {
+    isLoading: isLoadingConfigs,
     configuration,
     configurationMode,
     setConfigurationMode,
@@ -59,7 +60,7 @@ const AiReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
     setConfigurationMode(mode);
   }, [setConfigurationMode]);
   
-  if (isLoading) {
+  if (isLoading || isLoadingConfigs) {
     return <div className={styles.loading}>Loading...</div>
   }
 

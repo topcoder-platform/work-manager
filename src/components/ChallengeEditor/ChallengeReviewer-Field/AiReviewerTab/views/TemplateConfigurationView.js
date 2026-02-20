@@ -4,9 +4,8 @@ import PropTypes from 'prop-types'
 import styles from '../AiReviewTab.module.scss'
 import useTemplateManager from '../hooks/useTemplateManager'
 import SummarySection from '../components/SummarySection'
-import ReviewSettingsSection from '../../AIReviewTab/components/ReviewSettingsSection'
-import ConfigurationSourceSelector from '../../AIReviewTab/components/ConfigurationSourceSelector'
 import ConfirmationModal from '../../../../Modal/ConfirmationModal'
+import ConfigurationSourceSelector from '../components/ConfigurationSourceSelector'
 
 /**
  * Template Configuration View - Select and configure using a template
@@ -74,7 +73,6 @@ const TemplateConfigurationView = ({
   return (
     <div className={styles.templateConfiguration}>
       {/* Configuration Source Selector */}
-      ConfigurationSourceSelector
       <ConfigurationSourceSelector
         mode='template'
         onSwitch={handleOnSwitchConfig}

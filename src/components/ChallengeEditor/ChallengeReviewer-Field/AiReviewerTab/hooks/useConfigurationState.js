@@ -14,6 +14,7 @@ const useConfigurationState = (
     workflows: []
   },
 ) => {
+  const [isLoading, setIsLoading] = useState(true);
   const configManager = useMemo(() => createConfigManager(true), [])
   const [configuration, setConfiguration] = useState(initialConfig)
   const [configurationMode, setConfigurationMode] = useState(null)
@@ -107,6 +108,7 @@ const useConfigurationState = (
   // Fetch AI review config when component loads
   useEffect(() => {
     const loadAIReviewConfig = async () => {
+      setIsLoading(true);
       try {
         if (challengeId) {
           const config = await configManager.fetchByChallenge(challengeId)
@@ -118,6 +120,8 @@ const useConfigurationState = (
         }
       } catch (err) {
         console.error('Error loading AI review configuration:', err)
+      } finally {
+        setIsLoading(false);
       }
     }
 
@@ -125,6 +129,7 @@ const useConfigurationState = (
   }, [challengeId, updateConfiguration, configManager])
 
   return {
+    isLoading,
     configuration,
     configurationMode,
     setConfigurationMode,
