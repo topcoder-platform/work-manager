@@ -17,7 +17,6 @@ const ManualWorkflowCard = ({
   onRemove,
   readOnly,
 }) => {
-  const workflowDetails = availableWorkflows.find(item => item.id === workflow.workflowId) || {}
   const isAssigned = (challenge.reviewers || []).some(r =>
     isAIReviewer(r) && r.aiWorkflowId === workflow.workflowId
   )
