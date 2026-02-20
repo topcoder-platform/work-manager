@@ -1,5 +1,5 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'
-import { createConfigManager } from '../../../../../services/aiReviewConfigHelpers'
+import { useState, useCallback, useEffect } from 'react'
+import { fetchAIReviewConfigByChallenge } from '../../../../../services/aiReviewConfigs';
 
 /**
  * Custom hook for managing AI Review configuration state
@@ -15,7 +15,6 @@ const useConfigurationState = (
   },
 ) => {
   const [isLoading, setIsLoading] = useState(true);
-  const configManager = useMemo(() => createConfigManager(true), [])
   const [configuration, setConfiguration] = useState(initialConfig)
   const [configurationMode, setConfigurationMode] = useState(null)
 
@@ -111,7 +110,7 @@ const useConfigurationState = (
       setIsLoading(true);
       try {
         if (challengeId) {
-          const config = await configManager.fetchByChallenge(challengeId)
+          const config = await fetchAIReviewConfigByChallenge(challengeId)
           if (config) {
             // Load the config into the configuration state
             setConfigurationMode(config.templateId ? 'template' : 'manual')
@@ -126,7 +125,7 @@ const useConfigurationState = (
     }
 
     loadAIReviewConfig()
-  }, [challengeId, updateConfiguration, configManager])
+  }, [challengeId, updateConfiguration])
 
   return {
     isLoading,

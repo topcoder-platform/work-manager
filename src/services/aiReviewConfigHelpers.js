@@ -32,33 +32,6 @@ export const createConfigManager = (useDevConfig = false) => {
 }
 
 /**
- * Format config for display in UI
- * 
- * @param {Object} config - The config to format
- * @returns {Object} - Formatted config
- */
-export const formatConfigForDisplay = (config) => {
-  if (!config) {
-    return null
-  }
-
-  return {
-    ...config,
-    modeLabel: config.mode === 'AI_ONLY' ? 'AI Only Review' : 'AI Gating + Human Review',
-    workflowCount: config.workflows ? config.workflows.length : 0,
-    totalWeight: config.workflows 
-      ? config.workflows.reduce((sum, w) => sum + (w.weightPercent || 0), 0)
-      : 0,
-    gatingWorkflows: config.workflows
-      ? config.workflows.filter(w => w.isGating)
-      : [],
-    scoringWorkflows: config.workflows
-      ? config.workflows.filter(w => !w.isGating)
-      : []
-  }
-}
-
-/**
  * Validate config data before submission
  * 
  * @param {Object} configData - The config data to validate
@@ -117,89 +90,6 @@ export const validateConfigData = (configData) => {
 }
 
 /**
- * Calculate aggregated score from workflow scores
- * 
- * @param {Object} config - The AI review config
- * @param {Object} workflowScores - Map of workflowId to score
- * @returns {Object} - { totalScore, componentScores, passesGating, passesThreshold }
- */
-export const calculateAggregatedScore = (config, workflowScores) => {
-  if (!config || !config.workflows || !workflowScores) {
-    return null
-  }
-
-  const componentScores = {}
-  let weightedSum = 0
-  let totalWeight = 0
-
-  config.workflows.forEach(w => {
-    const score = workflowScores[w.workflowId]
-    if (score !== undefined && score !== null) {
-      componentScores[w.workflowId] = {
-        score,
-        weight: w.weightPercent,
-        weighted: (score * w.weightPercent) / 100
-      }
-      weightedSum += componentScores[w.workflowId].weighted
-      totalWeight += w.weightPercent
-    }
-  })
-
-  const totalScore = totalWeight > 0 ? (weightedSum / totalWeight) * 100 : 0
-
-  // Check gating
-  let passesGating = true
-  const gatingWorkflows = config.workflows.filter(w => w.isGating)
-  if (gatingWorkflows.length > 0 && config.mode === 'AI_GATING') {
-    passesGating = gatingWorkflows.every(w => {
-      const score = workflowScores[w.workflowId]
-      return score !== undefined && score !== null && score >= config.minPassingThreshold
-    })
-  }
-
-  return {
-    totalScore: Math.round(totalScore * 100) / 100,
-    componentScores,
-    passesGating,
-    passesThreshold: totalScore >= config.minPassingThreshold,
-    status: passesGating && totalScore >= config.minPassingThreshold ? 'PASSED' : 'FAILED'
-  }
-}
-
-/**
- * Get summary statistics for a config
- * 
- * @param {Object} config - The config to analyze
- * @returns {Object} - Summary information
- */
-export const getConfigSummary = (config) => {
-  if (!config) {
-    return null
-  }
-
-  const gatingWorkflows = config.workflows ? config.workflows.filter(w => w.isGating) : []
-  const scoringWorkflows = config.workflows ? config.workflows.filter(w => !w.isGating) : []
-
-  return {
-    challengeId: config.challengeId,
-    mode: config.mode,
-    modeLabel: config.mode === 'AI_ONLY' ? 'AI Only' : 'AI Gating',
-    minPassingThreshold: config.minPassingThreshold,
-    autoFinalize: config.autoFinalize,
-    totalWorkflows: config.workflows ? config.workflows.length : 0,
-    gatingWorkflows: gatingWorkflows.length,
-    scoringWorkflows: scoringWorkflows.length,
-    totalWeight: config.workflows 
-      ? config.workflows.reduce((sum, w) => sum + (w.weightPercent || 0), 0)
-      : 0,
-    createdAt: config.createdAt,
-    createdBy: config.createdBy || 'Unknown',
-    updatedAt: config.updatedAt,
-    updatedBy: config.updatedBy || 'Unknown'
-  }
-}
-
-/**
  * Compare two configs and show differences
  * 
  * @param {Object} original - Original config
@@ -253,4 +143,23 @@ export const compareConfigs = (original, updated) => {
   }
 
   return differences
+}
+
+/**
+ * Check if config has changed between original and updated versions
+ * 
+ * @param {Object} original - Original config
+ * @param {Object} updated - Updated config
+ * @returns {boolean} - True if any changes detected, false otherwise
+ */
+export const configHasChanges = (original, updated) => {
+  const differences = compareConfigs(original, updated)
+  
+  const hasSettingChanges = Object.keys(differences.settings).length > 0
+  const hasWorkflowChanges = 
+    differences.workflows.added.length > 0 ||
+    differences.workflows.removed.length > 0 ||
+    differences.workflows.modified.length > 0
+  
+  return hasSettingChanges || hasWorkflowChanges
 }

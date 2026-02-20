@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import PropTypes from 'prop-types'
 import ConfigurationSourceSelector from '../components/ConfigurationSourceSelector'
 import ReviewSettingsSection from '../components/ReviewSettingsSection'
@@ -7,6 +7,7 @@ import WeightValidationCard from '../components/WeightValidationCard'
 import ManualWorkflowCard from '../components/ManualWorkflowCard'
 import styles from '../AiReviewTab.module.scss'
 import ConfirmationModal from '../../../../Modal/ConfirmationModal'
+import { compareConfigs, configHasChanges } from '../../../../../services/aiReviewConfigHelpers'
 
 /**
  * Manual Configuration View - Manually configure AI review settings and workflows
@@ -23,6 +24,7 @@ const ManualConfigurationView = ({
   onRemoveConfig,
   readOnly,
 }) => {
+  const origConfig = useRef(configuration);
   const [showSwitchConfirmModal, setShowSwitchConfirmModal] = useState(false)
   
   const handleConfirmSwitch = useCallback(() => {
@@ -30,12 +32,22 @@ const ManualConfigurationView = ({
     onSwitchMode('template');
   }, [onSwitchMode, onRemoveConfig]);
   
+  const handleOnSwitchConfig = useCallback(() => {
+    if (configHasChanges(origConfig.current, configuration)) {
+      setShowSwitchConfirmModal(true);
+    } else {
+      handleConfirmSwitch();
+    }
+  }, [
+    configuration, setShowSwitchConfirmModal, handleConfirmSwitch
+  ]);
+
   return (
     <div className={styles.manualConfiguration}>
       {/* Configuration Source Selector */}
       <ConfigurationSourceSelector
         mode='manual'
-        onSwitch={() => setShowSwitchConfirmModal(true)}
+        onSwitch={handleOnSwitchConfig}
         readOnly={readOnly}
       />
 

@@ -149,7 +149,7 @@ const TemplateConfigurationView = ({
                       </td>
                       <td className={styles.type}>
                         {workflow.isGating ? (
-                          <span className={styles.gatingBadge}>⚡GATE</span>
+                          <span className={styles.gatingBadge}>⚡ GATE</span>
                         ) : (
                           <span className={styles.normalBadge}>✓ Review</span>
                         )}

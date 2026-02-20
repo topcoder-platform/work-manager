@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback, useEffect } from 'react'
-import { createTemplateManager } from '../../../../../services/aiReviewTemplateHelpers'
+import { useState, useCallback, useEffect } from 'react'
+import { fetchAIReviewTemplates } from '../../../../../services/aiReviewTemplates'
 
 /**
  * Custom hook for managing AI Review templates
@@ -10,8 +10,6 @@ const useTemplateManager = (templateId, challengeTrack, challengeType) => {
   const [selectedTemplate, setSelectedTemplate] = useState()
   const [templatesLoading, setTemplatesLoading] = useState(false)
   const [error, setError] = useState(null)
-
-  const templateManager = useMemo(() => createTemplateManager(true), [])
 
   /**
    * Select a template by ID
@@ -48,7 +46,7 @@ const useTemplateManager = (templateId, challengeTrack, challengeType) => {
     setError(null)
 
     try {
-      const fetchedTemplates = await templateManager.fetchAll({
+      const fetchedTemplates = await fetchAIReviewTemplates({
         challengeTrack,
         challengeType
       })
@@ -60,7 +58,7 @@ const useTemplateManager = (templateId, challengeTrack, challengeType) => {
       setError('Failed to load templates')
       setTemplatesLoading(false)
     }
-  }, [setTemplates, setTemplatesLoading, setError, templateManager, challengeTrack, challengeType])
+  }, [setTemplates, setTemplatesLoading, setError, challengeTrack, challengeType])
 
   useEffect(() => {
     if (challengeTrack && challengeType) {

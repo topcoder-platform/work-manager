@@ -12,7 +12,9 @@ const SummarySection = ({ configuration }) => {
       <div className={styles.summaryGrid}>
         <div className={styles.summaryCard}>
           <h4>Mode</h4>
-          <div className={styles.summaryValue}>{configuration.mode}</div>
+          <div className={styles.summaryValue}>
+            {configuration.mode === 'AI_ONLY' ? 'AI Only Review' : 'AI Gating + Human Review'}
+          </div>
         </div>
         <div className={styles.summaryCard}>
           <h4>Threshold</h4>

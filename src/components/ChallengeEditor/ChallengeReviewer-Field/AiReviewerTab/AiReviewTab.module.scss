@@ -435,6 +435,10 @@
         font-weight: 600;
         color: #333;
         border-bottom: 2px solid #e0e0e0;
+
+        &:last-child {
+          width: 136px;
+        }
       }
     }
 
@@ -463,24 +467,24 @@
           }
 
           &.type {
-            .gatingBadge {
+            > .gatingBadge, .normalBadge {
               display: inline-block;
               padding: 2px 8px;
-              background-color: #fff3cd;
-              border: 1px solid #ffc107;
               border-radius: 3px;
               font-size: 12px;
               font-weight: 500;
+              white-space: nowrap;
+            }
+            
+            .gatingBadge {
+              background-color: #fff3cd;
+              border: 1px solid #ffc107;
               color: #856404;
             }
 
             .normalBadge {
-              display: inline-block;
-              padding: 2px 8px;
               background-color: #d1ecf1;
               border: 1px solid #17a2b8;
-              border-radius: 3px;
-              font-size: 12px;
               font-weight: 500;
               color: #0c5460;
             }
