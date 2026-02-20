@@ -197,7 +197,7 @@ class ChallengeReviewerField extends Component {
                 </button>
               </div>
 
-              {activeTab === 'human' && (
+              <div className={cn(activeTab !== 'human' && styles.hidden)}>
                 <HumanReviewTab
                   challenge={challenge}
                   metadata={metadata}
@@ -209,9 +209,9 @@ class ChallengeReviewerField extends Component {
                   deleteResource={this.props.deleteResource}
                   challengeResources={this.props.challengeResources}
                 />
-              )}
+              </div>
 
-              {activeTab === 'ai' && (
+              <div className={cn(activeTab !== 'ai' && styles.hidden)}>
                 <AiReviewTab
                   challenge={challenge}
                   metadata={metadata}
@@ -219,7 +219,7 @@ class ChallengeReviewerField extends Component {
                   readOnly={readOnly}
                   onUpdateReviewers={(update) => this.props.onUpdateReviewers(update)}
                 />
-              )}
+              </div>
             </div>
             {error && !isLoading && (
               <div className={cn(styles.fieldError, styles.error)}>

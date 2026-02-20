@@ -7,7 +7,7 @@ import WeightValidationCard from '../components/WeightValidationCard'
 import ManualWorkflowCard from '../components/ManualWorkflowCard'
 import styles from '../AiReviewTab.module.scss'
 import ConfirmationModal from '../../../../Modal/ConfirmationModal'
-import { compareConfigs, configHasChanges } from '../../../../../services/aiReviewConfigHelpers'
+import { configHasChanges } from '../../../../../services/aiReviewConfigHelpers'
 
 /**
  * Manual Configuration View - Manually configure AI review settings and workflows
