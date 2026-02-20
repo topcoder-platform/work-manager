@@ -2,6 +2,7 @@ import cn from 'classnames'
 import React, { useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { isAIReviewer } from './utils';
+import { deleteAIReviewConfig } from '../../../../services/aiReviewConfigs'
 import styles from './AiReviewTab.module.scss'
 import sharedStyles from '../shared.module.scss'
 import useConfigurationState from './hooks/useConfigurationState';
@@ -24,7 +25,9 @@ const AiReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
     updateWorkflow,
     removeWorkflow,
     resetConfiguration,
-    applyTemplate
+    applyTemplate,
+    isSaving,
+    configId
   } = useConfigurationState(challenge.id)
 
   const aiReviewers = useMemo(() => (
@@ -44,9 +47,15 @@ const AiReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
   }, [challenge.reviewers, onUpdateReviewers])
 
   const handleRemoveConfiguration = useCallback(() => {
+    // Call delete API if config exists
+    if (configId) {
+      deleteAIReviewConfig(configId).catch(err => {
+        console.error('Error deleting AI review configuration:', err)
+      })
+    }
     setConfigurationMode(null)
     resetConfiguration()
-  }, [setConfigurationMode, resetConfiguration])
+  }, [setConfigurationMode, resetConfiguration, configId])
 
   const handleSwitchConfigurationMode = useCallback((mode, template) => {
     if (mode === 'manual') {
@@ -64,10 +73,24 @@ const AiReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
     return <div className={styles.loading}>Loading...</div>
   }
 
-  // Show template configuration if in template mode
-  if (configurationMode === 'template') {
-    return (
-      <div className={sharedStyles.tabContent}>
+  return (
+    <div className={sharedStyles.tabContent}>
+      {isSaving && <div className={styles.autoSaveIndicator}>💾 Saving...</div>}
+
+      {/* initial state (no configuration mode was selected: template/manual) */}
+      {configurationMode === null && (
+        <InitialStateView
+          aiReviewers={aiReviewers}
+          metadata={metadata}
+          onSelectTemplate={() => setConfigurationMode('template')}
+          onSelectManual={() => setConfigurationMode('manual')}
+          onRemoveReviewer={removeAIReviewer}
+          readOnly={readOnly}
+        />
+      )}
+
+      {/* Show template configuration if in template mode */}
+      {configurationMode === 'template' && (
         <TemplateConfigurationView
           challenge={challenge}
           configuration={configuration}
@@ -78,14 +101,10 @@ const AiReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
           readOnly={readOnly}
           availableWorkflows={metadata.workflows || []}
         />
-      </div>
-    )
-  }
+      )}
 
-  // Show manual configuration if in manual mode
-  if (configurationMode === 'manual') {
-    return (
-      <div className={sharedStyles.tabContent}>
+      {/* Show manual configuration if in manual mode */}
+      {configurationMode === 'manual' && (
         <ManualConfigurationView
           challenge={challenge}
           configuration={configuration}
@@ -98,23 +117,9 @@ const AiReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
           onRemoveConfig={handleRemoveConfiguration}
           readOnly={readOnly}
         />
-      </div>
-    )
-  }
-
-  // initial state (no configuration mode was selected: template/manual)
-  return (
-    <div className={sharedStyles.tabContent}>
-      <InitialStateView
-        aiReviewers={aiReviewers}
-        metadata={metadata}
-        onSelectTemplate={() => setConfigurationMode('template')}
-        onSelectManual={() => setConfigurationMode('manual')}
-        onRemoveReviewer={removeAIReviewer}
-        readOnly={readOnly}
-      />
+      )}
     </div>
-  )
+  );
 }
 
 AiReviewTab.propTypes = {

@@ -1,5 +1,7 @@
-import { useState, useCallback, useEffect } from 'react'
-import { fetchAIReviewConfigByChallenge } from '../../../../../services/aiReviewConfigs';
+import { useState, useCallback, useEffect, useRef } from 'react'
+import { fetchAIReviewConfigByChallenge, createAIReviewConfig, updateAIReviewConfig, deleteAIReviewConfig } from '../../../../../services/aiReviewConfigs';
+import { validateConfigData, configHasChanges } from '../../../../../services/aiReviewConfigHelpers';
+import { toastFailure } from '../../../../../util/toaster';
 
 /**
  * Custom hook for managing AI Review configuration state
@@ -17,6 +19,10 @@ const useConfigurationState = (
   const [isLoading, setIsLoading] = useState(true);
   const [configuration, setConfiguration] = useState(initialConfig)
   const [configurationMode, setConfigurationMode] = useState(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const lastSavedConfigRef = useRef(initialConfig)
+  const saveTimeoutRef = useRef(null)
+  const configId = configuration?.id;
 
   /**
    * Update a single field in the configuration
@@ -97,7 +103,8 @@ const useConfigurationState = (
       mode: template.mode || 'AI_GATING',
       minPassingThreshold: template.minPassingThreshold || 75,
       autoFinalize: template.autoFinalize || false,
-      workflows: template.workflows || []
+      workflows: template.workflows || [],
+      templateId: template.id,
     }
 
     setConfiguration(newConfiguration)
@@ -114,7 +121,8 @@ const useConfigurationState = (
           if (config) {
             // Load the config into the configuration state
             setConfigurationMode(config.templateId ? 'template' : 'manual')
-            resetConfiguration(config)
+            setConfiguration(config)
+            lastSavedConfigRef.current = config
           }
         }
       } catch (err) {
@@ -127,6 +135,78 @@ const useConfigurationState = (
     loadAIReviewConfig()
   }, [challengeId, updateConfiguration])
 
+  /**
+   * Autosave configuration changes with debouncing
+   */
+  useEffect(() => {
+    // Only autosave if configuration mode is set (meaning user has started configuring)
+    if (!configurationMode || !challengeId) {
+      return
+    }
+
+    // Clear any pending save
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current)
+    }
+
+    // Check if there are changes
+    if (!configHasChanges(lastSavedConfigRef.current, configuration)) {
+      return
+    }
+
+    // Debounce save by 1.5 seconds
+    saveTimeoutRef.current = setTimeout(async () => {
+      setIsSaving(true)
+
+      try {
+        // Prepare config data for saving
+        const configData = {
+          challengeId,
+          mode: configuration.mode,
+          minPassingThreshold: configuration.minPassingThreshold,
+          autoFinalize: configuration.autoFinalize,
+          workflows: configuration.workflows,
+          templateId: configuration.templateId
+        }
+
+        // Validate before saving
+        const validation = validateConfigData(configData)
+        if (!validation.isValid) {
+          console.warn('Configuration validation warnings:', validation.errors)
+          // Don't save - let user continue editing
+          return;
+        }
+
+        let savedConfig
+        if (!configId) {
+          // Create new config
+          savedConfig = await createAIReviewConfig(configData)
+          updateConfiguration('id', savedConfig.id)
+        } else {
+          // Update existing config
+          await updateAIReviewConfig(configId, configData)
+          savedConfig = configData
+        }
+
+        // Update the last saved config reference
+        lastSavedConfigRef.current = savedConfig
+      } catch (error) {
+        console.error('Error autosaving AI review configuration:', error)
+        toastFailure(`⚠️ Autosave error: ${error.message}`)
+        // Don't re-throw - let component continue functioning
+      } finally {
+        setIsSaving(false)
+      }
+    }, 1500)
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current)
+      }
+    }
+  }, [configuration, configurationMode, challengeId, configId])
+
   return {
     isLoading,
     configuration,
@@ -137,7 +217,9 @@ const useConfigurationState = (
     updateWorkflow,
     removeWorkflow,
     resetConfiguration,
-    applyTemplate
+    applyTemplate,
+    isSaving,
+    configId
   }
 }
 
