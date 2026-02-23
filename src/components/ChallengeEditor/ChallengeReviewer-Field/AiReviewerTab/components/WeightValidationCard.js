@@ -9,13 +9,10 @@ import styles from '../AiReviewTab.module.scss'
 const WeightValidationCard = ({ workflows }) => {
   const scoringWorkflows = workflows.filter(workflow => !workflow.isGating)
   const gatingWorkflows = workflows.filter(workflow => workflow.isGating)
-  const scoringTotal = scoringWorkflows.reduce((sum, workflow) => sum + (Number(workflow.weightPercent) || 0), 0)
-  const hasScoringWorkflows = scoringWorkflows.length > 0
-  const isWeightValid = !hasScoringWorkflows || Math.abs(scoringTotal - 100) < 0.01
-  const remainingWeight = Math.round((100 - scoringTotal) * 100) / 100
-  const scoringSummary = hasScoringWorkflows
-    ? `${scoringWorkflows.map(workflow => `${Number(workflow.weightPercent) || 0}%`).join(' + ')} = ${scoringTotal}%`
-    : 'no scoring workflows'
+  const weightsTotal = workflows.reduce((sum, workflow) => sum + (Number(workflow.weightPercent) || 0), 0)
+  const isWeightValid = Math.abs(weightsTotal - 100) < 0.01
+  const remainingWeight = Math.round((100 - weightsTotal) * 100) / 100
+  const scoringSummary = `${scoringWorkflows.map(workflow => `${Number(workflow.weightPercent) || 0}%`).join(' + ')} = ${weightsTotal}%`
 
   return (
     <div className={styles.weightValidationSection}>
@@ -24,7 +21,7 @@ const WeightValidationCard = ({ workflows }) => {
         <div>
           Scoring workflows weight total: {scoringSummary} {isWeightValid ? 'OK' : 'Invalid'}
         </div>
-        {!isWeightValid && hasScoringWorkflows && (
+        {!isWeightValid && (
           <div className={styles.validationMessage}>
             Scoring workflow weights must total 100%. {remainingWeight > 0
               ? `Remaining: ${remainingWeight}% unassigned.`

@@ -60,14 +60,14 @@ const ManualWorkflowCard = ({
               type='number'
               min='0'
               max='100'
-              value={workflow.isGating ? '' : (workflow.weightPercent || 0)}
-              placeholder={workflow.isGating ? 'N/A (gating)' : '0'}
+              value={workflow.weightPercent || 0}
+              placeholder="0"
               onChange={(e) => onUpdate(
                 index,
                 'weightPercent',
                 parseInt(e.target.value, 10) || 0
               )}
-              disabled={readOnly || workflow.isGating}
+              disabled={readOnly}
               className={styles.weightInput}
             />
             <div className={styles.fieldHint}>Weight for scoring. Ignored if gating.</div>
