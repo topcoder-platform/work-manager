@@ -63,7 +63,7 @@ export async function fetchAIReviewConfigByChallenge (challengeId) {
     if (error.response && error.response.status === 404) {
       return null
     }
-    console.error(`Error fetching AI review config for challenge ${challengeId}:`, error.message)
+    console.error(`Error fetching AI review config for challenge %s:`, challengeId, error.message)
     throw error
   }
 }
