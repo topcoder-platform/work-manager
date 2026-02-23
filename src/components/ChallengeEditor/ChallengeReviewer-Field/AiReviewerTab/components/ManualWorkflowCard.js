@@ -70,7 +70,7 @@ const ManualWorkflowCard = ({
               disabled={readOnly}
               className={styles.weightInput}
             />
-            <div className={styles.fieldHint}>Weight for scoring. Ignored if gating.</div>
+            <div className={styles.fieldHint}>Weight for scoring.</div>
           </div>
 
           <div className={styles.manualWorkflowField}>
@@ -85,7 +85,13 @@ const ManualWorkflowCard = ({
               <span>{workflow.isGating ? 'Yes' : 'No'}</span>
             </label>
             <div className={styles.fieldHint}>
-              {workflow.isGating ? '⚡ Pass/fail gate.' : 'Submissions below threshold are locked.'}
+              {workflow.isGating && (
+                <>
+                  ⚡ Pass/fail gate.
+                  <br />
+                </>
+              )}
+              Submissions below threshold are locked.
             </div>
           </div>
         </div>

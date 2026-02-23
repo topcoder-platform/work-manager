@@ -6,6 +6,7 @@ import { loadScorecards, loadDefaultReviewers, loadWorkflows, replaceResourceInR
 import styles from './ChallengeReviewer-Field.module.scss'
 import HumanReviewTab from './HumanReviewTab'
 import { AiReviewTab } from './AiReviewerTab'
+import ReviewSummary from './ReviewSummary'
 
 // Keep track filters aligned with the scorecards API regardless of legacy values
 const SCORECARD_TRACK_ALIASES = {
@@ -176,6 +177,7 @@ class ChallengeReviewerField extends Component {
 
     return (
       <>
+        {!readOnly && (
         <div className={styles.row}>
           <div className={cn(styles.field, styles.col1)}>
             <label>Review Configuration :</label>
@@ -228,6 +230,19 @@ class ChallengeReviewerField extends Component {
             )}
           </div>
         </div>
+        )}
+
+        {/* Review Summary Section */}
+        {readOnly && (challenge.reviewers && challenge.reviewers.length > 0) && (
+          <div className={styles.row}>
+            <div className={cn(styles.field, styles.full)}>
+              <ReviewSummary
+                challenge={challenge}
+                metadata={metadata}
+              />
+            </div>
+          </div>
+        )}
       </>
     )
   }

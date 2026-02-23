@@ -56,17 +56,10 @@ const useConfigurationState = (
           return workflow
         }
 
-        const nextWorkflow = {
+        return {
           ...workflow,
           [field]: value
-        }
-
-        // Reset weight if workflow becomes gating
-        if (field === 'isGating' && value) {
-          nextWorkflow.weightPercent = 0
-        }
-
-        return nextWorkflow
+        };
       })
 
       return {
