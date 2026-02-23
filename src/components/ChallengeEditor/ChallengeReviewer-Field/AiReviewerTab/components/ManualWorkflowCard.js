@@ -15,7 +15,7 @@ const ManualWorkflowCard = ({
   challenge,
   onUpdate,
   onRemove,
-  readOnly,
+  readOnly
 }) => {
   const isAssigned = (challenge.reviewers || []).some(r =>
     isAIReviewer(r) && r.aiWorkflowId === workflow.workflowId
@@ -61,7 +61,7 @@ const ManualWorkflowCard = ({
               min='0'
               max='100'
               value={workflow.weightPercent || 0}
-              placeholder="0"
+              placeholder='0'
               onChange={(e) => onUpdate(
                 index,
                 'weightPercent',
@@ -124,7 +124,7 @@ ManualWorkflowCard.propTypes = {
   challenge: PropTypes.object.isRequired,
   onUpdate: PropTypes.func.isRequired,
   onRemove: PropTypes.func.isRequired,
-  readOnly: PropTypes.bool,
+  readOnly: PropTypes.bool
 }
 
 ManualWorkflowCard.defaultProps = {

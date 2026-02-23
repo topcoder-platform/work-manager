@@ -38,8 +38,8 @@ const useTemplateManager = (templateId, challengeTrack, challengeType) => {
   }, [setTemplates, setSelectedTemplate, setTemplatesLoading, setError])
 
   useEffect(() => {
-    selectTemplate(templateId);
-  }, [selectTemplate, templateId]);
+    selectTemplate(templateId)
+  }, [selectTemplate, templateId])
 
   const loadTemplates = useCallback(async () => {
     setTemplatesLoading(true)
@@ -62,9 +62,9 @@ const useTemplateManager = (templateId, challengeTrack, challengeType) => {
 
   useEffect(() => {
     if (challengeTrack && challengeType) {
-      loadTemplates();
+      loadTemplates()
     }
-  }, [loadTemplates, challengeTrack, challengeType]);
+  }, [loadTemplates, challengeTrack, challengeType])
 
   return {
     templates,

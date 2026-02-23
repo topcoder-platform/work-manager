@@ -19,7 +19,7 @@ const TemplateConfigurationView = ({
   onSwitchMode,
   onRemoveConfig,
   readOnly,
-  availableWorkflows: workflows,
+  availableWorkflows: workflows
 }) => {
   const {
     templates,
@@ -31,7 +31,7 @@ const TemplateConfigurationView = ({
   } = useTemplateManager(
     configuration.templateId,
     challenge.track.name,
-    challenge.type.name,
+    challenge.type.name
   )
   const [showSwitchToManualConfirm, setShowSwitchToManualConfirm] = useState(false)
 
@@ -41,27 +41,27 @@ const TemplateConfigurationView = ({
     if (template) {
       onTemplateChange(template)
     }
-  }, [selectTemplate, onTemplateChange]);
+  }, [selectTemplate, onTemplateChange])
 
   const handleRemoveConfig = useCallback(() => {
     clearSelection()
     onRemoveConfig()
-  }, [onRemoveConfig, clearSelection]);
-  
+  }, [onRemoveConfig, clearSelection])
+
   const handleConfirmSwitch = useCallback(() => {
-    clearSelection();
-    onSwitchMode('manual', selectedTemplate);
-  }, [onSwitchMode, selectedTemplate]);
+    clearSelection()
+    onSwitchMode('manual', selectedTemplate)
+  }, [onSwitchMode, selectedTemplate])
 
   const handleOnSwitchConfig = useCallback(() => {
-    if (selectedTemplate?.id) {
-      setShowSwitchToManualConfirm(true);
+    if (selectedTemplate && selectedTemplate.id) {
+      setShowSwitchToManualConfirm(true)
     } else {
-      handleConfirmSwitch();
+      handleConfirmSwitch()
     }
   }, [
     selectedTemplate, setShowSwitchToManualConfirm, handleConfirmSwitch
-  ]);
+  ])
 
   if (templateError) {
     return (
@@ -86,7 +86,7 @@ const TemplateConfigurationView = ({
 
         <div className={styles.templateSelector}>
           <select
-            value={selectedTemplate?.id || ''}
+            value={(selectedTemplate && selectedTemplate.id) || ''}
             onChange={handleTemplateChange}
             disabled={readOnly || templatesLoading}
             className={styles.templateDropdown}
@@ -177,11 +177,11 @@ TemplateConfigurationView.propTypes = {
   onSwitchMode: PropTypes.func.isRequired,
   onRemoveConfig: PropTypes.func.isRequired,
   readOnly: PropTypes.bool,
-  availableWorkflows: PropTypes.array.isRequired,
+  availableWorkflows: PropTypes.array.isRequired
 }
 
 TemplateConfigurationView.defaultProps = {
-  readOnly: false,
+  readOnly: false
 }
 
 export default TemplateConfigurationView

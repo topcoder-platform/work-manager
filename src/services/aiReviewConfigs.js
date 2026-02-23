@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import { axiosInstance } from './axiosWithAuth'
-import { TC_REVIEWS_API_BASE_URL } from '../config/constants'
+import { API_V6 } from '../config/constants'
 
 /**
  * Create a new AI review config for a challenge
@@ -33,7 +33,7 @@ export async function createAIReviewConfig (configData) {
     }
 
     const response = await axiosInstance.post(
-      `${TC_REVIEWS_API_BASE_URL}/ai-review/configs`,
+      `${API_V6}/ai-review/configs`,
       configData
     )
     return _.get(response, 'data', {})
@@ -55,7 +55,7 @@ export async function fetchAIReviewConfigByChallenge (challengeId) {
     }
 
     const response = await axiosInstance.get(
-      `${TC_REVIEWS_API_BASE_URL}/ai-review/configs/${challengeId}`
+      `${API_V6}/ai-review/configs/${challengeId}`
     )
     return _.get(response, 'data', null)
   } catch (error) {
@@ -89,7 +89,7 @@ export async function updateAIReviewConfig (configId, configData) {
     }
 
     const response = await axiosInstance.put(
-      `${TC_REVIEWS_API_BASE_URL}/ai-review/configs/${configId}`,
+      `${API_V6}/ai-review/configs/${configId}`,
       configData
     )
     return _.get(response, 'data', {})
@@ -111,7 +111,7 @@ export async function deleteAIReviewConfig (configId) {
     }
 
     await axiosInstance.delete(
-      `${TC_REVIEWS_API_BASE_URL}/ai-review/configs/${configId}`
+      `${API_V6}/ai-review/configs/${configId}`
     )
   } catch (error) {
     console.error(`Error deleting AI review config ${configId}:`, error.message)

@@ -13,7 +13,7 @@ const InitialStateView = ({
   onRemoveReviewer,
   readOnly,
   metadata,
-  aiReviewers,
+  aiReviewers
 }) => {
   const { workflows = [] } = metadata
   const assignedWorkflows = useMemo(() => aiReviewers.map(reviewer => {
@@ -85,7 +85,7 @@ const InitialStateView = ({
 
 InitialStateView.propTypes = {
   metadata: PropTypes.shape({
-    workflows: PropTypes.array,
+    workflows: PropTypes.array
   }),
   aiReviewers: PropTypes.array,
   onSelectTemplate: PropTypes.func.isRequired,
@@ -97,7 +97,7 @@ InitialStateView.propTypes = {
 InitialStateView.defaultProps = {
   readOnly: false,
   metadata: {},
-  aiReviewers: [],
+  aiReviewers: []
 }
 
 export default InitialStateView

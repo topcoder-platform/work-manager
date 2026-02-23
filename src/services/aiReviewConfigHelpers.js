@@ -1,39 +1,12 @@
 /**
  * AI Review Config Integration Utilities
- * 
+ *
  * Helper functions for managing AI review configs in React components.
  */
 
 /**
- * Hook-like function to manage AI review configs
- */
-export const createConfigManager = (useDevConfig = false) => {
-  const service = useDevConfig 
-    ? require('./mocks/aiReviewConfigs.mock')
-    : require('./aiReviewConfigs')
-
-  return {
-    create: (data) => service.mockCreateAIReviewConfig
-      ? service.mockCreateAIReviewConfig(data)
-      : service.createAIReviewConfig(data),
-      
-    fetchByChallenge: (challengeId) => service.mockFetchAIReviewConfigByChallenge
-      ? service.mockFetchAIReviewConfigByChallenge(challengeId)
-      : service.fetchAIReviewConfigByChallenge(challengeId),
-      
-    update: (id, data) => service.mockUpdateAIReviewConfig
-      ? service.mockUpdateAIReviewConfig(id, data)
-      : service.updateAIReviewConfig(id, data),
-      
-    delete: (id) => service.mockDeleteAIReviewConfig
-      ? service.mockDeleteAIReviewConfig(id)
-      : service.deleteAIReviewConfig(id)
-  }
-}
-
-/**
  * Validate config data before submission
- * 
+ *
  * @param {Object} configData - The config data to validate
  * @returns {Object} - { isValid: boolean, errors: Array<string> }
  */
@@ -91,7 +64,7 @@ export const validateConfigData = (configData) => {
 
 /**
  * Compare two configs and show differences
- * 
+ *
  * @param {Object} original - Original config
  * @param {Object} updated - Updated config
  * @returns {Object} - Differences found
@@ -128,7 +101,7 @@ export const compareConfigs = (original, updated) => {
       if (!origW) {
         differences.workflows.added.push(w)
       } else if (
-        origW.weightPercent !== w.weightPercent || 
+        origW.weightPercent !== w.weightPercent ||
         origW.isGating !== w.isGating
       ) {
         differences.workflows.modified.push({
@@ -147,19 +120,19 @@ export const compareConfigs = (original, updated) => {
 
 /**
  * Check if config has changed between original and updated versions
- * 
+ *
  * @param {Object} original - Original config
  * @param {Object} updated - Updated config
  * @returns {boolean} - True if any changes detected, false otherwise
  */
 export const configHasChanges = (original, updated) => {
   const differences = compareConfigs(original, updated)
-  
+
   const hasSettingChanges = Object.keys(differences.settings).length > 0
-  const hasWorkflowChanges = 
+  const hasWorkflowChanges =
     differences.workflows.added.length > 0 ||
     differences.workflows.removed.length > 0 ||
     differences.workflows.modified.length > 0
-  
+
   return hasSettingChanges || hasWorkflowChanges
 }

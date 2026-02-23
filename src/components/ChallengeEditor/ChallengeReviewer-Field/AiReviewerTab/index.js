@@ -1,1 +1,1 @@
-export { default as AiReviewTab } from './AiReviewTab';
+export { default as AiReviewTab } from './AiReviewTab'

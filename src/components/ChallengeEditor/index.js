@@ -1380,7 +1380,7 @@ class ChallengeEditor extends Component {
     try {
       // Fetch the AI review config for this challenge
       const aiConfig = await fetchAIReviewConfigByChallenge(challengeId)
-      
+
       if (!aiConfig || !aiConfig.workflows || aiConfig.workflows.length === 0) {
         // No AI config or workflows, nothing to sync
         return
@@ -1388,13 +1388,13 @@ class ChallengeEditor extends Component {
 
       // Get current reviewers from state
       const currentReviewers = this.state.challenge.reviewers || []
-      
+
       // Separate AI reviewers from human reviewers
       const humanReviewers = currentReviewers.filter(r => {
         const isAI = (r.aiWorkflowId && r.aiWorkflowId.trim() !== '') || r.isMemberReview === false
         return !isAI
       })
-      
+
       // Create reviewer entries for each workflow in the config
       const aiReviewers = aiConfig.workflows.map(workflow => ({
         aiWorkflowId: workflow.workflowId,
@@ -1403,10 +1403,10 @@ class ChallengeEditor extends Component {
         shouldOpenOpportunity: false,
         isMemberReview: false
       }))
-      
+
       // Combine human reviewers with synced AI reviewers
       const syncedReviewers = [...humanReviewers, ...aiReviewers]
-      
+
       // Update state with synced reviewers
       await new Promise(resolve => {
         this.setState(prevState => ({
@@ -1416,7 +1416,7 @@ class ChallengeEditor extends Component {
           }
         }), resolve)
       })
-      
+
       console.log('Synced AI review config workflows to reviewers:', aiReviewers.length)
     } catch (error) {
       // Log error but don't fail the save operation
@@ -1431,7 +1431,7 @@ class ChallengeEditor extends Component {
       // Sync AI review config workflows to reviewers before collecting challenge data
       const challengeId = this.getCurrentChallengeId()
       await this.syncAIReviewConfigToReviewers(challengeId)
-      
+
       let challenge = this.collectChallengeData(status)
       let newChallenge = _.cloneDeep(this.state.challenge)
       newChallenge.status = status

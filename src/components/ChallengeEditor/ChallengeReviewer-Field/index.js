@@ -178,58 +178,58 @@ class ChallengeReviewerField extends Component {
     return (
       <>
         {!readOnly && (
-        <div className={styles.row}>
-          <div className={cn(styles.field, styles.col1)}>
-            <label>Review Configuration :</label>
-          </div>
-          <div className={cn(styles.field, styles.col2)}>
-            <div className={styles.tabsContainer}>
-              <div className={styles.tabsHeader}>
-                <button
-                  className={cn(styles.tabButton, { [styles.active]: activeTab === 'human' })}
-                  onClick={() => this.setState({ activeTab: 'human' })}
-                >
-                  👥 Human Review ({humanReviewersCount})
-                </button>
-                <button
-                  className={cn(styles.tabButton, { [styles.active]: activeTab === 'ai' })}
-                  onClick={() => this.setState({ activeTab: 'ai' })}
-                >
-                  🤖 AI Review ({aiReviewersCount})
-                </button>
-              </div>
-
-              <div className={cn(activeTab !== 'human' && styles.hidden)}>
-                <HumanReviewTab
-                  challenge={challenge}
-                  metadata={metadata}
-                  isLoading={isLoading}
-                  readOnly={readOnly}
-                  onUpdateReviewers={(update) => this.props.onUpdateReviewers(update)}
-                  replaceResourceInRole={this.props.replaceResourceInRole}
-                  createResource={this.props.createResource}
-                  deleteResource={this.props.deleteResource}
-                  challengeResources={this.props.challengeResources}
-                />
-              </div>
-
-              <div className={cn(activeTab !== 'ai' && styles.hidden)}>
-                <AiReviewTab
-                  challenge={challenge}
-                  metadata={metadata}
-                  isLoading={isLoading}
-                  readOnly={readOnly}
-                  onUpdateReviewers={(update) => this.props.onUpdateReviewers(update)}
-                />
-              </div>
+          <div className={styles.row}>
+            <div className={cn(styles.field, styles.col1)}>
+              <label>Review Configuration :</label>
             </div>
-            {error && !isLoading && (
-              <div className={cn(styles.fieldError, styles.error)}>
-                {error}
+            <div className={cn(styles.field, styles.col2)}>
+              <div className={styles.tabsContainer}>
+                <div className={styles.tabsHeader}>
+                  <button
+                    className={cn(styles.tabButton, { [styles.active]: activeTab === 'human' })}
+                    onClick={() => this.setState({ activeTab: 'human' })}
+                  >
+                  👥 Human Review ({humanReviewersCount})
+                  </button>
+                  <button
+                    className={cn(styles.tabButton, { [styles.active]: activeTab === 'ai' })}
+                    onClick={() => this.setState({ activeTab: 'ai' })}
+                  >
+                  🤖 AI Review ({aiReviewersCount})
+                  </button>
+                </div>
+
+                <div className={cn(activeTab !== 'human' && styles.hidden)}>
+                  <HumanReviewTab
+                    challenge={challenge}
+                    metadata={metadata}
+                    isLoading={isLoading}
+                    readOnly={readOnly}
+                    onUpdateReviewers={(update) => this.props.onUpdateReviewers(update)}
+                    replaceResourceInRole={this.props.replaceResourceInRole}
+                    createResource={this.props.createResource}
+                    deleteResource={this.props.deleteResource}
+                    challengeResources={this.props.challengeResources}
+                  />
+                </div>
+
+                <div className={cn(activeTab !== 'ai' && styles.hidden)}>
+                  <AiReviewTab
+                    challenge={challenge}
+                    metadata={metadata}
+                    isLoading={isLoading}
+                    readOnly={readOnly}
+                    onUpdateReviewers={(update) => this.props.onUpdateReviewers(update)}
+                  />
+                </div>
               </div>
-            )}
+              {error && !isLoading && (
+                <div className={cn(styles.fieldError, styles.error)}>
+                  {error}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
         )}
 
         {/* Review Summary Section */}

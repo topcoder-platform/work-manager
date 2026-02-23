@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { fetchAIReviewConfigByChallenge, createAIReviewConfig, updateAIReviewConfig, deleteAIReviewConfig } from '../../../../../services/aiReviewConfigs';
-import { validateConfigData, configHasChanges } from '../../../../../services/aiReviewConfigHelpers';
-import { toastFailure } from '../../../../../util/toaster';
+import { fetchAIReviewConfigByChallenge, createAIReviewConfig, updateAIReviewConfig } from '../../../../../services/aiReviewConfigs'
+import { validateConfigData, configHasChanges } from '../../../../../services/aiReviewConfigHelpers'
+import { toastFailure } from '../../../../../util/toaster'
 
 /**
  * Custom hook for managing AI Review configuration state
@@ -14,15 +14,15 @@ const useConfigurationState = (
     minPassingThreshold: 75,
     autoFinalize: false,
     workflows: []
-  },
+  }
 ) => {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true)
   const [configuration, setConfiguration] = useState(initialConfig)
   const [configurationMode, setConfigurationMode] = useState(null)
   const [isSaving, setIsSaving] = useState(false)
   const lastSavedConfigRef = useRef(initialConfig)
   const saveTimeoutRef = useRef(null)
-  const configId = configuration?.id;
+  const configId = configuration && configuration.id
 
   /**
    * Update a single field in the configuration
@@ -59,7 +59,7 @@ const useConfigurationState = (
         return {
           ...workflow,
           [field]: value
-        };
+        }
       })
 
       return {
@@ -98,17 +98,16 @@ const useConfigurationState = (
       minPassingThreshold: template.minPassingThreshold || 75,
       autoFinalize: template.autoFinalize || false,
       workflows: template.workflows || [],
-      templateId: template.id || '',
+      templateId: template.id || ''
     }
 
     setConfiguration(newConfiguration)
   }, [setConfiguration, configId])
 
-
   // Fetch AI review config when component loads
   useEffect(() => {
     const loadAIReviewConfig = async () => {
-      setIsLoading(true);
+      setIsLoading(true)
       try {
         if (challengeId) {
           const config = await fetchAIReviewConfigByChallenge(challengeId)
@@ -122,7 +121,7 @@ const useConfigurationState = (
       } catch (err) {
         console.error('Error loading AI review configuration:', err)
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
     }
 
@@ -168,7 +167,7 @@ const useConfigurationState = (
         if (!validation.isValid) {
           console.warn('Configuration validation warnings:', validation.errors)
           // Don't save - let user continue editing
-          return;
+          return
         }
 
         let savedConfig

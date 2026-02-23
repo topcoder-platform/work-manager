@@ -12,7 +12,7 @@ const ReviewSummary = ({
   readOnly = false
 }) => {
   const [aiConfiguration, setAiConfiguration] = useState(null)
-  const [isLoadingAIConfig, setIsLoadingAIConfig] = useState(false)
+  const [, setIsLoadingAIConfig] = useState(false)
 
   useEffect(() => {
     if (challenge && challenge.id) {
@@ -27,7 +27,7 @@ const ReviewSummary = ({
           setIsLoadingAIConfig(false)
         })
     }
-  }, [challenge?.id])
+  }, [challenge && challenge.id])
 
   if (!challenge) return null
 
@@ -43,8 +43,10 @@ const ReviewSummary = ({
       .reduce((sum, r) => {
         const memberCount = parseInt(r.memberReviewerCount) || 1
         const baseAmount = parseFloat(r.fixedAmount) || 0
-        const prizeAmount = challenge.prizeSets && challenge.prizeSets[0]
-          ? parseFloat(challenge.prizeSets[0].prizes?.[0]?.value) || 0
+        const prizeSet = challenge.prizeSets && challenge.prizeSets[0]
+        const prizeValue = prizeSet && prizeSet.prizes && prizeSet.prizes[0] && prizeSet.prizes[0].value
+        const prizeAmount = prizeSet
+          ? parseFloat(prizeValue) || 0
           : 0
 
         const estimatedSubmissions = 2
@@ -76,14 +78,14 @@ const ReviewSummary = ({
   }
 
   // Check if AI review is configured
-  const hasAIConfiguration = aiConfiguration && (aiConfiguration.workflows?.length > 0)
+  const hasAIConfiguration = aiConfiguration && aiConfiguration.workflows && (aiConfiguration.workflows.length > 0)
 
   // Check if AI mode is gating or only
   const isAIOnlyMode = aiConfiguration && aiConfiguration.mode === 'AI_ONLY'
   const isAIGatingMode = aiConfiguration && aiConfiguration.mode === 'AI_GATING'
 
   // Check if AI is gating reviewer (has gating workflows)
-  const isAIGating = aiConfiguration && aiConfiguration.workflows?.some(w => w.isGating)
+  const isAIGating = aiConfiguration && aiConfiguration.workflows && aiConfiguration.workflows.some(w => w.isGating)
 
   const reviewCost = calculateReviewCost()
 

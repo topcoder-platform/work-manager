@@ -1,14 +1,14 @@
 import React, { useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
-import { isAIReviewer } from './utils';
+import { isAIReviewer } from './utils'
 import { deleteAIReviewConfig } from '../../../../services/aiReviewConfigs'
 import styles from './AiReviewTab.module.scss'
 import sharedStyles from '../shared.module.scss'
-import useConfigurationState from './hooks/useConfigurationState';
-import InitialStateView from './views/InitialStateView';
-import TemplateConfigurationView from './views/TemplateConfigurationView';
-import ManualConfigurationView from './views/ManualConfigurationView';
-import { pick } from 'lodash';
+import useConfigurationState from './hooks/useConfigurationState'
+import InitialStateView from './views/InitialStateView'
+import TemplateConfigurationView from './views/TemplateConfigurationView'
+import ManualConfigurationView from './views/ManualConfigurationView'
+import { pick } from 'lodash'
 
 /**
  * AiReviewTab - Main component for managing AI review configuration
@@ -32,14 +32,14 @@ const AiReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
 
   const aiReviewers = useMemo(() => (
     (challenge.reviewers || []).filter(isAIReviewer)
-  ), [challenge.reviewers]);
+  ), [challenge.reviewers])
 
   const removeAIReviewer = useCallback((index) => {
     const allChallengeReviewers = challenge.reviewers || []
     // Map the AI reviewer index to the actual index in the full reviewers array
     const reviewerToRemove = aiReviewers[index]
     const actualIndex = allChallengeReviewers.indexOf(reviewerToRemove)
-    
+
     if (actualIndex !== -1) {
       const updatedReviewers = allChallengeReviewers.filter((_, i) => i !== actualIndex)
       onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
@@ -65,15 +65,15 @@ const AiReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
           'minPassingThreshold',
           'autoFinalize',
           'formula',
-          'workflows',
-        ]));
+          'workflows'
+        ]))
       }
     } else {
       resetConfiguration()
     }
-    setConfigurationMode(mode);
-  }, [setConfigurationMode, applyTemplate, resetConfiguration]);
-  
+    setConfigurationMode(mode)
+  }, [setConfigurationMode, applyTemplate, resetConfiguration])
+
   if (isLoading || isLoadingConfigs) {
     return <div className={styles.loading}>Loading...</div>
   }
@@ -124,7 +124,7 @@ const AiReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
         />
       )}
     </div>
-  );
+  )
 }
 
 AiReviewTab.propTypes = {

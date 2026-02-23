@@ -1,12 +1,11 @@
 import React, { Component } from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
-import { PrimaryButton, OutlineButton } from '../../Buttons'
-import { REVIEW_OPPORTUNITY_TYPE_LABELS, REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE } from '../../../config/constants'
+import { OutlineButton } from '../../Buttons'
+import { REVIEW_OPPORTUNITY_TYPE_LABELS, REVIEW_OPPORTUNITY_TYPES, VALIDATION_VALUE_TYPE, DES_TRACK_ID } from '../../../config/constants'
 import styles from './ChallengeReviewer-Field.module.scss'
 import { validateValue } from '../../../util/input-check'
 import AssignedMemberField from '../AssignedMember-Field'
-import { DES_TRACK_ID } from '../../../config/constants'
 import { isEqual } from 'lodash'
 
 class HumanReviewTab extends Component {
@@ -40,7 +39,7 @@ class HumanReviewTab extends Component {
   }
 
   componentDidUpdate (prevProps) {
-    const { challenge: prevChallenge, challengeResources: prevResources } = prevProps
+    const { challenge: prevChallenge } = prevProps
     const { challenge, challengeResources } = this.props
 
     const reviewersChanged = (() => {
@@ -111,7 +110,7 @@ class HumanReviewTab extends Component {
   }
 
   async onAssignmentChange (reviewerIndex, slotIndex, option) {
-    const { challenge, replaceResourceInRole, createResource } = this.props
+    const { challenge, replaceResourceInRole } = this.props
     // reviewerIndex is the filtered human reviewer index
     const humanReviewers = (challenge.reviewers || []).filter(r => !this.isAIReviewer(r))
     const reviewer = humanReviewers[reviewerIndex]
@@ -175,7 +174,7 @@ class HumanReviewTab extends Component {
       this.setState({ assignedMembers: newAssignedMembers })
     } else if (diff < 0) {
       // Remove slots (delete resources)
-      const { challenge, deleteResource } = this.props
+      const { deleteResource } = this.props
       const removedMembers = currentAssigned.slice(newCount)
       const newAssigned = currentAssigned.slice(0, newCount)
 
@@ -239,7 +238,6 @@ class HumanReviewTab extends Component {
   addReviewer () {
     const { challenge, onUpdateReviewers } = this.props
     const currentReviewers = challenge.reviewers || []
-    const memberReviewers = currentReviewers.filter(r => !this.isAIReviewer(r))
 
     const { metadata = {} } = this.props
     const { defaultReviewers = [] } = metadata
@@ -287,12 +285,12 @@ class HumanReviewTab extends Component {
   removeReviewer (index) {
     const { challenge, onUpdateReviewers } = this.props
     const currentReviewers = challenge.reviewers || []
-    
+
     // Map the human reviewer index to the actual index in the full reviewers array
     const humanReviewers = currentReviewers.filter(r => !this.isAIReviewer(r))
     const reviewerToRemove = humanReviewers[index]
     const actualIndex = currentReviewers.indexOf(reviewerToRemove)
-    
+
     if (actualIndex !== -1) {
       const updatedReviewers = currentReviewers.filter((_, i) => i !== actualIndex)
       onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
@@ -300,7 +298,7 @@ class HumanReviewTab extends Component {
   }
 
   updateReviewer (index, field, value) {
-    const { challenge, onUpdateReviewers, metadata = {} } = this.props
+    const { challenge, onUpdateReviewers } = this.props
     const currentReviewers = challenge.reviewers || []
     const updatedReviewers = currentReviewers.slice()
     const fieldUpdate = { [field]: value }
@@ -313,7 +311,6 @@ class HumanReviewTab extends Component {
     if (actualIndex === -1) return
 
     if (field === 'phaseId') {
-      const { defaultReviewers = [] } = metadata
       const defaultReviewer = this.findDefaultReviewer(value) || updatedReviewers[actualIndex]
       Object.assign(fieldUpdate, {
         fixedAmount: defaultReviewer.fixedAmount,

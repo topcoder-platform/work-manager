@@ -23,25 +23,25 @@ const ManualConfigurationView = ({
   onRemoveWorkflow,
   onSwitchMode,
   onRemoveConfig,
-  readOnly,
+  readOnly
 }) => {
-  const origConfig = useRef(configuration);
+  const origConfig = useRef(configuration)
   const [showSwitchConfirmModal, setShowSwitchConfirmModal] = useState(false)
-  
+
   const handleConfirmSwitch = useCallback(() => {
-    onRemoveConfig();
-    onSwitchMode('template');
-  }, [onSwitchMode, onRemoveConfig]);
-  
+    onRemoveConfig()
+    onSwitchMode('template')
+  }, [onSwitchMode, onRemoveConfig])
+
   const handleOnSwitchConfig = useCallback(() => {
     if (configHasChanges(origConfig.current, configuration)) {
-      setShowSwitchConfirmModal(true);
+      setShowSwitchConfirmModal(true)
     } else {
-      handleConfirmSwitch();
+      handleConfirmSwitch()
     }
   }, [
     configuration, setShowSwitchConfirmModal, handleConfirmSwitch
-  ]);
+  ])
 
   return (
     <div className={styles.manualConfiguration}>
@@ -161,7 +161,7 @@ ManualConfigurationView.propTypes = {
   onRemoveWorkflow: PropTypes.func.isRequired,
   onSwitchMode: PropTypes.func.isRequired,
   onRemoveConfig: PropTypes.func.isRequired,
-  readOnly: PropTypes.bool,
+  readOnly: PropTypes.bool
 }
 
 ManualConfigurationView.defaultProps = {

@@ -1,10 +1,10 @@
-import React from 'react';
+import React from 'react'
 import styles from '../AiReviewTab.module.scss'
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
 
 const AiWorkflowsTableListing = ({
   challenge,
-  workflows,
+  workflows
 }) => {
   return (
     <div className={styles.workflowsSection}>
@@ -63,8 +63,8 @@ const AiWorkflowsTableListing = ({
         ⚠️ = Not assigned — will be auto-added on save
       </p>
     </div>
-  );
-};
+  )
+}
 
 AiWorkflowsTableListing.propTypes = {
   challenge: PropTypes.object.isRequired,
@@ -72,7 +72,7 @@ AiWorkflowsTableListing.propTypes = {
     PropTypes.shape({
       weightPercent: PropTypes.number,
       isGating: PropTypes.bool,
-      workflowId: PropTypes.string,
+      workflowId: PropTypes.string
     })
   ).isRequired
 }
