@@ -111,7 +111,7 @@ class HumanReviewTab extends Component {
   }
 
   async onAssignmentChange (reviewerIndex, slotIndex, option) {
-    const { challenge, replaceResourceInRole } = this.props
+    const { challenge, metadata = {}, replaceResourceInRole } = this.props
     // reviewerIndex is the filtered human reviewer index
     const humanReviewers = (challenge.reviewers || []).filter(r => !this.isAIReviewer(r))
     const reviewer = humanReviewers[reviewerIndex]
@@ -119,8 +119,13 @@ class HumanReviewTab extends Component {
 
     const currentAssignedMembers = this.state.assignedMembers[reviewerIndex] || []
     const roleName = this.getRoleNameForReviewer(reviewer)
+    const role = getResourceRoleByName(metadata.resourceRoles || [], roleName)
     const newAssigned = [...currentAssignedMembers]
-    newAssigned[slotIndex] = option
+    newAssigned[slotIndex] = option && {
+      handle: option.label,
+      userId: option.value,
+      roleId: role.id,
+    }
 
     const newAssignedMembers = { ...this.state.assignedMembers }
     newAssignedMembers[reviewerIndex] = newAssigned
@@ -130,7 +135,7 @@ class HumanReviewTab extends Component {
       await this.createOrReplaceResource(
         option,
         reviewer,
-        roleName,
+        role.id,
         currentAssignedMembers[slotIndex],
         challenge
       )
@@ -145,21 +150,18 @@ class HumanReviewTab extends Component {
     }
   }
 
-  async createOrReplaceResource (option, reviewer, roleName, oldOption, challenge) {
+  async createOrReplaceResource (option, reviewer, roleId, oldOption, challenge) {
     const { replaceResourceInRole, createResource } = this.props
 
     if (oldOption) {
       await replaceResourceInRole(
         challenge.id,
         oldOption.roleId,
-        option.handle,
+        option.label,
         oldOption.handle
       )
     } else {
-      await createResource(challenge.id, {
-        handle: option.handle,
-        roleName
-      })
+      await createResource(challenge.id, roleId, option.label)
     }
   }
 
