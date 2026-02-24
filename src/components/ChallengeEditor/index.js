@@ -1616,7 +1616,8 @@ class ChallengeEditor extends Component {
       assignYourselfCopilot,
       challengeResources,
       loggedInUser,
-      challengeDetails
+      challengeDetails,
+      totalSubmissions
     } = this.props
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
@@ -1875,6 +1876,7 @@ class ChallengeEditor extends Component {
     const isChallengeType = challenge.typeId === CHALLENGE_TYPE_ID
     const showRoundType = isDesignChallenge && isChallengeType
     const showCheckpointPrizes = challenge.timelineTemplateId === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
+    const isAiReviewerConfigReadOnly = totalSubmissions > 0
     const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
     const showDashBoard = this.shouldShowDashboardSetting(challenge)
 
@@ -2080,6 +2082,7 @@ class ChallengeEditor extends Component {
               onUpdateMetadata={this.onUpdateMetadata}
               showReviewerField={!isTask}
               onUpdateReviewers={this.onUpdateOthers}
+              aiReviewerReadOnly={isAiReviewerConfigReadOnly}
             />
             {/* hide until challenge API change is pushed to PROD https://github.com/topcoder-platform/challenge-api/issues/348 */}
             {false && <AttachmentField
@@ -2166,7 +2169,8 @@ ChallengeEditor.propTypes = {
   deleteChallenge: PropTypes.func.isRequired,
   loggedInUser: PropTypes.shape().isRequired,
   projectPhases: PropTypes.arrayOf(PropTypes.object).isRequired,
-  assignYourselfCopilot: PropTypes.func.isRequired
+  assignYourselfCopilot: PropTypes.func.isRequired,
+  totalSubmissions: PropTypes.number
 }
 
 export default withRouter(ChallengeEditor)

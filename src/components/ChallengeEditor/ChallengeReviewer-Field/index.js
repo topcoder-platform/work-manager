@@ -140,9 +140,10 @@ class ChallengeReviewerField extends Component {
   }
 
   render () {
-    const { challenge, metadata = {}, isLoading, readOnly = false } = this.props
+    const { challenge, metadata = {}, isLoading, readOnly = false, aiReadOnly = false } = this.props
     const { error, activeTab } = this.state
     const { scorecards = [], defaultReviewers = [], workflows = [] } = metadata
+    const isAiTabReadOnly = readOnly || aiReadOnly
 
     // Count reviewers by type
     const allReviewers = challenge.reviewers || []
@@ -218,7 +219,7 @@ class ChallengeReviewerField extends Component {
                     challenge={challenge}
                     metadata={metadata}
                     isLoading={isLoading}
-                    readOnly={readOnly}
+                    readOnly={isAiTabReadOnly}
                     onUpdateReviewers={(update) => this.props.onUpdateReviewers(update)}
                   />
                 </div>
@@ -260,6 +261,7 @@ ChallengeReviewerField.propTypes = {
   }),
   isLoading: PropTypes.bool,
   readOnly: PropTypes.bool,
+  aiReadOnly: PropTypes.bool,
   loadScorecards: PropTypes.func.isRequired,
   loadDefaultReviewers: PropTypes.func.isRequired,
   loadWorkflows: PropTypes.func.isRequired,

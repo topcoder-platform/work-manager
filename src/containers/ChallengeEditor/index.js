@@ -563,6 +563,7 @@ class ChallengeEditor extends Component {
               showRejectChallengeModal={showRejectChallengeModal}
               loggedInUser={loggedInUser}
               enableEdit={enableEdit}
+              totalSubmissions={totalSubmissions}
             />
           )}
         />
@@ -604,6 +605,7 @@ class ChallengeEditor extends Component {
                 projectPhases={projectPhases}
                 assignYourselfCopilot={this.assignYourselfCopilot}
                 enableEdit={enableEdit}
+                totalSubmissions={totalSubmissions}
               />
             )}
           />
