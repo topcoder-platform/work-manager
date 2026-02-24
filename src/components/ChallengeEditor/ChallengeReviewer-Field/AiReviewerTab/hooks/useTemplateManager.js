@@ -47,7 +47,7 @@ const useTemplateManager = (templateId, challengeTrack, challengeType) => {
 
     try {
       const fetchedTemplates = await fetchAIReviewTemplates({
-        challengeTrack,
+        challengeTrack: challengeTrack.toUpperCase(),
         challengeType
       })
 
