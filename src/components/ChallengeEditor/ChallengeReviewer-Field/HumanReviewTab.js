@@ -7,6 +7,7 @@ import styles from './ChallengeReviewer-Field.module.scss'
 import { validateValue } from '../../../util/input-check'
 import AssignedMemberField from '../AssignedMember-Field'
 import { isEqual } from 'lodash'
+import { getResourceRoleByName } from '../../../util/tc'
 
 class HumanReviewTab extends Component {
   constructor (props) {
@@ -32,15 +33,15 @@ class HumanReviewTab extends Component {
   }
 
   componentDidMount () {
-    const { challenge, challengeResources } = this.props
+    const { metadata, challenge, challengeResources } = this.props
     if (challenge && challenge.id && challengeResources) {
-      this.updateAssignedMembers(challengeResources, challenge)
+      this.updateAssignedMembers(challengeResources, challenge, metadata)
     }
   }
 
   componentDidUpdate (prevProps) {
     const { challenge: prevChallenge } = prevProps
-    const { challenge, challengeResources } = this.props
+    const { metadata, challenge, challengeResources } = this.props
 
     const reviewersChanged = (() => {
       if (!prevChallenge || !challenge) return false
@@ -58,7 +59,7 @@ class HumanReviewTab extends Component {
     })()
 
     if (challenge && this.doUpdateAssignedMembers && reviewersChanged) {
-      this.updateAssignedMembers(challengeResources, challenge, prevChallenge)
+      this.updateAssignedMembers(challengeResources, challenge, metadata, prevChallenge)
     }
   }
 
@@ -75,7 +76,7 @@ class HumanReviewTab extends Component {
 
   getMissingRequiredPhases () {
     const { challenge } = this.props
-    const requiredPhaseIds = []
+    const requiredPhases = []
     const memberReviewers = (challenge.reviewers || []).filter(r => !this.isAIReviewer(r))
 
     if (challenge && challenge.phases) {
@@ -85,13 +86,13 @@ class HumanReviewTab extends Component {
         if (hasReviewPhase) {
           const hasReviewer = memberReviewers.some(r => (r.phaseId === phase.id || r.phaseId === phase.phaseId))
           if (!hasReviewer) {
-            requiredPhaseIds.push(phase.phaseId || phase.id)
+            requiredPhases.push(phase.name || phase.phaseId || phase.id)
           }
         }
       }
     }
 
-    return requiredPhaseIds
+    return requiredPhases
   }
 
   getRoleNameForReviewer (reviewer) {
@@ -199,15 +200,14 @@ class HumanReviewTab extends Component {
     this.updateReviewer(reviewerIndex, 'shouldOpenOpportunity', nextValue)
   }
 
-  updateAssignedMembers (challengeResources, challenge, prevChallenge = null) {
+  updateAssignedMembers (challengeResources, challenge, metadata, prevChallenge = null) {
     const memberReviewers = (challenge.reviewers || []).filter(r => !this.isAIReviewer(r))
     const newAssignedMembers = {}
 
     memberReviewers.forEach((reviewer, reviewerIndex) => {
       const roleName = this.getRoleNameForReviewer(reviewer)
-      const resourceRoleId = challenge.resourceRoles
-        ? challenge.resourceRoles[roleName]
-        : undefined
+      const role = getResourceRoleByName(metadata.resourceRoles || [], roleName)
+      const resourceRoleId = role && role.id
 
       const matchingResources = challengeResources
         ? challengeResources.filter(resource => resource.roleId === resourceRoleId)
