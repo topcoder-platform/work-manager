@@ -12,7 +12,7 @@ const WeightValidationCard = ({ workflows }) => {
   const weightsTotal = workflows.reduce((sum, workflow) => sum + (Number(workflow.weightPercent) || 0), 0)
   const isWeightValid = Math.abs(weightsTotal - 100) < 0.01
   const remainingWeight = Math.round((100 - weightsTotal) * 100) / 100
-  const scoringSummary = `${scoringWorkflows.map(workflow => `${Number(workflow.weightPercent) || 0}%`).join(' + ')} = ${weightsTotal}%`
+  const scoringSummary = `${workflows.map(workflow => `${Number(workflow.weightPercent) || 0}%`).join(' + ')} = ${weightsTotal}%`
 
   return (
     <div className={styles.weightValidationSection}>
