@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
-import { REVIEW_OPPORTUNITY_TYPE_LABELS } from '../../../../config/constants'
+import { REVIEW_APP_URL, REVIEW_OPPORTUNITY_TYPE_LABELS } from '../../../../config/constants'
 import { isAIReviewer } from '../AiReviewerTab/utils'
 import { fetchAIReviewConfigByChallenge } from '../../../../services/aiReviewConfigs'
 import styles from './ReviewSummary.module.scss'
@@ -31,11 +31,12 @@ const ReviewSummary = ({
 
   if (!challenge) return null
 
-  const { scorecards = [] } = metadata
+  const { scorecards = [], workflows = [] } = metadata
 
   // Filter human and AI reviewers
   const allReviewers = challenge.reviewers || []
   const humanReviewers = allReviewers.filter(r => !isAIReviewer(r))
+  const aiReviewers = allReviewers.filter(r => isAIReviewer(r))
 
   // Calculate review cost based on human reviewers
   const calculateReviewCost = () => {
@@ -78,7 +79,9 @@ const ReviewSummary = ({
   }
 
   // Check if AI review is configured
-  const hasAIConfiguration = aiConfiguration && aiConfiguration.workflows && (aiConfiguration.workflows.length > 0)
+  const hasAIConfigWorkflows = aiConfiguration && aiConfiguration.workflows && (aiConfiguration.workflows.length > 0)
+  const hasLegacyAIReviewers = aiReviewers.length > 0
+  const hasAIConfiguration = hasAIConfigWorkflows || hasLegacyAIReviewers
 
   // Check if AI mode is gating or only
   const isAIOnlyMode = aiConfiguration && aiConfiguration.mode === 'AI_ONLY'
@@ -86,6 +89,23 @@ const ReviewSummary = ({
 
   // Check if AI is gating reviewer (has gating workflows)
   const isAIGating = aiConfiguration && aiConfiguration.workflows && aiConfiguration.workflows.some(w => w.isGating)
+
+  const legacyAIWorkflows = aiReviewers.map(reviewer => {
+    const workflow = workflows.find(w => w.id === reviewer.aiWorkflowId)
+    return {
+      workflowName: workflow && workflow.name
+        ? workflow.name
+        : (reviewer.aiWorkflowId || 'Legacy AI Reviewer'),
+      weightPercent: '-',
+      isGating: false,
+      workflow: {
+        scorecard: workflow ? {
+          name: workflow.scorecard.name,
+          id: workflow.scorecard.id,
+        } : {},
+      },
+    }
+  })
 
   const totalHumanReviewerCount = humanReviewers.reduce((sum, r) => sum + (parseInt(r.memberReviewerCount) || 1), 0)
 
@@ -159,26 +179,28 @@ const ReviewSummary = ({
               <p className={styles.empty}>No AI review configured</p>
             ) : (
               <>
-                <div className={styles.row}>
-                  <span className={styles.label}>Mode:</span>
-                  <span className={styles.value}>{aiConfiguration.mode || 'Not set'}</span>
-                </div>
+                {hasAIConfigWorkflows && (
+                  <div className={styles.row}>
+                    <span className={styles.label}>Mode:</span>
+                    <span className={styles.value}>{aiConfiguration && aiConfiguration.mode}</span>
+                  </div>
+                )}
 
-                {aiConfiguration.minPassingThreshold !== undefined && (
+                {aiConfiguration && aiConfiguration.minPassingThreshold !== undefined && (
                   <div className={styles.row}>
                     <span className={styles.label}>Threshold:</span>
                     <span className={styles.value}>{aiConfiguration.minPassingThreshold}%</span>
                   </div>
                 )}
 
-                {aiConfiguration.autoFinalize !== undefined && (
+                {aiConfiguration && aiConfiguration.autoFinalize !== undefined && (
                   <div className={styles.row}>
                     <span className={styles.label}>Auto-Finalize:</span>
                     <span className={styles.value}>{aiConfiguration.autoFinalize ? '✅ On' : '❌ Off'}</span>
                   </div>
                 )}
 
-                {aiConfiguration.workflows && aiConfiguration.workflows.length > 0 && (
+                {((aiConfiguration && aiConfiguration.workflows && aiConfiguration.workflows.length > 0) || legacyAIWorkflows.length > 0) && (
                   <div className={styles.workflowsSection}>
                     <span className={styles.label}>Workflows:</span>
                     <table className={styles.workflowsTable}>
@@ -186,19 +208,25 @@ const ReviewSummary = ({
                         <tr>
                           <th>Name</th>
                           <th>Weight</th>
+                          <th>Scorecard</th>
                           <th>Type</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {aiConfiguration.workflows.map((workflow, idx) => (
+                        {(hasAIConfigWorkflows ? aiConfiguration.workflows : legacyAIWorkflows).map((workflow, idx) => (
                           <tr key={idx}>
-                            <td>{workflow.workflow.name || workflow.workflowId || '-'}</td>
-                            <td>{workflow.weightPercent}%</td>
+                            <td>{workflow.workflowName || (workflow.workflow && workflow.workflow.name) || workflow.workflowId || '-'}</td>
+                            <td>{workflow.weightPercent === '-' ? '-' : `${workflow.weightPercent}%`}</td>
+                            <td>
+                              <a href={`${REVIEW_APP_URL}/scorecard/${workflow.workflow.scorecard.id}`} target='_blank' rel='noopener noref'>
+                                {workflow.workflow.scorecard.name}
+                              </a>
+                            </td>
                             <td className={styles.typeCell}>
                               {workflow.isGating ? (
                                 <span className={styles.gate}>⚡ GATE</span>
                               ) : (
-                                <span className={styles.review}>📝</span>
+                                <span className={styles.review}>{hasAIConfigWorkflows ? '📝' : '📝'}</span>
                               )}
                             </td>
                           </tr>
@@ -214,7 +242,7 @@ const ReviewSummary = ({
       </div>
 
       {/* Review Flow Diagram */}
-      {(humanReviewers.length > 0 || hasAIConfiguration) && (
+      {(humanReviewers.length > 0 || hasAIConfigWorkflows) && (
         <div className={styles.flowSection}>
           <h4 className={styles.flowTitle}>Review Flow</h4>
           <div className={cn(styles.flowDiagram, {
@@ -231,15 +259,15 @@ const ReviewSummary = ({
             </div>
 
             {/* Arrow 1 */}
-            {hasAIConfiguration && (
+            {hasAIConfigWorkflows && (
               <div className={styles.arrow} style={{ gridColumn: 2, gridRow: 1 }}>→</div>
             )}
-            {!hasAIConfiguration && humanReviewers.length > 0 && (
+            {!hasAIConfigWorkflows && humanReviewers.length > 0 && (
               <div className={styles.arrow} style={{ gridColumn: 2, gridRow: 1 }}>→</div>
             )}
 
             {/* Step 2: AI Review / AI Gate (if configured) */}
-            {hasAIConfiguration && (
+            {hasAIConfigWorkflows && (
               <div className={styles.flowBox} style={{ gridColumn: 3, gridRow: 1 }}>
                 <div>🤖</div>
                 <div>{isAIOnlyMode ? 'AI Review' : 'AI Gate'}</div>
@@ -269,7 +297,7 @@ const ReviewSummary = ({
             )}
 
             {/* Step 3: Human Review (for human-only flow) */}
-            {!hasAIConfiguration && humanReviewers.length > 0 && (
+            {!hasAIConfigWorkflows && humanReviewers.length > 0 && (
               <div className={styles.flowBox} style={{ gridColumn: 3, gridRow: 1 }}>
                 <div>👥</div>
                 <div>Human Review</div>
@@ -280,11 +308,11 @@ const ReviewSummary = ({
             )}
 
             {/* Failure Path: Arrow down from AI Gate (only for AI_GATING with gating workflows) */}
-            {hasAIConfiguration && isAIGating && (
+            {hasAIConfigWorkflows && isAIGating && (
               <div className={cn(styles.arrow, styles.failureArrow)} style={{ gridColumn: 3, gridRow: 2 }}>
                 ↓
                 {/* Failure Label */}
-                {hasAIConfiguration && isAIGating && (
+                {hasAIConfigWorkflows && isAIGating && (
                   <div className={styles.failLabel} style={{ gridColumn: 3, gridRow: '2.5', alignSelf: 'center' }}>
                     &lt; {aiConfiguration.minPassingThreshold || 75}%
                   </div>

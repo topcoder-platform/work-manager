@@ -162,10 +162,13 @@
         }
       }
 
-      .workflowsSection {
+      * + .workflowsSection {
         margin-top: 1rem;
-        padding-top: 1rem;
         border-top: 1px solid #f0f0f0;
+      }
+      
+      .workflowsSection {
+        padding-top: 1rem;
 
         .label {
           display: block;
