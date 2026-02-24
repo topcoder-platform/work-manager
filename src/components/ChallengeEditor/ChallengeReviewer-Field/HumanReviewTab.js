@@ -124,7 +124,7 @@ class HumanReviewTab extends Component {
     newAssigned[slotIndex] = option && {
       handle: option.label,
       userId: option.value,
-      roleId: role.id,
+      roleId: role.id
     }
 
     const newAssignedMembers = { ...this.state.assignedMembers }
