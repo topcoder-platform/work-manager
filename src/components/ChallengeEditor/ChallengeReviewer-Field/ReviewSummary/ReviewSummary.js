@@ -101,9 +101,9 @@ const ReviewSummary = ({
       workflow: {
         scorecard: workflow ? {
           name: workflow.scorecard.name,
-          id: workflow.scorecard.id,
-        } : {},
-      },
+          id: workflow.scorecard.id
+        } : {}
+      }
     }
   })
 

@@ -7,7 +7,6 @@ import styles from '../AiReviewTab.module.scss'
  * Weight Validation Card - Validates that scoring workflow weights total 100%
  */
 const WeightValidationCard = ({ workflows }) => {
-  const scoringWorkflows = workflows.filter(workflow => !workflow.isGating)
   const gatingWorkflows = workflows.filter(workflow => workflow.isGating)
   const weightsTotal = workflows.reduce((sum, workflow) => sum + (Number(workflow.weightPercent) || 0), 0)
   const isWeightValid = Math.abs(weightsTotal - 100) < 0.01
