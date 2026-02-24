@@ -57,6 +57,26 @@
     .cardContent {
       padding: 1rem;
 
+      .badgeYes,
+      .badgeNo {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+
+      .badgeYes {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+
+      .badgeNo {
+        background: #ffebee;
+        color: #c62828;
+      }
+
       .empty {
         color: #999;
         font-style: italic;
@@ -99,23 +119,45 @@
         .badgeRow {
           display: flex;
           align-items: center;
+        }
+      }
 
-          .badgeYes,
-          .badgeNo {
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
+      .humanTableSection {
+        margin-top: 0.75rem;
+      }
+
+      .humanTable {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+
+        thead {
+          background: #f9f9f9;
+
+          th {
+            padding: 0.5rem;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 1px solid #e0e0e0;
             font-size: 0.85rem;
-            font-weight: 500;
+            white-space: nowrap;
           }
+        }
 
-          .badgeYes {
-            background: #e8f5e9;
-            color: #2e7d32;
-          }
+        tbody {
+          tr {
+            border-bottom: 1px solid #f0f0f0;
 
-          .badgeNo {
-            background: #ffebee;
-            color: #c62828;
+            &:last-child {
+              border-bottom: none;
+            }
+
+            td {
+              padding: 0.5rem;
+              color: #333;
+              vertical-align: top;
+            }
           }
         }
       }

@@ -87,6 +87,8 @@ const ReviewSummary = ({
   // Check if AI is gating reviewer (has gating workflows)
   const isAIGating = aiConfiguration && aiConfiguration.workflows && aiConfiguration.workflows.some(w => w.isGating)
 
+  const totalHumanReviewerCount = humanReviewers.reduce((sum, r) => sum + (parseInt(r.memberReviewerCount) || 1), 0)
+
   const reviewCost = calculateReviewCost()
 
   return (
@@ -108,52 +110,39 @@ const ReviewSummary = ({
               <>
                 <div className={styles.row}>
                   <span className={styles.label}>Reviewers:</span>
-                  <span className={styles.value}>{humanReviewers.reduce((sum, r) => sum + (parseInt(r.memberReviewerCount) || 1), 0)}</span>
+                  <span className={styles.value}>{totalHumanReviewerCount}</span>
                 </div>
 
-                {humanReviewers.length > 0 && (
-                  <>
-                    <div className={styles.row}>
-                      <span className={styles.label}>Scorecard:</span>
-                      <span className={styles.value}>
-                        {humanReviewers.map((r, idx) => (
-                          <div key={idx}>{getScorecardName(r.scorecardId)}</div>
-                        ))}
-                      </span>
-                    </div>
-
-                    <div className={styles.row}>
-                      <span className={styles.label}>Phase:</span>
-                      <span className={styles.value}>
-                        {humanReviewers.map((r, idx) => (
-                          <div key={idx}>{getPhaseName(r.phaseId)}</div>
-                        ))}
-                      </span>
-                    </div>
-
-                    <div className={styles.row}>
-                      <span className={styles.label}>Review Type:</span>
-                      <span className={styles.value}>
-                        {humanReviewers.map((r, idx) => (
-                          <div key={idx}>{REVIEW_OPPORTUNITY_TYPE_LABELS[r.type] || 'Regular'}</div>
-                        ))}
-                      </span>
-                    </div>
-
-                    <div className={styles.row}>
-                      <span className={styles.label}>Public Opportunity:</span>
-                      <span className={styles.value}>
-                        {humanReviewers.map((r, idx) => (
-                          <div key={idx} className={styles.badgeRow}>
-                            <span className={r.shouldOpenOpportunity ? styles.badgeYes : styles.badgeNo}>
-                              {r.shouldOpenOpportunity ? '✅ Yes' : '❌ No'}
+                <div className={styles.humanTableSection}>
+                  <table className={styles.humanTable}>
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Phase</th>
+                        <th>Scorecard</th>
+                        <th>Review Type</th>
+                        <th>Count</th>
+                        <th>Public Opportunity</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {humanReviewers.map((reviewer, idx) => (
+                        <tr key={idx}>
+                          <td>{idx + 1}</td>
+                          <td>{getPhaseName(reviewer.phaseId)}</td>
+                          <td>{getScorecardName(reviewer.scorecardId)}</td>
+                          <td>{REVIEW_OPPORTUNITY_TYPE_LABELS[reviewer.type] || 'Regular'}</td>
+                          <td>{parseInt(reviewer.memberReviewerCount) || 1}</td>
+                          <td>
+                            <span className={reviewer.shouldOpenOpportunity ? styles.badgeYes : styles.badgeNo}>
+                              {reviewer.shouldOpenOpportunity ? '✅ Yes' : '❌ No'}
                             </span>
-                          </div>
-                        ))}
-                      </span>
-                    </div>
-                  </>
-                )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </>
             )}
           </div>
@@ -274,7 +263,7 @@ const ReviewSummary = ({
                 <div>👥</div>
                 <div>Human Review</div>
                 <div className={styles.flowDescription}>
-                  {humanReviewers.reduce((sum, r) => sum + (parseInt(r.memberReviewerCount) || 1), 0)} reviewers
+                  {totalHumanReviewerCount} reviewers
                 </div>
               </div>
             )}
@@ -285,7 +274,7 @@ const ReviewSummary = ({
                 <div>👥</div>
                 <div>Human Review</div>
                 <div className={styles.flowDescription}>
-                  {humanReviewers.reduce((sum, r) => sum + (parseInt(r.memberReviewerCount) || 1), 0)} reviewers
+                  {totalHumanReviewerCount} reviewers
                 </div>
               </div>
             )}
