@@ -7,7 +7,7 @@ import styles from './ChallengeReviewer-Field.module.scss'
 import { validateValue } from '../../../util/input-check'
 import AssignedMemberField from '../AssignedMember-Field'
 import { isEqual } from 'lodash'
-import { getResourceRoleByName } from '../../../util/tc'
+import { getResourceRoleByName, getRoleNameForReviewer } from '../../../util/tc'
 
 class HumanReviewTab extends Component {
   constructor (props) {
@@ -23,7 +23,6 @@ class HumanReviewTab extends Component {
     this.renderReviewerForm = this.renderReviewerForm.bind(this)
     this.handleApplyDefault = this.handleApplyDefault.bind(this)
     this.getMissingRequiredPhases = this.getMissingRequiredPhases.bind(this)
-    this.getRoleNameForReviewer = this.getRoleNameForReviewer.bind(this)
     this.onAssignmentChange = this.onAssignmentChange.bind(this)
     this.syncAssignmentsOnCountChange = this.syncAssignmentsOnCountChange.bind(this)
     this.handlePhaseChangeWithReassign = this.handlePhaseChangeWithReassign.bind(this)
@@ -95,21 +94,6 @@ class HumanReviewTab extends Component {
     return requiredPhases
   }
 
-  getRoleNameForReviewer (reviewer) {
-    const { challenge } = this.props
-    const phase = (challenge.phases || []).find(p => (p.id === reviewer.phaseId) || (p.phaseId === reviewer.phaseId))
-    const phaseName = (phase && phase.name) ? phase.name.toLowerCase() : ''
-
-    const normalizedPhaseName = phaseName.replace(/[-\s]/g, '')
-
-    if (phaseName.includes('iterative review') || normalizedPhaseName === 'iterativereview') return 'Iterative Reviewer'
-    if (normalizedPhaseName === 'approval') return 'Approver'
-    if (normalizedPhaseName === 'checkpointscreening') return 'Checkpoint Screener'
-    if (normalizedPhaseName === 'checkpointreview') return 'Checkpoint Reviewer'
-    if (normalizedPhaseName === 'screening') return 'Screener'
-    return 'Reviewer'
-  }
-
   async onAssignmentChange (reviewerIndex, slotIndex, option) {
     const { challenge, metadata = {}, replaceResourceInRole } = this.props
     // reviewerIndex is the filtered human reviewer index
@@ -118,7 +102,7 @@ class HumanReviewTab extends Component {
     if (!reviewer || this.isAIReviewer(reviewer)) return
 
     const currentAssignedMembers = this.state.assignedMembers[reviewerIndex] || []
-    const roleName = this.getRoleNameForReviewer(reviewer)
+    const roleName = getRoleNameForReviewer(reviewer, challenge.phases)
     const role = getResourceRoleByName(metadata.resourceRoles || [], roleName)
     const newAssigned = [...currentAssignedMembers]
     newAssigned[slotIndex] = option && {
@@ -207,7 +191,7 @@ class HumanReviewTab extends Component {
     const newAssignedMembers = {}
 
     memberReviewers.forEach((reviewer, reviewerIndex) => {
-      const roleName = this.getRoleNameForReviewer(reviewer)
+      const roleName = getRoleNameForReviewer(reviewer, challenge.phases)
       const role = getResourceRoleByName(metadata.resourceRoles || [], roleName)
       const resourceRoleId = role && role.id
 

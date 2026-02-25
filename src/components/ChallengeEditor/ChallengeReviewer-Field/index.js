@@ -240,6 +240,7 @@ class ChallengeReviewerField extends Component {
               <ReviewSummary
                 challenge={challenge}
                 metadata={metadata}
+                challengeResources={this.props.challengeResources}
               />
             </div>
           </div>

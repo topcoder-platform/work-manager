@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
 import { REVIEW_APP_URL, REVIEW_OPPORTUNITY_TYPE_LABELS } from '../../../../config/constants'
 import { isAIReviewer } from '../AiReviewerTab/utils'
 import { fetchAIReviewConfigByChallenge } from '../../../../services/aiReviewConfigs'
+import { getResourceRoleByName, getRoleNameForReviewer } from '../../../../util/tc'
 import styles from './ReviewSummary.module.scss'
 
 const ReviewSummary = ({
   challenge,
   metadata = {},
+  challengeResources = [],
   readOnly = false
 }) => {
   const [aiConfiguration, setAiConfiguration] = useState(null)
@@ -78,6 +80,24 @@ const ReviewSummary = ({
     return phase ? phase.name : '-'
   }
 
+  const getAssignedMembersForReviewer = useCallback((reviewer) => {
+    const reviewerCount = parseInt(reviewer.memberReviewerCount) || 1
+    const roleName = getRoleNameForReviewer(reviewer, challenge.phases)
+    const role = getResourceRoleByName(metadata.resourceRoles || [], roleName)
+    const resourceRoleId = role && role.id
+
+    if (!resourceRoleId) return []
+
+    const matchingResources = challengeResources
+      .filter(resource => resource.roleId === resourceRoleId)
+      .slice(0, reviewerCount)
+
+    return matchingResources
+      .map(resource => resource.memberHandle)
+      .filter(Boolean)
+      .join(', ')
+  }, [challenge, metadata, challengeResources])
+
   // Check if AI review is configured
   const hasAIConfigWorkflows = aiConfiguration && aiConfiguration.workflows && (aiConfiguration.workflows.length > 0)
   const hasLegacyAIReviewers = aiReviewers.length > 0
@@ -143,6 +163,7 @@ const ReviewSummary = ({
                         <th>Review Type</th>
                         <th>Count</th>
                         <th>Public Opportunity</th>
+                        <th>Assigned Members</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -157,6 +178,9 @@ const ReviewSummary = ({
                             <span className={reviewer.shouldOpenOpportunity ? styles.badgeYes : styles.badgeNo}>
                               {reviewer.shouldOpenOpportunity ? '✅ Yes' : '❌ No'}
                             </span>
+                          </td>
+                          <td>
+                            {getAssignedMembersForReviewer(reviewer) || '-'}
                           </td>
                         </tr>
                       ))}
@@ -352,13 +376,16 @@ ReviewSummary.propTypes = {
   metadata: PropTypes.shape({
     scorecards: PropTypes.array,
     workflows: PropTypes.array,
+    resourceRoles: PropTypes.array,
     challengeTracks: PropTypes.array
   }),
+  challengeResources: PropTypes.array,
   readOnly: PropTypes.bool
 }
 
 ReviewSummary.defaultProps = {
   metadata: {},
+  challengeResources: [],
   readOnly: false
 }
 
