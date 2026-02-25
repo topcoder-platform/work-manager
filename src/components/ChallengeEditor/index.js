@@ -1096,7 +1096,7 @@ class ChallengeEditor extends Component {
    * Collects challenge payload for create/update API calls.
    *
    * Includes `funChallenge` in picked challenge fields and, when `funChallenge`
-   * is enabled, forces `prizeSets` to an empty array before sending the payload.
+   * is enabled, omits `prizeSets` from the payload.
    *
    * @param {string} status challenge status to set in payload
    * @returns {Object} cloned challenge payload ready for API submission
@@ -1133,12 +1133,12 @@ class ChallengeEditor extends Component {
     })
     challenge.timelineTemplateId = _.get(this.getCurrentTemplate(), 'id')
     challenge.projectId = this.props.projectId
-    challenge.prizeSets = challenge.prizeSets.map(p => {
+    challenge.prizeSets = (challenge.prizeSets || []).map(p => {
       const prizes = p.prizes.map(s => ({ ...s, value: convertDollarToInteger(s.value, '$') }))
       return { ...p, prizes }
     })
     if (challenge.funChallenge === true) {
-      challenge.prizeSets = []
+      delete challenge.prizeSets
     }
     challenge.status = status
     if (status === CHALLENGE_STATUS.ACTIVE && isTask) {
