@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import cn from 'classnames'
 import { REVIEW_APP_URL, REVIEW_OPPORTUNITY_TYPE_LABELS } from '../../../../config/constants'

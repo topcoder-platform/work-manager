@@ -16,7 +16,7 @@ const InitialStateView = ({
   aiReviewers
 }) => {
   const { workflows = [] } = metadata
-  const assignedWorkflows = useMemo(() => aiReviewers.map(reviewer => {
+  const assignedWorkflows = useMemo(() => (aiReviewers || []).map(reviewer => {
     const workflow = workflows.find(w => w.id === reviewer.aiWorkflowId)
     return {
       reviewer,
@@ -27,7 +27,7 @@ const InitialStateView = ({
 
   return (
     <div className={styles.initialStateContainer}>
-      {assignedWorkflows?.length > 0 && !readOnly && (
+      {assignedWorkflows.length > 0 && !readOnly && (
         <div className={styles.warningBox}>
           <div className={styles.warningIcon}>⚠️</div>
           <div className={styles.warningContent}>
@@ -38,9 +38,9 @@ const InitialStateView = ({
         </div>
       )}
 
-      {(!readOnly || !assignedWorkflows?.length) && (
+      {(!readOnly || !assignedWorkflows.length) && (
         <div className={styles.configurationOptions}>
-          {!assignedWorkflows?.length && !readOnly && (
+          {!assignedWorkflows.length && !readOnly && (
             <div>
               <h3>No AI Review Config are assigned</h3>
               <p>Scoring, gating, and thresholds are not defined. <strong>Choose how to configure:</strong></p>
