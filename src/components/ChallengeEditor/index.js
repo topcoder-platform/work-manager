@@ -67,6 +67,8 @@ import AssignedMemberField from './AssignedMember-Field'
 import Tooltip from '../Tooltip'
 import CancelDropDown from './Cancel-Dropdown'
 import UseSchedulingAPIField from './UseSchedulingAPIField'
+import FunChallengeField from './FunChallengeField'
+import WiproAllowedField from './WiproAllowedField'
 
 import MilestoneField from './Milestone-Field'
 import DiscussionField from './Discussion-Field'
@@ -453,6 +455,9 @@ class ChallengeEditor extends Component {
    * @param isSub The option from sub field
    * @param field The challenge field
    * @param index The index of array
+   *
+   * Side effect: when `field` is `typeId` and the selected type is not Marathon Match,
+   * resets `funChallenge` to `false`.
    */
   onUpdateSelect (option, isSub = false, field = '', index = -1) {
     if (option) {
@@ -460,6 +465,9 @@ class ChallengeEditor extends Component {
       const newChallenge = { ...oldChallenge }
       if (!isSub) {
         newChallenge[field] = option
+        if (field === 'typeId' && option !== MARATHON_TYPE_ID) {
+          newChallenge.funChallenge = false
+        }
       } else {
         if (index < 0) {
           newChallenge[field][option.key] = option.name
@@ -786,8 +794,13 @@ class ChallengeEditor extends Component {
   }
 
   checkValidCopilot () {
-    const copilotFee = _.find(this.state.challenge.prizeSets, p => p.type === PRIZE_SETS_TYPE.COPILOT_PAYMENT, [])
-    if (copilotFee && parseInt(copilotFee.prizes[0].value) > 0 && !this.state.challenge.copilot) {
+    const { challenge } = this.state
+    if (challenge.funChallenge === true) {
+      return true
+    }
+
+    const copilotFee = _.find(challenge.prizeSets, p => p.type === PRIZE_SETS_TYPE.COPILOT_PAYMENT, [])
+    if (copilotFee && parseInt(copilotFee.prizes[0].value) > 0 && !challenge.copilot) {
       return false
     }
     return true
@@ -874,16 +887,17 @@ class ChallengeEditor extends Component {
 
   isValidChallenge () {
     const { challenge } = this.state
+    const isFunChallenge = challenge.funChallenge === true
     if (this.props.isNew) {
       const { name, trackId, typeId } = challenge
       return !!name && !!trackId && !!typeId
     }
 
-    if (!this.isValidChallengePrizes()) {
+    if (!isFunChallenge && !this.isValidChallengePrizes()) {
       return false
     }
 
-    if (!this.checkValidCopilot()) {
+    if (!isFunChallenge && !this.checkValidCopilot()) {
       return false
     }
 
@@ -899,9 +913,11 @@ class ChallengeEditor extends Component {
       'trackId',
       'typeId',
       'name',
-      'description',
-      'prizeSets'
+      'description'
     ]
+    if (!isFunChallenge) {
+      requiredFields.push('prizeSets')
+    }
     if (isSkillsRequired) {
       requiredFields.push('skills')
     }
@@ -1076,6 +1092,15 @@ class ChallengeEditor extends Component {
     }, 500)
   }
 
+  /**
+   * Collects challenge payload for create/update API calls.
+   *
+   * Includes `funChallenge` in picked challenge fields and, when `funChallenge`
+   * is enabled, forces `prizeSets` to an empty array before sending the payload.
+   *
+   * @param {string} status challenge status to set in payload
+   * @returns {Object} cloned challenge payload ready for API submission
+   */
   collectChallengeData (status) {
     const { isPhaseChange } = this.state
     const { attachments, metadata } = this.props
@@ -1098,7 +1123,9 @@ class ChallengeEditor extends Component {
       'discussions',
       'task',
       'skills',
-      'reviewers'
+      'reviewers',
+      'funChallenge',
+      'wiproAllowed'
     ], this.state.challenge)
     const isTask = _.find(metadata.challengeTypes, { id: challenge.typeId, isTask: true })
     challenge.legacy = _.assign(this.state.challenge.legacy, {
@@ -1110,6 +1137,9 @@ class ChallengeEditor extends Component {
       const prizes = p.prizes.map(s => ({ ...s, value: convertDollarToInteger(s.value, '$') }))
       return { ...p, prizes }
     })
+    if (challenge.funChallenge === true) {
+      challenge.prizeSets = []
+    }
     challenge.status = status
     if (status === CHALLENGE_STATUS.ACTIVE && isTask) {
       challenge.startDate = moment().format()
@@ -1810,6 +1840,8 @@ class ChallengeEditor extends Component {
     const copilotResources = metadata.members || challengeResources
     const isDesignChallenge = challenge.trackId === DES_TRACK_ID
     const isChallengeType = challenge.typeId === CHALLENGE_TYPE_ID
+    const isMarathonMatch = challenge.typeId === MARATHON_TYPE_ID
+    const isFunChallenge = challenge.funChallenge === true
     const showRoundType = isDesignChallenge && isChallengeType
     const showCheckpointPrizes = challenge.timelineTemplateId === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
     const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
@@ -1932,6 +1964,7 @@ class ChallengeEditor extends Component {
                 {/* remove terms field and use default term */}
                 {false && (<TermsField terms={metadata.challengeTerms} challenge={challenge} onUpdateMultiSelect={this.onUpdateMultiSelect} />)}
                 <GroupsField onUpdateMultiSelect={this.onUpdateMultiSelect} challenge={challenge} />
+                <WiproAllowedField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
                 <div className={styles.row}>
                   <div className={styles.col}>
                     <span>
@@ -2025,14 +2058,21 @@ class ChallengeEditor extends Component {
               token={token}
               removeAttachment={removeAttachment}
             />}
-            <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
-            {
-              showCheckpointPrizes && (
-                <CheckpointPrizesField onUpdateOthers={this.onUpdateOthers} challenge={challenge} />
-              )
-            }
-            <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
-            <ChallengeTotalField challenge={challenge} />
+            {isMarathonMatch && (
+              <FunChallengeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
+            )}
+            {!isFunChallenge && (
+              <>
+                <ChallengePrizesField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
+                {
+                  showCheckpointPrizes && (
+                    <CheckpointPrizesField onUpdateOthers={this.onUpdateOthers} challenge={challenge} />
+                  )
+                }
+                <CopilotFeeField challenge={challenge} onUpdateOthers={this.onUpdateOthers} />
+                <ChallengeTotalField challenge={challenge} />
+              </>
+            )}
           </div>
           {errorContainer}
           {actionButtons}
