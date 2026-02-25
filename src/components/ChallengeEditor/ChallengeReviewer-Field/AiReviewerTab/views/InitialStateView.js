@@ -27,38 +27,50 @@ const InitialStateView = ({
 
   return (
     <div className={styles.initialStateContainer}>
-      <div className={styles.warningBox}>
-        <div className={styles.warningIcon}>⚠️</div>
-        <div className={styles.warningContent}>
-          <h3>AI workflows are assigned but no AI Review Config has been created</h3>
-          <p>Workflows will run but scoring, gating, and thresholds are not defined.</p>
-          <p><strong>Choose how to configure:</strong></p>
+      {assignedWorkflows?.length > 0 && !readOnly && (
+        <div className={styles.warningBox}>
+          <div className={styles.warningIcon}>⚠️</div>
+          <div className={styles.warningContent}>
+            <h3>AI workflows are assigned but no AI Review Config has been created</h3>
+            <p>Workflows will run but scoring, gating, and thresholds are not defined.</p>
+            <p><strong>Choose how to configure:</strong></p>
+          </div>
         </div>
-      </div>
+      )}
 
-      <div className={styles.configurationOptions}>
-        <div className={styles.optionCard}>
-          <h4>📋 Use a Template</h4>
-          <p>Pre-fill from a standard config for this track & type.</p>
-          <button
-            className={styles.optionButton}
-            onClick={onSelectTemplate}
-          >
-            Use Template
-          </button>
-        </div>
+      {(!readOnly || !assignedWorkflows?.length) && (
+        <div className={styles.configurationOptions}>
+          {!assignedWorkflows?.length && !readOnly && (
+            <div>
+              <h3>No AI Review Config are assigned</h3>
+              <p>Scoring, gating, and thresholds are not defined. <strong>Choose how to configure:</strong></p>
+            </div>
+          )}
+          <div className={styles.optionCard}>
+            <h4>📋 Use a Template</h4>
+            <p>Pre-fill from a standard config for this track & type.</p>
+            <button
+              className={styles.optionButton}
+              onClick={() => { !readOnly && onSelectTemplate() }}
+              disabled={readOnly}
+            >
+              Use Template
+            </button>
+          </div>
 
-        <div className={styles.optionCard}>
-          <h4>✏️ Configure Manually</h4>
-          <p>Set up each workflow weight, mode, and threshold yourself.</p>
-          <button
-            className={styles.optionButton}
-            onClick={onSelectManual}
-          >
-            Configure Manually
-          </button>
+          <div className={styles.optionCard}>
+            <h4>✏️ Configure Manually</h4>
+            <p>Set up each workflow weight, mode, and threshold yourself.</p>
+            <button
+              className={styles.optionButton}
+              onClick={() => { !readOnly && onSelectManual() }}
+              disabled={readOnly}
+            >
+              Configure Manually
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {assignedWorkflows.length > 0 && (
         <div className={styles.assignedWorkflowsSection}>
