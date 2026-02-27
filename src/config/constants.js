@@ -420,8 +420,7 @@ export const READ_ONLY_ROLES = [
 ]
 
 export const ADMIN_ROLES = [
-  'administrator',
-  'connect admin'
+  'administrator'
 ]
 
 export const COPILOT_ROLES = [
