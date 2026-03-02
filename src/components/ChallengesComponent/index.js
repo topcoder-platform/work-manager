@@ -11,7 +11,7 @@ import { PROJECT_ROLES, PROJECT_STATUS, COPILOTS_URL, CHALLENGE_STATUS } from '.
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
-import { checkAdmin, checkReadOnlyRoles, checkAdminOrCopilot, checkManager } from '../../util/tc'
+import { checkAdmin, checkReadOnlyRoles, checkAdminOrCopilot, checkAdminOrCopilotOrManager, checkManager } from '../../util/tc'
 
 const ChallengesComponent = ({
   challenges,
@@ -52,6 +52,7 @@ const ChallengesComponent = ({
   const [loginUserRoleInProject, setLoginUserRoleInProject] = useState('')
   const isReadOnly = checkReadOnlyRoles(auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
   const isAdminOrCopilot = checkAdminOrCopilot(auth.token, activeProject)
+  const canEditProject = checkAdminOrCopilotOrManager(auth.token, activeProject)
 
   const projectStatus = activeProject && activeProject.status
     ? activeProject.status.toUpperCase()
@@ -77,7 +78,7 @@ const ChallengesComponent = ({
             {activeProject ? activeProject.name : ''}
             {activeProject && activeProject.status && <ProjectStatus className={styles.status} status={activeProject.status} />}
           </div>
-          {activeProject && activeProject.id && isAdminOrCopilot && (
+          {activeProject && activeProject.id && canEditProject && (
             <span>
               (
               <Link

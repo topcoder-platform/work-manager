@@ -5,7 +5,7 @@ import { withRouter, Link } from 'react-router-dom'
 import { connect } from 'react-redux'
 import PropTypes from 'prop-types'
 import Loader from '../../components/Loader'
-import { checkAdminOrCopilot, checkIsUserInvitedToProject, checkManager } from '../../util/tc'
+import { checkAdminOrCopilotOrManager, checkIsUserInvitedToProject, checkManager } from '../../util/tc'
 import { PrimaryButton } from '../../components/Buttons'
 import Select from '../../components/Select'
 import ProjectCard from '../../components/ProjectCard'
@@ -49,7 +49,7 @@ const Projects = ({ projects, auth, isLoading, projectsCount, loadProjects, load
     <div className={styles.container}>
       <div className={styles.headerLine}>
         <h2>Projects</h2>
-        {checkAdminOrCopilot(auth.token) && (
+        {checkAdminOrCopilotOrManager(auth.token) && (
           <Link className={styles.buttonNewProject} to={`/projects/new`}>
             <PrimaryButton text={'New Project'} type={'info'} />
           </Link>

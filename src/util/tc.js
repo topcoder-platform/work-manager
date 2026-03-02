@@ -269,6 +269,14 @@ export const checkAdminOrCopilot = (token, project) => {
   return isAdmin || (isCopilot && canManageProject)
 }
 
+/**
+ * Checks if token has any of the admin, copilot, or manager roles
+ * @param  token
+ */
+export const checkAdminOrCopilotOrManager = (token, project) => {
+  return checkManager(token) || checkAdminOrCopilot(token, project)
+}
+
 export const checkIsUserInvitedToProject = (token, project) => {
   if (!token) {
     return
