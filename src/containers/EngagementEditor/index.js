@@ -119,9 +119,7 @@ class EngagementEditorContainer extends Component {
       validationErrors: {},
       showDeleteModal: false,
       isSaving: false,
-      memberIdLookup: {},
-      projects: [],
-      isLoadingProjects: false
+      memberIdLookup: {}
     }
 
     this.onUpdateInput = this.onUpdateInput.bind(this)
@@ -132,7 +130,7 @@ class EngagementEditorContainer extends Component {
     this.onDelete = this.onDelete.bind(this)
     this.onToggleDelete = this.onToggleDelete.bind(this)
     this.resolveMemberIds = this.resolveMemberIds.bind(this)
-    this.loadProjects = this.loadProjects.bind(this)
+    this.loadParentProjectOptions = this.loadParentProjectOptions.bind(this)
   }
 
   async componentDidMount () {
@@ -144,45 +142,40 @@ class EngagementEditorContainer extends Component {
     }
     if (engagementId) {
       await loadEngagementDetails(projectId, engagementId)
-      await this.loadProjects()
     }
   }
 
   /**
-   * Loads all paged projects available to the current member for Parent Project selection.
+   * Loads parent project autocomplete options for the engagement editor.
    *
-   * @returns {Promise<void>}
+   * Performs a name-filtered lookup and returns a small option set so the
+   * editor does not fetch every project before opening the dropdown.
+   *
+   * @param {string} inputValue User-entered search text.
+   * @returns {Promise<Array<{label: string, value: string}>>} Select options.
    */
-  async loadProjects () {
-    this.setState({ isLoadingProjects: true })
+  async loadParentProjectOptions (inputValue) {
+    const query = typeof inputValue === 'string' ? inputValue.trim() : ''
+    if (query.length < 2) {
+      return []
+    }
+
     try {
-      const perPage = 100
-      let page = 1
-      let hasMore = true
-      let projects = []
-
-      while (hasMore) {
-        const response = await fetchMemberProjects({ page, perPage })
-        const pageProjects = _.get(response, 'projects', [])
-        const totalPages = _.get(response, 'pagination.xTotalPages', null)
-        projects = projects.concat(pageProjects)
-        if (totalPages) {
-          hasMore = page < totalPages
-        } else {
-          hasMore = pageProjects.length === perPage
-        }
-        page += 1
-      }
-
-      this.setState({
-        projects: _.uniqBy(projects, 'id'),
-        isLoadingProjects: false
+      const response = await fetchMemberProjects({
+        name: query,
+        page: 1,
+        perPage: 20,
+        sort: 'name asc'
       })
+      const projects = _.get(response, 'projects', [])
+      return _.uniqBy(projects, 'id')
+        .filter((project) => project && project.id != null)
+        .map((project) => ({
+          label: project.name || `Project ${project.id}`,
+          value: String(project.id)
+        }))
     } catch (error) {
-      this.setState({
-        projects: [],
-        isLoadingProjects: false
-      })
+      return []
     }
   }
 
@@ -733,8 +726,8 @@ class EngagementEditorContainer extends Component {
         isLoading={isLoading}
         isSaving={this.state.isSaving}
         canEdit={this.canEdit()}
-        projects={this.state.projects}
-        isLoadingProjects={this.state.isLoadingProjects}
+        currentProjectName={_.get(this.props.projectDetail, 'name', null)}
+        loadParentProjectOptions={this.loadParentProjectOptions}
         canEditParentProject={this.canEditParentProject()}
         submitTriggered={this.state.submitTriggered}
         validationErrors={this.state.validationErrors}

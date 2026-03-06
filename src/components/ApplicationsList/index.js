@@ -14,6 +14,7 @@ import styles from './ApplicationsList.module.scss'
 import { PROFILE_URL } from '../../config/constants'
 import { serializeTentativeAssignmentDate } from '../../util/assignmentDates'
 import { isCapacityLimitError } from '../../util/applicationErrors'
+import { getCountableAssignments } from '../../util/engagements'
 
 const STATUS_OPTIONS = [
   { label: 'All', value: 'all' },
@@ -250,6 +251,37 @@ const ApplicationsList = ({
       .filter(Boolean)
     return new Set(activeAssignmentIds.map((memberId) => String(memberId)))
   }, [engagement])
+  const countableAssignments = useMemo(() => {
+    const assignments = Array.isArray(engagement && engagement.assignments)
+      ? engagement.assignments
+      : []
+    return getCountableAssignments(assignments)
+  }, [engagement])
+  const countableAssignmentMemberIds = useMemo(() => {
+    const memberIds = countableAssignments
+      .map((assignment) => assignment && assignment.memberId)
+      .filter(Boolean)
+    return new Set(memberIds.map((memberId) => String(memberId)))
+  }, [countableAssignments])
+  const assignedMemberCount = useMemo(() => {
+    if (countableAssignments.length) {
+      return countableAssignments.length
+    }
+
+    const assignedMembers = Array.isArray(engagement && engagement.assignedMembers)
+      ? engagement.assignedMembers
+      : []
+    if (assignedMembers.length) {
+      return assignedMembers.length
+    }
+
+    const assignedMemberHandles = Array.isArray(engagement && engagement.assignedMemberHandles)
+      ? engagement.assignedMemberHandles
+      : []
+    return assignedMemberHandles.length
+  }, [countableAssignments, engagement])
+  const requiredMemberCountValue = Number(engagement && engagement.requiredMemberCount)
+  const hasRequiredMemberCount = Number.isInteger(requiredMemberCountValue) && requiredMemberCountValue > 0
 
   const filteredApplications = useMemo(() => {
     let results = applications || []
@@ -363,6 +395,14 @@ const ApplicationsList = ({
     }
     if (option.value === 'SELECTED') {
       if (application.status === 'SELECTED') {
+        return
+      }
+      const applicationUserId = application.userId || application.user_id || application.memberId || application.member_id
+      const isExistingAssignedMember = applicationUserId != null && countableAssignmentMemberIds.has(String(applicationUserId))
+      const isAtCapacity = hasRequiredMemberCount && assignedMemberCount >= requiredMemberCountValue
+
+      if (isAtCapacity && !isExistingAssignedMember) {
+        setCapacityError(true)
         return
       }
       openAcceptModal(application)
@@ -650,6 +690,10 @@ ApplicationsList.propTypes = {
     assignedMembers: PropTypes.arrayOf(
       PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     ),
+    assignedMemberHandles: PropTypes.arrayOf(
+      PropTypes.string
+    ),
+    requiredMemberCount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     assignments: PropTypes.arrayOf(PropTypes.shape({
       memberId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
       status: PropTypes.string,

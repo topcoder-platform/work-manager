@@ -265,7 +265,7 @@ class Routes extends React.Component {
               <FooterContainer />
             )()}
           />
-          {isAdmin && (
+          {canAccessEngagements && (
             <Route exact path='/engagements'
               render={() => renderApp(
                 <EngagementsList allEngagements />,
@@ -275,12 +275,12 @@ class Routes extends React.Component {
               )()}
             />
           )}
-          {!isAdmin && (
+          {!canAccessEngagements && (
             <Route exact path='/engagements'
               render={() => renderApp(
                 <Challenges
                   menu='NULL'
-                  warnMessage={'You need Admin role to view all engagements'}
+                  warnMessage={'You need Admin or Talent Manager role to view engagements'}
                 />,
                 <TopBarContainer />,
                 <Tab />,
