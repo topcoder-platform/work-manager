@@ -446,13 +446,13 @@ const EngagementPayment = ({
                         <span className={styles.memberMetaLabel}>Tentative End</span>
                         <span className={styles.memberMetaValue}>{endDate}</span>
                       </div>
-                      {assignmentStatusLower === 'terminated' && member.terminationReason && (
-                        <div className={styles.memberMetaItem}>
-                          <span className={styles.memberMetaLabel}>Termination Reason</span>
-                          <span className={styles.memberMetaValue}>{member.terminationReason}</span>
-                        </div>
-                      )}
                     </div>
+                    {assignmentStatusLower === 'terminated' && member.terminationReason && (
+                      <div className={styles.memberTerminationReason}>
+                        <span className={styles.memberMetaLabel}>Termination Reason</span>
+                        <span className={styles.memberMetaValue}>{member.terminationReason}</span>
+                      </div>
+                    )}
                   </div>
                   <div className={styles.memberActions}>
                     {/* Payment history is available for any assignment status with an assignment ID. */}
