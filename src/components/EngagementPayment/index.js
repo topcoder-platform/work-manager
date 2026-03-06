@@ -175,6 +175,11 @@ const getAssignmentRemarks = (member) => {
   return ''
 }
 
+/**
+ * Displays assignment payment controls and history for engagement members.
+ * Payment history is available for any assignment status as long as an
+ * assignment ID is present.
+ */
 const EngagementPayment = ({
   engagement,
   projectName,
@@ -387,7 +392,8 @@ const EngagementPayment = ({
             const assignmentStatusRaw = getAssignmentStatus(member)
             const normalizedAssignmentStatus = normalizeAssignmentStatus(assignmentStatusRaw)
             const assignmentStatusLabel = normalizedAssignmentStatus || 'Unknown'
-            const isAssignedStatus = normalizedAssignmentStatus.toLowerCase() === 'assigned'
+            const assignmentStatusLower = normalizedAssignmentStatus.toLowerCase()
+            const isAssignedStatus = assignmentStatusLower === 'assigned'
             const isRowTerminating = assignmentKey && terminatingAssignments
               ? Boolean(terminatingAssignments[assignmentKey])
               : false
@@ -440,20 +446,29 @@ const EngagementPayment = ({
                         <span className={styles.memberMetaLabel}>Tentative End</span>
                         <span className={styles.memberMetaValue}>{endDate}</span>
                       </div>
+                      {assignmentStatusLower === 'terminated' && member.terminationReason && (
+                        <div className={styles.memberMetaItem}>
+                          <span className={styles.memberMetaLabel}>Termination Reason</span>
+                          <span className={styles.memberMetaValue}>{member.terminationReason}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className={styles.memberActions}>
+                    {/* Payment history is available for any assignment status with an assignment ID. */}
+                    {hasAssignmentId && (
+                      <button
+                        type='button'
+                        className={styles.toggleButton}
+                        onClick={() => openPaymentHistoryModal(member)}
+                        disabled={!assignmentKey}
+                        aria-haspopup='dialog'
+                      >
+                        Show Payment History
+                      </button>
+                    )}
                     {isAssignedStatus && (
                       <>
-                        <button
-                          type='button'
-                          className={styles.toggleButton}
-                          onClick={() => openPaymentHistoryModal(member)}
-                          disabled={!assignmentKey}
-                          aria-haspopup='dialog'
-                        >
-                          Show Payment History
-                        </button>
                         <PrimaryButton
                           text='Pay'
                           type='info'

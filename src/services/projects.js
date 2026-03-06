@@ -60,13 +60,39 @@ export function fetchMemberProjects (filters) {
 }
 
 /**
- * Api request for fetching project by id
- * @param id Project id
- * @returns {Promise<*>}
+ * Api request for fetching a project by id with best-effort member-handle enrichment.
+ *
+ * After loading the project, this resolves any members with missing `handle`
+ * values through `MEMBERS_API_URL` and merges resolved handles back into
+ * `project.members`.
+ *
+ * @param {string|number} id Project id.
+ * @returns {Promise<Object>} Project payload with `members` enriched when possible.
  */
 export async function fetchProjectById (id) {
   const response = await axiosInstance.get(`${PROJECTS_API_URL}/${id}`)
-  return _.get(response, 'data')
+  const project = _.get(response, 'data')
+  const members = _.get(project, 'members', [])
+  const membersWithoutHandle = members.filter(member => !member.handle && member.userId)
+
+  if (!membersWithoutHandle.length) {
+    return project
+  }
+
+  try {
+    const missingUserIds = _.uniq(membersWithoutHandle.map(member => member.userId))
+    const membersByUserId = await fetchInviteMembers(missingUserIds)
+
+    return {
+      ...project,
+      members: members.map(member => ({
+        ...member,
+        handle: member.handle || _.get(membersByUserId, [member.userId, 'handle'], null)
+      }))
+    }
+  } catch (error) {
+    return project
+  }
 }
 
 /**

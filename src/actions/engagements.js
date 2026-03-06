@@ -195,9 +195,19 @@ const hydrateEngagementSkills = async (engagements = []) => {
  * @param {String} status
  * @param {String} filterName
  * @param {Boolean} includePrivate
+ * @param {Array<String>} projectIds
  */
-export function loadEngagements (projectId, status = 'all', filterName = '', includePrivate = false) {
+export function loadEngagements (projectId, status = 'all', filterName = '', includePrivate = false, projectIds = []) {
+  const hasProjectIdsArg = arguments.length >= 5
   return async (dispatch) => {
+    if (hasProjectIdsArg && Array.isArray(projectIds) && !projectIds.length) {
+      dispatch({
+        type: LOAD_ENGAGEMENTS_SUCCESS,
+        engagements: []
+      })
+      return
+    }
+
     dispatch({
       type: LOAD_ENGAGEMENTS_PENDING
     })
@@ -214,6 +224,9 @@ export function loadEngagements (projectId, status = 'all', filterName = '', inc
     }
     if (includePrivate) {
       filters.includePrivate = true
+    }
+    if (projectIds && projectIds.length) {
+      filters.projectIds = projectIds
     }
 
     try {

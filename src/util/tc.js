@@ -270,8 +270,25 @@ export const checkAdminOrCopilot = (token, project) => {
 }
 
 /**
+ * Checks whether the authenticated user is a member of the specified project.
+ * This project-level check grants access regardless of the user's global JWT roles.
+ *
+ * @param {String} token JWT token for the authenticated user.
+ * @param {Object} projectDetail Project detail payload that includes `members`.
+ * @returns {Boolean} `true` when `projectDetail.members` contains the token's `userId`.
+ */
+export const checkIsProjectMember = (token, projectDetail) => {
+  const tokenData = decodeToken(token)
+  const userId = _.get(tokenData, 'userId')
+
+  return !!(projectDetail && projectDetail.members && projectDetail.members.some(member => member.userId === userId))
+}
+
+/**
  * Checks if token has any of the admin, copilot, or manager roles
+ * When `project` is omitted or empty, the check is based solely on the user's global JWT roles.
  * @param  token
+ * @param  project
  */
 export const checkAdminOrCopilotOrManager = (token, project) => {
   return checkManager(token) || checkAdminOrCopilot(token, project)

@@ -89,6 +89,15 @@ class Users extends Component {
     }
   }
 
+  /**
+   * Loads project details and stores members/invites in local state.
+   *
+   * `projectMembers` comes from `fetchProjectById`, which enriches missing
+   * member handles through `MEMBERS_API_URL` before resolving.
+   *
+   * @param {string|number} projectId Project id to load.
+   * @returns {void}
+   */
   loadProject (projectId) {
     this.setState({ isLoadingProject: true })
     fetchProjectById(projectId).then(async (project) => {

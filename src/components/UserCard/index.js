@@ -13,6 +13,12 @@ const theme = {
   container: styles.modalContainer
 }
 
+/**
+ * Renders one project member or invite card with role controls.
+ *
+ * `user.handle` may be null/empty for some members; this component falls back
+ * to `user.userId` and then `"(unknown user)"` when rendering labels/messages.
+ */
 class UserCard extends Component {
   constructor (props) {
     super(props)
@@ -61,19 +67,21 @@ class UserCard extends Component {
   render () {
     const { isInvite, user, onRemoveClick, isEditable } = this.props
     const showRadioButtons = _.includes(_.values(PROJECT_ROLES), user.role)
+    const userDisplayName = user.handle || user.userId || '(unknown user)'
+    const inviteDisplayName = user.email || user.handle || user.userId || '(unknown user)'
     return (
       <div>
         {
           this.state.isUpdatingPermission && (
             <AlertModal
-              message={`Updating permission for ${user.handle}...`}
+              message={`Updating permission for ${userDisplayName}...`}
               theme={theme}
             />
           )
         }
         {this.state.showWarningModal && (
           <AlertModal
-            title={`Cannot update permission for ${user.handle}`}
+            title={`Cannot update permission for ${userDisplayName}`}
             message={this.state.permissionUpdateError}
             theme={theme}
             closeText='OK'
@@ -91,7 +99,7 @@ class UserCard extends Component {
         )}
         <div className={styles.item}>
           <div className={cn(styles.col5)}>
-            {isInvite ? (user.email || user.handle) : user.handle}
+            {isInvite ? inviteDisplayName : userDisplayName}
           </div>
           {!isInvite && (
             <>

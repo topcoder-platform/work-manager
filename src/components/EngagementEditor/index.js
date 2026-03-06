@@ -93,6 +93,16 @@ const formatAssignmentDate = (value) => {
   return moment(value).format('MMM DD, YYYY HH:mm')
 }
 
+/**
+ * Engagement editor form.
+ *
+ * @param {Object} props Component props.
+ * @param {Object} props.engagement Engagement draft values.
+ * @param {Array<Object>} props.projects Available projects for Parent Project selection.
+ * @param {boolean} props.isLoadingProjects Whether parent project options are loading.
+ * @param {boolean} props.canEditParentProject Whether current user can edit Parent Project.
+ * @returns {JSX.Element}
+ */
 const EngagementEditor = ({
   engagement,
   projectId,
@@ -100,6 +110,9 @@ const EngagementEditor = ({
   isLoading,
   isSaving,
   canEdit,
+  projects,
+  isLoadingProjects,
+  canEditParentProject,
   submitTriggered,
   validationErrors,
   showDeleteModal,
@@ -203,6 +216,29 @@ const EngagementEditor = ({
   const selectedCountries = (engagement.countries || []).map(code => {
     return countryOptionsByValue[code] || { label: code, value: code }
   })
+  const projectOptions = useMemo(() => {
+    if (!Array.isArray(projects)) {
+      return []
+    }
+    return projects
+      .filter((project) => project && project.id != null)
+      .map((project) => ({
+        label: project.name || `Project ${project.id}`,
+        value: String(project.id)
+      }))
+  }, [projects])
+  const selectedParentProjectOption = useMemo(() => {
+    const selectedId = engagement.projectId != null
+      ? String(engagement.projectId)
+      : (projectId != null ? String(projectId) : null)
+    if (!selectedId) {
+      return null
+    }
+    return projectOptions.find((option) => option.value === selectedId) || null
+  }, [engagement.projectId, projectId, projectOptions])
+  const parentProjectName = selectedParentProjectOption
+    ? selectedParentProjectOption.label
+    : (engagement.projectName || '-')
   const selectedRoleOption = useMemo(() => {
     if (!engagement.role) {
       return null
@@ -884,6 +920,34 @@ const EngagementEditor = ({
               </div>
             </div>
 
+            {!isNew && (
+              <div className={styles.row}>
+                <div className={cn(styles.field, styles.col1)}>
+                  <label>Parent Project :</label>
+                </div>
+                <div className={cn(styles.field, styles.col2)}>
+                  {canEdit && canEditParentProject ? (
+                    <Select
+                      className={styles.selectInput}
+                      useBottomBorder
+                      options={projectOptions}
+                      value={selectedParentProjectOption}
+                      isLoading={isLoadingProjects}
+                      onChange={(option) => onUpdateInput({
+                        target: {
+                          name: 'projectId',
+                          value: option ? String(option.value) : null
+                        }
+                      })}
+                      isClearable
+                    />
+                  ) : (
+                    <div className={styles.readOnlyValue}>{parentProjectName}</div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className={styles.row}>
               <div className={cn(styles.field, styles.col1)}>
                 <label htmlFor={canEdit ? 'requiredMemberCount' : undefined}>Required Members :</label>
@@ -1076,6 +1140,9 @@ EngagementEditor.defaultProps = {
   isLoading: false,
   isSaving: false,
   canEdit: true,
+  projects: [],
+  isLoadingProjects: false,
+  canEditParentProject: false,
   submitTriggered: false,
   validationErrors: {},
   showDeleteModal: false,
@@ -1092,6 +1159,8 @@ EngagementEditor.defaultProps = {
 EngagementEditor.propTypes = {
   engagement: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    projectName: PropTypes.string,
     title: PropTypes.string,
     description: PropTypes.string,
     durationWeeks: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
@@ -1141,6 +1210,12 @@ EngagementEditor.propTypes = {
   isLoading: PropTypes.bool,
   isSaving: PropTypes.bool,
   canEdit: PropTypes.bool,
+  projects: PropTypes.arrayOf(PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    name: PropTypes.string
+  })),
+  isLoadingProjects: PropTypes.bool,
+  canEditParentProject: PropTypes.bool,
   submitTriggered: PropTypes.bool,
   validationErrors: PropTypes.shape({
     title: PropTypes.string,

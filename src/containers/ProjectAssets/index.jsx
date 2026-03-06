@@ -46,6 +46,7 @@ const ProjectAssets = ({
   loggedInUser,
   token
 }) => {
+  const projectDetailId = _.get(projectDetail, 'id')
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedTab, setSelectedTab] = useState(0)
   const [showDeleteFile, setShowDeleteFile] = useState(null)
@@ -158,10 +159,10 @@ const ProjectAssets = ({
   }, [files, links, selectedTab])
 
   useEffect(() => {
-    if (projectId) {
+    if (projectId && `${projectDetailId || ''}` !== `${projectId}`) {
       loadOnlyProjectInfo(projectId)
     }
-  }, [projectId])
+  }, [loadOnlyProjectInfo, projectId, projectDetailId])
 
   if (isLoading) {
     return <Loader />

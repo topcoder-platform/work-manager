@@ -1,4 +1,17 @@
-/* Component to render select user field */
+/**
+ * Multi-select field for project users.
+ *
+ * @param {Object} props Component props.
+ * @param {Array<string|number>} props.value Selected user ids.
+ * @param {Function} props.onChangeValue Callback invoked with selected user ids.
+ * @param {string} props.id Field id.
+ * @param {Array<Object>} props.projectMembers Project member records with `userId` and optional `handle`.
+ * @param {Object} props.loggedInUser Logged in user record.
+ * @returns {JSX.Element} User select component.
+ *
+ * Members without `handle` are excluded from dropdown options. For already
+ * selected users missing a handle, this falls back to `userId` for labels.
+ */
 
 import React, { useMemo } from 'react'
 import _ from 'lodash'
@@ -14,10 +27,10 @@ const FieldUserAutoComplete = ({
 }) => {
   const selectedUsers = useMemo(() => {
     return value.map(item => {
-      const selectedUser = _.find(projectMembers, { userId: item })
+      const selectedUser = _.find(projectMembers, { userId: item }) || {}
       return {
-        label: selectedUser.handle,
-        value: selectedUser.userId
+        label: selectedUser.handle || selectedUser.userId || item,
+        value: selectedUser.userId || item
       }
     })
   }, [value, projectMembers])
@@ -34,7 +47,7 @@ const FieldUserAutoComplete = ({
         onChangeValue((values || []).map(value => value.value))
       }}
       options={(projectMembers || [])
-        .filter(member => member.userId !== loggedInUser.userId)
+        .filter(member => member.userId !== loggedInUser.userId && member.handle)
         .map(member => ({ value: member.userId, label: member.handle }))}
     />
   )

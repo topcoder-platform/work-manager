@@ -25,6 +25,7 @@ import EngagementExperience from './containers/EngagementExperience'
 import { getFreshToken, decodeToken } from 'tc-auth-lib'
 import { saveToken } from './actions/auth'
 import { loadChallengeDetails } from './actions/challenges'
+import { loadOnlyProjectInfo } from './actions/projects'
 import { connect } from 'react-redux'
 import {
   checkAllowedRoles,
@@ -33,7 +34,8 @@ import {
   checkAdmin,
   checkCopilot,
   checkManager,
-  checkAdminOrTalentManager
+  checkAdminOrTalentManager,
+  checkIsProjectMember
 } from './util/tc'
 import Users from './containers/Users'
 import Groups from './containers/Groups'
@@ -86,8 +88,20 @@ RedirectToChallenge.propTypes = {
 const ConnectRedirectToChallenge = connect(mapStateToProps, mapDispatchToProps)(RedirectToChallenge)
 
 class Routes extends React.Component {
+  constructor (props) {
+    super(props)
+
+    this.state = {
+      assetsAccessStatusByProjectId: {}
+    }
+  }
+
   componentWillMount () {
     this.checkAuth()
+  }
+
+  componentDidMount () {
+    this.resolveAssetsRouteAccess(this.props)
   }
 
   checkAuth () {
@@ -102,7 +116,99 @@ class Routes extends React.Component {
     })
   }
 
-  componentDidUpdate () {
+  /**
+   * Parses the pathname and returns the project id for assets routes.
+   *
+   * @param {String} pathname current location pathname
+   * @returns {String|null} assets route project id
+   */
+  getAssetsProjectIdFromPath (pathname) {
+    const match = (pathname || '').match(/^\/projects\/([^/]+)\/assets\/?$/)
+    return _.get(match, '[1]', null)
+  }
+
+  /**
+   * Stores per-project access resolution status for assets routing.
+   *
+   * @param {String} projectId route project id
+   * @param {String} status resolution status (`loading` or `denied`)
+   */
+  setAssetsAccessStatus (projectId, status) {
+    const normalizedProjectId = `${projectId}`
+    this.setState(prevState => ({
+      assetsAccessStatusByProjectId: {
+        ...prevState.assetsAccessStatusByProjectId,
+        [normalizedProjectId]: status
+      }
+    }))
+  }
+
+  /**
+   * Clears a stored assets access status for the provided project id.
+   *
+   * @param {String} projectId route project id
+   */
+  clearAssetsAccessStatus (projectId) {
+    const normalizedProjectId = `${projectId}`
+    this.setState(prevState => {
+      if (!_.has(prevState.assetsAccessStatusByProjectId, normalizedProjectId)) {
+        return null
+      }
+
+      return {
+        assetsAccessStatusByProjectId: _.omit(prevState.assetsAccessStatusByProjectId, normalizedProjectId)
+      }
+    })
+  }
+
+  /**
+   * Resolves assets access for direct `/projects/:projectId/assets` navigation.
+   * This keeps authorization scoped to the requested route project id.
+   *
+   * @param {Object} props current component props
+   * @param {Object} prevProps previous component props
+   */
+  resolveAssetsRouteAccess (props, prevProps = {}) {
+    const projectId = this.getAssetsProjectIdFromPath(_.get(props, 'location.pathname'))
+    if (!projectId || !props.isLoggedIn || !props.token) {
+      return
+    }
+
+    if (checkAdmin(props.token) || checkCopilot(props.token)) {
+      return
+    }
+
+    const isProjectDetailForRequestedProject = `${_.get(props, 'projectDetail.id', '')}` === `${projectId}`
+    if (isProjectDetailForRequestedProject) {
+      this.clearAssetsAccessStatus(projectId)
+      return
+    }
+
+    const currentPath = _.get(props, 'location.pathname')
+    const previousPath = _.get(prevProps, 'location.pathname')
+    const isNewAssetsNavigation = currentPath !== previousPath
+    const accessStatus = _.get(this.state.assetsAccessStatusByProjectId, `${projectId}`)
+    if (accessStatus === 'loading' || (accessStatus === 'denied' && !isNewAssetsNavigation)) {
+      return
+    }
+
+    this.setAssetsAccessStatus(projectId, 'loading')
+    this.props.loadOnlyProjectInfo(projectId)
+      .then(() => {
+        this.clearAssetsAccessStatus(projectId)
+      })
+      .catch((error) => {
+        const responseStatus = _.get(error, 'payload.response.status', _.get(error, 'response.status'))
+        if (responseStatus === 403) {
+          this.setAssetsAccessStatus(projectId, 'denied')
+          return
+        }
+
+        this.clearAssetsAccessStatus(projectId)
+      })
+  }
+
+  componentDidUpdate (prevProps) {
     const { search } = this.props.location
     const params = new URLSearchParams(search)
     if (!_.isEmpty(params.get('beta'))) {
@@ -113,6 +219,8 @@ class Routes extends React.Component {
       }
       this.props.history.push(this.props.location.pathname)
     }
+
+    this.resolveAssetsRouteAccess(this.props, prevProps)
   }
 
   render () {
@@ -120,11 +228,12 @@ class Routes extends React.Component {
       return null
     }
 
-    const isAllowed = checkAllowedRoles(_.get(decodeToken(this.props.token), 'roles'))
-    const isReadOnly = checkReadOnlyRoles(this.props.token)
-    const isCopilot = checkCopilot(this.props.token)
-    const isAdmin = checkAdmin(this.props.token)
-    const canAccessEngagements = checkAdminOrTalentManager(this.props.token)
+    const { token, projectDetail, hasProjectAccess } = this.props
+    const isAllowed = checkAllowedRoles(_.get(decodeToken(token), 'roles'))
+    const isReadOnly = checkReadOnlyRoles(token)
+    const isCopilot = checkCopilot(token)
+    const isAdmin = checkAdmin(token)
+    const canAccessEngagements = checkAdminOrTalentManager(token)
 
     return (
       <React.Fragment>
@@ -203,20 +312,41 @@ class Routes extends React.Component {
               <FooterContainer />
             )()}
           />
-          {(isCopilot || isAdmin) && (
-            <Route
-              exact
-              path='/projects/:projectId/assets'
-              render={({ match }) =>
-                renderApp(
-                  <ProjectAssets projectId={match.params.projectId} />,
+          <Route
+            exact
+            path='/projects/:projectId/assets'
+            render={({ match }) => {
+              const routeProjectId = _.get(match.params, 'projectId')
+              const isProjectDetailForRequestedProject = `${_.get(projectDetail, 'id', '')}` === `${routeProjectId}`
+              const hasScopedProjectAccess = isProjectDetailForRequestedProject && hasProjectAccess
+              const isProjectMemberForRequestedProject = isProjectDetailForRequestedProject && checkIsProjectMember(token, projectDetail)
+              const canViewRequestedProjectAssets = isCopilot || isAdmin || hasScopedProjectAccess || isProjectMemberForRequestedProject
+              const assetsAccessStatus = _.get(this.state.assetsAccessStatusByProjectId, `${routeProjectId}`)
+              const canResolveRequestedProjectAccess = !isCopilot &&
+                !isAdmin &&
+                !isProjectDetailForRequestedProject &&
+                assetsAccessStatus !== 'denied'
+
+              if (!canViewRequestedProjectAssets && !canResolveRequestedProjectAccess) {
+                return renderApp(
+                  <Challenges
+                    menu='NULL'
+                    warnMessage={'You are not authorized to view this project assets library'}
+                  />,
                   <TopBarContainer />,
-                  <Tab projectId={match.params.projectId} />,
+                  <Tab projectId={routeProjectId} />,
                   <FooterContainer />
                 )()
               }
-            />
-          )}
+
+              return renderApp(
+                <ProjectAssets projectId={routeProjectId} />,
+                <TopBarContainer />,
+                <Tab projectId={routeProjectId} />,
+                <FooterContainer />
+              )()
+            }}
+          />
           {
             !isReadOnly && (
               <Route exact path='/users'
@@ -420,20 +550,26 @@ class Routes extends React.Component {
   }
 }
 
-mapStateToProps = ({ auth }) => ({
-  ...auth
+mapStateToProps = ({ auth, projects }) => ({
+  ...auth,
+  projectDetail: projects.projectDetail,
+  hasProjectAccess: projects.hasProjectAccess
 })
 
 mapDispatchToProps = {
-  saveToken
+  saveToken,
+  loadOnlyProjectInfo
 }
 
 Routes.propTypes = {
   saveToken: PropTypes.func,
+  loadOnlyProjectInfo: PropTypes.func,
   location: PropTypes.object,
   isLoggedIn: PropTypes.bool,
   token: PropTypes.string,
-  history: PropTypes.object
+  history: PropTypes.object,
+  projectDetail: PropTypes.object,
+  hasProjectAccess: PropTypes.bool
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Routes))
