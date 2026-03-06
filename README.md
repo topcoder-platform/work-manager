@@ -29,6 +29,68 @@ This is the frontend application for creating and managing challenges.
 Production configuration is in `config/constants/production.js`
 Development configuration is in `config/constants/development.js`
 
+## Project Invitation Flow
+
+### Route handled
+
+`/projects/:projectId/invitation/:action?`
+
+Handled by `ProjectInvitations` container (`src/containers/ProjectInvitations/index.js`).
+
+### Email link format
+
+When `projects-api-v6` sends an invite email to a **known user** (existing Topcoder account), the email contains two action buttons whose links must use this exact format:
+
+| Button | URL |
+| --- | --- |
+| Join Project | `{WORK_MANAGER_URL}/projects/{projectId}/invitation/accepted?source=email` |
+| Decline Invitation | `{WORK_MANAGER_URL}/projects/{projectId}/invitation/refused?source=email` |
+
+- `{WORK_MANAGER_URL}` is the `WORK_MANAGER_URL` env var configured in `projects-api-v6`.
+- The `?source=email` query parameter is forwarded in the `PATCH /v6/projects/{projectId}/invites/{inviteId}` body as `{ status, source }`.
+
+### Automatic action behaviour
+
+When a user clicks either link and lands on the route with `:action` set, `ProjectInvitations` automatically calls `updateProjectMemberInvite` without showing the confirmation modal. After success it redirects to:
+
+- `accepted` → `/projects/{projectId}/challenges`
+- `refused` → `/projects`
+
+### Manual (modal) flow
+
+When the route is accessed **without** an `:action` segment (e.g., navigating directly to `/projects/{projectId}/invitation`), the container shows a `ConfirmationModal` with **Join project** / **Decline** buttons.
+
+### API call made
+
+Both flows call `PATCH /v6/projects/{projectId}/invites/{inviteId}` via `updateProjectMemberInvite` in `work-manager/src/services/projectMemberInvites.js`, with body `{ status: 'accepted' | 'refused', source?: 'email' }`.
+
+### Env var cross-reference
+
+`WORK_MANAGER_URL` is documented in the `projects-api-v6` README under Environment Variables. Ensure it is set to the deployed work-manager origin (no trailing slash), e.g.:
+
+- Dev: `https://challenges.topcoder-dev.com`
+- Prod: `https://work.topcoder.com`
+
+### Sequence diagram
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Email
+    participant WorkManager
+    participant ProjectInvitations
+    participant ProjectsAPIv6
+
+    ProjectsAPIv6->>Email: sendInviteEmail (POST /invites)
+    Email-->>User: Join Project button → WORK_MANAGER_URL/projects/{id}/invitation/accepted?source=email
+    Email-->>User: Decline button → WORK_MANAGER_URL/projects/{id}/invitation/refused?source=email
+    User->>WorkManager: GET /projects/{id}/invitation/accepted?source=email
+    WorkManager->>ProjectInvitations: render (automaticAction = 'accepted')
+    ProjectInvitations->>ProjectsAPIv6: PATCH /v6/projects/{id}/invites/{inviteId} {status:'accepted', source:'email'}
+    ProjectsAPIv6-->>ProjectInvitations: 200 OK
+    ProjectInvitations->>WorkManager: redirect /projects/{id}/challenges
+```
+
 ## Local Deployment Instructions
 
 1. First install dependencies
