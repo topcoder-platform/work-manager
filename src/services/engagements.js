@@ -14,7 +14,9 @@ export function fetchEngagements (filters = {}, params = {}) {
     ...filters,
     ...params
   }
-  const queryString = qs.stringify(query, { encode: false })
+  // Engagements API expects repeated query params for arrays (e.g. `projectIds=1&projectIds=2`).
+  // Bracket-indexed arrays (`projectIds[0]=1`) are ignored by the backend and can leak unscoped results.
+  const queryString = qs.stringify(query, { encode: false, arrayFormat: 'repeat' })
   const querySuffix = queryString ? `?${queryString}` : ''
   return axiosInstance.get(`${ENGAGEMENTS_API_URL}${querySuffix}`)
 }
