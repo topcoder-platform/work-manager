@@ -61,6 +61,45 @@ const normalizeTrackForScorecards = (challenge, metadata) => {
   return null
 }
 
+const normalizePhaseToken = (value) => (value || '')
+  .toString()
+  .toLowerCase()
+  .trim()
+  .replace(/\bphase\b$/, '')
+  .replace(/[-_\s]/g, '')
+
+const normalizeIdValue = (value) => (
+  value === undefined || value === null
+    ? ''
+    : value.toString()
+)
+
+const getScorecardsForPhase = (scorecards = [], phases = [], phaseId) => {
+  const normalizedPhaseId = normalizeIdValue(phaseId)
+  if (!normalizedPhaseId) {
+    return []
+  }
+
+  const selectedPhase = phases.find(phase => (
+    normalizeIdValue(phase.phaseId) === normalizedPhaseId ||
+      normalizeIdValue(phase.id) === normalizedPhaseId
+  ))
+
+  if (!selectedPhase || !selectedPhase.name) {
+    return []
+  }
+
+  const normalizedPhaseName = normalizePhaseToken(selectedPhase.name)
+  if (!normalizedPhaseName) {
+    return []
+  }
+
+  return scorecards.filter(scorecard => (
+    scorecard &&
+      normalizePhaseToken(scorecard.type) === normalizedPhaseName
+  ))
+}
+
 class ChallengeReviewerField extends Component {
   constructor (props) {
     super(props)
@@ -602,6 +641,31 @@ class ChallengeReviewerField extends Component {
         baseCoefficient: defaultReviewer.baseCoefficient,
         incrementalCoefficient: defaultReviewer.incrementalCoefficient
       })
+
+      if (updatedReviewers[index] && (updatedReviewers[index].isMemberReview !== false)) {
+        const { metadata = {} } = this.props
+        const scorecardsForPhase = getScorecardsForPhase(
+          metadata.scorecards || [],
+          challenge.phases || [],
+          value
+        )
+        const currentScorecardId = normalizeIdValue(updatedReviewers[index].scorecardId)
+        const hasCurrentScorecard = scorecardsForPhase.some(scorecard => (
+          normalizeIdValue(scorecard.id) === currentScorecardId
+        ))
+
+        if (!hasCurrentScorecard) {
+          const defaultScorecardId = normalizeIdValue(defaultReviewer && defaultReviewer.scorecardId)
+          const hasDefaultScorecard = defaultScorecardId && scorecardsForPhase.some(scorecard => (
+            normalizeIdValue(scorecard.id) === defaultScorecardId
+          ))
+          const fallbackScorecardId = hasDefaultScorecard
+            ? defaultScorecardId
+            : normalizeIdValue(scorecardsForPhase[0] && scorecardsForPhase[0].id)
+
+          fieldUpdate.scorecardId = fallbackScorecardId || ''
+        }
+      }
     }
 
     if (field === 'memberReviewerCount') {
@@ -661,29 +725,12 @@ class ChallengeReviewerField extends Component {
     const { challenge, metadata = {}, readOnly = false } = this.props
     const { scorecards = [], workflows = [] } = metadata
     const validationErrors = challenge.submitTriggered ? this.validateReviewer(reviewer) : {}
-    const selectedPhase = challenge.phases.find(p => p.phaseId === reviewer.phaseId)
+    const filteredScorecards = getScorecardsForPhase(
+      scorecards,
+      challenge.phases || [],
+      reviewer.phaseId
+    )
     const isDesignChallenge = challenge && challenge.trackId === DES_TRACK_ID
-    const normalize = (value) => (value || '')
-      .toString()
-      .toLowerCase()
-      .trim()
-      .replace(/\bphase\b$/, '')
-      .replace(/[-_\s]/g, '')
-
-    const filteredScorecards = scorecards.filter(item => {
-      if (!selectedPhase || !selectedPhase.name || !item || !item.type) {
-        return false
-      }
-
-      const normalizedType = normalize(item.type)
-      const normalizedPhaseName = normalize(selectedPhase.name)
-
-      if (!normalizedType || !normalizedPhaseName) {
-        return false
-      }
-
-      return normalizedType === normalizedPhaseName
-    })
 
     return (
       <div key={`reviewer-${index}`} className={styles.reviewerForm}>

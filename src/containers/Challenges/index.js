@@ -150,14 +150,15 @@ class Challenges extends Component {
       fetchNextProjects
     } = this.props
     const { challengeTypes = [] } = metadata
+    const isActiveProjectLoaded =
+      reduxProjectInfo && `${reduxProjectInfo.id}` === `${activeProjectId}`
+
     return (
       <Fragment>
         {(dashboard || activeProjectId !== -1 || selfService) && (
           <ChallengesComponent
             activeProject={{
-              ...(reduxProjectInfo && reduxProjectInfo.id === activeProjectId
-                ? reduxProjectInfo
-                : {})
+              ...(isActiveProjectLoaded ? reduxProjectInfo : {})
             }}
             fetchNextProjects={fetchNextProjects}
             warnMessage={warnMessage}
