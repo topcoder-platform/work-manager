@@ -96,6 +96,25 @@ export async function fetchProjectById (id) {
 }
 
 /**
+ * Fetch project members with handle enrichment supplied by the Projects API.
+ *
+ * This avoids depending on a separate member-directory lookup in callers that
+ * only need project membership data for display/edit flows.
+ *
+ * @param {string|number} projectId Project id.
+ * @returns {Promise<Array>} Project members.
+ */
+export async function fetchProjectMembers (projectId) {
+  const response = await axiosInstance.get(`${PROJECTS_API_URL}/${projectId}/members`, {
+    params: {
+      fields: 'handle'
+    }
+  })
+
+  return _.get(response, 'data', [])
+}
+
+/**
  * This fetches the user corresponding to the given userIds
  * @param {*} userIds
  */

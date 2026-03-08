@@ -5,7 +5,8 @@ import PT from 'prop-types'
 import { withRouter } from 'react-router-dom'
 import UsersComponent from '../../components/Users'
 import { PROJECT_ROLES } from '../../config/constants'
-import { fetchInviteMembers, fetchProjectById } from '../../services/projects'
+import { fetchProjectById, fetchProjectMembers } from '../../services/projects'
+import { getProjectMemberInvites } from '../../services/projectMemberInvites'
 import { checkAdmin, checkManager } from '../../util/tc'
 
 import {
@@ -90,32 +91,41 @@ class Users extends Component {
   }
 
   /**
-   * Loads project details and stores members/invites in local state.
+   * Loads project details plus project-scoped members/invites into local state.
    *
-   * `projectMembers` comes from `fetchProjectById`, which enriches missing
-   * member handles through `MEMBERS_API_URL` before resolving.
+   * Members and invites are loaded from their dedicated project endpoints so
+   * handle resolution follows project permissions instead of a separate member
+   * directory lookup.
    *
    * @param {string|number} projectId Project id to load.
    * @returns {void}
    */
   loadProject (projectId) {
     this.setState({ isLoadingProject: true })
-    fetchProjectById(projectId).then(async (project) => {
-      const projectMembers = _.get(project, 'members')
-      const invitedMembers = _.get(project, 'invites') || []
-      const invitedUserIds = _.filter(_.map(invitedMembers, 'userId'))
-      const invitedUsers = await fetchInviteMembers(invitedUserIds)
+    Promise.all([
+      fetchProjectById(projectId),
+      fetchProjectMembers(projectId),
+      getProjectMemberInvites(projectId)
+    ]).then(([project, projectMembers, invitedMembers]) => {
+      const normalizedProjectMembers = projectMembers || []
+      const normalizedInvitedMembers = invitedMembers || []
+      let resolvedProject = this.state.project
+
+      if (!resolvedProject && project && project.id && project.name) {
+        resolvedProject = {
+          id: project.id,
+          name: project.name
+        }
+      }
 
       this.setState({
-        projectMembers,
-        invitedMembers: invitedMembers.map(m => ({
-          ...m,
-          email: m.email || invitedUsers[m.userId].handle
-        })),
+        projectMembers: normalizedProjectMembers,
+        invitedMembers: normalizedInvitedMembers,
+        project: resolvedProject,
         isLoadingProject: false
       })
       const { loggedInUser } = this.props
-      this.updateLoginUserRoleInProject(projectMembers, loggedInUser)
+      this.updateLoginUserRoleInProject(normalizedProjectMembers, loggedInUser)
     })
   }
 

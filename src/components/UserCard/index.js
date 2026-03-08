@@ -13,6 +13,16 @@ const theme = {
   container: styles.modalContainer
 }
 
+function normalizeDisplayValue (value) {
+  if (_.isNil(value)) {
+    return null
+  }
+
+  const normalizedValue = String(value).trim()
+
+  return normalizedValue || null
+}
+
 /**
  * Renders one project member or invite card with role controls.
  *
@@ -67,8 +77,13 @@ class UserCard extends Component {
   render () {
     const { isInvite, user, onRemoveClick, isEditable } = this.props
     const showRadioButtons = _.includes(_.values(PROJECT_ROLES), user.role)
-    const userDisplayName = user.handle || user.userId || '(unknown user)'
-    const inviteDisplayName = user.email || user.handle || user.userId || '(unknown user)'
+    const userDisplayName = normalizeDisplayValue(user.handle) ||
+      normalizeDisplayValue(user.userId) ||
+      '(unknown user)'
+    const inviteDisplayName = normalizeDisplayValue(user.email) ||
+      normalizeDisplayValue(user.handle) ||
+      normalizeDisplayValue(user.userId) ||
+      '(unknown user)'
     return (
       <div>
         {
