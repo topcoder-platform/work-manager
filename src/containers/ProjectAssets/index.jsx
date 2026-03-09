@@ -244,6 +244,7 @@ const ProjectAssets = ({
         <ModalAttachmentOptions
           theme={theme}
           onCancel={() => setShowAttachmentOptions(false)}
+          onSaved={() => loadOnlyProjectInfo(projectId)}
           attachment={
             showAttachmentOptions === true ? null : showAttachmentOptions
           }
@@ -256,6 +257,7 @@ const ProjectAssets = ({
         <ModalAddLink
           theme={theme}
           onCancel={() => setShowAddLink(false)}
+          onSaved={() => loadOnlyProjectInfo(projectId)}
           projectId={projectId}
           link={showAddLink === true ? null : showAddLink}
         />

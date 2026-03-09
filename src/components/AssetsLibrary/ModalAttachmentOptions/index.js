@@ -26,6 +26,7 @@ const ModalAttachmentOptions = ({
   classsName,
   theme,
   onCancel,
+  onSaved,
   attachment,
   members,
   addAttachment,
@@ -70,6 +71,7 @@ const ModalAttachmentOptions = ({
           toastr.success('Success', 'Updated file successfully.')
           setIsProcessing(false)
           updateAttachment(result)
+          onSaved()
           onCancel()
         })
         .catch(e => {
@@ -89,10 +91,14 @@ const ModalAttachmentOptions = ({
     allowedUsers => {
       let count = newAttachments.length
       let errorMessage = ''
+      let hasSuccessfulUpload = false
       const checkToFinish = () => {
         count = count - 1
         if (count === 0) {
           setIsProcessing(false)
+          if (hasSuccessfulUpload) {
+            onSaved()
+          }
           if (errorMessage) {
             toastr.error('Error', errorMessage)
           } else {
@@ -108,6 +114,7 @@ const ModalAttachmentOptions = ({
           allowedUsers
         })
           .then(result => {
+            hasSuccessfulUpload = true
             addAttachment(result)
             checkToFinish()
           })
@@ -251,13 +258,15 @@ const ModalAttachmentOptions = ({
 ModalAttachmentOptions.defaultProps = {
   members: [],
   newAttachments: [],
-  projectId: ''
+  projectId: '',
+  onSaved: () => {}
 }
 
 ModalAttachmentOptions.propTypes = {
   classsName: PropTypes.string,
   theme: PropTypes.shape(),
   onCancel: PropTypes.func,
+  onSaved: PropTypes.func,
   attachment: PropTypes.shape(),
   newAttachments: PropTypes.arrayOf(PropTypes.shape()),
   members: PropTypes.arrayOf(PropTypes.shape()),

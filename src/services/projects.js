@@ -60,35 +60,71 @@ export function fetchMemberProjects (filters) {
 }
 
 /**
- * Api request for fetching a project by id with best-effort member-handle enrichment.
+ * Api request for fetching a project by id with best-effort user enrichment.
  *
  * After loading the project, this resolves any members with missing `handle`
- * values through `MEMBERS_API_URL` and merges resolved handles back into
- * `project.members`.
+ * values through `MEMBERS_API_URL`, and also resolves non-member attachment
+ * creators so the assets library can render `Created By` consistently.
  *
  * @param {string|number} id Project id.
- * @returns {Promise<Object>} Project payload with `members` enriched when possible.
+ * @returns {Promise<Object>} Project payload with `members` and attachment
+ * creator details enriched when possible.
  */
 export async function fetchProjectById (id) {
   const response = await axiosInstance.get(`${PROJECTS_API_URL}/${id}`)
   const project = _.get(response, 'data')
   const members = _.get(project, 'members', [])
+  const attachments = _.get(project, 'attachments', [])
   const membersWithoutHandle = members.filter(member => !member.handle && member.userId)
+  const memberUserIds = members.reduce((acc, member) => {
+    if (member.userId) {
+      acc[`${member.userId}`] = true
+    }
+    return acc
+  }, {})
+  const attachmentCreatorIds = _.uniq(
+    attachments
+      .map(attachment => `${_.get(attachment, 'createdBy', '')}`.trim())
+      .filter(createdBy => createdBy && /^\d+$/.test(createdBy) && !memberUserIds[createdBy])
+  )
+  const missingUserIds = _.uniq([
+    ...membersWithoutHandle.map(member => member.userId),
+    ...attachmentCreatorIds
+  ])
 
-  if (!membersWithoutHandle.length) {
+  if (!missingUserIds.length) {
     return project
   }
 
   try {
-    const missingUserIds = _.uniq(membersWithoutHandle.map(member => member.userId))
     const membersByUserId = await fetchInviteMembers(missingUserIds)
+    const enrichedMembers = members.map(member => ({
+      ...member,
+      handle: member.handle || _.get(membersByUserId, [member.userId, 'handle'], null)
+    }))
+    const enrichedMembersByUserId = enrichedMembers.reduce((acc, member) => {
+      if (member.userId) {
+        acc[`${member.userId}`] = member
+      }
+      return acc
+    }, {})
 
     return {
       ...project,
-      members: members.map(member => ({
-        ...member,
-        handle: member.handle || _.get(membersByUserId, [member.userId, 'handle'], null)
-      }))
+      members: enrichedMembers,
+      attachments: attachments.map(attachment => {
+        const creatorUserId = `${_.get(attachment, 'createdBy', '')}`.trim()
+        const createdByUser =
+          enrichedMembersByUserId[creatorUserId] ||
+          _.get(membersByUserId, [creatorUserId], null)
+
+        return createdByUser
+          ? {
+            ...attachment,
+            createdByUser
+          }
+          : attachment
+      })
     }
   } catch (error) {
     return project
