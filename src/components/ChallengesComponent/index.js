@@ -11,7 +11,14 @@ import { PROJECT_ROLES, PROJECT_STATUS, COPILOTS_URL, CHALLENGE_STATUS } from '.
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
-import { checkAdmin, checkReadOnlyRoles, checkAdminOrCopilot, checkAdminOrCopilotOrManager, checkManager } from '../../util/tc'
+import {
+  checkAdmin,
+  checkReadOnlyRoles,
+  checkAdminOrCopilotOrManager,
+  checkCanViewProjectAssets,
+  checkManager,
+  getProjectMemberByUserId
+} from '../../util/tc'
 
 const ChallengesComponent = ({
   challenges,
@@ -51,7 +58,7 @@ const ChallengesComponent = ({
 }) => {
   const [loginUserRoleInProject, setLoginUserRoleInProject] = useState('')
   const isReadOnly = checkReadOnlyRoles(auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
-  const isAdminOrCopilot = checkAdminOrCopilot(auth.token, activeProject)
+  const canViewAssets = checkCanViewProjectAssets(auth.token, activeProject)
   const canEditProject = checkAdminOrCopilotOrManager(auth.token, activeProject)
 
   const projectStatus = activeProject && activeProject.status
@@ -62,12 +69,11 @@ const ChallengesComponent = ({
 
   useEffect(() => {
     const loggedInUser = auth.user
-    const projectMembers = activeProject.members
-    const loginUserProjectInfo = _.find(projectMembers, { userId: loggedInUser.userId })
+    const loginUserProjectInfo = getProjectMemberByUserId(activeProject, _.get(loggedInUser, 'userId'))
     if (loginUserProjectInfo && loginUserRoleInProject !== loginUserProjectInfo.role) {
       setLoginUserRoleInProject(loginUserProjectInfo.role)
     }
-  }, [activeProject, auth])
+  }, [activeProject, auth, loginUserRoleInProject])
 
   return (
     <div>
@@ -90,19 +96,21 @@ const ChallengesComponent = ({
             </span>
           )}
         </div>
-        {activeProject && activeProject.id && !isReadOnly ? (
+        {activeProject && activeProject.id && (!isReadOnly || canViewAssets) ? (
           <div className={styles.projectActionButtonWrapper}>
-            <OutlineButton
-              text={'Users'}
-              type='info'
-              submit
-              link={{
-                pathname: '/users',
-                state: { projectId: activeProjectId, projectName: activeProject.name }
-              }}
-              className={styles.btnOutline}
-            />
-            {isAdminOrCopilot && (
+            {!isReadOnly && (
+              <OutlineButton
+                text={'Users'}
+                type='info'
+                submit
+                link={{
+                  pathname: '/users',
+                  state: { projectId: activeProjectId, projectName: activeProject.name }
+                }}
+                className={styles.btnOutline}
+              />
+            )}
+            {canViewAssets && (
               <OutlineButton
                 text={'Assets Library'}
                 type={'info'}
@@ -111,7 +119,7 @@ const ChallengesComponent = ({
                 className={styles.btnOutline}
               />
             )}
-            {(checkAdmin(auth.token) || checkManager(auth.token)) && !isCompletedOrCancelled && (
+            {!isReadOnly && (checkAdmin(auth.token) || checkManager(auth.token)) && !isCompletedOrCancelled && (
               <OutlineButton
                 text='Request Copilot'
                 type={'info'}
@@ -119,14 +127,16 @@ const ChallengesComponent = ({
                 target={'_blank'}
               />
             )}
-            {activeProject.status === PROJECT_STATUS.ACTIVE ? (
-              <Link
-                to={`/projects/${activeProject.id}/challenges/new`}
-              >
-                <PrimaryButton text={'Launch New'} type={'info'} />
-              </Link>
-            ) : (
-              <PrimaryButton text={'Launch New'} type={'info'} disabled />
+            {!isReadOnly && (
+              activeProject.status === PROJECT_STATUS.ACTIVE ? (
+                <Link
+                  to={`/projects/${activeProject.id}/challenges/new`}
+                >
+                  <PrimaryButton text={'Launch New'} type={'info'} />
+                </Link>
+              ) : (
+                <PrimaryButton text={'Launch New'} type={'info'} disabled />
+              )
             )}
           </div>
         ) : (

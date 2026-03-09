@@ -249,7 +249,6 @@ const ProjectAssets = ({
           }
           members={projectDetail.members}
           projectId={projectId}
-          loggedInUser={loggedInUser}
           newAttachments={pendingUploadFiles}
         />
       )}

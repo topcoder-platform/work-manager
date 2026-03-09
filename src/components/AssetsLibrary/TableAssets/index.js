@@ -2,7 +2,6 @@
 
 import React, { useMemo } from 'react'
 import PropTypes from 'prop-types'
-import _ from 'lodash'
 import moment from 'moment'
 import styles from './styles.module.scss'
 import Table from '../../Table'
@@ -17,6 +16,7 @@ import {
 } from '../../../config/constants'
 import ProjectMembers from '../ProjectMembers'
 import ProjectMember from '../ProjectMember'
+import { getProjectMemberByUserId } from '../../../util/tc'
 
 const TableAssets = ({
   classsName,
@@ -34,7 +34,7 @@ const TableAssets = ({
     () =>
       datas.map(item => {
         const titles = item.title.split('.')
-        const owner = _.find(members, { userId: item.createdBy })
+        const owner = getProjectMemberByUserId(members, item.createdBy)
         const canEdit =
           `${item.createdBy}` === `${loggedInUser.userId}` || isAdmin
         return {

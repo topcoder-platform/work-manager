@@ -31,7 +31,6 @@ const ModalAttachmentOptions = ({
   addAttachment,
   updateAttachment,
   projectId,
-  loggedInUser,
   newAttachments
 }) => {
   const [isProcessing, setIsProcessing] = useState(false)
@@ -196,7 +195,6 @@ const ModalAttachmentOptions = ({
                       value={value}
                       onChangeValue={onChange}
                       projectMembers={members}
-                      loggedInUser={loggedInUser}
                     />
                   )}
                   name='allowedUsers'
@@ -265,8 +263,7 @@ ModalAttachmentOptions.propTypes = {
   members: PropTypes.arrayOf(PropTypes.shape()),
   addAttachment: PropTypes.func.isRequired,
   updateAttachment: PropTypes.func.isRequired,
-  projectId: PropTypes.string,
-  loggedInUser: PropTypes.object
+  projectId: PropTypes.string
 }
 
 const mapStateToProps = () => {

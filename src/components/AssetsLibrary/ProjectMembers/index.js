@@ -6,12 +6,13 @@ import _ from 'lodash'
 import styles from './styles.module.scss'
 import ProjectMember from '../ProjectMember'
 import cn from 'classnames'
+import { getProjectMemberByUserId } from '../../../util/tc'
 
 const ProjectMembers = ({ classsName, members, allowedUsers, maxShownNum }) => {
   const [showAll, setShowAll] = useState(false)
   const allowedUserInfos = useMemo(() => {
     const results = _.uniqBy(
-      _.compact(allowedUsers.map(userId => _.find(members, { userId }))),
+      _.compact(allowedUsers.map(userId => getProjectMemberByUserId(members, userId))),
       'userId'
     )
     let extra = 0
@@ -53,7 +54,9 @@ ProjectMembers.defaultProps = {
 ProjectMembers.propTypes = {
   classsName: PropTypes.string,
   maxShownNum: PropTypes.number,
-  allowedUsers: PropTypes.arrayOf(PropTypes.number),
+  allowedUsers: PropTypes.arrayOf(
+    PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+  ),
   members: PropTypes.arrayOf(PropTypes.shape())
 }
 

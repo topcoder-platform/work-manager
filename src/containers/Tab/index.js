@@ -9,7 +9,7 @@ import {
   resetSidebarActiveParams,
   unloadProjects
 } from '../../actions/sidebar'
-import { checkAdmin, checkCopilot, checkAdminOrTalentManager, checkIsProjectMember } from '../../util/tc'
+import { checkAdmin, checkAdminOrTalentManager, checkCanViewProjectAssets } from '../../util/tc'
 
 class TabContainer extends Component {
   constructor (props) {
@@ -30,11 +30,7 @@ class TabContainer extends Component {
     const { token, projectDetail } = props
     const resolvedToken = token || currentToken
     const resolvedProjectDetail = projectDetail || this.props.projectDetail
-    return !!resolvedToken && (
-      checkAdmin(resolvedToken) ||
-      checkCopilot(resolvedToken) ||
-      checkIsProjectMember(resolvedToken, resolvedProjectDetail)
-    )
+    return checkCanViewProjectAssets(resolvedToken, resolvedProjectDetail)
   }
 
   getCanViewEngagements (props = this.props) {

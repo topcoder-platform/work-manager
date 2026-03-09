@@ -227,6 +227,39 @@ export const checkTaskManager = (token) => {
   return roles.some(val => TASK_MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
 }
 
+const normalizeUserId = (userId) => {
+  if (_.isNil(userId)) {
+    return null
+  }
+
+  const normalizedUserId = `${userId}`.trim()
+  return normalizedUserId.length ? normalizedUserId : null
+}
+
+/**
+ * Returns the matching project member for the provided user id, if present.
+ *
+ * @param {Object|Object[]} projectDetail Project detail payload with `members`,
+ *   or a raw members array.
+ * @param {String|Number} userId Authenticated user id to match.
+ * @returns {Object|null} Matching member record or `null`.
+ */
+export const getProjectMemberByUserId = (projectDetail, userId) => {
+  const normalizedUserId = normalizeUserId(userId)
+  const members = Array.isArray(projectDetail)
+    ? projectDetail
+    : _.get(projectDetail, 'members', [])
+
+  if (!normalizedUserId || !Array.isArray(members)) {
+    return null
+  }
+
+  return _.find(
+    members,
+    member => normalizeUserId(member.userId) === normalizedUserId
+  ) || null
+}
+
 export const checkAdminOrPmOrTaskManager = (token, project) => {
   const tokenData = decodeToken(token)
   const roles = _.get(tokenData, 'roles')
@@ -236,10 +269,8 @@ export const checkAdminOrPmOrTaskManager = (token, project) => {
   const isManager = roles.some(val => MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
   const isTaskManager = roles.some(val => TASK_MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
 
-  const isProjectManager = project && !_.isEmpty(project) &&
-    project.members && project.members.some(member =>
-    member.userId === userId && member.role === PROJECT_ROLES.MANAGER
-  )
+  const isProjectManager =
+    _.get(getProjectMemberByUserId(project, userId), 'role') === PROJECT_ROLES.MANAGER
 
   return isAdmin || isManager || isTaskManager || isProjectManager
 }
@@ -251,7 +282,10 @@ export const checkCopilot = (token, project) => {
   const tokenData = decodeToken(token)
   const roles = _.get(tokenData, 'roles')
   const isCopilot = roles.some(val => COPILOT_ROLES.indexOf(val.toLowerCase()) > -1)
-  const canManageProject = !project || _.isEmpty(project) || ALLOWED_EDIT_RESOURCE_ROLES.includes(_.get(_.find(project.members, { userId: tokenData.userId }), 'role'))
+  const canManageProject = !project || _.isEmpty(project) ||
+    ALLOWED_EDIT_RESOURCE_ROLES.includes(
+      _.get(getProjectMemberByUserId(project, tokenData.userId), 'role')
+    )
 
   return isCopilot && canManageProject
 }
@@ -265,7 +299,10 @@ export const checkAdminOrCopilot = (token, project) => {
   const roles = _.get(tokenData, 'roles')
   const isAdmin = roles.some(val => ADMIN_ROLES.indexOf(val.toLowerCase()) > -1)
   const isCopilot = roles.some(val => COPILOT_ROLES.indexOf(val.toLowerCase()) > -1)
-  const canManageProject = !project || _.isEmpty(project) || ALLOWED_EDIT_RESOURCE_ROLES.includes(_.get(_.find(project.members, { userId: tokenData.userId }), 'role'))
+  const canManageProject = !project || _.isEmpty(project) ||
+    ALLOWED_EDIT_RESOURCE_ROLES.includes(
+      _.get(getProjectMemberByUserId(project, tokenData.userId), 'role')
+    )
 
   return isAdmin || (isCopilot && canManageProject)
 }
@@ -280,9 +317,25 @@ export const checkAdminOrCopilot = (token, project) => {
  */
 export const checkIsProjectMember = (token, projectDetail) => {
   const tokenData = decodeToken(token)
-  const userId = _.get(tokenData, 'userId')
+  return !!getProjectMemberByUserId(projectDetail, _.get(tokenData, 'userId'))
+}
 
-  return !!(projectDetail && projectDetail.members && projectDetail.members.some(member => member.userId === userId))
+/**
+ * Checks whether the authenticated user can view the project assets library.
+ *
+ * Asset Library access is granted to admins, global copilots, and any member
+ * of the project regardless of project role.
+ *
+ * @param {String} token JWT token for the authenticated user.
+ * @param {Object} projectDetail Project detail payload that includes `members`.
+ * @returns {Boolean} `true` when the user can view the project assets library.
+ */
+export const checkCanViewProjectAssets = (token, projectDetail) => {
+  if (!token) {
+    return false
+  }
+
+  return checkAdmin(token) || checkCopilot(token) || checkIsProjectMember(token, projectDetail)
 }
 
 /**
