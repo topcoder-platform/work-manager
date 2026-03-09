@@ -42,6 +42,7 @@ import Groups from './containers/Groups'
 import { isBetaMode, removeFromLocalStorage, saveToLocalStorage } from './util/localstorage'
 import ProjectEditor from './containers/ProjectEditor'
 import ProjectInvitations from './containers/ProjectInvitations'
+import ProjectEntry from './containers/ProjectEntry'
 
 const { ACCOUNTS_APP_LOGIN_URL } = process.env
 
@@ -535,6 +536,14 @@ class Routes extends React.Component {
               <Tab projectId={match.params.projectId} menu={'New Challenge'} />,
               <FooterContainer />
             )()} />
+          <Route exact path='/projects/:projectId'
+            render={({ match }) => renderApp(
+              <ProjectEntry />,
+              <TopBarContainer projectId={match.params.projectId} />,
+              <Tab projectId={match.params.projectId} />,
+              <FooterContainer />
+            )()}
+          />
           <Route exact path='/projects/:projectId/challenges'
             render={({ match }) => renderApp(
               <Challenges projectId={match.params.projectId} key='challenges' />,

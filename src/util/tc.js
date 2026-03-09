@@ -13,7 +13,8 @@ import {
   ALLOWED_EDIT_RESOURCE_ROLES,
   MANAGER_ROLES,
   PROJECT_ROLES,
-  TASK_MANAGER_ROLES
+  TASK_MANAGER_ROLES,
+  PROJECT_MEMBER_INVITE_STATUS_PENDING
 } from '../config/constants'
 import _ from 'lodash'
 import { decodeToken } from 'tc-auth-lib'
@@ -294,13 +295,22 @@ export const checkAdminOrCopilotOrManager = (token, project) => {
   return checkManager(token) || checkAdminOrCopilot(token, project)
 }
 
+/**
+ * Returns the authenticated user's pending invite for a project, if one exists.
+ *
+ * Accepted or declined historical invites are intentionally ignored so callers
+ * only trigger the invitation flow for actionable invitations.
+ */
 export const checkIsUserInvitedToProject = (token, project) => {
   if (!token) {
     return
   }
 
   const tokenData = decodeToken(token)
-  return project && !_.isEmpty(project) && (_.find(project.invites, d => d.userId === tokenData.userId || d.email === tokenData.email))
+  return project && !_.isEmpty(project) && (_.find(project.invites, d => (
+    d.status === PROJECT_MEMBER_INVITE_STATUS_PENDING &&
+    (d.userId === tokenData.userId || d.email === tokenData.email)
+  )))
 }
 
 /**
