@@ -9,7 +9,7 @@ import {
   resetSidebarActiveParams,
   unloadProjects
 } from '../../actions/sidebar'
-import { checkAdmin, checkCopilot, checkAdminOrTalentManager } from '../../util/tc'
+import { checkAdmin, checkAdminOrTalentManager, checkCanViewProjectAssets } from '../../util/tc'
 
 class TabContainer extends Component {
   constructor (props) {
@@ -24,11 +24,13 @@ class TabContainer extends Component {
     this.getTabFromPath = this.getTabFromPath.bind(this)
   }
 
+  // Assets are visible to admins, copilots, and members of the active project.
   getCanViewAssets (props = this.props) {
     const { token: currentToken } = this.props
-    const { token } = props
+    const { token, projectDetail } = props
     const resolvedToken = token || currentToken
-    return !!resolvedToken && (checkAdmin(resolvedToken) || checkCopilot(resolvedToken))
+    const resolvedProjectDetail = projectDetail || this.props.projectDetail
+    return checkCanViewProjectAssets(resolvedToken, resolvedProjectDetail)
   }
 
   getCanViewEngagements (props = this.props) {
@@ -70,9 +72,8 @@ class TabContainer extends Component {
 
     const canViewAssets = this.getCanViewAssets()
     const canViewEngagements = this.getCanViewEngagements()
-    const isAdmin = this.getIsAdmin()
     this.setState({
-      currentTab: this.getTabFromPath(history.location.pathname, projectId, canViewAssets, canViewEngagements, isAdmin)
+      currentTab: this.getTabFromPath(history.location.pathname, projectId, canViewAssets, canViewEngagements)
     })
   }
 
@@ -85,9 +86,8 @@ class TabContainer extends Component {
 
     const canViewAssets = this.getCanViewAssets(nextProps)
     const canViewEngagements = this.getCanViewEngagements(nextProps)
-    const isAdmin = this.getIsAdmin(nextProps)
     this.setState({
-      currentTab: this.getTabFromPath(nextProps.history.location.pathname, projectId, canViewAssets, canViewEngagements, isAdmin)
+      currentTab: this.getTabFromPath(nextProps.history.location.pathname, projectId, canViewAssets, canViewEngagements)
     })
     if (
       isLoading ||
@@ -139,7 +139,11 @@ class TabContainer extends Component {
     return 0
   }
 
-  getTabFromPath (pathname, projectId, canViewAssets = true, canViewEngagements = false, isAdmin = false) {
+  /**
+   * Resolves the selected tab from the current route.
+   * Global Engagements (id 3) is available to users who can view engagements (admin or TM).
+   */
+  getTabFromPath (pathname, projectId, canViewAssets = true, canViewEngagements = false) {
     if (projectId) {
       return this.getProjectTabFromPath(pathname, projectId, canViewAssets, canViewEngagements)
     }
@@ -150,7 +154,7 @@ class TabContainer extends Component {
       return 2
     }
     if (pathname === '/engagements') {
-      return isAdmin ? 3 : 0
+      return canViewEngagements ? 3 : 0
     }
     if (pathname === '/users') {
       return 4
@@ -184,11 +188,14 @@ class TabContainer extends Component {
     resetSidebarActiveParams()
   }
 
+  /**
+   * Handles tab navigation while applying route-level permission checks.
+   * Global Engagements (id 3) is accessible to admin and talent manager users.
+   */
   onTabChange (tab) {
     const { history, resetSidebarActiveParams, projectId } = this.props
     const canViewAssets = this.getCanViewAssets()
     const canViewEngagements = this.getCanViewEngagements() // admin OR TM
-    const isAdmin = this.getIsAdmin() // admin
     if (projectId) {
       if ((tab === 2 && !canViewEngagements) || (tab === 3 && !canViewAssets)) {
         return
@@ -210,7 +217,7 @@ class TabContainer extends Component {
       history.push('/projects')
       this.props.unloadProjects()
       this.setState({ currentTab: 2 })
-    } else if (tab === 3 && isAdmin) {
+    } else if (tab === 3 && canViewEngagements) {
       history.push('/engagements')
       this.setState({ currentTab: 3 })
     } else if (tab === 4) {
@@ -235,7 +242,6 @@ class TabContainer extends Component {
     const { currentTab } = this.state
     const canViewAssets = this.getCanViewAssets()
     const canViewEngagements = this.getCanViewEngagements()
-    const isAdmin = this.getIsAdmin()
 
     return (
       <Tab
@@ -244,7 +250,6 @@ class TabContainer extends Component {
         projectId={this.props.projectId}
         canViewAssets={canViewAssets}
         canViewEngagements={canViewEngagements}
-        isAdmin={isAdmin}
         onBack={this.onBackToHome}
       />
     )
@@ -264,12 +269,14 @@ TabContainer.propTypes = {
   backPath: PropTypes.string,
   resetSidebarActiveParams: PropTypes.func,
   selfService: PropTypes.bool,
-  token: PropTypes.string
+  token: PropTypes.string,
+  projectDetail: PropTypes.object
 }
 
-const mapStateToProps = ({ sidebar, auth }) => ({
+const mapStateToProps = ({ sidebar, auth, projects }) => ({
   ...sidebar,
-  token: auth.token
+  token: auth.token,
+  projectDetail: projects.projectDetail
 })
 
 const mapDispatchToProps = {

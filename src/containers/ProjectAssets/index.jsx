@@ -46,6 +46,7 @@ const ProjectAssets = ({
   loggedInUser,
   token
 }) => {
+  const projectDetailId = _.get(projectDetail, 'id')
   const [isProcessing, setIsProcessing] = useState(false)
   const [selectedTab, setSelectedTab] = useState(0)
   const [showDeleteFile, setShowDeleteFile] = useState(null)
@@ -158,10 +159,10 @@ const ProjectAssets = ({
   }, [files, links, selectedTab])
 
   useEffect(() => {
-    if (projectId) {
+    if (projectId && `${projectDetailId || ''}` !== `${projectId}`) {
       loadOnlyProjectInfo(projectId)
     }
-  }, [projectId])
+  }, [loadOnlyProjectInfo, projectId, projectDetailId])
 
   if (isLoading) {
     return <Loader />
@@ -243,12 +244,12 @@ const ProjectAssets = ({
         <ModalAttachmentOptions
           theme={theme}
           onCancel={() => setShowAttachmentOptions(false)}
+          onSaved={() => loadOnlyProjectInfo(projectId)}
           attachment={
             showAttachmentOptions === true ? null : showAttachmentOptions
           }
           members={projectDetail.members}
           projectId={projectId}
-          loggedInUser={loggedInUser}
           newAttachments={pendingUploadFiles}
         />
       )}
@@ -256,6 +257,7 @@ const ProjectAssets = ({
         <ModalAddLink
           theme={theme}
           onCancel={() => setShowAddLink(false)}
+          onSaved={() => loadOnlyProjectInfo(projectId)}
           projectId={projectId}
           link={showAddLink === true ? null : showAddLink}
         />

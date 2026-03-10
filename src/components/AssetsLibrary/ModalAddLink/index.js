@@ -26,6 +26,7 @@ const ModalAddLink = ({
   classsName,
   theme,
   onCancel,
+  onSaved,
   link,
   addAttachment,
   updateAttachment,
@@ -70,6 +71,7 @@ const ModalAddLink = ({
             toastr.success('Success', 'Added link to the project successfully.')
             setIsProcessing(false)
             addAttachment(result)
+            onSaved()
             onCancel()
           })
           .catch(e => {
@@ -88,6 +90,7 @@ const ModalAddLink = ({
             toastr.success('Success', 'Updated link successfully.')
             setIsProcessing(false)
             updateAttachment(result)
+            onSaved()
             onCancel()
           })
           .catch(e => {
@@ -153,13 +156,15 @@ const ModalAddLink = ({
 ModalAddLink.defaultProps = {
   isProcessing: false,
   projectId: '',
-  onCancel: () => {}
+  onCancel: () => {},
+  onSaved: () => {}
 }
 
 ModalAddLink.propTypes = {
   classsName: PropTypes.string,
   theme: PropTypes.shape(),
   onCancel: PropTypes.func,
+  onSaved: PropTypes.func,
   addAttachment: PropTypes.func.isRequired,
   updateAttachment: PropTypes.func.isRequired,
   link: PropTypes.shape(),

@@ -29,7 +29,7 @@ module.exports = {
   CHALLENGE_PHASES_URL: `${PROD_API_HOSTNAME}/v6/challenge-phases`,
   CHALLENGE_TIMELINES_URL: `${PROD_API_HOSTNAME}/v6/challenge-timelines`,
   COPILOTS_URL: `https://copilots.${DOMAIN}`,
-  PROJECT_API_URL: `${PROD_API_HOSTNAME}/v5/projects`,
+  PROJECT_API_URL: `${PROD_API_HOSTNAME}/v6/projects`,
   GROUPS_API_URL: `${PROD_API_HOSTNAME}/v6/groups`,
   TERMS_API_URL: `${PROD_API_HOSTNAME}/v5/terms`,
   MEMBERS_API_URL: `${PROD_API_HOSTNAME}/v5/members`,

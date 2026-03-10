@@ -19,6 +19,18 @@ const theme = {
   container: styles.modalContainer
 }
 
+function getUserDisplayName (user) {
+  if (!user) {
+    return '(unknown user)'
+  }
+
+  const displayName = [user.handle, user.email, user.userId]
+    .map(value => typeof value === 'undefined' || value === null ? '' : String(value).trim())
+    .find(Boolean)
+
+  return displayName || '(unknown user)'
+}
+
 class Users extends Component {
   constructor (props) {
     super(props)
@@ -263,7 +275,7 @@ class Users extends Component {
           this.state.showRemoveConfirmationModal && (
             <ConfirmationModal
               title='Confirm Removal'
-              message={`Are you sure you want to remove ${this.state.userToRemove.handle || this.state.userToRemove.email} from this project?`}
+              message={`Are you sure you want to remove ${getUserDisplayName(this.state.userToRemove)} from this project?`}
               theme={theme}
               isProcessing={this.state.isRemoving}
               errorMessage={this.state.removeError}

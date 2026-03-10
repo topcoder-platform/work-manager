@@ -5,6 +5,7 @@ import { PrimaryButton, OutlineButton } from '../Buttons'
 import Tooltip from '../Tooltip'
 import Loader from '../Loader'
 import Select from '../Select'
+import ConfirmationModal from '../Modal/ConfirmationModal'
 import { ENGAGEMENTS_APP_URL } from '../../config/constants'
 import { getCountableAssignments } from '../../util/engagements'
 import styles from './EngagementsList.module.scss'
@@ -13,6 +14,7 @@ const STATUS_OPTIONS = [
   { label: 'All', value: 'all' },
   { label: 'Open', value: 'Open' },
   { label: 'Active', value: 'Active' },
+  { label: 'On Hold', value: 'On Hold' },
   { label: 'Cancelled', value: 'Cancelled' },
   { label: 'Closed', value: 'Closed' }
 ]
@@ -23,7 +25,6 @@ const VISIBILITY_OPTIONS = [
   { label: 'Private', value: 'private' }
 ]
 
-const DEFAULT_STATUS_OPTION = STATUS_OPTIONS.find((option) => option.value === 'Open') || STATUS_OPTIONS[0]
 const ALL_STATUS_OPTION = STATUS_OPTIONS.find((option) => option.value === 'all') || STATUS_OPTIONS[0]
 const DEFAULT_VISIBILITY_OPTION = VISIBILITY_OPTIONS[0]
 
@@ -36,6 +37,9 @@ const getStatusClass = (status) => {
   }
   if (status === 'Active') {
     return styles.statusActive
+  }
+  if (status === 'On Hold') {
+    return styles.statusOnHold
   }
   if (status === 'Cancelled') {
     return styles.statusCancelled
@@ -139,17 +143,117 @@ const getEngagementProjectName = (engagement, fallbackProjectName = null) => {
   return null
 }
 
+/**
+ * Displays a filterable engagement table for a project (or all projects).
+ * Defaults the status filter to All for both project-scoped and all-project views.
+ * Supports status filtering for All, Open, Active, On Hold, Cancelled,
+ * and Closed engagements.
+ * Supports admin-only deletion through a confirmation modal using the
+ * `deleteEngagement` action; member-assignment delete conflicts are surfaced
+ * inline in the modal so the dialog remains open for user correction.
+ */
 const EngagementsList = ({
   engagements,
   projectId,
   projectDetail,
   allEngagements,
   isLoading,
-  canManage
+  canManage,
+  isAdmin,
+  deleteEngagement
 }) => {
   const [searchProjectName, setSearchProjectName] = useState('')
-  const [statusFilter, setStatusFilter] = useState(allEngagements ? ALL_STATUS_OPTION : DEFAULT_STATUS_OPTION)
+  const [statusFilter, setStatusFilter] = useState(ALL_STATUS_OPTION)
   const [visibilityFilter, setVisibilityFilter] = useState(DEFAULT_VISIBILITY_OPTION)
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
+
+  const handleDeleteClick = (engagement) => {
+    setDeleteTarget(engagement)
+    setDeleteError('')
+  }
+
+  const handleDeleteCancel = () => {
+    setDeleteTarget(null)
+    setDeleteError('')
+    setIsDeleting(false)
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (!deleteTarget || !deleteTarget.id) {
+      return
+    }
+
+    setIsDeleting(true)
+    setDeleteError('')
+
+    try {
+      await deleteEngagement(deleteTarget.id, deleteTarget.projectId)
+      handleDeleteCancel()
+    } catch (error) {
+      const fallbackErrorMessage = 'Unable to delete engagement. Please try again.'
+      const apiMessage = error && error.response && error.response.data && error.response.data.message
+      let errorMessage = fallbackErrorMessage
+
+      if (typeof apiMessage === 'string') {
+        const trimmedApiMessage = apiMessage.trim()
+        if (trimmedApiMessage) {
+          errorMessage = trimmedApiMessage
+        }
+      } else if (Array.isArray(apiMessage)) {
+        const joinedApiMessage = apiMessage
+          .map((messagePart) => {
+            if (typeof messagePart === 'string') {
+              return messagePart.trim()
+            }
+            if (messagePart === null || typeof messagePart === 'undefined') {
+              return ''
+            }
+            if (typeof messagePart === 'object') {
+              try {
+                return JSON.stringify(messagePart)
+              } catch (stringifyError) {
+                return ''
+              }
+            }
+            return String(messagePart)
+          })
+          .filter(Boolean)
+          .join(', ')
+
+        if (joinedApiMessage) {
+          errorMessage = joinedApiMessage
+        }
+      } else if (apiMessage && typeof apiMessage === 'object') {
+        try {
+          const serializedApiMessage = JSON.stringify(apiMessage)
+          if (serializedApiMessage && serializedApiMessage !== '{}') {
+            errorMessage = serializedApiMessage
+          }
+        } catch (stringifyError) {
+          // Keep fallback message when serialization fails
+        }
+      } else if (apiMessage !== null && typeof apiMessage !== 'undefined') {
+        const convertedApiMessage = String(apiMessage).trim()
+        if (convertedApiMessage) {
+          errorMessage = convertedApiMessage
+        }
+      } else if (error && typeof error.message === 'string' && error.message.trim()) {
+        errorMessage = error.message.trim()
+      }
+
+      const normalizedMessage = typeof errorMessage === 'string' ? errorMessage.toLowerCase() : ''
+      const hasMembersAssignedError = normalizedMessage.includes('member') && normalizedMessage.includes('assign')
+
+      if (hasMembersAssignedError) {
+        setDeleteError('This engagement has members assigned. Please cancel the engagement instead of deleting it.')
+      } else {
+        setDeleteError(errorMessage)
+      }
+      setIsDeleting(false)
+    }
+  }
 
   const filteredOpportunities = useMemo(() => {
     const fallbackProjectName = !allEngagements && projectDetail && projectDetail.name
@@ -337,6 +441,13 @@ const EngagementsList = ({
                           link={engagementProjectId && engagement.id ? `/projects/${engagementProjectId}/engagements/${engagement.id}` : null}
                           disabled={!engagementProjectId || !engagement.id}
                         />
+                        {canManage && isAdmin && engagement.id && (
+                          <OutlineButton
+                            text='Delete'
+                            type='danger'
+                            onClick={() => handleDeleteClick(engagement)}
+                          />
+                        )}
                       </div>
                     ) : (
                       '-'
@@ -348,6 +459,19 @@ const EngagementsList = ({
           </tbody>
         </table>
       )}
+      {deleteTarget && (
+        <ConfirmationModal
+          title='Confirm Delete'
+          message={`Are you sure you want to delete "${deleteTarget.title || 'this engagement'}"? This action cannot be undone.`}
+          confirmText='Delete'
+          confirmType='danger'
+          cancelType='info'
+          errorMessage={deleteError}
+          isProcessing={isDeleting}
+          onCancel={handleDeleteCancel}
+          onConfirm={handleDeleteConfirm}
+        />
+      )}
     </div>
   )
 }
@@ -358,7 +482,9 @@ EngagementsList.defaultProps = {
   projectDetail: null,
   allEngagements: false,
   isLoading: false,
-  canManage: false
+  canManage: false,
+  isAdmin: false,
+  deleteEngagement: () => {}
 }
 
 EngagementsList.propTypes = {
@@ -369,7 +495,9 @@ EngagementsList.propTypes = {
   }),
   allEngagements: PropTypes.bool,
   isLoading: PropTypes.bool,
-  canManage: PropTypes.bool
+  canManage: PropTypes.bool,
+  isAdmin: PropTypes.bool,
+  deleteEngagement: PropTypes.func
 }
 
 export default EngagementsList

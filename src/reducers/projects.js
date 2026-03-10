@@ -16,6 +16,7 @@ import {
   LOAD_PROJECT_DETAILS_FAILURE,
   LOAD_PROJECT_DETAILS_PENDING,
   LOAD_PROJECT_DETAILS_SUCCESS,
+  CLEAR_PROJECT_DETAIL,
   LOAD_PROJECT_PHASES_FAILURE,
   LOAD_PROJECT_PHASES_PENDING,
   LOAD_PROJECT_PHASES_SUCCESS,
@@ -76,6 +77,7 @@ const initialState = {
   isLoading: false,
   isUpdating: false,
   projectDetail: {},
+  hasProjectAccess: false,
   isBillingAccountsLoading: false,
   billingAccounts: [],
   isBillingAccountExpired: false,
@@ -144,6 +146,12 @@ export default function (state = initialState, action) {
         projectDetail: action.payload,
         hasProjectAccess: true,
         isLoading: false
+      }
+    case CLEAR_PROJECT_DETAIL:
+      return {
+        ...state,
+        projectDetail: {},
+        hasProjectAccess: initialState.hasProjectAccess
       }
     case LOAD_PROJECT_BILLING_ACCOUNTS_PENDING:
       return {
