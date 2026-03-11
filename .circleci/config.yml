@@ -160,11 +160,7 @@ workflows:
           context: org-global
           filters: &filters-dev
             branches:
-<<<<<<< HEAD
-              only: ["develop", "pm-2917", "points", "pm-3270", "engagements", "PM-3813_ai-reviewer-configs"]
-=======
-              only: ["develop", "pm-2917", "points", "pm-3270", "projects-api-v6"]
->>>>>>> 62107fd8d86cb413d8c31c6e7bd59ef2bc690fff
+              only: ["develop", "pm-2917", "points", "pm-3270", "projects-api-v6", "PM-3813_ai-reviewer-configs"]
 
       # Production builds are exectuted only on tagged commits to the
       # master branch.
