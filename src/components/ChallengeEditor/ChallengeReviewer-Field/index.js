@@ -49,45 +49,6 @@ const normalizeTrackForScorecards = (challenge, metadata) => {
   return null
 }
 
-const normalizePhaseToken = (value) => (value || '')
-  .toString()
-  .toLowerCase()
-  .trim()
-  .replace(/\bphase\b$/, '')
-  .replace(/[-_\s]/g, '')
-
-const normalizeIdValue = (value) => (
-  value === undefined || value === null
-    ? ''
-    : value.toString()
-)
-
-const getScorecardsForPhase = (scorecards = [], phases = [], phaseId) => {
-  const normalizedPhaseId = normalizeIdValue(phaseId)
-  if (!normalizedPhaseId) {
-    return []
-  }
-
-  const selectedPhase = phases.find(phase => (
-    normalizeIdValue(phase.phaseId) === normalizedPhaseId ||
-      normalizeIdValue(phase.id) === normalizedPhaseId
-  ))
-
-  if (!selectedPhase || !selectedPhase.name) {
-    return []
-  }
-
-  const normalizedPhaseName = normalizePhaseToken(selectedPhase.name)
-  if (!normalizedPhaseName) {
-    return []
-  }
-
-  return scorecards.filter(scorecard => (
-    scorecard &&
-      normalizePhaseToken(scorecard.type) === normalizedPhaseName
-  ))
-}
-
 class ChallengeReviewerField extends Component {
   constructor (props) {
     super(props)
