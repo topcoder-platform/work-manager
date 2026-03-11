@@ -13,7 +13,8 @@ import {
   ALLOWED_EDIT_RESOURCE_ROLES,
   MANAGER_ROLES,
   PROJECT_ROLES,
-  TASK_MANAGER_ROLES
+  TASK_MANAGER_ROLES,
+  PROJECT_MEMBER_INVITE_STATUS_PENDING
 } from '../config/constants'
 import _ from 'lodash'
 import { decodeToken } from 'tc-auth-lib'
@@ -226,6 +227,39 @@ export const checkTaskManager = (token) => {
   return roles.some(val => TASK_MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
 }
 
+const normalizeUserId = (userId) => {
+  if (_.isNil(userId)) {
+    return null
+  }
+
+  const normalizedUserId = `${userId}`.trim()
+  return normalizedUserId.length ? normalizedUserId : null
+}
+
+/**
+ * Returns the matching project member for the provided user id, if present.
+ *
+ * @param {Object|Object[]} projectDetail Project detail payload with `members`,
+ *   or a raw members array.
+ * @param {String|Number} userId Authenticated user id to match.
+ * @returns {Object|null} Matching member record or `null`.
+ */
+export const getProjectMemberByUserId = (projectDetail, userId) => {
+  const normalizedUserId = normalizeUserId(userId)
+  const members = Array.isArray(projectDetail)
+    ? projectDetail
+    : _.get(projectDetail, 'members', [])
+
+  if (!normalizedUserId || !Array.isArray(members)) {
+    return null
+  }
+
+  return _.find(
+    members,
+    member => normalizeUserId(member.userId) === normalizedUserId
+  ) || null
+}
+
 export const checkAdminOrPmOrTaskManager = (token, project) => {
   const tokenData = decodeToken(token)
   const roles = _.get(tokenData, 'roles')
@@ -235,10 +269,8 @@ export const checkAdminOrPmOrTaskManager = (token, project) => {
   const isManager = roles.some(val => MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
   const isTaskManager = roles.some(val => TASK_MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
 
-  const isProjectManager = project && !_.isEmpty(project) &&
-    project.members && project.members.some(member =>
-    member.userId === userId && member.role === PROJECT_ROLES.MANAGER
-  )
+  const isProjectManager =
+    _.get(getProjectMemberByUserId(project, userId), 'role') === PROJECT_ROLES.MANAGER
 
   return isAdmin || isManager || isTaskManager || isProjectManager
 }
@@ -250,7 +282,10 @@ export const checkCopilot = (token, project) => {
   const tokenData = decodeToken(token)
   const roles = _.get(tokenData, 'roles')
   const isCopilot = roles.some(val => COPILOT_ROLES.indexOf(val.toLowerCase()) > -1)
-  const canManageProject = !project || _.isEmpty(project) || ALLOWED_EDIT_RESOURCE_ROLES.includes(_.get(_.find(project.members, { userId: tokenData.userId }), 'role'))
+  const canManageProject = !project || _.isEmpty(project) ||
+    ALLOWED_EDIT_RESOURCE_ROLES.includes(
+      _.get(getProjectMemberByUserId(project, tokenData.userId), 'role')
+    )
 
   return isCopilot && canManageProject
 }
@@ -264,18 +299,71 @@ export const checkAdminOrCopilot = (token, project) => {
   const roles = _.get(tokenData, 'roles')
   const isAdmin = roles.some(val => ADMIN_ROLES.indexOf(val.toLowerCase()) > -1)
   const isCopilot = roles.some(val => COPILOT_ROLES.indexOf(val.toLowerCase()) > -1)
-  const canManageProject = !project || _.isEmpty(project) || ALLOWED_EDIT_RESOURCE_ROLES.includes(_.get(_.find(project.members, { userId: tokenData.userId }), 'role'))
+  const canManageProject = !project || _.isEmpty(project) ||
+    ALLOWED_EDIT_RESOURCE_ROLES.includes(
+      _.get(getProjectMemberByUserId(project, tokenData.userId), 'role')
+    )
 
   return isAdmin || (isCopilot && canManageProject)
 }
 
+/**
+ * Checks whether the authenticated user is a member of the specified project.
+ * This project-level check grants access regardless of the user's global JWT roles.
+ *
+ * @param {String} token JWT token for the authenticated user.
+ * @param {Object} projectDetail Project detail payload that includes `members`.
+ * @returns {Boolean} `true` when `projectDetail.members` contains the token's `userId`.
+ */
+export const checkIsProjectMember = (token, projectDetail) => {
+  const tokenData = decodeToken(token)
+  return !!getProjectMemberByUserId(projectDetail, _.get(tokenData, 'userId'))
+}
+
+/**
+ * Checks whether the authenticated user can view the project assets library.
+ *
+ * Asset Library access is granted to admins, global copilots, and any member
+ * of the project regardless of project role.
+ *
+ * @param {String} token JWT token for the authenticated user.
+ * @param {Object} projectDetail Project detail payload that includes `members`.
+ * @returns {Boolean} `true` when the user can view the project assets library.
+ */
+export const checkCanViewProjectAssets = (token, projectDetail) => {
+  if (!token) {
+    return false
+  }
+
+  return checkAdmin(token) || checkCopilot(token) || checkIsProjectMember(token, projectDetail)
+}
+
+/**
+ * Checks if token has any of the admin, copilot, or manager roles
+ * When `project` is omitted or empty, the check is based solely on the user's global JWT roles.
+ * @param  token
+ * @param  project
+ */
+export const checkAdminOrCopilotOrManager = (token, project) => {
+  return checkManager(token) || checkAdminOrCopilot(token, project)
+}
+
+/**
+ * Returns the authenticated user's pending invite for a project, if one exists.
+ *
+ * Accepted or declined historical invites are intentionally ignored so callers
+ * only trigger the invitation flow for actionable invitations.
+ */
 export const checkIsUserInvitedToProject = (token, project) => {
   if (!token) {
     return
   }
 
   const tokenData = decodeToken(token)
-  return project && !_.isEmpty(project) && (_.find(project.invites, d => d.userId === tokenData.userId || d.email === tokenData.email))
+  return project && !_.isEmpty(project) && (_.find(project.invites, d => (
+    d.status === PROJECT_MEMBER_INVITE_STATUS_PENDING &&
+    (d.userId === tokenData.userId || d.email === tokenData.email)
+  )))
 }
 
 export const getRoleNameForReviewer = (reviewer, challengePhases = []) => {

@@ -13,6 +13,8 @@ import Handle from '../Handle'
 import styles from './ApplicationsList.module.scss'
 import { PROFILE_URL } from '../../config/constants'
 import { serializeTentativeAssignmentDate } from '../../util/assignmentDates'
+import { isCapacityLimitError } from '../../util/applicationErrors'
+import { getCountableAssignments } from '../../util/engagements'
 
 const STATUS_OPTIONS = [
   { label: 'All', value: 'all' },
@@ -25,6 +27,7 @@ const STATUS_OPTIONS = [
 const STATUS_UPDATE_OPTIONS = STATUS_OPTIONS.filter(option => option.value !== 'all')
 const INPUT_DATE_FORMAT = 'MM/dd/yyyy'
 const INPUT_TIME_FORMAT = 'HH:mm'
+const CAPACITY_ERROR_MODAL_MESSAGE = 'The required number of members are already assigned to this engagement. If you\'d like to add another member, change the required number of members on the engagement first.'
 
 const ANTICIPATED_START_LABELS = {
   IMMEDIATE: 'Immediate',
@@ -177,6 +180,7 @@ const ApplicationsList = ({
   const [selectedApplication, setSelectedApplication] = useState(null)
   const [acceptApplication, setAcceptApplication] = useState(null)
   const [acceptSuccess, setAcceptSuccess] = useState(null)
+  const [capacityError, setCapacityError] = useState(false)
   const [acceptStartDate, setAcceptStartDate] = useState(null)
   const [acceptEndDate, setAcceptEndDate] = useState(null)
   const [acceptRate, setAcceptRate] = useState('')
@@ -247,6 +251,37 @@ const ApplicationsList = ({
       .filter(Boolean)
     return new Set(activeAssignmentIds.map((memberId) => String(memberId)))
   }, [engagement])
+  const countableAssignments = useMemo(() => {
+    const assignments = Array.isArray(engagement && engagement.assignments)
+      ? engagement.assignments
+      : []
+    return getCountableAssignments(assignments)
+  }, [engagement])
+  const countableAssignmentMemberIds = useMemo(() => {
+    const memberIds = countableAssignments
+      .map((assignment) => assignment && assignment.memberId)
+      .filter(Boolean)
+    return new Set(memberIds.map((memberId) => String(memberId)))
+  }, [countableAssignments])
+  const assignedMemberCount = useMemo(() => {
+    if (countableAssignments.length) {
+      return countableAssignments.length
+    }
+
+    const assignedMembers = Array.isArray(engagement && engagement.assignedMembers)
+      ? engagement.assignedMembers
+      : []
+    if (assignedMembers.length) {
+      return assignedMembers.length
+    }
+
+    const assignedMemberHandles = Array.isArray(engagement && engagement.assignedMemberHandles)
+      ? engagement.assignedMemberHandles
+      : []
+    return assignedMemberHandles.length
+  }, [countableAssignments, engagement])
+  const requiredMemberCountValue = Number(engagement && engagement.requiredMemberCount)
+  const hasRequiredMemberCount = Number.isInteger(requiredMemberCountValue) && requiredMemberCountValue > 0
 
   const filteredApplications = useMemo(() => {
     let results = applications || []
@@ -288,6 +323,11 @@ const ApplicationsList = ({
     setIsAccepting(false)
   }
 
+  /**
+   * Submits acceptance details for the selected application.
+   * Propagated API failures are handled locally, and capacity-related failures
+   * are surfaced with a dedicated modal instead of a generic toast.
+   */
   const handleAcceptSubmit = async () => {
     if (!acceptApplication || isAccepting) {
       return
@@ -335,11 +375,21 @@ const ApplicationsList = ({
       setAcceptSuccess({ memberLabel })
       resetAcceptState()
     } catch (error) {
-      setIsAccepting(false)
+      resetAcceptState()
+      const errorMessage = error && error.response && error.response.data
+        ? error.response.data.message
+        : ''
+      const errorStatus = error && error.response ? error.response.status : null
+
+      if (isCapacityLimitError(errorMessage, errorStatus)) {
+        setCapacityError(true)
+      } else {
+        setIsAccepting(false)
+      }
     }
   }
 
-  const handleStatusChange = (application, option) => {
+  const handleStatusChange = async (application, option) => {
     if (!option) {
       return
     }
@@ -347,10 +397,22 @@ const ApplicationsList = ({
       if (application.status === 'SELECTED') {
         return
       }
+      const applicationUserId = application.userId || application.user_id || application.memberId || application.member_id
+      const isExistingAssignedMember = applicationUserId != null && countableAssignmentMemberIds.has(String(applicationUserId))
+      const isAtCapacity = hasRequiredMemberCount && assignedMemberCount >= requiredMemberCountValue
+
+      if (isAtCapacity && !isExistingAssignedMember) {
+        setCapacityError(true)
+        return
+      }
       openAcceptModal(application)
       return
     }
-    onUpdateStatus(application.id, option.value)
+    try {
+      await onUpdateStatus(application.id, option.value)
+    } catch (error) {
+      // Failures are already surfaced by reducer toasts where appropriate.
+    }
   }
 
   return (
@@ -476,6 +538,19 @@ const ApplicationsList = ({
             </div>
             <div className={styles.acceptActions}>
               <PrimaryButton text='Close' type='info' onClick={handleCloseAcceptSuccessModal} />
+            </div>
+          </div>
+        </Modal>
+      )}
+      {capacityError && (
+        <Modal onCancel={() => setCapacityError(false)}>
+          <div className={styles.acceptModal}>
+            <div className={styles.acceptTitle}>Cannot Select Applicant</div>
+            <div className={styles.acceptSuccessMessage}>
+              {CAPACITY_ERROR_MODAL_MESSAGE}
+            </div>
+            <div className={styles.acceptActions}>
+              <PrimaryButton text='Close' type='info' onClick={() => setCapacityError(false)} />
             </div>
           </div>
         </Modal>
@@ -615,6 +690,10 @@ ApplicationsList.propTypes = {
     assignedMembers: PropTypes.arrayOf(
       PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     ),
+    assignedMemberHandles: PropTypes.arrayOf(
+      PropTypes.string
+    ),
+    requiredMemberCount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     assignments: PropTypes.arrayOf(PropTypes.shape({
       memberId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
       status: PropTypes.string,

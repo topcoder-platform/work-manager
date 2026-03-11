@@ -26,12 +26,12 @@ const ModalAttachmentOptions = ({
   classsName,
   theme,
   onCancel,
+  onSaved,
   attachment,
   members,
   addAttachment,
   updateAttachment,
   projectId,
-  loggedInUser,
   newAttachments
 }) => {
   const [isProcessing, setIsProcessing] = useState(false)
@@ -71,6 +71,7 @@ const ModalAttachmentOptions = ({
           toastr.success('Success', 'Updated file successfully.')
           setIsProcessing(false)
           updateAttachment(result)
+          onSaved()
           onCancel()
         })
         .catch(e => {
@@ -90,10 +91,14 @@ const ModalAttachmentOptions = ({
     allowedUsers => {
       let count = newAttachments.length
       let errorMessage = ''
+      let hasSuccessfulUpload = false
       const checkToFinish = () => {
         count = count - 1
         if (count === 0) {
           setIsProcessing(false)
+          if (hasSuccessfulUpload) {
+            onSaved()
+          }
           if (errorMessage) {
             toastr.error('Error', errorMessage)
           } else {
@@ -109,6 +114,7 @@ const ModalAttachmentOptions = ({
           allowedUsers
         })
           .then(result => {
+            hasSuccessfulUpload = true
             addAttachment(result)
             checkToFinish()
           })
@@ -196,7 +202,6 @@ const ModalAttachmentOptions = ({
                       value={value}
                       onChangeValue={onChange}
                       projectMembers={members}
-                      loggedInUser={loggedInUser}
                     />
                   )}
                   name='allowedUsers'
@@ -253,20 +258,21 @@ const ModalAttachmentOptions = ({
 ModalAttachmentOptions.defaultProps = {
   members: [],
   newAttachments: [],
-  projectId: ''
+  projectId: '',
+  onSaved: () => {}
 }
 
 ModalAttachmentOptions.propTypes = {
   classsName: PropTypes.string,
   theme: PropTypes.shape(),
   onCancel: PropTypes.func,
+  onSaved: PropTypes.func,
   attachment: PropTypes.shape(),
   newAttachments: PropTypes.arrayOf(PropTypes.shape()),
   members: PropTypes.arrayOf(PropTypes.shape()),
   addAttachment: PropTypes.func.isRequired,
   updateAttachment: PropTypes.func.isRequired,
-  projectId: PropTypes.string,
-  loggedInUser: PropTypes.object
+  projectId: PropTypes.string
 }
 
 const mapStateToProps = () => {

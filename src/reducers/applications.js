@@ -3,6 +3,7 @@
  */
 import _ from 'lodash'
 import { toastSuccess, toastFailure } from '../util/toaster'
+import { isCapacityLimitError } from '../util/applicationErrors'
 import {
   LOAD_APPLICATIONS_PENDING,
   LOAD_APPLICATIONS_SUCCESS,
@@ -114,7 +115,11 @@ export default function (state = initialState, action) {
     }
     case UPDATE_APPLICATION_STATUS_FAILURE: {
       const errorMessage = getErrorMessage(action, 'Failed to update application status')
-      toastFailure('Error', errorMessage)
+      const errorStatus = _.get(action, 'error.response.status')
+      const isCapacityError = isCapacityLimitError(errorMessage, errorStatus)
+      if (!isCapacityError) {
+        toastFailure('Error', errorMessage)
+      }
       return {
         ...state,
         isLoading: false,

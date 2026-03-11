@@ -31,6 +31,7 @@ import {
 import PhaseInput from '../../PhaseInput'
 import CheckpointPrizesField from '../CheckpointPrizes-Field'
 import { isBetaMode } from '../../../util/localstorage'
+import WiproAllowedField from '../WiproAllowedField'
 
 const ChallengeView = ({
   projectDetail,
@@ -95,6 +96,7 @@ const ChallengeView = ({
   if (isLoading || _.isEmpty(metadata.challengePhases) || challenge.id !== challengeId) return <Loader />
   const showTimeline = false // disables the timeline for time being https://github.com/topcoder-platform/challenge-engine-ui/issues/706
   const isTask = _.get(challenge, 'task.isTask', false)
+  const isFunChallenge = challenge.funChallenge === true
   const phases = _.get(challenge, 'phases', [])
   const showCheckpointPrizes = _.get(challenge, 'timelineTemplateId') === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
   const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
@@ -195,6 +197,7 @@ const ChallengeView = ({
               <>
                 {dashboardToggle}
                 <NDAField beta challenge={challenge} readOnly />
+                <WiproAllowedField challenge={challenge} onUpdateOthers={() => {}} readOnly />
                 <div className={cn(styles.row, styles.topRow)}>
                   <div className={styles.col}>
                     <span><span className={styles.fieldTitle}>Groups:</span> {groups}</span>
@@ -262,14 +265,24 @@ const ChallengeView = ({
               token={token}
               readOnly
             />}
-            <ChallengePrizesField challenge={challenge} readOnly />
-            {
-              showCheckpointPrizes && (
-                <CheckpointPrizesField challenge={challenge} readOnly />
-              )
-            }
-            <CopilotFeeField challenge={challenge} readOnly />
-            <ChallengeTotalField challenge={challenge} />
+            {isFunChallenge ? (
+              <div className={cn(styles.row, styles.topRow)}>
+                <div className={styles.col}>
+                  <span><span className={styles.fieldTitle}>Fun Challenge:</span> True</span>
+                </div>
+              </div>
+            ) : (
+              <>
+                <ChallengePrizesField challenge={challenge} readOnly />
+                {
+                  showCheckpointPrizes && (
+                    <CheckpointPrizesField challenge={challenge} readOnly />
+                  )
+                }
+                <CopilotFeeField challenge={challenge} readOnly />
+                <ChallengeTotalField challenge={challenge} />
+              </>
+            )}
           </div>
         </div>
       </div>

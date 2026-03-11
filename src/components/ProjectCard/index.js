@@ -8,11 +8,11 @@ import { PROJECT_STATUSES } from '../../config/constants'
 
 import styles from './ProjectCard.module.scss'
 
-const ProjectCard = ({ projectName, projectStatus, projectId, selected, isInvited }) => {
+const ProjectCard = ({ projectName, projectStatus, projectId, selected }) => {
   return (
     <div className={styles.container}>
       <Link
-        to={`/projects/${projectId}/${isInvited ? 'invitation' : 'challenges'}`}
+        to={`/projects/${projectId}`}
         className={cn(styles.projectName, { [styles.selected]: selected })}
       >
         <div className={styles.name}>
@@ -28,7 +28,6 @@ ProjectCard.propTypes = {
   projectStatus: PT.string.isRequired,
   projectId: PT.number.isRequired,
   projectName: PT.string.isRequired,
-  isInvited: PT.bool.isRequired,
   selected: PT.bool
 }
 

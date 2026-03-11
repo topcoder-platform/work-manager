@@ -480,7 +480,7 @@ export default class Resources extends React.Component {
                       </span>
                     </td>
                     <td className={styles['col-7Table']}>
-                      <span role='cell'>{r.email}</span>
+                      <span role='cell'>{r.memberEmail}</span>
                     </td>
                     <td className={styles['col-4']}>
                       <span role='cell'>{formatDate(r.created)}</span>

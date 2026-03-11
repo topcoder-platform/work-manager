@@ -272,10 +272,12 @@ export async function fetchResources (challengeId) {
 /**
 * Api request for fetching submissions
 * @param challengeId Challenge id
+* @param {Object} pageObj pagination options
 * @returns {Promise<*>}
 */
-export async function fetchSubmissions (challengeId, pageObj) {
-  const { page, perPage } = pageObj
+export async function fetchSubmissions (challengeId, pageObj = {}) {
+  const page = _.get(pageObj, 'page', 1)
+  const perPage = _.get(pageObj, 'perPage', 10)
   const response = await axiosInstance.get(`${SUBMISSIONS_API_URL}?challengeId=${challengeId}&perPage=${perPage}&page=${page}`)
   const responseData = _.get(response, 'data', {})
   const meta = _.get(responseData, 'meta', {})

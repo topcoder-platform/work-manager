@@ -121,6 +121,11 @@
   color: $tc-gray-90;
 }
 
+.statusOnHold {
+  background: $tc-gray-40;
+  color: $tc-gray-80;
+}
+
 .statusCancelled {
   background: $tc-red-20;
   color: $tc-gray-90;
@@ -138,9 +143,9 @@
 }
 
 .actionsColumn {
-  width: 300px;
-  min-width: 300px;
-  max-width: 300px;
+  width: 360px;
+  min-width: 360px;
+  max-width: 360px;
 }
 
 .applicationsLink {

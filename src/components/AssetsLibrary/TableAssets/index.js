@@ -2,7 +2,6 @@
 
 import React, { useMemo } from 'react'
 import PropTypes from 'prop-types'
-import _ from 'lodash'
 import moment from 'moment'
 import styles from './styles.module.scss'
 import Table from '../../Table'
@@ -17,6 +16,7 @@ import {
 } from '../../../config/constants'
 import ProjectMembers from '../ProjectMembers'
 import ProjectMember from '../ProjectMember'
+import { getProjectMemberByUserId } from '../../../util/tc'
 
 const TableAssets = ({
   classsName,
@@ -34,13 +34,23 @@ const TableAssets = ({
     () =>
       datas.map(item => {
         const titles = item.title.split('.')
-        const owner = _.find(members, { userId: item.createdBy })
+        const owner =
+          getProjectMemberByUserId(members, item.createdBy) ||
+          item.createdByUser ||
+          (`${item.createdBy}` === `${loggedInUser.userId}` ? loggedInUser : null)
         const canEdit =
           `${item.createdBy}` === `${loggedInUser.userId}` || isAdmin
+        const isSharedWithAdmins =
+          item.allowedUsers === 0 || item.allowedUsers === '0'
+        const sharedWithUsers = Array.isArray(item.allowedUsers)
+          ? item.allowedUsers
+          : []
         return {
           ...item,
           fileType: titles[titles.length - 1],
           owner,
+          isSharedWithAdmins,
+          sharedWithUsers,
           updatedAtString: item.updatedAt
             ? moment(item.updatedAt).format('MM/DD/YYYY h:mm A')
             : '—',
@@ -89,14 +99,14 @@ const TableAssets = ({
               )}
             </Table.Col>
             <Table.Col className={styles.blockItem}>
-              {!item.allowedUsers && PROJECT_ASSETS_SHARED_WITH_ALL_MEMBERS}
-              {item.allowedUsers &&
-                item.allowedUsers === 0 &&
-                PROJECT_ASSETS_SHARED_WITH_ADMIN}
-              {item.allowedUsers && item.allowedUsers !== 0 && (
+              {!item.isSharedWithAdmins &&
+                item.sharedWithUsers.length === 0 &&
+                PROJECT_ASSETS_SHARED_WITH_ALL_MEMBERS}
+              {item.isSharedWithAdmins && PROJECT_ASSETS_SHARED_WITH_ADMIN}
+              {item.sharedWithUsers.length > 0 && (
                 <ProjectMembers
                   members={members}
-                  allowedUsers={item.allowedUsers}
+                  allowedUsers={item.sharedWithUsers}
                 />
               )}
             </Table.Col>
