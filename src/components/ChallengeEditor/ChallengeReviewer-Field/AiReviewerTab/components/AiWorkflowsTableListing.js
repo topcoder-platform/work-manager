@@ -75,8 +75,7 @@ AiWorkflowsTableListing.propTypes = {
       isGating: PropTypes.bool,
       workflowId: PropTypes.string
     })
-  ).isRequired
-  ,
+  ).isRequired,
   availableWorkflows: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string,
@@ -88,6 +87,5 @@ AiWorkflowsTableListing.propTypes = {
 AiWorkflowsTableListing.defaultProps = {
   availableWorkflows: []
 }
-
 
 export default AiWorkflowsTableListing

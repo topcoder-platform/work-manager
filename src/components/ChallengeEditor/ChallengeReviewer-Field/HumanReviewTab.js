@@ -638,9 +638,6 @@ class HumanReviewTab extends Component {
     const { challenge, isLoading, readOnly = false } = this.props
     const { error } = this.state
     const reviewers = (challenge.reviewers || []).filter(r => !this.isAIReviewer(r))
-    const firstPlacePrize = this.getFirstPlacePrizeValue(challenge)
-    const estimatedSubmissionsCount = 2
-
     const reviewersCost = calculateReviewCost(reviewers, challenge)
 
     if (isLoading) {

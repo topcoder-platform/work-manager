@@ -1,5 +1,5 @@
 // Utility to calculate estimated review cost for human reviewers
-export function calculateReviewCost(humanReviewers = [], challenge = {}) {
+export function calculateReviewCost (humanReviewers = [], challenge = {}) {
   const total = humanReviewers
     .reduce((sum, r) => {
       const memberCount = parseInt(r.memberReviewerCount) || 1
