@@ -27,7 +27,8 @@ import {
   QA_TRACK_ID, DESIGN_CHALLENGE_TYPES, ROUND_TYPES,
   MULTI_ROUND_CHALLENGE_TEMPLATE_ID,
   CHALLENGE_STATUS,
-  SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS
+  SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS,
+  AI_SCREENING_PHASE_NAME
 } from '../../config/constants'
 import {
   getDomainTypes,
@@ -62,6 +63,7 @@ import Track from '../Track'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import AlertModal from '../Modal/AlertModal'
 import PhaseInput from '../PhaseInput'
+import { hasAiReviewers } from './ChallengeReviewer-Field/AiReviewerTab/utils'
 import LegacyLinks from '../LegacyLinks'
 import AssignedMemberField from './AssignedMember-Field'
 import Tooltip from '../Tooltip'
@@ -2047,18 +2049,41 @@ class ChallengeEditor extends Component {
                 </div>
               </div>
               {
-                phases.map((phase, index) => (
-                  <PhaseInput
-                    phase={phase}
-                    phaseIndex={index}
-                    key={index}
-                    readOnly={false}
-                    onUpdatePhase={(item) => {
-                      this.onUpdatePhaseDate(item, index)
-                    }}
-                  />
-                )
-                )
+                (() => {
+                  const hasRealAiScreeningPhase = phases.some(p => p.name === AI_SCREENING_PHASE_NAME)
+                  const showVirtualAiScreening = hasAiReviewers(challenge.reviewers) && !hasRealAiScreeningPhase
+                  const submissionIndex = phases.findIndex(p => p.name === 'Submission')
+                  return (
+                    <>
+                      {phases.map((phase, index) => (
+                        <React.Fragment key={index}>
+                          <PhaseInput
+                            phase={phase}
+                            phaseIndex={index}
+                            readOnly={false}
+                            onUpdatePhase={(item) => {
+                              this.onUpdatePhaseDate(item, index)
+                            }}
+                          />
+                          {showVirtualAiScreening && index === submissionIndex && (
+                            <PhaseInput
+                              phase={{ name: AI_SCREENING_PHASE_NAME }}
+                              readOnly
+                              isVirtual
+                            />
+                          )}
+                        </React.Fragment>
+                      ))}
+                      {showVirtualAiScreening && submissionIndex === -1 && (
+                        <PhaseInput
+                          phase={{ name: AI_SCREENING_PHASE_NAME }}
+                          readOnly
+                          isVirtual
+                        />
+                      )}
+                    </>
+                  )
+                })()
               }
             </>
             )}

@@ -14,11 +14,38 @@ const inputDateFormat = 'MM/dd/yyyy'
 const inputTimeFormat = 'HH:mm'
 const MAX_LENGTH = 5
 
-const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
+const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex, isVirtual }) => {
   const { scheduledStartDate: startDate, scheduledEndDate: endDate, duration, isStartTimeActive, isDurationActive } = phase
 
   const durationHoursMinutes = useMemo(() => getPhaseHoursMinutes(duration), [duration])
   const endDateInputRef = useRef()
+
+  useEffect(() => {
+    if (!startDate && onUpdatePhase && !isVirtual) {
+      let startDate = moment().format(dateFormat)
+      let endDate = getPhaseEndDate(startDate, duration)
+      onUpdatePhase({
+        startDate,
+        endDate,
+        duration
+      })
+    }
+  }, [startDate])
+
+  if (isVirtual && readOnly) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.row}>
+          <div className={cn(styles.field, styles.col1, styles.phaseName)}>
+            <label>{phase.name} :</label>
+          </div>
+          <div className={cn(styles.field, styles.col2)}>
+            <span className={styles.title}>Automated (AI)</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const onStartDateChange = (e) => {
     let startDate = moment(e).format(dateFormat)
@@ -43,18 +70,6 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
       endDateInputRef.current.forceReset()
     }
   }
-
-  useEffect(() => {
-    if (!startDate && onUpdatePhase) {
-      let startDate = moment().format(dateFormat)
-      let endDate = getPhaseEndDate(startDate, duration)
-      onUpdatePhase({
-        startDate,
-        endDate,
-        duration
-      })
-    }
-  }, [startDate])
 
   const onDurationChange = (e, isBlur = false) => {
     if (`${e}`.length > MAX_LENGTH) return null
@@ -144,13 +159,16 @@ const PhaseInput = ({ onUpdatePhase, phase, readOnly, phaseIndex }) => {
 
 PhaseInput.defaultProps = {
   endDate: null,
-  readOnly: false
+  readOnly: false,
+  isVirtual: false,
+  phaseIndex: -1
 }
 
 PhaseInput.propTypes = {
   phase: PropTypes.shape().isRequired,
   onUpdatePhase: PropTypes.func,
   readOnly: PropTypes.bool,
-  phaseIndex: PropTypes.number.isRequired
+  phaseIndex: PropTypes.number,
+  isVirtual: PropTypes.bool
 }
 export default PhaseInput
