@@ -44,7 +44,7 @@ const AiReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
       const updatedReviewers = allChallengeReviewers.filter((_, i) => i !== actualIndex)
       onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
     }
-  }, [challenge.reviewers, onUpdateReviewers])
+  }, [challenge.reviewers, onUpdateReviewers, aiReviewers])
 
   const handleRemoveConfiguration = useCallback(() => {
     // Call delete API if config exists

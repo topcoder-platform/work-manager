@@ -8,6 +8,7 @@ import { validateValue } from '../../../util/input-check'
 import AssignedMemberField from '../AssignedMember-Field'
 import { isEqual } from 'lodash'
 import { getResourceRoleByName, getRoleNameForReviewer } from '../../../util/tc'
+import calculateReviewCost from './ReviewSummary/calcReviewCost'
 
 const normalizePhaseToken = (value) => (value || '')
   .toString()
@@ -200,13 +201,13 @@ class HumanReviewTab extends Component {
       this.setState({ assignedMembers: newAssignedMembers })
     } else if (diff < 0) {
       // Remove slots (delete resources)
-      const { deleteResource } = this.props
+      const { deleteResource, challenge } = this.props
       const removedMembers = currentAssigned.slice(newCount)
       const newAssigned = currentAssigned.slice(0, newCount)
 
       for (const member of removedMembers) {
-        if (member && member.resourceId) {
-          await deleteResource(member.resourceId)
+        if (member && member.roleId && member.handle) {
+          await deleteResource(challenge.id, member.roleId, member.handle)
         }
       }
 
@@ -343,14 +344,14 @@ class HumanReviewTab extends Component {
         incrementalCoefficient: defaultReviewer.incrementalCoefficient
       })
 
-      if (updatedReviewers[index] && (updatedReviewers[index].isMemberReview !== false)) {
+      if (updatedReviewers[actualIndex] && (updatedReviewers[actualIndex].isMemberReview !== false)) {
         const { metadata = {} } = this.props
         const scorecardsForPhase = getScorecardsForPhase(
           metadata.scorecards || [],
           challenge.phases || [],
           value
         )
-        const currentScorecardId = normalizeIdValue(updatedReviewers[index].scorecardId)
+        const currentScorecardId = normalizeIdValue(updatedReviewers[actualIndex].scorecardId)
         const hasCurrentScorecard = scorecardsForPhase.some(scorecard => (
           normalizeIdValue(scorecard.id) === currentScorecardId
         ))
@@ -640,17 +641,7 @@ class HumanReviewTab extends Component {
     const firstPlacePrize = this.getFirstPlacePrizeValue(challenge)
     const estimatedSubmissionsCount = 2
 
-    const reviewersCost = reviewers
-      .reduce((sum, r) => {
-        const fixedAmount = parseFloat(r.fixedAmount || 0)
-        const baseCoefficient = parseFloat(r.baseCoefficient || 0)
-        const incrementalCoefficient = parseFloat(r.incrementalCoefficient || 0)
-        const reviewerCost = fixedAmount + (baseCoefficient + incrementalCoefficient * estimatedSubmissionsCount) * firstPlacePrize
-
-        const count = parseInt(r.memberReviewerCount) || 1
-        return sum + reviewerCost * count
-      }, 0)
-      .toFixed(2)
+    const reviewersCost = calculateReviewCost(reviewers, challenge)
 
     if (isLoading) {
       return <div className={styles.loading}>Loading...</div>

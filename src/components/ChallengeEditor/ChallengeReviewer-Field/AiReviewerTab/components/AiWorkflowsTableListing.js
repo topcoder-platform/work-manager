@@ -4,7 +4,8 @@ import PropTypes from 'prop-types'
 
 const AiWorkflowsTableListing = ({
   challenge,
-  workflows
+  workflows,
+  availableWorkflows
 }) => {
   return (
     <div className={styles.workflowsSection}>
@@ -23,7 +24,7 @@ const AiWorkflowsTableListing = ({
           <tbody>
             {workflows.map((workflow, index) => {
               const isAssigned = (challenge.reviewers || []).some(r => r.aiWorkflowId === workflow.workflowId)
-              const workflowDetails = workflows.find(w => w.id === workflow.workflowId) || {}
+              const workflowDetails = (availableWorkflows || []).find(w => w.id === workflow.workflowId) || {}
 
               return (
                 <tr key={index}>
@@ -75,9 +76,18 @@ AiWorkflowsTableListing.propTypes = {
       workflowId: PropTypes.string
     })
   ).isRequired
+  ,
+  availableWorkflows: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string,
+      name: PropTypes.string
+    })
+  )
 }
 
 AiWorkflowsTableListing.defaultProps = {
+  availableWorkflows: []
 }
+
 
 export default AiWorkflowsTableListing

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import cn from 'classnames'
 import { REVIEW_APP_URL, REVIEW_OPPORTUNITY_TYPE_LABELS } from '../../../../config/constants'
 import { isAIReviewer } from '../AiReviewerTab/utils'
+import calculateReviewCost from './calcReviewCost'
 import { fetchAIReviewConfigByChallenge } from '../../../../services/aiReviewConfigs'
 import { getResourceRoleByName, getRoleNameForReviewer } from '../../../../util/tc'
 import styles from './ReviewSummary.module.scss'
@@ -40,31 +41,7 @@ const ReviewSummary = ({
   const humanReviewers = allReviewers.filter(r => !isAIReviewer(r))
   const aiReviewers = allReviewers.filter(r => isAIReviewer(r))
 
-  // Calculate review cost based on human reviewers
-  const calculateReviewCost = () => {
-    return humanReviewers
-      .reduce((sum, r) => {
-        const memberCount = parseInt(r.memberReviewerCount) || 1
-        const baseAmount = parseFloat(r.fixedAmount) || 0
-        const prizeSet = challenge.prizeSets && challenge.prizeSets[0]
-        const prizeValue = prizeSet && prizeSet.prizes && prizeSet.prizes[0] && prizeSet.prizes[0].value
-        const prizeAmount = prizeSet
-          ? parseFloat(prizeValue) || 0
-          : 0
-
-        const estimatedSubmissions = 2
-        const baseCoefficient = parseFloat(r.baseCoefficient) || 0.13
-        const incrementalCoefficient = parseFloat(r.incrementalCoefficient) || 0.05
-
-        const calculatedCost = memberCount * (
-          baseAmount + (prizeAmount * baseCoefficient) +
-          (prizeAmount * estimatedSubmissions * incrementalCoefficient)
-        )
-
-        return sum + calculatedCost
-      }, 0)
-      .toFixed(2)
-  }
+  // Calculate review cost based on human reviewers (delegated to util)
 
   // Get scorecard name from ID
   const getScorecardName = (scorecardId) => {
@@ -86,7 +63,7 @@ const ReviewSummary = ({
     const role = getResourceRoleByName(metadata.resourceRoles || [], roleName)
     const resourceRoleId = role && role.id
 
-    if (!resourceRoleId) return []
+    if (!resourceRoleId) return ''
 
     const matchingResources = challengeResources
       .filter(resource => resource.roleId === resourceRoleId)
@@ -129,7 +106,7 @@ const ReviewSummary = ({
 
   const totalHumanReviewerCount = humanReviewers.reduce((sum, r) => sum + (parseInt(r.memberReviewerCount) || 1), 0)
 
-  const reviewCost = calculateReviewCost()
+  const reviewCost = calculateReviewCost(humanReviewers, challenge)
 
   return (
     <div className={styles.reviewSummaryContainer}>
@@ -242,9 +219,11 @@ const ReviewSummary = ({
                             <td>{workflow.workflowName || (workflow.workflow && workflow.workflow.name) || workflow.workflowId || '-'}</td>
                             <td>{workflow.weightPercent === '-' ? '-' : `${workflow.weightPercent}%`}</td>
                             <td>
-                              <a href={`${REVIEW_APP_URL}/scorecard/${workflow.workflow.scorecard.id}`} target='_blank' rel='noopener noref'>
-                                {workflow.workflow.scorecard.name}
-                              </a>
+                              {workflow.workflow && workflow.workflow.scorecard && workflow.workflow.scorecard.id ? (
+                                <a href={`${REVIEW_APP_URL}/scorecard/${workflow.workflow.scorecard.id}`} target='_blank' rel='noopener noreferrer'>
+                                  {workflow.workflow.scorecard.name}
+                                </a>
+                              ) : '-'}
                             </td>
                             <td className={styles.typeCell}>
                               {workflow.isGating ? (

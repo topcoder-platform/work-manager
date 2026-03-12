@@ -121,6 +121,7 @@ const TemplateConfigurationView = ({
         <AiWorkflowsTableListing
           workflows={configuration.workflows}
           challenge={challenge}
+          availableWorkflows={workflows}
         />
       )}
 
