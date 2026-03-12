@@ -17,6 +17,8 @@ import { suggestProfiles } from '../../services/user'
 import { getCountableAssignments } from '../../util/engagements'
 import { serializeTentativeAssignmentDate } from '../../util/assignmentDates'
 import { formatTimeZoneLabel, formatTimeZoneList } from '../../util/timezones'
+import { autowriteDescription } from '../../services/workflowAI'
+import { toastSuccess, toastFailure } from '../../util/toaster'
 import styles from './EngagementEditor.module.scss'
 
 const ANY_OPTION = { label: 'Any', value: 'Any' }
@@ -131,6 +133,7 @@ const EngagementEditor = ({
   const [assignRate, setAssignRate] = useState('')
   const [assignOtherRemarks, setAssignOtherRemarks] = useState('')
   const [assignErrors, setAssignErrors] = useState({})
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false)
   const { timeZoneOptions, timeZoneOptionByZone } = useMemo(() => {
     const optionByLabel = new Map()
     moment.tz.names().forEach((zone) => {
@@ -396,6 +399,39 @@ const EngagementEditor = ({
     resetAssignState()
   }
 
+  const handleAIAutowrite = async () => {
+    if (isGeneratingDescription) return
+
+    setIsGeneratingDescription(true)
+
+    try {
+      const input = engagement.description
+      const result = await autowriteDescription(input)
+
+      const generatedDescription = result.formattedDescription
+
+      if (!generatedDescription) {
+        throw new Error('No formattedDescription returned')
+      }
+
+      onUpdateDescription(generatedDescription)
+
+      toastSuccess(
+        'Description Generated',
+        'AI generated description has been added.'
+      )
+    } catch (error) {
+      console.error('AI autowrite error:', error)
+
+      toastFailure(
+        'Error',
+        'Failed to generate description. Please try again.'
+      )
+    } finally {
+      setIsGeneratingDescription(false)
+    }
+  }
+
   const handleAssignSubmit = () => {
     if (!assignModal) {
       return
@@ -605,7 +641,7 @@ const EngagementEditor = ({
           <form>
             <div className={styles.row}>
               <div className={cn(styles.field, styles.col1)}>
-                <label htmlFor='title'>Title <span>*</span> :</label>
+                <label htmlFor='title'>Title <span className={styles.required}>*</span> :</label>
               </div>
               <div className={cn(styles.field, styles.col2)}>
                 {canEdit ? (
@@ -628,7 +664,25 @@ const EngagementEditor = ({
 
             <div className={cn(styles.row, styles.descriptionRow)}>
               <div className={cn(styles.field, styles.col1)}>
-                <label htmlFor='description'>Description <span>*</span> :</label>
+                <label htmlFor='description'>Description <span className={styles.required}>*</span> :</label>
+                <div className={styles.aiButtonRow}>
+                  <OutlineButton
+                    type='info'
+                    onClick={handleAIAutowrite}
+                    disabled={isGeneratingDescription || !engagement.description.trim()}
+                    text='AI Autowrite'
+                    className={styles.aiRewriteButton}
+                  />
+                </div>
+
+                {isGeneratingDescription && (
+                  <div>
+                    <Loader />
+                    <span className={styles.loadingText}>
+                      Generating description...
+                    </span>
+                  </div>
+                )}
               </div>
               <div className={cn(styles.field, styles.col2)}>
                 <DescriptionField
@@ -637,6 +691,7 @@ const EngagementEditor = ({
                   onUpdateDescription={onUpdateDescription}
                   readOnly={!canEdit}
                   isPrivate={engagement.isPrivate}
+                  isGeneratingDescription={isGeneratingDescription}
                 />
                 {submitTriggered && validationErrors.description && (
                   <div className={styles.error}>{validationErrors.description}</div>
@@ -646,7 +701,7 @@ const EngagementEditor = ({
 
             <div className={styles.row}>
               <div className={cn(styles.field, styles.col1)}>
-                <label htmlFor='durationWeeks'>Duration (Weeks) <span>*</span> :</label>
+                <label htmlFor='durationWeeks'>Duration (Weeks) <span className={styles.required}>*</span> :</label>
               </div>
               <div className={cn(styles.field, styles.col2)}>
                 {canEdit ? (
@@ -746,7 +801,7 @@ const EngagementEditor = ({
 
             <div className={styles.row}>
               <div className={cn(styles.field, styles.col1)}>
-                <label>Time Zone <span>*</span> :</label>
+                <label>Time Zone <span className={styles.required}>*</span> :</label>
               </div>
               <div className={cn(styles.field, styles.col2)}>
                 {canEdit ? (
@@ -799,7 +854,7 @@ const EngagementEditor = ({
 
             <div className={styles.row}>
               <div className={cn(styles.field, styles.col1)}>
-                <label>Country <span>*</span> :</label>
+                <label>Country <span className={styles.required}>*</span> :</label>
               </div>
               <div className={cn(styles.field, styles.col2)}>
                 {canEdit ? (
@@ -834,7 +889,7 @@ const EngagementEditor = ({
 
             <div className={styles.row}>
               <div className={cn(styles.field, styles.col1)}>
-                <label>Required Skills <span>*</span> :</label>
+                <label>Required Skills <span className={styles.required}>*</span> :</label>
               </div>
               <div className={cn(styles.field, styles.col2)}>
                 <SkillsField
@@ -851,7 +906,7 @@ const EngagementEditor = ({
 
             <div className={styles.row}>
               <div className={cn(styles.field, styles.col1)}>
-                <label>Anticipated Start <span>*</span> :</label>
+                <label>Anticipated Start <span className={styles.required}>*</span> :</label>
               </div>
               <div className={cn(styles.field, styles.col2)}>
                 {canEdit ? (
@@ -881,7 +936,7 @@ const EngagementEditor = ({
 
             <div className={styles.row}>
               <div className={cn(styles.field, styles.col1)}>
-                <label>Status <span>*</span> :</label>
+                <label>Status <span className={styles.required}>*</span> :</label>
               </div>
               <div className={cn(styles.field, styles.col2)}>
                 {canEdit ? (
@@ -1049,7 +1104,7 @@ const EngagementEditor = ({
               return (
                 <div key={`assign-member-${index}`} className={styles.row}>
                   <div className={cn(styles.field, styles.col1)}>
-                    <label>{assignmentLabel} <span>*</span> :</label>
+                    <label>{assignmentLabel} <span className={styles.required}>*</span> :</label>
                   </div>
                   <div className={cn(styles.field, styles.col2)}>
                     <Select

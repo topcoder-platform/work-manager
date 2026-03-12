@@ -22,6 +22,7 @@ module.exports = {
   TC_FINANCE_API_URL: process.env.TC_FINANCE_API_URL || `${API_V6}/finance`,
   TC_AI_API_BASE_URL: process.env.TC_AI_API_BASE_URL || `${API_V6}/ai`,
   TC_AI_SKILLS_EXTRACTION_WORKFLOW_ID: process.env.TC_AI_SKILLS_EXTRACTION_WORKFLOW_ID || 'skillExtractionWorkflow',
+  TC_AI_AUTOWRITE_WORKFLOW_ID: process.env.TC_AI_AUTOWRITE_WORKFLOW_ID || 'jdAutowriteWorkflow',
   CHALLENGE_DEFAULT_REVIEWERS_URL: `${DEV_API_HOSTNAME}/v6/challenge/default-reviewers`,
   CHALLENGE_API_VERSION: '1.1.0',
   CHALLENGE_TIMELINE_TEMPLATES_URL: `${DEV_API_HOSTNAME}/v6/timeline-templates`,

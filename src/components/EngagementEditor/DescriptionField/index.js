@@ -433,6 +433,31 @@ class DescriptionField extends Component {
     }
   }
 
+  componentDidUpdate (prevProps) {
+    const { engagement, isGeneratingDescription } = this.props
+
+    if (this.easyMDE) {
+      const cm = this.easyMDE.codemirror
+
+      // Disable / enable editor
+      if (prevProps.isGeneratingDescription !== isGeneratingDescription) {
+        cm.setOption('readOnly', isGeneratingDescription ? 'nocursor' : false)
+      }
+
+      const prevDescription = prevProps.engagement.description
+      const newDescription = engagement.description
+
+      if (prevDescription !== newDescription) {
+        const editorValue = this.easyMDE.value()
+
+        if (editorValue !== newDescription) {
+          cm.setValue(newDescription || '')
+          this.currentValue = newDescription
+        }
+      }
+    }
+  }
+
   /**
    * Convert the first char to Uppercase
    * @param str
@@ -883,6 +908,7 @@ DescriptionField.propTypes = {
   engagement: PropTypes.shape().isRequired,
   onUpdateDescription: PropTypes.func.isRequired,
   isPrivate: PropTypes.bool,
-  readOnly: PropTypes.bool
+  readOnly: PropTypes.bool,
+  isGeneratingDescription: PropTypes.bool
 }
 export default DescriptionField

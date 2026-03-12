@@ -1,6 +1,7 @@
 import {
   TC_AI_API_BASE_URL,
   TC_AI_SKILLS_EXTRACTION_WORKFLOW_ID,
+  TC_AI_AUTOWRITE_WORKFLOW_ID,
   AI_WORKFLOW_POLL_INTERVAL,
   AI_WORKFLOW_POLL_TIMEOUT
 } from '../config/constants'
@@ -14,7 +15,7 @@ import { axiosInstance } from './axiosWithAuth'
  * @param {String} input - The input data for the workflow
  * @returns {Promise<String>} - The run ID
  */
-async function startWorkflowRun (workflowId, input) {
+async function startWorkflowRun (workflowId, input, payloadKey = 'jobDescription') {
   try {
     // Step 1: Create the run
     const runResponse = await axiosInstance.post(
@@ -29,7 +30,7 @@ async function startWorkflowRun (workflowId, input) {
     // Step 2: Start the run with input
     await axiosInstance.post(
       `${TC_AI_API_BASE_URL}/workflows/${workflowId}/start?runId=${runId}`,
-      { inputData: { jobDescription: input } }
+      { inputData: { [payloadKey]: input } }
     )
 
     return runId
@@ -137,6 +138,35 @@ export async function extractSkillsFromText (description, workflowId = null) {
     return result.result || {}
   } catch (error) {
     console.error('Skills extraction workflow failed:', error.message)
+    throw error
+  }
+}
+
+/**
+ * Auto-generate job description using AI workflow
+ *
+ * @param {String} input - Prompt or base input for JD
+ * @param {String} workflowId - Optional override workflow ID
+ * @returns {Promise<Object>}
+ */
+export async function autowriteDescription (input, workflowId = null) {
+  if (!input || typeof input !== 'string') {
+    throw new Error('Input must be a non-empty string')
+  }
+
+  const workflowIdToUse = workflowId || TC_AI_AUTOWRITE_WORKFLOW_ID
+
+  try {
+    console.log(`Starting JD autowrite workflow: ${workflowIdToUse}`)
+    const runId = await startWorkflowRun(workflowIdToUse, input, 'rawDescription')
+
+    console.log(`JD autowrite workflow started with runId: ${runId}`)
+    const result = await pollWorkflowRunStatus(workflowIdToUse, runId)
+
+    console.log('JD autowrite workflow completed successfully')
+    return result.result || {}
+  } catch (error) {
+    console.error('JD autowrite workflow failed:', error.message)
     throw error
   }
 }
