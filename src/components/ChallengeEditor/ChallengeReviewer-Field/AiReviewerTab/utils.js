@@ -4,3 +4,7 @@ export const isAIReviewer = (reviewer) => {
     (reviewer.isMemberReview === false)
   )
 }
+
+export const hasAiReviewers = (reviewers) => {
+  return Array.isArray(reviewers) && reviewers.some(isAIReviewer)
+}

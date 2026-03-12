@@ -56,6 +56,7 @@ export const SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS = ['80000062']
  */
 export const AI_WORKFLOW_POLL_INTERVAL = 1000 // 1 second in milliseconds
 export const AI_WORKFLOW_POLL_TIMEOUT = 5 * 60000 // 5 * 60 seconds in milliseconds
+export const AI_SCREENING_PHASE_NAME = 'AI Screening'
 
 /**
  * Filepicker config

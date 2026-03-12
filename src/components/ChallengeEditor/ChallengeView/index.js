@@ -26,9 +26,11 @@ import {
   DEV_TRACK_ID,
   MARATHON_TYPE_ID,
   CHALLENGE_TYPE_ID,
-  COMMUNITY_APP_URL
+  COMMUNITY_APP_URL,
+  AI_SCREENING_PHASE_NAME
 } from '../../../config/constants'
 import PhaseInput from '../../PhaseInput'
+import { hasAiReviewers } from '../ChallengeReviewer-Field/AiReviewerTab/utils'
 import CheckpointPrizesField from '../CheckpointPrizes-Field'
 import { isBetaMode } from '../../../util/localstorage'
 import WiproAllowedField from '../WiproAllowedField'
@@ -224,21 +226,41 @@ const ChallengeView = ({
               </div>
             </div>
             {
-              challenge.legacy.subTrack === 'WEB_DESIGNS' && challenge.phases.length === 8 ? phases.map((phase, index) => (
-                <PhaseInput
-                  phase={phase}
-                  phaseIndex={index}
-                  key={index}
-                  readOnly
-                />
-              )) : _.sortBy(phases, ['scheduledEndDate']).map((phase, index) => (
-                <PhaseInput
-                  phase={phase}
-                  phaseIndex={index}
-                  key={index}
-                  readOnly
-                />
-              ))
+              (() => {
+                const phaseList = challenge.legacy.subTrack === 'WEB_DESIGNS' && challenge.phases.length === 8
+                  ? phases
+                  : _.sortBy(phases, ['scheduledEndDate'])
+                const hasRealAiScreeningPhase = phaseList.some(p => p.name === AI_SCREENING_PHASE_NAME)
+                const showVirtualAiScreening = hasAiReviewers(challenge.reviewers) && !hasRealAiScreeningPhase
+                const submissionIndex = phaseList.findIndex(p => p.name === 'Submission')
+                return (
+                  <>
+                    {phaseList.map((phase, index) => (
+                      <React.Fragment key={index}>
+                        <PhaseInput
+                          phase={phase}
+                          phaseIndex={index}
+                          readOnly
+                        />
+                        {showVirtualAiScreening && index === submissionIndex && (
+                          <PhaseInput
+                            phase={{ name: AI_SCREENING_PHASE_NAME }}
+                            readOnly
+                            isVirtual
+                          />
+                        )}
+                      </React.Fragment>
+                    ))}
+                    {showVirtualAiScreening && submissionIndex === -1 && (
+                      <PhaseInput
+                        phase={{ name: AI_SCREENING_PHASE_NAME }}
+                        readOnly
+                        isVirtual
+                      />
+                    )}
+                  </>
+                )
+              })()
             }
             {showTimeline && (
               <ChallengeScheduleField
