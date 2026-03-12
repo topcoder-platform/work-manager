@@ -366,6 +366,19 @@ export const checkIsUserInvitedToProject = (token, project) => {
   )))
 }
 
+export const getRoleNameForReviewer = (reviewer, challengePhases = []) => {
+  const phase = (challengePhases || []).find(p => (p.id === reviewer.phaseId) || (p.phaseId === reviewer.phaseId))
+  const phaseName = (phase && phase.name) ? phase.name.toLowerCase() : ''
+  const normalizedPhaseName = phaseName.replace(/[-\s]/g, '')
+
+  if (phaseName.includes('iterative review') || normalizedPhaseName === 'iterativereview') return 'Iterative Reviewer'
+  if (normalizedPhaseName === 'approval') return 'Approver'
+  if (normalizedPhaseName === 'checkpointscreening') return 'Checkpoint Screener'
+  if (normalizedPhaseName === 'checkpointreview') return 'Checkpoint Reviewer'
+  if (normalizedPhaseName === 'screening') return 'Screener'
+  return 'Reviewer'
+}
+
 /**
  * Get resource role by name
  *

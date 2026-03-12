@@ -38,7 +38,8 @@ class TextEditorField extends Component {
       shouldShowPrivateDescription,
       onUpdateMetadata,
       readOnly,
-      showReviewerField
+      showReviewerField,
+      aiReviewerReadOnly
     } = this.props
     const { addedNewPrivateDescription } = this.state
     const showShowPrivateDescriptionField = addedNewPrivateDescription || (challenge.privateDescription !== null && challenge.privateDescription !== undefined)
@@ -85,6 +86,7 @@ class TextEditorField extends Component {
             challenge={challenge}
             onUpdateReviewers={this.props.onUpdateReviewers}
             readOnly={readOnly}
+            aiReadOnly={aiReviewerReadOnly}
           />
         )}
         <SpecialChallengeField
@@ -143,7 +145,8 @@ TextEditorField.defaultProps = {
   onUpdateMultiSelect: () => {},
   readOnly: false,
   showReviewerField: false,
-  onUpdateReviewers: () => {}
+  onUpdateReviewers: () => {},
+  aiReviewerReadOnly: false
 }
 
 TextEditorField.propTypes = {
@@ -158,7 +161,8 @@ TextEditorField.propTypes = {
   shouldShowPrivateDescription: PropTypes.bool,
   readOnly: PropTypes.bool,
   showReviewerField: PropTypes.bool,
-  onUpdateReviewers: PropTypes.func
+  onUpdateReviewers: PropTypes.func,
+  aiReviewerReadOnly: PropTypes.bool
 }
 
 export default TextEditorField
