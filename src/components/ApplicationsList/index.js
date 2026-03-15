@@ -606,7 +606,7 @@ const ApplicationsList = ({
               const statusClass = getStatusClass(application.status)
               const statusOption = STATUS_UPDATE_OPTIONS.find(option => option.value === application.status) || null
               const applicationUserId = application.userId || application.user_id || application.memberId || application.member_id
-              const isActive = applicationUserId != null && activeAssignmentMemberIds.has(String(applicationUserId))
+              const isActive = application.active === true || (application.active !== false && applicationUserId != null && activeAssignmentMemberIds.has(String(applicationUserId)))
               const applicationHandle = getApplicationHandle(application)
 
               return (
