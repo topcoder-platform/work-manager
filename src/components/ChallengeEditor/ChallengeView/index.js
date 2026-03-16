@@ -233,6 +233,7 @@ const ChallengeView = ({
                 const hasRealAiScreeningPhase = phaseList.some(p => p.name === AI_SCREENING_PHASE_NAME)
                 const showVirtualAiScreening = hasAiReviewers(challenge.reviewers) && !hasRealAiScreeningPhase
                 const submissionIndex = phaseList.findIndex(p => p.name === 'Submission')
+                const checkpointSubmissionIndex = phaseList.findIndex(p => p.name === 'Checkpoint Submission')
                 return (
                   <>
                     {phaseList.map((phase, index) => (
@@ -242,7 +243,7 @@ const ChallengeView = ({
                           phaseIndex={index}
                           readOnly
                         />
-                        {showVirtualAiScreening && index === submissionIndex && (
+                        {showVirtualAiScreening && (index === submissionIndex || index === checkpointSubmissionIndex) && (
                           <PhaseInput
                             phase={{ name: AI_SCREENING_PHASE_NAME }}
                             readOnly
@@ -251,7 +252,7 @@ const ChallengeView = ({
                         )}
                       </React.Fragment>
                     ))}
-                    {showVirtualAiScreening && submissionIndex === -1 && (
+                    {showVirtualAiScreening && submissionIndex === -1 && checkpointSubmissionIndex === -1 && (
                       <PhaseInput
                         phase={{ name: AI_SCREENING_PHASE_NAME }}
                         readOnly
