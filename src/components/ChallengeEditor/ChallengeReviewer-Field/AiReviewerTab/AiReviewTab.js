@@ -53,9 +53,13 @@ const AiReviewTab = ({ challenge, onUpdateReviewers, metadata = {}, isLoading, r
         console.error('Error deleting AI review configuration:', err)
       })
     }
+
+    const updatedReviewers = (challenge.reviewers || []).filter(reviewer => !isAIReviewer(reviewer))
+    onUpdateReviewers({ field: 'reviewers', value: updatedReviewers })
+
     setConfigurationMode(null)
     resetConfiguration()
-  }, [setConfigurationMode, resetConfiguration, configId])
+  }, [challenge.reviewers, configId, onUpdateReviewers, resetConfiguration, setConfigurationMode])
 
   const handleSwitchConfigurationMode = useCallback((mode, template) => {
     if (mode === 'manual') {
