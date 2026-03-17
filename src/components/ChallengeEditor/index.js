@@ -2053,6 +2053,7 @@ class ChallengeEditor extends Component {
                   const hasRealAiScreeningPhase = phases.some(p => p.name === AI_SCREENING_PHASE_NAME)
                   const showVirtualAiScreening = hasAiReviewers(challenge.reviewers) && !hasRealAiScreeningPhase
                   const submissionIndex = phases.findIndex(p => p.name === 'Submission')
+                  const checkpointSubmissionIndex = phases.findIndex(p => p.name === 'Checkpoint Submission')
                   return (
                     <>
                       {phases.map((phase, index) => (
@@ -2065,7 +2066,7 @@ class ChallengeEditor extends Component {
                               this.onUpdatePhaseDate(item, index)
                             }}
                           />
-                          {showVirtualAiScreening && index === submissionIndex && (
+                          {showVirtualAiScreening && (index === submissionIndex || index === checkpointSubmissionIndex) && (
                             <PhaseInput
                               phase={{ name: AI_SCREENING_PHASE_NAME }}
                               readOnly
@@ -2074,7 +2075,7 @@ class ChallengeEditor extends Component {
                           )}
                         </React.Fragment>
                       ))}
-                      {showVirtualAiScreening && submissionIndex === -1 && (
+                      {showVirtualAiScreening && (submissionIndex === -1 || checkpointSubmissionIndex === -1) && (
                         <PhaseInput
                           phase={{ name: AI_SCREENING_PHASE_NAME }}
                           readOnly
