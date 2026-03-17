@@ -47,7 +47,7 @@ module.exports = {
   COPILOTS_URL: 'https://copilots.topcoder-dev.com',
 
   // Projects API: keep dev unless you run projects locally
-  PROJECT_API_URL: `${DEV_API_HOSTNAME}/v5/projects`,
+  PROJECT_API_URL: `${DEV_API_HOSTNAME}/v6/projects`,
 
   // Local groups/resources/review services
   GROUPS_API_URL: `${LOCAL_GROUPS_API}/groups`,
