@@ -15,7 +15,7 @@ import {
   updateProject
 } from '../../actions/projects'
 import { setActiveProject } from '../../actions/sidebar'
-import { checkAdminOrCopilot, checkAdmin, checkIsUserInvitedToProject } from '../../util/tc'
+import { checkAdmin, checkCanManageProject, checkIsUserInvitedToProject, getProjectMemberRole } from '../../util/tc'
 import { PROJECT_ROLES } from '../../config/constants'
 import Loader from '../../components/Loader'
 
@@ -42,7 +42,7 @@ class ProjectEditor extends Component {
       this.props.history.push(`/projects/${this.props.projectDetail.id}/invitation`)
     }
 
-    if (!checkAdminOrCopilot(auth.token, this.props.projectDetail)) {
+    if (!checkCanManageProject(auth.token, this.props.projectDetail)) {
       this.props.history.push('/projects')
     }
   }
@@ -61,13 +61,7 @@ class ProjectEditor extends Component {
   }
 
   getMemberRole (members, userId) {
-    if (!userId) { return null }
-
-    const found = _.find(members, (m) => {
-      return m.userId === userId
-    })
-
-    return _.get(found, 'role')
+    return getProjectMemberRole({ members }, userId)
   }
 
   checkIsCopilotOrManager (projectMembers, userId) {

@@ -20,6 +20,57 @@ import { decodeToken } from 'tc-auth-lib'
 import { fetchResources, fetchResourceRoles } from '../services/challenges'
 import store from '../config/store'
 
+const TALENT_MANAGER_ROLES = [
+  'talent manager',
+  'topcoder talent manager'
+]
+
+const normalizeUserId = (userId) => {
+  if (_.isNil(userId)) {
+    return null
+  }
+
+  const normalizedUserId = `${userId}`.trim()
+  return normalizedUserId.length > 0 ? normalizedUserId : null
+}
+
+const normalizeEmail = (email) => {
+  if (_.isNil(email)) {
+    return null
+  }
+
+  const normalizedEmail = `${email}`.trim().toLowerCase()
+  return normalizedEmail.length > 0 ? normalizedEmail : null
+}
+
+const getProjectMember = (project, userId) => {
+  const normalizedUserId = normalizeUserId(userId)
+
+  if (
+    !project ||
+    _.isEmpty(project) ||
+    !normalizedUserId ||
+    !Array.isArray(project.members)
+  ) {
+    return null
+  }
+
+  return _.find(
+    project.members,
+    member => normalizeUserId(member.userId) === normalizedUserId
+  ) || null
+}
+
+const canManageProject = (project, userId) => {
+  if (!project || _.isEmpty(project)) {
+    return true
+  }
+
+  return ALLOWED_EDIT_RESOURCE_ROLES.includes(
+    _.get(getProjectMember(project, userId), 'role')
+  )
+}
+
 export const RATING_COLORS = [
   {
     color: '#9D9FA0' /* Grey */,
@@ -215,6 +266,41 @@ export const checkTaskManager = (token) => {
   return roles.some(val => TASK_MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
 }
 
+export const checkTalentManager = (token) => {
+  const tokenData = decodeToken(token)
+  const roles = _.get(tokenData, 'roles')
+  return roles.some(val => TALENT_MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
+}
+
+/**
+ * Checks whether the caller can manage project ownership flows in Work Manager.
+ *
+ * Admins always qualify. Copilots and Talent Managers additionally need a
+ * management-capable project membership when a project context is provided.
+ *
+ * @param  token
+ * @param  project
+ * @returns {boolean} Whether the caller can manage the project in the UI.
+ */
+export const checkCanManageProject = (token, project) => {
+  const tokenData = decodeToken(token)
+  const roles = _.get(tokenData, 'roles')
+  const isAdmin = roles.some(val => ADMIN_ROLES.indexOf(val.toLowerCase()) > -1)
+  const isCopilot = roles.some(val => COPILOT_ROLES.indexOf(val.toLowerCase()) > -1)
+  const isTalentManager = roles.some(val => TALENT_MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
+  const hasProjectManagementAccess = canManageProject(project, tokenData.userId)
+
+  return isAdmin || ((isCopilot || isTalentManager) && hasProjectManagementAccess)
+}
+
+export const checkProjectMembership = (project, userId) => {
+  return !!getProjectMember(project, userId)
+}
+
+export const getProjectMemberRole = (project, userId) => {
+  return _.get(getProjectMember(project, userId), 'role', null)
+}
+
 export const checkAdminOrPmOrTaskManager = (token, project) => {
   const tokenData = decodeToken(token)
   const roles = _.get(tokenData, 'roles')
@@ -226,7 +312,8 @@ export const checkAdminOrPmOrTaskManager = (token, project) => {
 
   const isProjectManager = project && !_.isEmpty(project) &&
     project.members && project.members.some(member =>
-    member.userId === userId && member.role === PROJECT_ROLES.MANAGER
+    normalizeUserId(member.userId) === normalizeUserId(userId) &&
+      member.role === PROJECT_ROLES.MANAGER
   )
 
   return isAdmin || isManager || isTaskManager || isProjectManager
@@ -239,9 +326,8 @@ export const checkCopilot = (token, project) => {
   const tokenData = decodeToken(token)
   const roles = _.get(tokenData, 'roles')
   const isCopilot = roles.some(val => COPILOT_ROLES.indexOf(val.toLowerCase()) > -1)
-  const canManageProject = !project || _.isEmpty(project) || ALLOWED_EDIT_RESOURCE_ROLES.includes(_.get(_.find(project.members, { userId: tokenData.userId }), 'role'))
 
-  return isCopilot && canManageProject
+  return isCopilot && canManageProject(project, tokenData.userId)
 }
 
 /**
@@ -253,9 +339,8 @@ export const checkAdminOrCopilot = (token, project) => {
   const roles = _.get(tokenData, 'roles')
   const isAdmin = roles.some(val => ADMIN_ROLES.indexOf(val.toLowerCase()) > -1)
   const isCopilot = roles.some(val => COPILOT_ROLES.indexOf(val.toLowerCase()) > -1)
-  const canManageProject = !project || _.isEmpty(project) || ALLOWED_EDIT_RESOURCE_ROLES.includes(_.get(_.find(project.members, { userId: tokenData.userId }), 'role'))
 
-  return isAdmin || (isCopilot && canManageProject)
+  return isAdmin || (isCopilot && canManageProject(project, tokenData.userId))
 }
 
 export const checkIsUserInvitedToProject = (token, project) => {
@@ -264,7 +349,13 @@ export const checkIsUserInvitedToProject = (token, project) => {
   }
 
   const tokenData = decodeToken(token)
-  return project && !_.isEmpty(project) && (_.find(project.invites, d => d.userId === tokenData.userId || d.email === tokenData.email))
+  return project && !_.isEmpty(project) && (_.find(
+    project.invites,
+    d => (
+      normalizeUserId(d.userId) === normalizeUserId(tokenData.userId) ||
+      normalizeEmail(d.email) === normalizeEmail(tokenData.email)
+    )
+  ))
 }
 
 /**

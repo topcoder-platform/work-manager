@@ -2,7 +2,6 @@
  * Component to render Challenges page
  */
 import React, { useState, useEffect } from 'react'
-import _ from 'lodash'
 import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import { Link } from 'react-router-dom'
@@ -11,7 +10,7 @@ import { PROJECT_ROLES, PROJECT_STATUS, COPILOTS_URL, CHALLENGE_STATUS } from '.
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
-import { checkAdmin, checkReadOnlyRoles, checkAdminOrCopilot, checkManager } from '../../util/tc'
+import { checkAdmin, checkCanManageProject, checkReadOnlyRoles, checkAdminOrCopilot, checkManager, getProjectMemberRole } from '../../util/tc'
 
 const ChallengesComponent = ({
   challenges,
@@ -51,7 +50,8 @@ const ChallengesComponent = ({
 }) => {
   const [loginUserRoleInProject, setLoginUserRoleInProject] = useState('')
   const isReadOnly = checkReadOnlyRoles(auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
-  const isAdminOrCopilot = checkAdminOrCopilot(auth.token, activeProject)
+  const canManageProject = checkCanManageProject(auth.token, activeProject)
+  const canAccessProjectAssets = checkAdminOrCopilot(auth.token, activeProject)
 
   const projectStatus = activeProject && activeProject.status
     ? activeProject.status.toUpperCase()
@@ -61,10 +61,9 @@ const ChallengesComponent = ({
 
   useEffect(() => {
     const loggedInUser = auth.user
-    const projectMembers = activeProject.members
-    const loginUserProjectInfo = _.find(projectMembers, { userId: loggedInUser.userId })
-    if (loginUserProjectInfo && loginUserRoleInProject !== loginUserProjectInfo.role) {
-      setLoginUserRoleInProject(loginUserProjectInfo.role)
+    const loginUserProjectRole = getProjectMemberRole(activeProject, loggedInUser.userId)
+    if (loginUserProjectRole && loginUserRoleInProject !== loginUserProjectRole) {
+      setLoginUserRoleInProject(loginUserProjectRole)
     }
   }, [activeProject, auth])
 
@@ -77,7 +76,7 @@ const ChallengesComponent = ({
             {activeProject ? activeProject.name : ''}
             {activeProject && activeProject.status && <ProjectStatus className={styles.status} status={activeProject.status} />}
           </div>
-          {activeProject && activeProject.id && isAdminOrCopilot && (
+          {activeProject && activeProject.id && canManageProject && (
             <span>
               (
               <Link
@@ -101,7 +100,7 @@ const ChallengesComponent = ({
               }}
               className={styles.btnOutline}
             />
-            {isAdminOrCopilot && (
+            {canAccessProjectAssets && (
               <OutlineButton
                 text={'Assets Library'}
                 type={'info'}
