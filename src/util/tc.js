@@ -275,8 +275,9 @@ export const checkTalentManager = (token) => {
 /**
  * Checks whether the caller can manage project ownership flows in Work Manager.
  *
- * Admins always qualify. Copilots and Talent Managers additionally need a
- * management-capable project membership when a project context is provided.
+ * Admins always qualify. Project Managers, Copilots, and Talent Managers
+ * additionally need a management-capable project membership when a project
+ * context is provided.
  *
  * @param  token
  * @param  project
@@ -287,10 +288,11 @@ export const checkCanManageProject = (token, project) => {
   const roles = _.get(tokenData, 'roles')
   const isAdmin = roles.some(val => ADMIN_ROLES.indexOf(val.toLowerCase()) > -1)
   const isCopilot = roles.some(val => COPILOT_ROLES.indexOf(val.toLowerCase()) > -1)
+  const isManager = roles.some(val => MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
   const isTalentManager = roles.some(val => TALENT_MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
   const hasProjectManagementAccess = canManageProject(project, tokenData.userId)
 
-  return isAdmin || ((isCopilot || isTalentManager) && hasProjectManagementAccess)
+  return isAdmin || ((isCopilot || isManager || isTalentManager) && hasProjectManagementAccess)
 }
 
 /**

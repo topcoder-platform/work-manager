@@ -2,7 +2,7 @@
 
 import { decodeToken } from 'tc-auth-lib'
 import { PROJECT_ROLES } from '../config/constants'
-import { checkCanCreateProject, checkCanManageProjectBillingAccount } from './tc'
+import { checkCanCreateProject, checkCanManageProject, checkCanManageProjectBillingAccount } from './tc'
 
 jest.mock('tc-auth-lib', () => ({
   decodeToken: jest.fn()
@@ -75,6 +75,44 @@ describe('checkCanManageProjectBillingAccount', () => {
 
     expect(
       checkCanManageProjectBillingAccount('token', {
+        members: [{
+          userId: '1001',
+          role: PROJECT_ROLES.WRITE
+        }]
+      })
+    ).toBe(false)
+  })
+})
+
+describe('checkCanManageProject', () => {
+  beforeEach(() => {
+    decodeToken.mockReset()
+  })
+
+  it('allows project-manager roles to manage projects when they have full access', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      roles: ['project manager']
+    })
+
+    expect(
+      checkCanManageProject('token', {
+        members: [{
+          userId: '1001',
+          role: PROJECT_ROLES.MANAGER
+        }]
+      })
+    ).toBe(true)
+  })
+
+  it('blocks project-manager roles from managing projects without full access', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      roles: ['project manager']
+    })
+
+    expect(
+      checkCanManageProject('token', {
         members: [{
           userId: '1001',
           role: PROJECT_ROLES.WRITE
