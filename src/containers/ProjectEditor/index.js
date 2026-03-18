@@ -12,7 +12,8 @@ import {
   loadProjectTypes,
   loadProject,
   createProject,
-  updateProject
+  updateProject,
+  clearProjectDetail
 } from '../../actions/projects'
 import { setActiveProject } from '../../actions/sidebar'
 import { checkAdmin, checkCanCreateProject, checkCanManageProject, checkIsUserInvitedToProject, getProjectMemberRole } from '../../util/tc'
@@ -28,18 +29,20 @@ class ProjectEditor extends Component {
   }
   // load the project types
   componentDidMount () {
-    const { match, isEdit, loadProjectTypes } = this.props
+    const { match, isEdit, loadProjectTypes, clearProjectDetail } = this.props
     loadProjectTypes()
     if (isEdit) {
       this.fetchProjectDetails(match)
+    } else {
+      clearProjectDetail()
     }
   }
 
   componentDidUpdate () {
     const { auth, isEdit } = this.props
 
-    if (checkIsUserInvitedToProject(auth.token, this.props.projectDetail)) {
-      this.props.history.push(`/projects/${this.props.projectDetail.id}/invitation`)
+    if (checkIsUserInvitedToProject(auth.token, projectDetail)) {
+      history.push(`/projects/${projectDetail.id}/invitation`)
     }
 
     if (isEdit && !checkCanManageProject(auth.token, this.props.projectDetail)) {
@@ -94,8 +97,9 @@ class ProjectEditor extends Component {
     if (isProjectTypesLoading || (isEdit && isProjectLoading)) return <Loader />
 
     const isAdmin = checkAdmin(this.props.auth.token)
+    const isManager = checkManager(this.props.auth.token)
     const isCopilotOrManager = this.checkIsCopilotOrManager(_.get(projectDetail, 'members', []), _.get(this.props.auth, 'user.userId', null))
-    const canManage = isAdmin || isCopilotOrManager
+    const canManage = isAdmin || isManager || isCopilotOrManager
 
     const projectId = this.getProjectId(match)
     return (
@@ -151,6 +155,7 @@ ProjectEditor.propTypes = {
   auth: PropTypes.object,
   history: PropTypes.object,
   setActiveProject: PropTypes.func.isRequired,
+  clearProjectDetail: PropTypes.func.isRequired,
   isEdit: PropTypes.bool,
   loadProject: PropTypes.func,
   isProjectLoading: PropTypes.bool,
@@ -170,6 +175,7 @@ const mapDispatchToProps = {
   loadProject,
   createProject,
   updateProject,
+  clearProjectDetail,
   setActiveProject
 }
 

@@ -37,7 +37,6 @@ module.exports = function (webpackEnv) {
   const isEnvDevelopment = webpackEnv === 'development'
   const isEnvProduction = webpackEnv === 'production'
   const WM_DEBUG = /^(1|true|on|yes)$/i.test(String(process.env.WM_DEBUG || ''))
-  const reactDevUtilsContextRegExp = /[\\/]react-dev-utils[\\/]/
 
   // Webpack uses `publicPath` to determine where the app is being served from.
   // It requires a trailing slash, or the file assets will get an incorrect path.
@@ -150,7 +149,7 @@ module.exports = function (webpackEnv) {
       // require.resolve('webpack-dev-server/client') + '?/',
       // require.resolve('webpack/hot/dev-server'),
       isEnvDevelopment &&
-        require.resolve('react-dev-utils/webpackHotDevClient'),
+        path.resolve(__dirname, 'webpackHotDevClient'),
       // Finally, this is your app's code:
       paths.appIndexJs
       // We include the app code last so that if there is a runtime error during
@@ -485,13 +484,6 @@ module.exports = function (webpackEnv) {
       // This gives some necessary context to module not found errors, such as
       // the requesting resource.
       new ModuleNotFoundPlugin(paths.appPath),
-      // Ensure the dev client tolerates webpack 5 warning/error objects.
-      isEnvDevelopment &&
-        new webpack.NormalModuleReplacementPlugin(/\.\/formatWebpackMessages$/, (resource) => {
-          if (reactDevUtilsContextRegExp.test(resource.context || '')) {
-            resource.request = path.resolve(__dirname, 'formatWebpackMessages')
-          }
-        }),
       // (DefinePlugin already added above with merged env)
       // This is necessary to emit hot updates (currently CSS only):
       isEnvDevelopment && new webpack.HotModuleReplacementPlugin(),

@@ -9,7 +9,7 @@ import {
   resetSidebarActiveParams,
   unloadProjects
 } from '../../actions/sidebar'
-import { checkAdmin, checkCopilot } from '../../util/tc'
+import { checkAdmin, checkAdminOrTalentManager, checkCanViewProjectAssets } from '../../util/tc'
 
 class TabContainer extends Component {
   constructor (props) {
@@ -24,11 +24,27 @@ class TabContainer extends Component {
     this.getTabFromPath = this.getTabFromPath.bind(this)
   }
 
+  // Assets are visible to admins, copilots, and members of the active project.
   getCanViewAssets (props = this.props) {
+    const { token: currentToken } = this.props
+    const { token, projectDetail } = props
+    const resolvedToken = token || currentToken
+    const resolvedProjectDetail = projectDetail || this.props.projectDetail
+    return checkCanViewProjectAssets(resolvedToken, resolvedProjectDetail)
+  }
+
+  getCanViewEngagements (props = this.props) {
     const { token: currentToken } = this.props
     const { token } = props
     const resolvedToken = token || currentToken
-    return !!resolvedToken && (checkAdmin(resolvedToken) || checkCopilot(resolvedToken))
+    return !!resolvedToken && checkAdminOrTalentManager(resolvedToken)
+  }
+
+  getIsAdmin (props = this.props) {
+    const { token: currentToken } = this.props
+    const { token } = props
+    const resolvedToken = token || currentToken
+    return !!resolvedToken && checkAdmin(resolvedToken)
   }
 
   componentDidMount () {
@@ -55,7 +71,10 @@ class TabContainer extends Component {
     }
 
     const canViewAssets = this.getCanViewAssets()
-    this.setState({ currentTab: this.getTabFromPath(history.location.pathname, projectId, canViewAssets) })
+    const canViewEngagements = this.getCanViewEngagements()
+    this.setState({
+      currentTab: this.getTabFromPath(history.location.pathname, projectId, canViewAssets, canViewEngagements)
+    })
   }
 
   componentWillReceiveProps (nextProps) {
@@ -66,12 +85,16 @@ class TabContainer extends Component {
     }
 
     const canViewAssets = this.getCanViewAssets(nextProps)
-    this.setState({ currentTab: this.getTabFromPath(nextProps.history.location.pathname, projectId, canViewAssets) })
+    const canViewEngagements = this.getCanViewEngagements(nextProps)
+    this.setState({
+      currentTab: this.getTabFromPath(nextProps.history.location.pathname, projectId, canViewAssets, canViewEngagements)
+    })
     if (
       isLoading ||
       // do not fetch projects for users or groups page
       nextProps.history.location.pathname === '/users' ||
-      nextProps.history.location.pathname === '/groups'
+      nextProps.history.location.pathname === '/groups' ||
+      nextProps.history.location.pathname === '/engagements'
     ) {
       return
     }
@@ -100,12 +123,12 @@ class TabContainer extends Component {
     this.loadProjects(nextProps)
   }
 
-  getProjectTabFromPath (pathname, projectId, canViewAssets = true) {
+  getProjectTabFromPath (pathname, projectId, canViewAssets = true, canViewEngagements = false) {
     if (!projectId) {
       return 0
     }
     if (pathname.includes(`/projects/${projectId}/engagements`)) {
-      return 2
+      return canViewEngagements ? 2 : 0
     }
     if (pathname.includes(`/projects/${projectId}/assets`)) {
       return canViewAssets ? 3 : 0
@@ -116,9 +139,13 @@ class TabContainer extends Component {
     return 0
   }
 
-  getTabFromPath (pathname, projectId, canViewAssets = true) {
+  /**
+   * Resolves the selected tab from the current route.
+   * Global Engagements (id 3) is available to users who can view engagements (admin or TM).
+   */
+  getTabFromPath (pathname, projectId, canViewAssets = true, canViewEngagements = false) {
     if (projectId) {
-      return this.getProjectTabFromPath(pathname, projectId, canViewAssets)
+      return this.getProjectTabFromPath(pathname, projectId, canViewAssets, canViewEngagements)
     }
     if (pathname === '/') {
       return 1
@@ -126,17 +153,20 @@ class TabContainer extends Component {
     if (pathname === '/projects') {
       return 2
     }
-    if (pathname === '/users') {
-      return 3
+    if (pathname === '/engagements') {
+      return canViewEngagements ? 3 : 0
     }
-    if (pathname === '/self-service') {
+    if (pathname === '/users') {
       return 4
     }
-    if (pathname === '/taas') {
+    if (pathname === '/self-service') {
       return 5
     }
-    if (pathname === '/groups') {
+    if (pathname === '/taas') {
       return 6
+    }
+    if (pathname === '/groups') {
+      return 7
     }
     return 0
   }
@@ -158,17 +188,22 @@ class TabContainer extends Component {
     resetSidebarActiveParams()
   }
 
+  /**
+   * Handles tab navigation while applying route-level permission checks.
+   * Global Engagements (id 3) is accessible to admin and talent manager users.
+   */
   onTabChange (tab) {
     const { history, resetSidebarActiveParams, projectId } = this.props
     const canViewAssets = this.getCanViewAssets()
+    const canViewEngagements = this.getCanViewEngagements() // admin OR TM
     if (projectId) {
-      if (tab === 3 && !canViewAssets) {
+      if ((tab === 2 && !canViewEngagements) || (tab === 3 && !canViewAssets)) {
         return
       }
       if (tab === 1) {
         history.push(`/projects/${projectId}/challenges`)
         this.setState({ currentTab: 1 })
-      } else if (tab === 2) {
+      } else if (tab === 2 && canViewEngagements) {
         history.push(`/projects/${projectId}/engagements`)
         this.setState({ currentTab: 2 })
       } else if (tab === 3) {
@@ -182,19 +217,22 @@ class TabContainer extends Component {
       history.push('/projects')
       this.props.unloadProjects()
       this.setState({ currentTab: 2 })
-    } else if (tab === 3) {
-      history.push('/users')
+    } else if (tab === 3 && canViewEngagements) {
+      history.push('/engagements')
       this.setState({ currentTab: 3 })
     } else if (tab === 4) {
-      history.push('/self-service')
+      history.push('/users')
       this.setState({ currentTab: 4 })
     } else if (tab === 5) {
-      history.push('/taas')
-      this.props.unloadProjects()
+      history.push('/self-service')
       this.setState({ currentTab: 5 })
     } else if (tab === 6) {
-      history.push('/groups')
+      history.push('/taas')
+      this.props.unloadProjects()
       this.setState({ currentTab: 6 })
+    } else if (tab === 7) {
+      history.push('/groups')
+      this.setState({ currentTab: 7 })
     }
 
     resetSidebarActiveParams()
@@ -203,6 +241,7 @@ class TabContainer extends Component {
   render () {
     const { currentTab } = this.state
     const canViewAssets = this.getCanViewAssets()
+    const canViewEngagements = this.getCanViewEngagements()
 
     return (
       <Tab
@@ -210,6 +249,7 @@ class TabContainer extends Component {
         currentTab={currentTab}
         projectId={this.props.projectId}
         canViewAssets={canViewAssets}
+        canViewEngagements={canViewEngagements}
         onBack={this.onBackToHome}
       />
     )
@@ -229,12 +269,14 @@ TabContainer.propTypes = {
   backPath: PropTypes.string,
   resetSidebarActiveParams: PropTypes.func,
   selfService: PropTypes.bool,
-  token: PropTypes.string
+  token: PropTypes.string,
+  projectDetail: PropTypes.object
 }
 
-const mapStateToProps = ({ sidebar, auth }) => ({
+const mapStateToProps = ({ sidebar, auth, projects }) => ({
   ...sidebar,
-  token: auth.token
+  token: auth.token,
+  projectDetail: projects.projectDetail
 })
 
 const mapDispatchToProps = {

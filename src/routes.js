@@ -25,6 +25,7 @@ import EngagementExperience from './containers/EngagementExperience'
 import { getFreshToken, decodeToken } from 'tc-auth-lib'
 import { saveToken } from './actions/auth'
 import { loadChallengeDetails } from './actions/challenges'
+import { loadOnlyProjectInfo } from './actions/projects'
 import { connect } from 'react-redux'
 import {
   checkAllowedRoles,
@@ -33,13 +34,15 @@ import {
   checkAdmin,
   checkCopilot,
   checkManager,
-  checkAdminOrPmOrTaskManager
+  checkAdminOrTalentManager,
+  checkIsProjectMember
 } from './util/tc'
 import Users from './containers/Users'
 import Groups from './containers/Groups'
 import { isBetaMode, removeFromLocalStorage, saveToLocalStorage } from './util/localstorage'
 import ProjectEditor from './containers/ProjectEditor'
 import ProjectInvitations from './containers/ProjectInvitations'
+import ProjectEntry from './containers/ProjectEntry'
 
 const { ACCOUNTS_APP_LOGIN_URL } = process.env
 
@@ -86,8 +89,20 @@ RedirectToChallenge.propTypes = {
 const ConnectRedirectToChallenge = connect(mapStateToProps, mapDispatchToProps)(RedirectToChallenge)
 
 class Routes extends React.Component {
+  constructor (props) {
+    super(props)
+
+    this.state = {
+      assetsAccessStatusByProjectId: {}
+    }
+  }
+
   componentWillMount () {
     this.checkAuth()
+  }
+
+  componentDidMount () {
+    this.resolveAssetsRouteAccess(this.props)
   }
 
   checkAuth () {
@@ -102,7 +117,99 @@ class Routes extends React.Component {
     })
   }
 
-  componentDidUpdate () {
+  /**
+   * Parses the pathname and returns the project id for assets routes.
+   *
+   * @param {String} pathname current location pathname
+   * @returns {String|null} assets route project id
+   */
+  getAssetsProjectIdFromPath (pathname) {
+    const match = (pathname || '').match(/^\/projects\/([^/]+)\/assets\/?$/)
+    return _.get(match, '[1]', null)
+  }
+
+  /**
+   * Stores per-project access resolution status for assets routing.
+   *
+   * @param {String} projectId route project id
+   * @param {String} status resolution status (`loading` or `denied`)
+   */
+  setAssetsAccessStatus (projectId, status) {
+    const normalizedProjectId = `${projectId}`
+    this.setState(prevState => ({
+      assetsAccessStatusByProjectId: {
+        ...prevState.assetsAccessStatusByProjectId,
+        [normalizedProjectId]: status
+      }
+    }))
+  }
+
+  /**
+   * Clears a stored assets access status for the provided project id.
+   *
+   * @param {String} projectId route project id
+   */
+  clearAssetsAccessStatus (projectId) {
+    const normalizedProjectId = `${projectId}`
+    this.setState(prevState => {
+      if (!_.has(prevState.assetsAccessStatusByProjectId, normalizedProjectId)) {
+        return null
+      }
+
+      return {
+        assetsAccessStatusByProjectId: _.omit(prevState.assetsAccessStatusByProjectId, normalizedProjectId)
+      }
+    })
+  }
+
+  /**
+   * Resolves assets access for direct `/projects/:projectId/assets` navigation.
+   * This keeps authorization scoped to the requested route project id.
+   *
+   * @param {Object} props current component props
+   * @param {Object} prevProps previous component props
+   */
+  resolveAssetsRouteAccess (props, prevProps = {}) {
+    const projectId = this.getAssetsProjectIdFromPath(_.get(props, 'location.pathname'))
+    if (!projectId || !props.isLoggedIn || !props.token) {
+      return
+    }
+
+    if (checkAdmin(props.token) || checkCopilot(props.token)) {
+      return
+    }
+
+    const isProjectDetailForRequestedProject = `${_.get(props, 'projectDetail.id', '')}` === `${projectId}`
+    if (isProjectDetailForRequestedProject) {
+      this.clearAssetsAccessStatus(projectId)
+      return
+    }
+
+    const currentPath = _.get(props, 'location.pathname')
+    const previousPath = _.get(prevProps, 'location.pathname')
+    const isNewAssetsNavigation = currentPath !== previousPath
+    const accessStatus = _.get(this.state.assetsAccessStatusByProjectId, `${projectId}`)
+    if (accessStatus === 'loading' || (accessStatus === 'denied' && !isNewAssetsNavigation)) {
+      return
+    }
+
+    this.setAssetsAccessStatus(projectId, 'loading')
+    this.props.loadOnlyProjectInfo(projectId)
+      .then(() => {
+        this.clearAssetsAccessStatus(projectId)
+      })
+      .catch((error) => {
+        const responseStatus = _.get(error, 'payload.response.status', _.get(error, 'response.status'))
+        if (responseStatus === 403) {
+          this.setAssetsAccessStatus(projectId, 'denied')
+          return
+        }
+
+        this.clearAssetsAccessStatus(projectId)
+      })
+  }
+
+  componentDidUpdate (prevProps) {
     const { search } = this.props.location
     const params = new URLSearchParams(search)
     if (!_.isEmpty(params.get('beta'))) {
@@ -113,6 +220,8 @@ class Routes extends React.Component {
       }
       this.props.history.push(this.props.location.pathname)
     }
+
+    this.resolveAssetsRouteAccess(this.props, prevProps)
   }
 
   render () {
@@ -120,11 +229,12 @@ class Routes extends React.Component {
       return null
     }
 
-    const isAllowed = checkAllowedRoles(_.get(decodeToken(this.props.token), 'roles'))
-    const isReadOnly = checkReadOnlyRoles(this.props.token)
-    const isCopilot = checkCopilot(this.props.token)
-    const isAdmin = checkAdmin(this.props.token)
-    const canManageEngagements = checkAdminOrPmOrTaskManager(this.props.token, null)
+    const { token, projectDetail, hasProjectAccess } = this.props
+    const isAllowed = checkAllowedRoles(_.get(decodeToken(token), 'roles'))
+    const isReadOnly = checkReadOnlyRoles(token)
+    const isCopilot = checkCopilot(token)
+    const isAdmin = checkAdmin(token)
+    const canAccessEngagements = checkAdminOrTalentManager(token)
 
     return (
       <React.Fragment>
@@ -156,6 +266,29 @@ class Routes extends React.Component {
               <FooterContainer />
             )()}
           />
+          {canAccessEngagements && (
+            <Route exact path='/engagements'
+              render={() => renderApp(
+                <EngagementsList allEngagements />,
+                <TopBarContainer />,
+                <Tab />,
+                <FooterContainer />
+              )()}
+            />
+          )}
+          {!canAccessEngagements && (
+            <Route exact path='/engagements'
+              render={() => renderApp(
+                <Challenges
+                  menu='NULL'
+                  warnMessage={'You need Admin or Talent Manager role to view engagements'}
+                />,
+                <TopBarContainer />,
+                <Tab />,
+                <FooterContainer />
+              )()}
+            />
+          )}
           <Route exact path='/projects/new'
             render={() => renderApp(
               <ProjectEditor />,
@@ -180,20 +313,41 @@ class Routes extends React.Component {
               <FooterContainer />
             )()}
           />
-          {(isCopilot || isAdmin) && (
-            <Route
-              exact
-              path='/projects/:projectId/assets'
-              render={({ match }) =>
-                renderApp(
-                  <ProjectAssets projectId={match.params.projectId} />,
+          <Route
+            exact
+            path='/projects/:projectId/assets'
+            render={({ match }) => {
+              const routeProjectId = _.get(match.params, 'projectId')
+              const isProjectDetailForRequestedProject = `${_.get(projectDetail, 'id', '')}` === `${routeProjectId}`
+              const hasScopedProjectAccess = isProjectDetailForRequestedProject && hasProjectAccess
+              const isProjectMemberForRequestedProject = isProjectDetailForRequestedProject && checkIsProjectMember(token, projectDetail)
+              const canViewRequestedProjectAssets = isCopilot || isAdmin || hasScopedProjectAccess || isProjectMemberForRequestedProject
+              const assetsAccessStatus = _.get(this.state.assetsAccessStatusByProjectId, `${routeProjectId}`)
+              const canResolveRequestedProjectAccess = !isCopilot &&
+                !isAdmin &&
+                !isProjectDetailForRequestedProject &&
+                assetsAccessStatus !== 'denied'
+
+              if (!canViewRequestedProjectAssets && !canResolveRequestedProjectAccess) {
+                return renderApp(
+                  <Challenges
+                    menu='NULL'
+                    warnMessage={'You are not authorized to view this project assets library'}
+                  />,
                   <TopBarContainer />,
-                  <Tab projectId={match.params.projectId} />,
+                  <Tab projectId={routeProjectId} />,
                   <FooterContainer />
                 )()
               }
-            />
-          )}
+
+              return renderApp(
+                <ProjectAssets projectId={routeProjectId} />,
+                <TopBarContainer />,
+                <Tab projectId={routeProjectId} />,
+                <FooterContainer />
+              )()
+            }}
+          />
           {
             !isReadOnly && (
               <Route exact path='/users'
@@ -262,14 +416,16 @@ class Routes extends React.Component {
               }
             />
           )}
-          <Route exact path='/projects/:projectId/engagements'
-            render={({ match }) => renderApp(
-              <EngagementsList projectId={match.params.projectId} />,
-              <TopBarContainer projectId={match.params.projectId} />,
-              <Tab projectId={match.params.projectId} />,
-              <FooterContainer />
-            )()} />
-          {canManageEngagements && (
+          {canAccessEngagements && (
+            <Route exact path='/projects/:projectId/engagements'
+              render={({ match }) => renderApp(
+                <EngagementsList projectId={match.params.projectId} />,
+                <TopBarContainer projectId={match.params.projectId} />,
+                <Tab projectId={match.params.projectId} />,
+                <FooterContainer />
+              )()} />
+          )}
+          {canAccessEngagements && (
             <Route exact path='/projects/:projectId/engagements/new'
               render={({ match }) => renderApp(
                 <EngagementEditor />,
@@ -278,52 +434,46 @@ class Routes extends React.Component {
                 <FooterContainer />
               )()} />
           )}
-          {!canManageEngagements && (
-            <Route exact path='/projects/:projectId/engagements/new'
+          {canAccessEngagements && (
+            <Route exact path='/projects/:projectId/engagements/:engagementId/applications'
               render={({ match }) => renderApp(
-                <Challenges
-                  menu='NULL'
-                  warnMessage={'You need Admin, Project Manager, Talent Manager, or Task Manager role to create engagements'}
+                <ApplicationsList projectId={match.params.projectId} engagementId={match.params.engagementId} />,
+                <TopBarContainer projectId={match.params.projectId} />,
+                <Tab
+                  projectId={match.params.projectId}
+                  menu={'Applications'}
+                  backPath={`/projects/${match.params.projectId}/engagements`}
                 />,
-                <TopBarContainer />,
-                <Tab projectId={match.params.projectId} />,
                 <FooterContainer />
               )()} />
           )}
-          <Route exact path='/projects/:projectId/engagements/:engagementId/applications'
-            render={({ match }) => renderApp(
-              <ApplicationsList projectId={match.params.projectId} engagementId={match.params.engagementId} />,
-              <TopBarContainer projectId={match.params.projectId} />,
-              <Tab
-                projectId={match.params.projectId}
-                menu={'Applications'}
-                backPath={`/projects/${match.params.projectId}/engagements`}
-              />,
-              <FooterContainer />
-            )()} />
-          <Route exact path='/projects/:projectId/engagements/:engagementId/experience'
-            render={({ match }) => renderApp(
-              <EngagementExperience projectId={match.params.projectId} engagementId={match.params.engagementId} />,
-              <TopBarContainer projectId={match.params.projectId} />,
-              <Tab
-                projectId={match.params.projectId}
-                menu={'Experience'}
-                backPath={`/projects/${match.params.projectId}/engagements/${match.params.engagementId}/assignments`}
-              />,
-              <FooterContainer />
-            )()} />
-          <Route exact path='/projects/:projectId/engagements/:engagementId/feedback'
-            render={({ match }) => renderApp(
-              <EngagementFeedback projectId={match.params.projectId} engagementId={match.params.engagementId} />,
-              <TopBarContainer projectId={match.params.projectId} />,
-              <Tab
-                projectId={match.params.projectId}
-                menu={'Feedback'}
-                backPath={`/projects/${match.params.projectId}/engagements/${match.params.engagementId}/assignments`}
-              />,
-              <FooterContainer />
-            )()} />
-          {canManageEngagements && (
+          {canAccessEngagements && (
+            <Route exact path='/projects/:projectId/engagements/:engagementId/experience'
+              render={({ match }) => renderApp(
+                <EngagementExperience projectId={match.params.projectId} engagementId={match.params.engagementId} />,
+                <TopBarContainer projectId={match.params.projectId} />,
+                <Tab
+                  projectId={match.params.projectId}
+                  menu={'Experience'}
+                  backPath={`/projects/${match.params.projectId}/engagements/${match.params.engagementId}/assignments`}
+                />,
+                <FooterContainer />
+              )()} />
+          )}
+          {canAccessEngagements && (
+            <Route exact path='/projects/:projectId/engagements/:engagementId/feedback'
+              render={({ match }) => renderApp(
+                <EngagementFeedback projectId={match.params.projectId} engagementId={match.params.engagementId} />,
+                <TopBarContainer projectId={match.params.projectId} />,
+                <Tab
+                  projectId={match.params.projectId}
+                  menu={'Feedback'}
+                  backPath={`/projects/${match.params.projectId}/engagements/${match.params.engagementId}/assignments`}
+                />,
+                <FooterContainer />
+              )()} />
+          )}
+          {canAccessEngagements && (
             <Route exact path='/projects/:projectId/engagements/:engagementId/assignments'
               render={({ match }) => renderApp(
                 <EngagementPayment projectId={match.params.projectId} engagementId={match.params.engagementId} />,
@@ -336,29 +486,16 @@ class Routes extends React.Component {
                 <FooterContainer />
               )()} />
           )}
-          {!canManageEngagements && (
-            <Route exact path='/projects/:projectId/engagements/:engagementId/assignments'
+          {canAccessEngagements && (
+            <Route exact path='/projects/:projectId/engagements/:engagementId/view'
               render={({ match }) => renderApp(
-                <Challenges
-                  menu='NULL'
-                  warnMessage={'You need Admin, Project Manager, Talent Manager, or Task Manager role to edit engagements'}
-                />,
-                <TopBarContainer />,
-                <Tab
-                  projectId={match.params.projectId}
-                  backPath={`/projects/${match.params.projectId}/engagements`}
-                />,
+                <EngagementEditor />,
+                <TopBarContainer projectId={match.params.projectId} />,
+                <Tab projectId={match.params.projectId} menu={'Engagement'} />,
                 <FooterContainer />
               )()} />
           )}
-          <Route exact path='/projects/:projectId/engagements/:engagementId/view'
-            render={({ match }) => renderApp(
-              <EngagementEditor />,
-              <TopBarContainer projectId={match.params.projectId} />,
-              <Tab projectId={match.params.projectId} menu={'Engagement'} />,
-              <FooterContainer />
-            )()} />
-          {canManageEngagements && (
+          {canAccessEngagements && (
             <Route path='/projects/:projectId/engagements/:engagementId'
               render={({ match }) => renderApp(
                 <EngagementEditor />,
@@ -367,12 +504,12 @@ class Routes extends React.Component {
                 <FooterContainer />
               )()} />
           )}
-          {!canManageEngagements && (
-            <Route path='/projects/:projectId/engagements/:engagementId'
+          {!canAccessEngagements && (
+            <Route path='/projects/:projectId/engagements'
               render={({ match }) => renderApp(
                 <Challenges
                   menu='NULL'
-                  warnMessage={'You need Admin, Project Manager, Talent Manager, or Task Manager role to edit engagements'}
+                  warnMessage={'You need Admin or Talent Manager role to view engagements'}
                 />,
                 <TopBarContainer />,
                 <Tab projectId={match.params.projectId} />,
@@ -399,6 +536,14 @@ class Routes extends React.Component {
               <Tab projectId={match.params.projectId} menu={'New Challenge'} />,
               <FooterContainer />
             )()} />
+          <Route exact path='/projects/:projectId'
+            render={({ match }) => renderApp(
+              <ProjectEntry />,
+              <TopBarContainer projectId={match.params.projectId} />,
+              <Tab projectId={match.params.projectId} />,
+              <FooterContainer />
+            )()}
+          />
           <Route exact path='/projects/:projectId/challenges'
             render={({ match }) => renderApp(
               <Challenges projectId={match.params.projectId} key='challenges' />,
@@ -414,20 +559,26 @@ class Routes extends React.Component {
   }
 }
 
-mapStateToProps = ({ auth }) => ({
-  ...auth
+mapStateToProps = ({ auth, projects }) => ({
+  ...auth,
+  projectDetail: projects.projectDetail,
+  hasProjectAccess: projects.hasProjectAccess
 })
 
 mapDispatchToProps = {
-  saveToken
+  saveToken,
+  loadOnlyProjectInfo
 }
 
 Routes.propTypes = {
   saveToken: PropTypes.func,
+  loadOnlyProjectInfo: PropTypes.func,
   location: PropTypes.object,
   isLoggedIn: PropTypes.bool,
   token: PropTypes.string,
-  history: PropTypes.object
+  history: PropTypes.object,
+  projectDetail: PropTypes.object,
+  hasProjectAccess: PropTypes.bool
 }
 
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Routes))

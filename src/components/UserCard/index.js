@@ -13,6 +13,22 @@ const theme = {
   container: styles.modalContainer
 }
 
+function normalizeDisplayValue (value) {
+  if (_.isNil(value)) {
+    return null
+  }
+
+  const normalizedValue = String(value).trim()
+
+  return normalizedValue || null
+}
+
+/**
+ * Renders one project member or invite card with role controls.
+ *
+ * `user.handle` may be null/empty for some members; this component falls back
+ * to `user.userId` and then `"(unknown user)"` when rendering labels/messages.
+ */
 class UserCard extends Component {
   constructor (props) {
     super(props)
@@ -61,19 +77,26 @@ class UserCard extends Component {
   render () {
     const { isInvite, user, onRemoveClick, isEditable } = this.props
     const showRadioButtons = _.includes(_.values(PROJECT_ROLES), user.role)
+    const userDisplayName = normalizeDisplayValue(user.handle) ||
+      normalizeDisplayValue(user.userId) ||
+      '(unknown user)'
+    const inviteDisplayName = normalizeDisplayValue(user.email) ||
+      normalizeDisplayValue(user.handle) ||
+      normalizeDisplayValue(user.userId) ||
+      '(unknown user)'
     return (
       <div>
         {
           this.state.isUpdatingPermission && (
             <AlertModal
-              message={`Updating permission for ${user.handle}...`}
+              message={`Updating permission for ${userDisplayName}...`}
               theme={theme}
             />
           )
         }
         {this.state.showWarningModal && (
           <AlertModal
-            title={`Cannot update permission for ${user.handle}`}
+            title={`Cannot update permission for ${userDisplayName}`}
             message={this.state.permissionUpdateError}
             theme={theme}
             closeText='OK'
@@ -91,7 +114,7 @@ class UserCard extends Component {
         )}
         <div className={styles.item}>
           <div className={cn(styles.col5)}>
-            {isInvite ? (user.email || user.handle) : user.handle}
+            {isInvite ? inviteDisplayName : userDisplayName}
           </div>
           {!isInvite && (
             <>

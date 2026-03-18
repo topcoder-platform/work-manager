@@ -76,6 +76,11 @@ class ApplicationsListContainer extends Component {
     return isAdmin || isManager || isProjectManager
   }
 
+  /**
+   * Updates an application status and refreshes dependent data.
+   * Re-throws failures so the component can render dedicated UI for
+   * capacity-exceeded responses from the API.
+   */
   async handleUpdateStatus (applicationId, newStatus, assignmentDetails) {
     const { engagementId, projectId } = this.getParams()
     try {
@@ -83,6 +88,7 @@ class ApplicationsListContainer extends Component {
       await this.props.loadApplications(engagementId)
       await this.props.loadEngagementDetails(projectId, engagementId)
     } catch (error) {
+      throw error
     }
   }
 

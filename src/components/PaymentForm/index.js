@@ -84,7 +84,33 @@ const formatWeekEndingTitle = (value) => {
   if (!value) {
     return ''
   }
-  return `Week ending: ${moment(value).format('MMM DD, YYYY')}`
+  return `Week Ending: ${moment(value).format('MMM DD, YYYY')}`
+}
+
+const normalizeTitleSegment = (value) => {
+  if (value == null) {
+    return ''
+  }
+  return String(value).trim()
+}
+
+const getEngagementName = (engagement) => {
+  if (!engagement || typeof engagement !== 'object') {
+    return ''
+  }
+  return normalizeTitleSegment(
+    engagement.title || engagement.name || engagement.role || ''
+  )
+}
+
+const buildPaymentTitle = (projectName, engagementName, weekEndingTitle) => {
+  return [
+    normalizeTitleSegment(projectName),
+    normalizeTitleSegment(engagementName),
+    normalizeTitleSegment(weekEndingTitle)
+  ]
+    .filter(Boolean)
+    .join(' - ')
 }
 
 const getDefaultWeekEndingDate = () => {
@@ -121,7 +147,15 @@ const isWeekEndingSaturday = (value) => {
   return parsed.isoWeekday() === 6
 }
 
-const PaymentForm = ({ member, availableMembers, isProcessing, onSubmit, onCancel }) => {
+const PaymentForm = ({
+  member,
+  availableMembers,
+  engagement,
+  projectName,
+  isProcessing,
+  onSubmit,
+  onCancel
+}) => {
   const defaultWeekEndingDate = useMemo(() => getDefaultWeekEndingDate(), [])
   const weekEndingInputId = useRef(`week-ending-input-${Math.random().toString(36).slice(2, 9)}`)
   const [weekEndingDate, setWeekEndingDate] = useState(defaultWeekEndingDate)
@@ -208,7 +242,9 @@ const PaymentForm = ({ member, availableMembers, isProcessing, onSubmit, onCance
   const isAmountValid = Number.isFinite(parsedAmount) && parsedAmount > 0
   const isWeekEndingValid = isWeekEndingSaturday(weekEndingDate)
   const weekEndingTitle = isWeekEndingValid ? formatWeekEndingTitle(weekEndingDate) : ''
-  const trimmedTitle = weekEndingTitle.trim()
+  const engagementName = getEngagementName(engagement)
+  const paymentTitle = buildPaymentTitle(projectName, engagementName, weekEndingTitle)
+  const trimmedTitle = paymentTitle.trim()
   const isTitleValid = isWeekEndingValid && trimmedTitle.length > 0
 
   const onSubmitForm = (event) => {
@@ -281,7 +317,7 @@ const PaymentForm = ({ member, availableMembers, isProcessing, onSubmit, onCance
           className={`${styles.label} ${styles.clickableLabel}`}
           htmlFor={weekEndingInputId.current}
         >
-          Week ending:
+          Week Ending:
         </label>
         <div className={styles.field}>
           <DateInput
@@ -293,7 +329,7 @@ const PaymentForm = ({ member, availableMembers, isProcessing, onSubmit, onCance
             timeFormat={false}
             inputId={weekEndingInputId.current}
           />
-          {weekEndingTitle && <div className={styles.weekEndingPreview}>{weekEndingTitle}</div>}
+          {paymentTitle && <div className={styles.weekEndingPreview}>{paymentTitle}</div>}
           {titleError && <div className={styles.error}>{titleError}</div>}
         </div>
       </div>
@@ -339,6 +375,8 @@ const PaymentForm = ({ member, availableMembers, isProcessing, onSubmit, onCance
 PaymentForm.defaultProps = {
   member: null,
   availableMembers: [],
+  engagement: null,
+  projectName: '',
   isProcessing: false,
   onSubmit: () => {},
   onCancel: () => {}
@@ -355,6 +393,12 @@ PaymentForm.propTypes = {
     handle: PropTypes.string,
     agreementRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
   })),
+  engagement: PropTypes.shape({
+    title: PropTypes.string,
+    name: PropTypes.string,
+    role: PropTypes.string
+  }),
+  projectName: PropTypes.string,
   isProcessing: PropTypes.bool,
   onSubmit: PropTypes.func,
   onCancel: PropTypes.func

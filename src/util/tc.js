@@ -13,7 +13,8 @@ import {
   ALLOWED_EDIT_RESOURCE_ROLES,
   MANAGER_ROLES,
   PROJECT_ROLES,
-  TASK_MANAGER_ROLES
+  TASK_MANAGER_ROLES,
+  PROJECT_MEMBER_INVITE_STATUS_PENDING
 } from '../config/constants'
 import _ from 'lodash'
 import { decodeToken } from 'tc-auth-lib'
@@ -260,6 +261,17 @@ export const checkManager = (token) => {
   return roles.some(val => MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
 }
 
+export const checkTalentManager = (token) => {
+  const tokenData = decodeToken(token)
+  const roles = _.get(tokenData, 'roles')
+  const talentManagerRoles = ['talent manager', 'topcoder talent manager']
+  return roles.some(val => talentManagerRoles.indexOf(val.toLowerCase()) > -1)
+}
+
+export const checkAdminOrTalentManager = (token) => {
+  return checkAdmin(token) || checkTalentManager(token)
+}
+
 export const checkTaskManager = (token) => {
   const tokenData = decodeToken(token)
   const roles = _.get(tokenData, 'roles')
@@ -381,6 +393,53 @@ export const checkAdminOrCopilot = (token, project) => {
   return isAdmin || (isCopilot && canManageProject(project, tokenData.userId))
 }
 
+/**
+ * Checks whether the authenticated user is a member of the specified project.
+ * This project-level check grants access regardless of the user's global JWT roles.
+ *
+ * @param {String} token JWT token for the authenticated user.
+ * @param {Object} projectDetail Project detail payload that includes `members`.
+ * @returns {Boolean} `true` when `projectDetail.members` contains the token's `userId`.
+ */
+export const checkIsProjectMember = (token, projectDetail) => {
+  const tokenData = decodeToken(token)
+  return !!getProjectMemberByUserId(projectDetail, _.get(tokenData, 'userId'))
+}
+
+/**
+ * Checks whether the authenticated user can view the project assets library.
+ *
+ * Asset Library access is granted to admins, global copilots, and any member
+ * of the project regardless of project role.
+ *
+ * @param {String} token JWT token for the authenticated user.
+ * @param {Object} projectDetail Project detail payload that includes `members`.
+ * @returns {Boolean} `true` when the user can view the project assets library.
+ */
+export const checkCanViewProjectAssets = (token, projectDetail) => {
+  if (!token) {
+    return false
+  }
+
+  return checkAdmin(token) || checkCopilot(token) || checkIsProjectMember(token, projectDetail)
+}
+
+/**
+ * Checks if token has any of the admin, copilot, or manager roles
+ * When `project` is omitted or empty, the check is based solely on the user's global JWT roles.
+ * @param  token
+ * @param  project
+ */
+export const checkAdminOrCopilotOrManager = (token, project) => {
+  return checkManager(token) || checkAdminOrCopilot(token, project)
+}
+
+/**
+ * Returns the authenticated user's pending invite for a project, if one exists.
+ *
+ * Accepted or declined historical invites are intentionally ignored so callers
+ * only trigger the invitation flow for actionable invitations.
+ */
 export const checkIsUserInvitedToProject = (token, project) => {
   if (!token) {
     return

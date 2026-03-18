@@ -65,7 +65,7 @@ const ChallengesComponent = ({
     if (loginUserProjectRole && loginUserRoleInProject !== loginUserProjectRole) {
       setLoginUserRoleInProject(loginUserProjectRole)
     }
-  }, [activeProject, auth])
+  }, [activeProject, auth, loginUserRoleInProject])
 
   return (
     <div>
@@ -88,7 +88,7 @@ const ChallengesComponent = ({
             </span>
           )}
         </div>
-        {activeProject && activeProject.id && !isReadOnly ? (
+        {activeProject && activeProject.id && (!isReadOnly || canViewAssets) ? (
           <div className={styles.projectActionButtonWrapper}>
             <OutlineButton
               text={'Users'}
@@ -109,7 +109,7 @@ const ChallengesComponent = ({
                 className={styles.btnOutline}
               />
             )}
-            {(checkAdmin(auth.token) || checkManager(auth.token)) && !isCompletedOrCancelled && (
+            {!isReadOnly && (checkAdmin(auth.token) || checkManager(auth.token)) && !isCompletedOrCancelled && (
               <OutlineButton
                 text='Request Copilot'
                 type={'info'}
@@ -117,14 +117,16 @@ const ChallengesComponent = ({
                 target={'_blank'}
               />
             )}
-            {activeProject.status === PROJECT_STATUS.ACTIVE ? (
-              <Link
-                to={`/projects/${activeProject.id}/challenges/new`}
-              >
-                <PrimaryButton text={'Launch New'} type={'info'} />
-              </Link>
-            ) : (
-              <PrimaryButton text={'Launch New'} type={'info'} disabled />
+            {!isReadOnly && (
+              activeProject.status === PROJECT_STATUS.ACTIVE ? (
+                <Link
+                  to={`/projects/${activeProject.id}/challenges/new`}
+                >
+                  <PrimaryButton text={'Launch New'} type={'info'} />
+                </Link>
+              ) : (
+                <PrimaryButton text={'Launch New'} type={'info'} disabled />
+              )
             )}
           </div>
         ) : (

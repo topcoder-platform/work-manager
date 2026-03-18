@@ -60,6 +60,19 @@
   min-width: 0;
 }
 
+.filterItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filterLabel {
+  color: $tc-gray-70;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1;
+}
+
 .filterInput {
   width: 100%;
   min-width: 0;
@@ -108,6 +121,11 @@
   color: $tc-gray-90;
 }
 
+.statusOnHold {
+  background: $tc-gray-40;
+  color: $tc-gray-80;
+}
+
 .statusCancelled {
   background: $tc-red-20;
   color: $tc-gray-90;
@@ -125,9 +143,9 @@
 }
 
 .actionsColumn {
-  width: 300px;
-  min-width: 300px;
-  max-width: 300px;
+  width: 360px;
+  min-width: 360px;
+  max-width: 360px;
 }
 
 .applicationsLink {
@@ -143,6 +161,10 @@
   &:visited {
     color: $link-color;
   }
+}
+
+.projectLink {
+  @extend .applicationsLink;
 }
 
 .assignedMembersTooltip {
@@ -164,8 +186,8 @@
 
   .filters {
     display: grid;
-    grid-template-columns: minmax(240px, 2fr) repeat(3, minmax(160px, 1fr));
-    align-items: center;
+    grid-template-columns: minmax(240px, 2fr) repeat(2, minmax(160px, 1fr));
+    align-items: end;
   }
 
   .filterSearch,

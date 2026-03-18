@@ -14,6 +14,7 @@ import {
   LOAD_CHALLENGE_MEMBERS,
   LOAD_PROJECT_TYPES,
   CREATE_PROJECT,
+  CLEAR_PROJECT_DETAIL,
   LOAD_PROJECT_BILLING_ACCOUNTS,
   UPDATE_PROJECT_PENDING,
   UPDATE_PROJECT_SUCCESS,
@@ -36,6 +37,18 @@ import {
 } from '../services/projects'
 import { checkAdmin, checkManager } from '../util/tc'
 
+/**
+ * Loads projects with optional filters and enforces membership scoping for
+ * non-admin/non-manager users.
+ *
+ * Backend contract: when `memberOnly` is true, the API must apply
+ * membership/invite visibility constraints so users only receive projects they
+ * can access.
+ *
+ * @param {string} projectNameOrIdFilter Optional id/keyword filter.
+ * @param {Object} paramFilters Additional query filters.
+ * @returns {Function} Redux thunk.
+ */
 function _loadProjects (projectNameOrIdFilter = '', paramFilters = {}) {
   return (dispatch, getState) => {
     dispatch({
@@ -57,6 +70,7 @@ function _loadProjects (projectNameOrIdFilter = '', paramFilters = {}) {
     }
 
     if (!checkAdmin(getState().auth.token) && !checkManager(getState().auth.token)) {
+      // Non-admin users must always be server-scoped to member-visible projects.
       filters['memberOnly'] = true
     }
 
@@ -157,6 +171,20 @@ export function loadProject (projectId, filterMembers = true) {
 
         return project
       })
+    })
+  }
+}
+
+/**
+ * Clears the currently selected project details from Redux state.
+ * Use this when entering a create-project flow so stale project data is not reused.
+ *
+ * @returns {Function} thunk dispatching the clear action
+ */
+export function clearProjectDetail () {
+  return (dispatch) => {
+    return dispatch({
+      type: CLEAR_PROJECT_DETAIL
     })
   }
 }

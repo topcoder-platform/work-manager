@@ -112,7 +112,6 @@ const Projects = ({ projects, auth, isLoading, projectsCount, loadProjects, load
             {projects.map(p => (
               <li key={p.id}>
                 <ProjectCard
-                  isInvited={!!checkIsUserInvitedToProject(auth.token, p)}
                   projectStatus={p.status}
                   projectName={p.name}
                   projectId={p.id}

@@ -12,6 +12,7 @@ const LOCAL_MEMBER_API = 'http://localhost:3003/v6'
 const LOCAL_RESOURCE_API = 'http://localhost:3004/v6'
 const LOCAL_REVIEW_API = 'http://localhost:3005/v6'
 const LOCAL_SKILLS_API_V5 = 'http://localhost:3006/v5/standardized-skills'
+const LOCAL_PROJECTS_API = 'http://localhost:3008/v6/projects'
 // Lookups API available on 3007 if needed in future
 // const LOCAL_LOOKUPS_API = 'http://localhost:3007/v6'
 
@@ -46,7 +47,6 @@ module.exports = {
   // Copilots and other apps remain on dev
   COPILOTS_URL: 'https://copilots.topcoder-dev.com',
 
-  // Projects API: keep dev unless you run projects locally
   PROJECT_API_URL: `${DEV_API_HOSTNAME}/v6/projects`,
 
   // Local groups/resources/review services

@@ -13,7 +13,8 @@ import {
   deleteEngagement
 } from '../../actions/engagements'
 import { loadProject } from '../../actions/projects'
-import { checkAdmin, checkManager, checkTaskManager } from '../../util/tc'
+import { fetchMemberProjects } from '../../services/projects'
+import { checkAdmin, checkManager, checkTaskManager, checkTalentManager } from '../../util/tc'
 import { PROJECT_ROLES } from '../../config/constants'
 import { fetchProfile } from '../../services/user'
 import {
@@ -30,6 +31,7 @@ import {
 
 const getEmptyEngagement = () => ({
   id: null,
+  projectId: null,
   title: '',
   description: '',
   durationWeeks: '',
@@ -128,9 +130,10 @@ class EngagementEditorContainer extends Component {
     this.onDelete = this.onDelete.bind(this)
     this.onToggleDelete = this.onToggleDelete.bind(this)
     this.resolveMemberIds = this.resolveMemberIds.bind(this)
+    this.loadParentProjectOptions = this.loadParentProjectOptions.bind(this)
   }
 
-  componentDidMount () {
+  async componentDidMount () {
     const { match, loadEngagementDetails, loadProject } = this.props
     const projectId = this.getProjectId(match)
     const engagementId = _.get(match.params, 'engagementId', null)
@@ -138,7 +141,41 @@ class EngagementEditorContainer extends Component {
       loadProject(projectId)
     }
     if (engagementId) {
-      loadEngagementDetails(projectId, engagementId)
+      await loadEngagementDetails(projectId, engagementId)
+    }
+  }
+
+  /**
+   * Loads parent project autocomplete options for the engagement editor.
+   *
+   * Performs a name-filtered lookup and returns a small option set so the
+   * editor does not fetch every project before opening the dropdown.
+   *
+   * @param {string} inputValue User-entered search text.
+   * @returns {Promise<Array<{label: string, value: string}>>} Select options.
+   */
+  async loadParentProjectOptions (inputValue) {
+    const query = typeof inputValue === 'string' ? inputValue.trim() : ''
+    if (query.length < 2) {
+      return []
+    }
+
+    try {
+      const response = await fetchMemberProjects({
+        name: query,
+        page: 1,
+        perPage: 20,
+        sort: 'name asc'
+      })
+      const projects = _.get(response, 'projects', [])
+      return _.uniqBy(projects, 'id')
+        .filter((project) => project && project.id != null)
+        .map((project) => ({
+          label: project.name || `Project ${project.id}`,
+          value: String(project.id)
+        }))
+    } catch (error) {
+      return []
     }
   }
 
@@ -245,6 +282,7 @@ class EngagementEditorContainer extends Component {
     return {
       ...getEmptyEngagement(),
       ...normalized,
+      projectId: normalized.projectId || null,
       durationWeeks,
       role: fromEngagementRoleApi(normalized.role),
       workload: fromEngagementWorkloadApi(normalized.workload),
@@ -387,6 +425,7 @@ class EngagementEditorContainer extends Component {
   }
 
   buildPayload (engagement, isDraft) {
+    const currentProjectId = this.getProjectId(this.props.match)
     const status = engagement.status || (isDraft ? 'Open' : '')
     const requiredSkills = (engagement.skills || [])
       .map((skill) => {
@@ -523,6 +562,13 @@ class EngagementEditorContainer extends Component {
       }
     }
 
+    if (
+      engagement.projectId &&
+      `${engagement.projectId}` !== `${currentProjectId}`
+    ) {
+      payload.projectId = String(engagement.projectId)
+    }
+
     return payload
   }
 
@@ -656,6 +702,16 @@ class EngagementEditorContainer extends Component {
     return isAdmin || isManager || isTaskManager || isProjectManager
   }
 
+  /**
+   * Indicates whether current user can change the engagement Parent Project.
+   *
+   * @returns {boolean}
+   */
+  canEditParentProject () {
+    const { auth } = this.props
+    return checkAdmin(auth.token) || checkTalentManager(auth.token)
+  }
+
   render () {
     const { match, isLoading } = this.props
     const engagementId = _.get(match.params, 'engagementId', null)
@@ -670,6 +726,9 @@ class EngagementEditorContainer extends Component {
         isLoading={isLoading}
         isSaving={this.state.isSaving}
         canEdit={this.canEdit()}
+        currentProjectName={_.get(this.props.projectDetail, 'name', null)}
+        loadParentProjectOptions={this.loadParentProjectOptions}
+        canEditParentProject={this.canEditParentProject()}
         submitTriggered={this.state.submitTriggered}
         validationErrors={this.state.validationErrors}
         showDeleteModal={this.state.showDeleteModal}
@@ -705,6 +764,10 @@ class EngagementEditorContainer extends Component {
   }
 }
 
+/**
+ * Engagement editor container props.
+ * `engagementDetails.projectId` is optional and is used to preselect Parent Project.
+ */
 EngagementEditorContainer.propTypes = {
   match: PropTypes.shape({
     params: PropTypes.shape({
@@ -727,7 +790,10 @@ EngagementEditorContainer.propTypes = {
       role: PropTypes.string
     }))
   }),
-  engagementDetails: PropTypes.shape(),
+  engagementDetails: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+  }),
   isLoading: PropTypes.bool,
   loadEngagementDetails: PropTypes.func.isRequired,
   createEngagement: PropTypes.func.isRequired,

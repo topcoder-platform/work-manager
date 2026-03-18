@@ -15,6 +15,7 @@ import Handle from '../Handle'
 import { JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
 import { suggestProfiles } from '../../services/user'
 import { getCountableAssignments } from '../../util/engagements'
+import { serializeTentativeAssignmentDate } from '../../util/assignmentDates'
 import { formatTimeZoneLabel, formatTimeZoneList } from '../../util/timezones'
 import styles from './EngagementEditor.module.scss'
 
@@ -92,13 +93,26 @@ const formatAssignmentDate = (value) => {
   return moment(value).format('MMM DD, YYYY HH:mm')
 }
 
+/**
+ * Engagement editor form.
+ *
+ * @param {Object} props Component props.
+ * @param {Object} props.engagement Engagement draft values.
+ * @param {string} props.currentProjectName Current project name for selected-label fallback.
+ * @param {Function} props.loadParentProjectOptions Async project search for Parent Project selection.
+ * @param {boolean} props.canEditParentProject Whether current user can edit Parent Project.
+ * @returns {JSX.Element}
+ */
 const EngagementEditor = ({
   engagement,
   projectId,
+  currentProjectName,
   isNew,
   isLoading,
   isSaving,
   canEdit,
+  loadParentProjectOptions,
+  canEditParentProject,
   submitTriggered,
   validationErrors,
   showDeleteModal,
@@ -202,6 +216,22 @@ const EngagementEditor = ({
   const selectedCountries = (engagement.countries || []).map(code => {
     return countryOptionsByValue[code] || { label: code, value: code }
   })
+  const selectedParentProjectOption = useMemo(() => {
+    const selectedId = engagement.projectId != null
+      ? String(engagement.projectId)
+      : (projectId != null ? String(projectId) : null)
+    if (!selectedId) {
+      return null
+    }
+    const selectedName = engagement.projectName || currentProjectName
+    return {
+      label: selectedName || `Project ${selectedId}`,
+      value: selectedId
+    }
+  }, [engagement.projectId, engagement.projectName, currentProjectName, projectId])
+  const parentProjectName = selectedParentProjectOption
+    ? selectedParentProjectOption.label
+    : (engagement.projectName || '-')
   const selectedRoleOption = useMemo(() => {
     if (!engagement.role) {
       return null
@@ -406,8 +436,8 @@ const EngagementEditor = ({
     nextAssignedMemberHandles[assignModal.index] = assignModal.handle
     nextAssignmentDetails[assignModal.index] = {
       memberHandle: assignModal.handle,
-      startDate: parsedStart.toISOString(),
-      endDate: parsedEnd.toISOString(),
+      startDate: serializeTentativeAssignmentDate(parsedStart),
+      endDate: serializeTentativeAssignmentDate(parsedEnd),
       agreementRate: normalizedRate,
       otherRemarks: normalizedOtherRemarks
     }
@@ -862,7 +892,7 @@ const EngagementEditor = ({
                       label: engagement.status,
                       value: engagement.status
                     } : null}
-                    options={['Open', 'Active', 'Cancelled', 'Closed'].map(status => ({
+                    options={['Open', 'Active', 'On Hold', 'Cancelled', 'Closed'].map(status => ({
                       label: status,
                       value: status
                     }))}
@@ -882,6 +912,49 @@ const EngagementEditor = ({
                 )}
               </div>
             </div>
+
+            {!isNew && (
+              <div className={styles.row}>
+                <div className={cn(styles.field, styles.col1)}>
+                  <label>Parent Project :</label>
+                </div>
+                <div className={cn(styles.field, styles.col2)}>
+                  {canEdit && canEditParentProject ? (
+                    <Select
+                      className={styles.selectInput}
+                      useBottomBorder
+                      isAsync
+                      cacheOptions
+                      loadOptions={loadParentProjectOptions}
+                      placeholder='Type at least 2 characters to search projects...'
+                      noOptionsMessage={({ inputValue }) => {
+                        return inputValue && inputValue.trim().length >= 2
+                          ? 'No projects found'
+                          : 'Type at least 2 characters to search'
+                      }}
+                      value={selectedParentProjectOption}
+                      onChange={(option) => {
+                        onUpdateInput({
+                          target: {
+                            name: 'projectId',
+                            value: option ? String(option.value) : null
+                          }
+                        })
+                        onUpdateInput({
+                          target: {
+                            name: 'projectName',
+                            value: option ? option.label : null
+                          }
+                        })
+                      }}
+                      isClearable
+                    />
+                  ) : (
+                    <div className={styles.readOnlyValue}>{parentProjectName}</div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className={styles.row}>
               <div className={cn(styles.field, styles.col1)}>
@@ -930,12 +1003,13 @@ const EngagementEditor = ({
             )}
 
             {canEdit && (
-              <div className={styles.row}>
+              <div className={cn(styles.row, styles.privateEngagementRow)}>
                 <div className={cn(styles.field, styles.col1)}>
                   <label htmlFor='isPrivate'>Private Engagement :</label>
                 </div>
-                <div className={cn(styles.field, styles.col2)}>
+                <div className={cn(styles.field, styles.col2, styles.privateEngagementField)}>
                   <input
+                    className={styles.privateEngagementCheckbox}
                     id='isPrivate'
                     name='isPrivate'
                     type='checkbox'
@@ -1070,10 +1144,13 @@ const EngagementEditor = ({
 EngagementEditor.defaultProps = {
   engagement: getEmptyEngagement(),
   projectId: null,
+  currentProjectName: null,
   isNew: true,
   isLoading: false,
   isSaving: false,
   canEdit: true,
+  loadParentProjectOptions: () => Promise.resolve([]),
+  canEditParentProject: false,
   submitTriggered: false,
   validationErrors: {},
   showDeleteModal: false,
@@ -1090,6 +1167,8 @@ EngagementEditor.defaultProps = {
 EngagementEditor.propTypes = {
   engagement: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    projectName: PropTypes.string,
     title: PropTypes.string,
     description: PropTypes.string,
     durationWeeks: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
@@ -1135,10 +1214,13 @@ EngagementEditor.propTypes = {
     status: PropTypes.string
   }),
   projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  currentProjectName: PropTypes.string,
   isNew: PropTypes.bool,
   isLoading: PropTypes.bool,
   isSaving: PropTypes.bool,
   canEdit: PropTypes.bool,
+  loadParentProjectOptions: PropTypes.func,
+  canEditParentProject: PropTypes.bool,
   submitTriggered: PropTypes.bool,
   validationErrors: PropTypes.shape({
     title: PropTypes.string,
