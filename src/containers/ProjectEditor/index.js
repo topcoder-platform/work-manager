@@ -15,7 +15,7 @@ import {
   updateProject
 } from '../../actions/projects'
 import { setActiveProject } from '../../actions/sidebar'
-import { checkAdmin, checkCanManageProject, checkIsUserInvitedToProject, getProjectMemberRole } from '../../util/tc'
+import { checkAdmin, checkCanCreateProject, checkCanManageProject, checkIsUserInvitedToProject, getProjectMemberRole } from '../../util/tc'
 import { PROJECT_ROLES } from '../../config/constants'
 import Loader from '../../components/Loader'
 
@@ -36,13 +36,17 @@ class ProjectEditor extends Component {
   }
 
   componentDidUpdate () {
-    const { auth } = this.props
+    const { auth, isEdit } = this.props
 
     if (checkIsUserInvitedToProject(auth.token, this.props.projectDetail)) {
       this.props.history.push(`/projects/${this.props.projectDetail.id}/invitation`)
     }
 
-    if (!checkCanManageProject(auth.token, this.props.projectDetail)) {
+    if (isEdit && !checkCanManageProject(auth.token, this.props.projectDetail)) {
+      this.props.history.push('/projects')
+    }
+
+    if (!isEdit && !checkCanCreateProject(auth.token)) {
       this.props.history.push('/projects')
     }
   }

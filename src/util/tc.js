@@ -294,6 +294,20 @@ export const checkCanManageProject = (token, project) => {
 }
 
 /**
+ * Checks whether the caller may create a project in Work Manager.
+ *
+ * Project creation remains broader than edit permissions. Project Managers
+ * should still be able to create projects even though billing-account edits
+ * are limited to admins and Full Access members.
+ *
+ * @param  token
+ * @returns {boolean} Whether the caller can create a project.
+ */
+export const checkCanCreateProject = (token) => {
+  return checkAdmin(token) || checkManager(token) || checkCopilot(token)
+}
+
+/**
  * Checks whether the caller may edit a project's billing account.
  *
  * This is intentionally stricter than general project-management checks:
