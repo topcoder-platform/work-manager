@@ -10,7 +10,7 @@ import { PROJECT_ROLES, PROJECT_STATUS, COPILOTS_URL, CHALLENGE_STATUS } from '.
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
-import { checkAdmin, checkCanManageProject, checkReadOnlyRoles, checkAdminOrCopilot, checkManager, getProjectMemberRole } from '../../util/tc'
+import { checkAdmin, checkCanManageProject, checkCanViewProjectAssets, checkReadOnlyRoles, checkManager, getProjectMemberRole } from '../../util/tc'
 
 const ChallengesComponent = ({
   challenges,
@@ -51,7 +51,7 @@ const ChallengesComponent = ({
   const [loginUserRoleInProject, setLoginUserRoleInProject] = useState('')
   const isReadOnly = checkReadOnlyRoles(auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
   const canManageProject = checkCanManageProject(auth.token, activeProject)
-  const canAccessProjectAssets = checkAdminOrCopilot(auth.token, activeProject)
+  const canViewAssets = checkCanViewProjectAssets(auth.token, activeProject)
 
   const projectStatus = activeProject && activeProject.status
     ? activeProject.status.toUpperCase()
@@ -90,17 +90,19 @@ const ChallengesComponent = ({
         </div>
         {activeProject && activeProject.id && (!isReadOnly || canViewAssets) ? (
           <div className={styles.projectActionButtonWrapper}>
-            <OutlineButton
-              text={'Users'}
-              type='info'
-              submit
-              link={{
-                pathname: '/users',
-                state: { projectId: activeProjectId, projectName: activeProject.name }
-              }}
-              className={styles.btnOutline}
-            />
-            {canAccessProjectAssets && (
+            {!isReadOnly && (
+              <OutlineButton
+                text={'Users'}
+                type='info'
+                submit
+                link={{
+                  pathname: '/users',
+                  state: { projectId: activeProjectId, projectName: activeProject.name }
+                }}
+                className={styles.btnOutline}
+              />
+            )}
+            {canViewAssets && (
               <OutlineButton
                 text={'Assets Library'}
                 type={'info'}

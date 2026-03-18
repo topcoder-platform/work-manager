@@ -1,8 +1,14 @@
 /* global describe, it, expect, beforeEach, jest */
 
 import { decodeToken } from 'tc-auth-lib'
-import { PROJECT_ROLES } from '../config/constants'
-import { checkCanCreateProject, checkCanManageProject, checkCanManageProjectBillingAccount } from './tc'
+import { PROJECT_MEMBER_INVITE_STATUS_PENDING, PROJECT_ROLES } from '../config/constants'
+import {
+  checkCanCreateProject,
+  checkCanManageProject,
+  checkCanManageProjectBillingAccount,
+  checkIsUserInvitedToProject,
+  getProjectMemberByUserId
+} from './tc'
 
 jest.mock('tc-auth-lib', () => ({
   decodeToken: jest.fn()
@@ -152,5 +158,59 @@ describe('checkCanCreateProject', () => {
     })
 
     expect(checkCanCreateProject('token')).toBe(false)
+  })
+})
+
+describe('getProjectMemberByUserId', () => {
+  it('matches project members even when ids differ by string vs number types', () => {
+    expect(getProjectMemberByUserId({
+      members: [{
+        userId: '1001',
+        role: PROJECT_ROLES.WRITE
+      }]
+    }, 1001)).toEqual({
+      userId: '1001',
+      role: PROJECT_ROLES.WRITE
+    })
+  })
+})
+
+describe('checkIsUserInvitedToProject', () => {
+  beforeEach(() => {
+    decodeToken.mockReset()
+  })
+
+  it('returns the pending invite for the authenticated user', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      email: 'member@test.com'
+    })
+
+    expect(checkIsUserInvitedToProject('token', {
+      invites: [{
+        status: PROJECT_MEMBER_INVITE_STATUS_PENDING,
+        userId: '1001',
+        email: 'member@test.com'
+      }]
+    })).toEqual({
+      status: PROJECT_MEMBER_INVITE_STATUS_PENDING,
+      userId: '1001',
+      email: 'member@test.com'
+    })
+  })
+
+  it('ignores non-pending invites for the authenticated user', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      email: 'member@test.com'
+    })
+
+    expect(checkIsUserInvitedToProject('token', {
+      invites: [{
+        status: 'declined',
+        userId: '1001',
+        email: 'member@test.com'
+      }]
+    })).toBeUndefined()
   })
 })

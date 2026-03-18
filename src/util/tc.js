@@ -264,8 +264,7 @@ export const checkManager = (token) => {
 export const checkTalentManager = (token) => {
   const tokenData = decodeToken(token)
   const roles = _.get(tokenData, 'roles')
-  const talentManagerRoles = ['talent manager', 'topcoder talent manager']
-  return roles.some(val => talentManagerRoles.indexOf(val.toLowerCase()) > -1)
+  return roles.some(val => TALENT_MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
 }
 
 export const checkAdminOrTalentManager = (token) => {
@@ -276,12 +275,6 @@ export const checkTaskManager = (token) => {
   const tokenData = decodeToken(token)
   const roles = _.get(tokenData, 'roles')
   return roles.some(val => TASK_MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
-}
-
-export const checkTalentManager = (token) => {
-  const tokenData = decodeToken(token)
-  const roles = _.get(tokenData, 'roles')
-  return roles.some(val => TALENT_MANAGER_ROLES.indexOf(val.toLowerCase()) > -1)
 }
 
 /**
@@ -349,6 +342,30 @@ export const checkProjectMembership = (project, userId) => {
 
 export const getProjectMemberRole = (project, userId) => {
   return _.get(getProjectMember(project, userId), 'role', null)
+}
+
+/**
+ * Returns the matching project member for the provided user id, if present.
+ *
+ * @param {Object|Object[]} projectDetail Project detail payload with `members`,
+ *   or a raw members array.
+ * @param {String|Number} userId Authenticated user id to match.
+ * @returns {Object|null} Matching member record or `null`.
+ */
+export const getProjectMemberByUserId = (projectDetail, userId) => {
+  const normalizedUserId = normalizeUserId(userId)
+  const members = Array.isArray(projectDetail)
+    ? projectDetail
+    : _.get(projectDetail, 'members', [])
+
+  if (!normalizedUserId || !Array.isArray(members)) {
+    return null
+  }
+
+  return _.find(
+    members,
+    member => normalizeUserId(member.userId) === normalizedUserId
+  ) || null
 }
 
 export const checkAdminOrPmOrTaskManager = (token, project) => {
@@ -449,8 +466,11 @@ export const checkIsUserInvitedToProject = (token, project) => {
   return project && !_.isEmpty(project) && (_.find(
     project.invites,
     d => (
-      normalizeUserId(d.userId) === normalizeUserId(tokenData.userId) ||
-      normalizeEmail(d.email) === normalizeEmail(tokenData.email)
+      d.status === PROJECT_MEMBER_INVITE_STATUS_PENDING &&
+      (
+        normalizeUserId(d.userId) === normalizeUserId(tokenData.userId) ||
+        normalizeEmail(d.email) === normalizeEmail(tokenData.email)
+      )
     )
   ))
 }
