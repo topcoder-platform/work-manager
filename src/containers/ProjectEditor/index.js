@@ -16,7 +16,7 @@ import {
   clearProjectDetail
 } from '../../actions/projects'
 import { setActiveProject } from '../../actions/sidebar'
-import { checkAdminOrCopilotOrManager, checkAdmin, checkIsUserInvitedToProject, checkManager } from '../../util/tc'
+import { checkAdmin, checkCanCreateProject, checkCanManageProject, checkIsUserInvitedToProject, checkManager, getProjectMemberRole } from '../../util/tc'
 import { PROJECT_ROLES } from '../../config/constants'
 import Loader from '../../components/Loader'
 
@@ -45,12 +45,11 @@ class ProjectEditor extends Component {
       history.push(`/projects/${projectDetail.id}/invitation`)
     }
 
-    // For create flow there is no project context yet, so only evaluate global JWT roles.
-    const canManageProject = isEdit
-      ? checkAdminOrCopilotOrManager(auth.token, projectDetail)
-      : checkAdminOrCopilotOrManager(auth.token)
+    if (isEdit && !checkCanManageProject(auth.token, projectDetail)) {
+      history.push('/projects')
+    }
 
-    if (!canManageProject) {
+    if (!isEdit && !checkCanCreateProject(auth.token)) {
       history.push('/projects')
     }
   }
@@ -69,13 +68,7 @@ class ProjectEditor extends Component {
   }
 
   getMemberRole (members, userId) {
-    if (!userId) { return null }
-
-    const found = _.find(members, (m) => {
-      return m.userId === userId
-    })
-
-    return _.get(found, 'role')
+    return getProjectMemberRole({ members }, userId)
   }
 
   checkIsCopilotOrManager (projectMembers, userId) {

@@ -47,7 +47,6 @@ module.exports = {
   // Copilots and other apps remain on dev
   COPILOTS_URL: 'https://copilots.topcoder-dev.com',
 
-  // Projects API v6: keep dev default (switch to LOCAL_PROJECTS_API when needed)
   PROJECT_API_URL: `${DEV_API_HOSTNAME}/v6/projects`,
 
   // Local groups/resources/review services
