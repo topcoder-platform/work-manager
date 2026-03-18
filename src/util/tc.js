@@ -293,6 +293,28 @@ export const checkCanManageProject = (token, project) => {
   return isAdmin || ((isCopilot || isTalentManager) && hasProjectManagementAccess)
 }
 
+/**
+ * Checks whether the caller may edit a project's billing account.
+ *
+ * This is intentionally stricter than general project-management checks:
+ * only admins or project members with Full Access (`manager`) qualify.
+ *
+ * @param  token
+ * @param  project
+ * @returns {boolean} Whether the caller can edit the project's billing account.
+ */
+export const checkCanManageProjectBillingAccount = (token, project) => {
+  const tokenData = decodeToken(token)
+  const roles = _.get(tokenData, 'roles', [])
+  const isAdmin = roles.some(val => ADMIN_ROLES.indexOf(val.toLowerCase()) > -1)
+
+  if (isAdmin) {
+    return true
+  }
+
+  return _.get(getProjectMember(project, tokenData.userId), 'role') === PROJECT_ROLES.MANAGER
+}
+
 export const checkProjectMembership = (project, userId) => {
   return !!getProjectMember(project, userId)
 }
