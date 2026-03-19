@@ -25,7 +25,7 @@ import Loader from '../../Loader'
 import UpdateBillingAccount from '../../UpdateBillingAccount'
 
 import { CHALLENGE_STATUS, PAGE_SIZE, PAGINATION_PER_PAGE_OPTIONS, PROJECT_ROLES } from '../../../config/constants'
-import { checkAdmin, checkManager, checkReadOnlyRoles } from '../../../util/tc'
+import { checkAdmin, checkCanManageProjectBillingAccount, checkReadOnlyRoles } from '../../../util/tc'
 
 require('bootstrap/scss/bootstrap.scss')
 
@@ -405,10 +405,10 @@ class ChallengeList extends Component {
       fetchNextProjects
     } = this.props
     const isReadOnly = checkReadOnlyRoles(this.props.auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
-    const isAdmin = checkAdmin(this.props.auth.token)
-    const isManager = checkManager(this.props.auth.token)
-    const loginUserId = this.props.auth.user.userId
-    const isMemberOfActiveProject = activeProject && activeProject.members && activeProject.members.some(member => member.userId === loginUserId)
+    const canManageBillingAccount = checkCanManageProjectBillingAccount(
+      this.props.auth.token,
+      activeProject
+    )
 
     if (warnMessage) {
       return <Message warnMessage={warnMessage} />
@@ -495,12 +495,10 @@ class ChallengeList extends Component {
                 billingStartDate={billingStartDate}
                 billingEndDate={billingEndDate}
                 isBillingAccountExpired={isBillingAccountExpired}
-                isAdmin={isAdmin}
+                canManageBillingAccount={canManageBillingAccount}
                 currentBillingAccount={currentBillingAccount}
                 updateProject={updateProject}
                 projectId={activeProject.id}
-                isMemberOfActiveProject={isMemberOfActiveProject}
-                isManager={isManager}
               />
             </div>
           ) : (

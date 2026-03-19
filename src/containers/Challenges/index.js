@@ -22,6 +22,7 @@ import {
 } from '../../actions/sidebar'
 import { checkAdmin, checkCopilot, checkIsProjectMember, checkIsUserInvitedToProject } from '../../util/tc'
 import { withRouter } from 'react-router-dom'
+import { getActiveProject } from './helper'
 
 class Challenges extends Component {
   constructor (props) {
@@ -136,6 +137,7 @@ class Challenges extends Component {
       setActiveProject,
       partiallyUpdateChallengeDetails,
       deleteChallenge,
+      projectId,
       isBillingAccountExpired,
       billingStartDate,
       billingEndDate,
@@ -152,8 +154,11 @@ class Challenges extends Component {
       fetchNextProjects
     } = this.props
     const { challengeTypes = [] } = metadata
-    const isActiveProjectLoaded =
-      reduxProjectInfo && `${reduxProjectInfo.id}` === `${activeProjectId}`
+    const activeProject = getActiveProject(
+      reduxProjectInfo,
+      projectId,
+      activeProjectId
+    )
 
     // Check if user has access to this specific project
     const isProjectRoute = !!projectId && !dashboard && !selfService
@@ -172,9 +177,7 @@ class Challenges extends Component {
       <Fragment>
         {(dashboard || activeProjectId !== -1 || selfService) && (
           <ChallengesComponent
-            activeProject={{
-              ...(isActiveProjectLoaded ? reduxProjectInfo : {})
-            }}
+            activeProject={activeProject}
             fetchNextProjects={fetchNextProjects}
             warnMessage={accessDeniedMessage}
             setActiveProject={setActiveProject}

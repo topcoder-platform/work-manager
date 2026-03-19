@@ -21,7 +21,7 @@ const ReviewSettingsSection = ({ configuration, onUpdateConfiguration, readOnly,
             className={styles.modeDropdown}
           >
             <option value='AI_GATING'>AI_GATING</option>
-            <option value='AI_ONLY'>AI_ONLY</option>
+            {/* <option value='AI_ONLY'>AI_ONLY</option> */}
           </select>
           <p className={styles.modeInfo}>
             {configuration.mode === 'AI_GATING'
