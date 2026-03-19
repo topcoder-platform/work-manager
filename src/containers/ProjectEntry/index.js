@@ -15,6 +15,7 @@ import { checkIsUserInvitedToProject } from '../../util/tc'
  * the invitation modal before challenge-specific requests run.
  */
 const ProjectEntry = ({
+  hasProjectAccess,
   history,
   isProjectLoading,
   loadOnlyProjectInfo,
@@ -24,6 +25,7 @@ const ProjectEntry = ({
 }) => {
   const projectId = _.get(match, 'params.projectId')
   const [resolvedProjectId, setResolvedProjectId] = useState(null)
+  const [accessDenied, setAccessDenied] = useState(false)
 
   useEffect(() => {
     let isActive = true
@@ -34,15 +36,22 @@ const ProjectEntry = ({
     }
 
     setResolvedProjectId(null)
+    setAccessDenied(false)
     loadOnlyProjectInfo(projectId)
       .then(() => {
         if (isActive) {
           setResolvedProjectId(projectId)
         }
       })
-      .catch(() => {
+      .catch((error) => {
         if (isActive) {
-          history.replace('/projects')
+          const status = _.get(error, 'payload.response.status', _.get(error, 'response.status'))
+          if (status === 403) {
+            setAccessDenied(true)
+            setResolvedProjectId(projectId)
+          } else {
+            history.replace('/projects')
+          }
         }
       })
 
@@ -52,11 +61,17 @@ const ProjectEntry = ({
   }, [history, loadOnlyProjectInfo, projectId])
 
   useEffect(() => {
-    if (
-      !resolvedProjectId ||
-      isProjectLoading ||
-      `${_.get(projectDetail, 'id', '')}` !== `${resolvedProjectId}`
-    ) {
+    if (!resolvedProjectId || isProjectLoading) {
+      return
+    }
+
+    // Handle 403 access denied - redirect to challenges page which will show the error
+    if (accessDenied || !hasProjectAccess) {
+      history.replace(`/projects/${resolvedProjectId}/challenges`)
+      return
+    }
+
+    if (`${_.get(projectDetail, 'id', '')}` !== `${resolvedProjectId}`) {
       return
     }
 
@@ -65,12 +80,13 @@ const ProjectEntry = ({
       : `/projects/${resolvedProjectId}/challenges`
 
     history.replace(destination)
-  }, [history, isProjectLoading, projectDetail, resolvedProjectId, token])
+  }, [accessDenied, hasProjectAccess, history, isProjectLoading, projectDetail, resolvedProjectId, token])
 
   return <Loader />
 }
 
 ProjectEntry.propTypes = {
+  hasProjectAccess: PropTypes.bool,
   history: PropTypes.shape({
     replace: PropTypes.func.isRequired
   }).isRequired,
@@ -86,6 +102,7 @@ ProjectEntry.propTypes = {
 }
 
 const mapStateToProps = ({ auth, projects }) => ({
+  hasProjectAccess: projects.hasProjectAccess,
   isProjectLoading: projects.isLoading,
   projectDetail: projects.projectDetail,
   token: auth.token
