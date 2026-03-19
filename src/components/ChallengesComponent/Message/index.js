@@ -5,10 +5,10 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styles from './Message.module.scss'
 
-const Message = ({ warnMessage }) => {
+const Message = ({ warnMessage, children }) => {
   return (
     <div className={styles.messageContainer}>
-      <p>{warnMessage}</p>
+      <p>{children !== undefined ? children : warnMessage}</p>
     </div>
   )
 }
@@ -18,7 +18,8 @@ Message.defaultProps = {
 }
 
 Message.propTypes = {
-  warnMessage: PropTypes.string
+  warnMessage: PropTypes.string,
+  children: PropTypes.node
 }
 
 export default Message

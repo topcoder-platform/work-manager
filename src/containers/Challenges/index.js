@@ -3,11 +3,10 @@
  */
 import _ from 'lodash'
 import React, { Component, Fragment } from 'react'
-// import { Redirect } from 'react-router-dom'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import ChallengesComponent from '../../components/ChallengesComponent'
-// import Loader from '../../components/Loader'
+import Message from '../../components/ChallengesComponent/Message'
 import {
   loadChallengesByPage,
   partiallyUpdateChallengeDetails,
@@ -20,7 +19,7 @@ import {
   setActiveProject,
   resetSidebarActiveParams
 } from '../../actions/sidebar'
-import { checkAdmin, checkIsUserInvitedToProject } from '../../util/tc'
+import { checkAdmin, checkIsUserInvitedToProject, checkIsProjectMember, checkCopilot, checkManager } from '../../util/tc'
 import { withRouter } from 'react-router-dom'
 import { getActiveProject } from './helper'
 
@@ -28,7 +27,8 @@ class Challenges extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      onlyMyProjects: true
+      onlyMyProjects: true,
+      projectLoadAttempted: false
     }
   }
 
@@ -52,6 +52,7 @@ class Challenges extends Component {
     } else if (projectId || selfService) {
       if (projectId && projectId !== -1) {
         window.localStorage.setItem('projectLoading', 'true')
+        this.setState({ projectLoadAttempted: true })
         this.props.loadProject(projectId)
       }
       this.reloadChallenges(this.props, true)
@@ -149,7 +150,9 @@ class Challenges extends Component {
       selfService,
       auth,
       metadata,
-      fetchNextProjects
+      fetchNextProjects,
+      hasProjectAccess,
+      projectsIsLoading
     } = this.props
     const { challengeTypes = [] } = metadata
     const activeProject = getActiveProject(
@@ -157,6 +160,26 @@ class Challenges extends Component {
       projectId,
       activeProjectId
     )
+
+    if (!dashboard && !selfService && projectId && this.state.projectLoadAttempted) {
+      const isUserAuthorized = checkAdmin(auth.token) || checkCopilot(auth.token) || checkManager(auth.token)
+
+      if (!isUserAuthorized && !projectsIsLoading) {
+        const isProjectDetailForRequestedProject = reduxProjectInfo &&
+          !_.isEmpty(reduxProjectInfo) &&
+          `${reduxProjectInfo.id}` === `${projectId}`
+
+        if (!hasProjectAccess || (isProjectDetailForRequestedProject && !checkIsProjectMember(auth.token, reduxProjectInfo))) {
+          return (
+            <Message>
+              {'You don\'t have access to this project. Please contact '}
+              <a href='mailto:support@topcoder.com'>support@topcoder.com</a>
+              {'.'}
+            </Message>
+          )
+        }
+      }
+    }
 
     return (
       <Fragment>
@@ -250,7 +273,9 @@ Challenges.propTypes = {
   metadata: PropTypes.shape({
     challengeTypes: PropTypes.array
   }),
-  loadProjects: PropTypes.func.isRequired
+  loadProjects: PropTypes.func.isRequired,
+  hasProjectAccess: PropTypes.bool,
+  projectsIsLoading: PropTypes.bool
 }
 
 const mapStateToProps = ({ challenges, sidebar, projects, auth }) => ({
@@ -268,6 +293,8 @@ const mapStateToProps = ({ challenges, sidebar, projects, auth }) => ({
   isBillingAccountsLoading: projects.isBillingAccountsLoading,
   isBillingAccountLoadingFailed: projects.isBillingAccountLoadingFailed,
   isBillingAccountLoading: projects.isBillingAccountLoading,
+  hasProjectAccess: projects.hasProjectAccess,
+  projectsIsLoading: projects.isLoading,
   auth: auth,
   metadata: challenges.metadata
 })
