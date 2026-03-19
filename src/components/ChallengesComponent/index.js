@@ -2,7 +2,6 @@
  * Component to render Challenges page
  */
 import React, { useState, useEffect } from 'react'
-import _ from 'lodash'
 import PropTypes from 'prop-types'
 import { Helmet } from 'react-helmet'
 import { Link } from 'react-router-dom'
@@ -11,14 +10,7 @@ import { PROJECT_ROLES, PROJECT_STATUS, COPILOTS_URL, CHALLENGE_STATUS } from '.
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import ChallengeList from './ChallengeList'
 import styles from './ChallengesComponent.module.scss'
-import {
-  checkAdmin,
-  checkReadOnlyRoles,
-  checkAdminOrCopilotOrManager,
-  checkCanViewProjectAssets,
-  checkManager,
-  getProjectMemberByUserId
-} from '../../util/tc'
+import { checkAdmin, checkCanManageProject, checkCanViewProjectAssets, checkReadOnlyRoles, checkManager, getProjectMemberRole } from '../../util/tc'
 
 const ChallengesComponent = ({
   challenges,
@@ -58,8 +50,8 @@ const ChallengesComponent = ({
 }) => {
   const [loginUserRoleInProject, setLoginUserRoleInProject] = useState('')
   const isReadOnly = checkReadOnlyRoles(auth.token) || loginUserRoleInProject === PROJECT_ROLES.READ
+  const canManageProject = checkCanManageProject(auth.token, activeProject)
   const canViewAssets = checkCanViewProjectAssets(auth.token, activeProject)
-  const canEditProject = checkAdminOrCopilotOrManager(auth.token, activeProject)
 
   const projectStatus = activeProject && activeProject.status
     ? activeProject.status.toUpperCase()
@@ -69,9 +61,9 @@ const ChallengesComponent = ({
 
   useEffect(() => {
     const loggedInUser = auth.user
-    const loginUserProjectInfo = getProjectMemberByUserId(activeProject, _.get(loggedInUser, 'userId'))
-    if (loginUserProjectInfo && loginUserRoleInProject !== loginUserProjectInfo.role) {
-      setLoginUserRoleInProject(loginUserProjectInfo.role)
+    const loginUserProjectRole = getProjectMemberRole(activeProject, loggedInUser.userId)
+    if (loginUserProjectRole && loginUserRoleInProject !== loginUserProjectRole) {
+      setLoginUserRoleInProject(loginUserProjectRole)
     }
   }, [activeProject, auth, loginUserRoleInProject])
 
@@ -84,7 +76,7 @@ const ChallengesComponent = ({
             {activeProject ? activeProject.name : ''}
             {activeProject && activeProject.status && <ProjectStatus className={styles.status} status={activeProject.status} />}
           </div>
-          {activeProject && activeProject.id && canEditProject && (
+          {activeProject && activeProject.id && canManageProject && (
             <span>
               (
               <Link

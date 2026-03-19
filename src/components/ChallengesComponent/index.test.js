@@ -32,12 +32,13 @@ jest.mock('react-helmet', () => ({
 jest.mock('../../util/tc', () => ({
   checkAdmin: jest.fn(),
   checkReadOnlyRoles: jest.fn(),
-  checkAdminOrCopilotOrManager: jest.fn(),
+  checkCanManageProject: jest.fn(),
   checkCanViewProjectAssets: jest.fn(),
   checkManager: jest.fn(),
-  getProjectMemberByUserId: jest.fn((project, userId) => {
+  getProjectMemberRole: jest.fn((project, userId) => {
     const members = (project && project.members) || []
-    return members.find(member => `${member.userId}` === `${userId}`) || null
+    const member = members.find(candidate => `${candidate.userId}` === `${userId}`) || null
+    return member ? member.role : null
   })
 }))
 
@@ -111,7 +112,7 @@ describe('ChallengesComponent', () => {
 
     tcUtils.checkAdmin.mockReturnValue(false)
     tcUtils.checkReadOnlyRoles.mockReturnValue(false)
-    tcUtils.checkAdminOrCopilotOrManager.mockReturnValue(false)
+    tcUtils.checkCanManageProject.mockReturnValue(false)
     tcUtils.checkCanViewProjectAssets.mockReturnValue(true)
     tcUtils.checkManager.mockReturnValue(false)
   })
