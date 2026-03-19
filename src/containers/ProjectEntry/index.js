@@ -7,6 +7,9 @@ import _ from 'lodash'
 import Loader from '../../components/Loader'
 import { loadOnlyProjectInfo } from '../../actions/projects'
 import { checkIsUserInvitedToProject } from '../../util/tc'
+import Challenges from '../Challenges'
+import { clearProjectDetail } from '../../actions/projects'
+import { PROJECT_ACCESS_DENIED_MESSAGE } from '../../config/constants'
 
 /**
  * Resolves the correct project landing route for `/projects/:projectId`.
@@ -18,12 +21,14 @@ const ProjectEntry = ({
   history,
   isProjectLoading,
   loadOnlyProjectInfo,
+  clearProjectDetail,
   match,
   projectDetail,
   token
 }) => {
   const projectId = _.get(match, 'params.projectId')
   const [resolvedProjectId, setResolvedProjectId] = useState(null)
+  const [projectAccessDenied, setProjectAccessDenied] = useState(false)
 
   useEffect(() => {
     let isActive = true
@@ -34,22 +39,33 @@ const ProjectEntry = ({
     }
 
     setResolvedProjectId(null)
+    setProjectAccessDenied(false)
     loadOnlyProjectInfo(projectId)
       .then(() => {
         if (isActive) {
           setResolvedProjectId(projectId)
         }
       })
-      .catch(() => {
+      .catch((error) => {
         if (isActive) {
-          history.replace('/projects')
+          const responseStatus = _.get(
+            error,
+            'payload.response.status',
+            _.get(error, 'response.status')
+          )
+          if (`${responseStatus}` === '403') {
+            clearProjectDetail()
+            setProjectAccessDenied(true)
+          } else {
+            history.replace('/projects')
+          }
         }
       })
 
     return () => {
       isActive = false
     }
-  }, [history, loadOnlyProjectInfo, projectId])
+  }, [history, loadOnlyProjectInfo, projectId, clearProjectDetail])
 
   useEffect(() => {
     if (
@@ -67,6 +83,15 @@ const ProjectEntry = ({
     history.replace(destination)
   }, [history, isProjectLoading, projectDetail, resolvedProjectId, token])
 
+  if (projectAccessDenied) {
+    return (
+      <Challenges
+        menu='NULL'
+        warnMessage={PROJECT_ACCESS_DENIED_MESSAGE}
+      />
+    )
+  }
+
   return <Loader />
 }
 
@@ -76,6 +101,7 @@ ProjectEntry.propTypes = {
   }).isRequired,
   isProjectLoading: PropTypes.bool,
   loadOnlyProjectInfo: PropTypes.func.isRequired,
+  clearProjectDetail: PropTypes.func.isRequired,
   match: PropTypes.shape({
     params: PropTypes.shape({
       projectId: PropTypes.string
@@ -92,7 +118,8 @@ const mapStateToProps = ({ auth, projects }) => ({
 })
 
 const mapDispatchToProps = {
-  loadOnlyProjectInfo
+  loadOnlyProjectInfo,
+  clearProjectDetail
 }
 
 export default withRouter(

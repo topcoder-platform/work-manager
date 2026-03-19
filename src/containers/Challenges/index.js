@@ -14,7 +14,7 @@ import {
   deleteChallenge,
   loadChallengeTypes
 } from '../../actions/challenges'
-import { loadProject, loadProjects, updateProject } from '../../actions/projects'
+import { loadProject, loadProjects, updateProject, clearProjectDetail } from '../../actions/projects'
 import {
   loadNextProjects,
   setActiveProject,
@@ -22,16 +22,18 @@ import {
 } from '../../actions/sidebar'
 import { checkAdmin, checkIsUserInvitedToProject } from '../../util/tc'
 import { withRouter } from 'react-router-dom'
+import { PROJECT_ACCESS_DENIED_MESSAGE } from '../../config/constants'
 
 class Challenges extends Component {
   constructor (props) {
     super(props)
     this.state = {
-      onlyMyProjects: true
+      onlyMyProjects: true,
+      projectAccessDenied: false
     }
   }
 
-  componentDidMount () {
+  async componentDidMount () {
     const {
       dashboard,
       activeProjectId,
@@ -39,8 +41,16 @@ class Challenges extends Component {
       menu,
       projectId,
       selfService,
-      loadChallengeTypes
+      loadChallengeTypes,
+      warnMessage
     } = this.props
+
+    // If we were rendered specifically to display a validation/warning message,
+    // do not load any project/challenge data.
+    if (warnMessage) {
+      return
+    }
+
     loadChallengeTypes()
     if (dashboard) {
       this.props.loadProjects('', {})
@@ -51,13 +61,46 @@ class Challenges extends Component {
     } else if (projectId || selfService) {
       if (projectId && projectId !== -1) {
         window.localStorage.setItem('projectLoading', 'true')
-        this.props.loadProject(projectId)
+
+        // For direct `/projects/:projectId/*` navigation, block unauthorized users.
+        if (menu !== 'NULL') {
+          try {
+            await this.props.loadProject(projectId)
+          } catch (error) {
+            const responseStatus = _.get(
+              error,
+              'payload.response.status',
+              _.get(error, 'response.status')
+            )
+
+            if (`${responseStatus}` === '403') {
+              this.setState({ projectAccessDenied: true })
+              this.props.clearProjectDetail()
+              window.localStorage.removeItem('projectLoading')
+              return
+            }
+          }
+        } else {
+          this.props.loadProject(projectId)
+        }
       }
-      this.reloadChallenges(this.props, true)
+
+      // Only load challenge listing after successful project resolution.
+      if (!this.state.projectAccessDenied) {
+        this.reloadChallenges(this.props, true)
+      }
     }
   }
 
   componentDidUpdate () {
+    if (this.state.projectAccessDenied) {
+      return
+    }
+
+    if (this.props.warnMessage) {
+      return
+    }
+
     const { auth } = this.props
 
     if (checkIsUserInvitedToProject(auth.token, this.props.projectDetail)) {
@@ -66,6 +109,9 @@ class Challenges extends Component {
   }
 
   componentWillReceiveProps (nextProps) {
+    if (this.state.projectAccessDenied) {
+      return
+    }
     if (
       (nextProps.dashboard && this.props.dashboard !== nextProps.dashboard) ||
       this.props.activeProjectId !== nextProps.activeProjectId
@@ -149,19 +195,24 @@ class Challenges extends Component {
       metadata,
       fetchNextProjects
     } = this.props
+
+    const { projectAccessDenied } = this.state
+    const effectiveWarnMessage = projectAccessDenied
+      ? PROJECT_ACCESS_DENIED_MESSAGE
+      : warnMessage
     const { challengeTypes = [] } = metadata
     const isActiveProjectLoaded =
       reduxProjectInfo && `${reduxProjectInfo.id}` === `${activeProjectId}`
 
     return (
       <Fragment>
-        {(dashboard || activeProjectId !== -1 || selfService) && (
+        {(dashboard || activeProjectId !== -1 || selfService || effectiveWarnMessage) && (
           <ChallengesComponent
             activeProject={{
               ...(isActiveProjectLoaded ? reduxProjectInfo : {})
             }}
             fetchNextProjects={fetchNextProjects}
-            warnMessage={warnMessage}
+            warnMessage={effectiveWarnMessage}
             setActiveProject={setActiveProject}
             dashboard={dashboard}
             challenges={challenges}
@@ -279,7 +330,8 @@ const mapDispatchToProps = {
   setActiveProject,
   partiallyUpdateChallengeDetails,
   deleteChallenge,
-  loadProjects
+  loadProjects,
+  clearProjectDetail
 }
 
 export default withRouter(

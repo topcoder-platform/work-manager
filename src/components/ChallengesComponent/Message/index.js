@@ -5,20 +5,23 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styles from './Message.module.scss'
 
-const Message = ({ warnMessage }) => {
+const Message = ({ warnMessage, linkComponent }) => {
   return (
     <div className={styles.messageContainer}>
-      <p>{warnMessage}</p>
+      {warnMessage}
+      {linkComponent}
     </div>
   )
 }
 
 Message.defaultProps = {
-  warnMessage: ''
+  warnMessage: '',
+  linkComponent: () => null
 }
 
 Message.propTypes = {
-  warnMessage: PropTypes.string
+  warnMessage: PropTypes.string,
+  linkComponent: PropTypes.func
 }
 
 export default Message

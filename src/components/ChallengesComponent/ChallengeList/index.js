@@ -411,7 +411,9 @@ class ChallengeList extends Component {
     const isMemberOfActiveProject = activeProject && activeProject.members && activeProject.members.some(member => member.userId === loginUserId)
 
     if (warnMessage) {
-      return <Message warnMessage={warnMessage} />
+      const isLinkComponent = warnMessage.includes('{linkComponent}')
+      const message = isLinkComponent ? warnMessage.replace('{linkComponent}', '') : warnMessage
+      return <Message warnMessage={message} linkComponent={isLinkComponent ? <a href="mailto:support@topcoder.com">support@topcoder.com</a> : null} />
     }
 
     const statusOptions = _.map(CHALLENGE_STATUS, item => ({

@@ -488,6 +488,8 @@ export const MESSAGE = {
   MARK_COMPLETE: 'This will close the task and generate a payment for the assignee and copilot.'
 }
 
+export const PROJECT_ACCESS_DENIED_MESSAGE = 'You don’t have access to this project. Please contact {linkComponent}'
+
 /**
  * Challenge cancel reasons
  */
