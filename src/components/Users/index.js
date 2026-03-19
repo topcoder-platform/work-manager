@@ -195,6 +195,7 @@ class Users extends Component {
       }
     })
     const loggedInHandle = this.getHandle()
+    const currentUserId = _.get(this.props, 'auth.user.userId', null)
     const membersExist = (projectMembers && projectMembers.length > 0) || (invitedMembers && invitedMembers.length > 0)
     const isCopilotOrManager = this.checkIsCopilotOrManager(projectMembers, loggedInHandle)
     const isAdmin = checkAdmin(this.props.auth.token)
@@ -311,6 +312,7 @@ class Users extends Component {
                       <li className={styles.userItem} key={`user-card-${member.id}`}>
                         <UserCard
                           user={member}
+                          currentUserId={currentUserId}
                           onRemoveClick={this.onRemoveClick}
                           updateProjectMember={updateProjectMember}
                           isEditable={isEditable} />

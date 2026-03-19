@@ -6,6 +6,7 @@ import {
   checkCanCreateProject,
   checkCanManageProject,
   checkCanManageProjectBillingAccount,
+  checkManager,
   checkIsUserInvitedToProject,
   getProjectMemberByUserId
 } from './tc'
@@ -125,6 +126,46 @@ describe('checkCanManageProject', () => {
         }]
       })
     ).toBe(false)
+  })
+
+  it('allows talent-manager roles to manage projects when they have full access', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      roles: ['talent manager']
+    })
+
+    expect(
+      checkCanManageProject('token', {
+        members: [{
+          userId: '1001',
+          role: PROJECT_ROLES.MANAGER
+        }]
+      })
+    ).toBe(true)
+  })
+})
+
+describe('checkManager', () => {
+  beforeEach(() => {
+    decodeToken.mockReset()
+  })
+
+  it('treats talent-manager tokens as manager-tier access', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      roles: ['talent manager']
+    })
+
+    expect(checkManager('token')).toBe(true)
+  })
+
+  it('treats topcoder-talent-manager tokens as manager-tier access', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      roles: ['topcoder talent manager']
+    })
+
+    expect(checkManager('token')).toBe(true)
   })
 })
 
