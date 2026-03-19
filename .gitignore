@@ -35,4 +35,6 @@ yarn-error.log*
 test-automation/temp
 test-automation/test-results
 
+dist
 package-lock.json
+
