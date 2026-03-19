@@ -1,0 +1,115 @@
+import React, { useMemo } from 'react'
+import PropTypes from 'prop-types'
+import AIWorkflowCard from '../../AIWorkflowCard'
+import styles from '../AiReviewTab.module.scss'
+
+/**
+ * Initial State View - Shown when AI reviewers are assigned but no configuration exists
+ * Provides options to use a template or configure manually
+ */
+const InitialStateView = ({
+  onSelectTemplate,
+  onSelectManual,
+  onRemoveReviewer,
+  readOnly,
+  metadata,
+  aiReviewers
+}) => {
+  const { workflows = [] } = metadata
+  const assignedWorkflows = useMemo(() => (aiReviewers || []).map(reviewer => {
+    const workflow = workflows.find(w => w.id === reviewer.aiWorkflowId)
+    return {
+      reviewer,
+      workflow,
+      scorecardId: reviewer.scorecardId
+    }
+  }), [aiReviewers, workflows])
+
+  return (
+    <div className={styles.initialStateContainer}>
+      {assignedWorkflows.length > 0 && !readOnly && (
+        <div className={styles.warningBox}>
+          <div className={styles.warningIcon}>⚠️</div>
+          <div className={styles.warningContent}>
+            <h3>AI workflows are assigned but no AI Review Config has been created</h3>
+            <p>Workflows will run but scoring, gating, and thresholds are not defined.</p>
+            <p><strong>Choose how to configure:</strong></p>
+          </div>
+        </div>
+      )}
+
+      {(!readOnly || !assignedWorkflows.length) && (
+        <div className={styles.configurationOptions}>
+          {!assignedWorkflows.length && !readOnly && (
+            <div>
+              <h3>No AI Review Config are assigned</h3>
+              <p>Scoring, gating, and thresholds are not defined. <strong>Choose how to configure:</strong></p>
+            </div>
+          )}
+          <div className={styles.optionCard}>
+            <h4>📋 Use a Template</h4>
+            <p>Pre-fill from a standard config for this track & type.</p>
+            <button
+              className={styles.optionButton}
+              onClick={() => { !readOnly && onSelectTemplate() }}
+              disabled={readOnly}
+            >
+              Use Template
+            </button>
+          </div>
+
+          <div className={styles.optionCard}>
+            <h4>✏️ Configure Manually</h4>
+            <p>Set up each workflow weight, mode, and threshold yourself.</p>
+            <button
+              className={styles.optionButton}
+              onClick={() => { !readOnly && onSelectManual() }}
+              disabled={readOnly}
+            >
+              Configure Manually
+            </button>
+          </div>
+        </div>
+      )}
+
+      {assignedWorkflows.length > 0 && (
+        <div className={styles.assignedWorkflowsSection}>
+          <h3>Assigned AI Workflows</h3>
+          <p>These AI workflows are assigned to this challenge from the default reviewer configuration.</p>
+
+          <div className={styles.workflowsList}>
+            {assignedWorkflows.map((item, index) => (
+              <AIWorkflowCard
+                key={`workflow-${index}`}
+                workflow={item.workflow || { name: item.reviewer.aiWorkflowId }}
+                scorecardId={(item.workflow || item.reviewer).scorecardId}
+                description=''
+                onRemove={() => onRemoveReviewer(index)}
+                readOnly={readOnly}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+InitialStateView.propTypes = {
+  metadata: PropTypes.shape({
+    workflows: PropTypes.array
+  }),
+  aiReviewers: PropTypes.array,
+  onSelectTemplate: PropTypes.func.isRequired,
+  onSelectManual: PropTypes.func.isRequired,
+  onRemoveReviewer: PropTypes.func.isRequired,
+  readOnly: PropTypes.bool
+}
+
+InitialStateView.defaultProps = {
+  readOnly: false,
+  metadata: {},
+  aiReviewers: []
+}
+
+export default InitialStateView

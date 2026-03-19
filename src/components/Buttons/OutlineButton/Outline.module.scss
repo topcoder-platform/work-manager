@@ -52,4 +52,10 @@
       color: $tc-gray-40;
     }
   }
+
+  &.minWidth {
+    width: min-content;
+    padding-left: 16px;
+    padding-right: 16px;
+  }
 }

@@ -1,0 +1,365 @@
+// @import '../../../../styles/variables.scss';
+
+.reviewSummaryContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: #f9f9f9;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+
+  .title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #ddd;
+  }
+
+  .overviewSection {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .reviewCard {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    .cardHeader {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 1rem;
+      background: #f5f5f5;
+      border-bottom: 1px solid #e0e0e0;
+
+      .icon {
+        font-size: 1.5rem;
+      }
+
+      .cardTitle {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #333;
+      }
+    }
+
+    .cardContent {
+      padding: 1rem;
+
+      .badgeYes,
+      .badgeNo {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+      }
+
+      .badgeYes {
+        background: #e8f5e9;
+        color: #2e7d32;
+      }
+
+      .badgeNo {
+        background: #ffebee;
+        color: #c62828;
+      }
+
+      .empty {
+        color: #999;
+        font-style: italic;
+        margin: 0;
+        padding: 1rem 0;
+        text-align: center;
+      }
+
+      .row {
+        display: flex;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f0f0f0;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        .label {
+          font-weight: 600;
+          color: #555;
+          min-width: 120px;
+          flex: 0 0 auto;
+        }
+
+        .value {
+          color: #333;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+
+          > div {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+          }
+        }
+
+        .badgeRow {
+          display: flex;
+          align-items: center;
+        }
+      }
+
+      .humanTableSection {
+        margin-top: 0.75rem;
+      }
+
+      .humanTable {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+
+        thead {
+          background: #f9f9f9;
+
+          th {
+            padding: 0.5rem;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 0.85rem;
+            line-height: 18px;
+          }
+        }
+
+        tbody {
+          tr {
+            border-bottom: 1px solid #f0f0f0;
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            td {
+              padding: 0.5rem;
+              color: #333;
+              vertical-align: top;
+            }
+          }
+        }
+      }
+
+      * + .workflowsSection {
+        margin-top: 1rem;
+        border-top: 1px solid #f0f0f0;
+      }
+      
+      .workflowsSection {
+        padding-top: 1rem;
+
+        .label {
+          display: block;
+          font-weight: 600;
+          color: #555;
+          margin-bottom: 0.75rem;
+        }
+
+        .workflowsTable {
+          width: 100%;
+          border-collapse: collapse;
+          font-size: 0.9rem;
+
+          thead {
+            background: #f9f9f9;
+
+            th {
+              padding: 0.5rem;
+              text-align: left;
+              font-weight: 600;
+              color: #555;
+              border-bottom: 1px solid #e0e0e0;
+              font-size: 0.85rem;
+            }
+          }
+
+          tbody {
+            tr {
+              border-bottom: 1px solid #f0f0f0;
+
+              &:last-child {
+                border-bottom: none;
+              }
+
+              td {
+                padding: 0.5rem;
+                color: #333;
+
+                &.typeCell {
+                  text-align: center;
+                }
+              }
+            }
+          }
+
+          .gate {
+            display: inline-block;
+            background: #fff3cd;
+            color: #856404;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 0.75rem;
+          }
+
+          .review {
+            font-size: 1rem;
+          }
+        }
+      }
+    }
+  }
+
+  .flowSection {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    .flowTitle {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #333;
+      margin: 0 0 1.5rem 0;
+    }
+
+    .flowDiagram {
+      display: grid;
+      grid-auto-flow: column;
+      gap: 1rem;
+      padding: 1.5rem 0;
+      position: relative;
+      overflow-x: auto;
+
+      // Grid for AI Gating flow (with locked failure path)
+      &.withAIGating {
+        grid-template-columns: auto auto auto auto auto;
+        grid-template-rows: auto auto auto;
+      }
+
+      // Grid for AI Gating flow without gating workflows
+      &.withAI {
+        grid-template-columns: auto auto auto auto auto;
+        grid-template-rows: auto;
+      }
+
+      // Grid for AI Only flow (no gating, no human review)
+      &.withAIOnly {
+        grid-template-columns: auto auto auto;
+        grid-template-rows: auto;
+      }
+
+      // Grid for human-only flow
+      &.humanOnly {
+        grid-template-columns: auto auto auto;
+        grid-template-rows: auto;
+      }
+
+      @media (max-width: 768px) {
+        grid-auto-flow: row;
+        grid-template-columns: 1fr;
+        overflow-x: visible;
+      }
+    }
+
+    .flowBox {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      min-width: 120px;
+      padding: 1rem;
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      text-align: center;
+      font-weight: 500;
+      color: #333;
+
+      > div:first-child {
+        font-size: 1.5rem;
+      }
+
+      > div:nth-child(2) {
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+
+      .flowDescription {
+        font-size: 0.75rem;
+        color: #666;
+        font-weight: 400;
+      }
+    }
+
+    .arrow {
+      font-size: 1.5rem;
+      color: #666;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      &.failureArrow {
+        flex-direction: column;
+      }
+    }
+
+    .failLabel {
+      font-size: 0.85rem;
+      color: #d32f2f;
+      font-weight: 600;
+    }
+  }
+
+  .costSection {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    .costRow {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+
+      .costLabel {
+        font-weight: 600;
+        color: #555;
+      }
+
+      .costValue {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #2e7d32;
+        min-width: 80px;
+        text-align: right;
+      }
+    }
+  }
+}

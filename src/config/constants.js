@@ -42,7 +42,9 @@ export const {
   PROFILE_URL,
   TC_FINANCE_API_URL,
   TC_AI_API_BASE_URL,
+  TC_REVIEWS_API_BASE_URL,
   TC_AI_SKILLS_EXTRACTION_WORKFLOW_ID,
+  TC_AI_AUTOWRITE_WORKFLOW_ID,
   ENGAGEMENTS_APP_URL
 } = process.env
 
@@ -55,6 +57,7 @@ export const SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS = ['80000062']
  */
 export const AI_WORKFLOW_POLL_INTERVAL = 1000 // 1 second in milliseconds
 export const AI_WORKFLOW_POLL_TIMEOUT = 5 * 60000 // 5 * 60 seconds in milliseconds
+export const AI_SCREENING_PHASE_NAME = 'AI Screening'
 
 /**
  * Filepicker config
