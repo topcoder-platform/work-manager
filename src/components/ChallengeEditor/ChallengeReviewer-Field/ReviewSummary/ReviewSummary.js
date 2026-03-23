@@ -311,15 +311,13 @@ const ReviewSummary = ({
             )}
 
             {/* Failure Path: Arrow down from AI Gate (only for AI_GATING with gating workflows) */}
-            {hasAIConfigWorkflows && isAIGating && (
+            {hasAIConfigWorkflows && isAIGatingMode && (
               <div className={cn(styles.arrow, styles.failureArrow)} style={{ gridColumn: 3, gridRow: 2 }}>
                 ↓
                 {/* Failure Label */}
-                {hasAIConfigWorkflows && isAIGating && (
-                  <div className={styles.failLabel} style={{ gridColumn: 3, gridRow: '2.5', alignSelf: 'center' }}>
-                    &lt; {aiConfiguration.minPassingThreshold || 75}%
-                  </div>
-                )}
+                <div className={styles.failLabel} style={{ gridColumn: 3, gridRow: '2.5', alignSelf: 'center' }}>
+                  &lt; {aiConfiguration.minPassingThreshold || 75}%
+                </div>
                 ↓
               </div>
             )}
