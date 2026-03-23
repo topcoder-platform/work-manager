@@ -147,10 +147,51 @@
   font-weight: 600;
 }
 
+.requiredIndicator {
+  color: $tc-red;
+  margin-left: 2px;
+}
+
 .memberMetaValue {
   font-size: 13px;
   color: $tc-gray-80;
   font-weight: 600;
+}
+
+.mutedMetaValue {
+  font-size: 13px;
+  color: $tc-gray-50;
+  font-weight: 500;
+}
+
+.requiredMetaValue {
+  font-size: 13px;
+  color: $tc-red;
+  font-weight: 600;
+}
+
+.remarksButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid $tc-gray-30;
+  background: $tc-gray-10;
+  color: $tc-gray-70;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.remarksButton:hover {
+  background: $tc-gray-20;
+  border-color: $tc-gray-40;
+  color: $tc-gray-80;
+}
+
+.remarksIcon {
+  font-size: 13px;
 }
 
 .memberTerminationReason {
@@ -182,6 +223,13 @@
 }
 
 .historyModal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.remarksModal {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -257,10 +305,41 @@
   color: $tc-gray-90;
 }
 
+.remarksTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: $tc-gray-90;
+}
+
 .historyModalSubtitle {
   font-size: 13px;
   color: $tc-gray-60;
   margin-top: 4px;
+}
+
+.remarksSubtitle {
+  font-size: 13px;
+  color: $tc-gray-60;
+  margin-top: -8px;
+}
+
+.remarksContent {
+  font-size: 13px;
+  color: $tc-gray-80;
+  line-height: 1.5;
+  white-space: pre-line;
+  word-break: break-word;
+}
+
+.remarksActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.remarksCloseButton {
+  width: auto;
+  min-width: 120px;
+  flex: 0 0 auto;
 }
 
 .historyModalBody {
@@ -312,6 +391,12 @@
   color: $tc-gray-60;
   line-height: 1.4;
   white-space: pre-line;
+}
+
+.paymentHoursWorked {
+  font-size: 12px;
+  color: $tc-gray-70;
+  line-height: 1.4;
 }
 
 .paymentMeta {

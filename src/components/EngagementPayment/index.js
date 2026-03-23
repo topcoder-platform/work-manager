@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCommentAlt } from '@fortawesome/free-solid-svg-icons'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import Loader from '../Loader'
 import Modal from '../Modal'
@@ -100,6 +102,44 @@ const getPaymentRemarks = (payment) => {
   return ''
 }
 
+/**
+ * Resolves the optional hours-worked value returned for a payment.
+ *
+ * @param {Object|null|undefined} payment Payment record returned by the finance API.
+ * @returns {string} Formatted hours-worked value, or an empty string when the
+ * field is unavailable.
+ */
+const getPaymentHoursWorked = (payment) => {
+  if (!payment) {
+    return ''
+  }
+
+  const attributes = payment.attributes && typeof payment.attributes === 'object'
+    ? payment.attributes
+    : null
+  const detail = Array.isArray(payment.details) && payment.details.length
+    ? payment.details[0]
+    : null
+  const value = payment.hoursWorked != null
+    ? payment.hoursWorked
+    : attributes && Object.prototype.hasOwnProperty.call(attributes, 'hoursWorked')
+      ? attributes.hoursWorked
+      : detail && detail.hoursWorked != null
+        ? detail.hoursWorked
+        : null
+
+  if (value == null || value === '') {
+    return ''
+  }
+
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return ''
+  }
+
+  return Number(parsed.toFixed(2)).toString()
+}
+
 const getAssignmentStatus = (member) => {
   if (!member || typeof member !== 'object') {
     return ''
@@ -141,6 +181,37 @@ const getAssignmentRate = (member) => {
     ''
 }
 
+const getRatePerHour = (member) => {
+  if (!member || typeof member !== 'object') {
+    return ''
+  }
+  return member.ratePerHour ||
+    member.rate_per_hour ||
+    ''
+}
+
+const getStandardHoursPerWeek = (member) => {
+  if (!member || typeof member !== 'object') {
+    return ''
+  }
+  return member.standardHoursPerWeek != null
+    ? member.standardHoursPerWeek
+    : member.standard_hours_per_week != null
+      ? member.standard_hours_per_week
+      : ''
+}
+
+const getDurationMonths = (member) => {
+  if (!member || typeof member !== 'object') {
+    return ''
+  }
+  return member.durationMonths != null
+    ? member.durationMonths
+    : member.duration_months != null
+      ? member.duration_months
+      : ''
+}
+
 const getAssignmentDate = (member, key) => {
   if (!member || typeof member !== 'object') {
     return null
@@ -175,6 +246,29 @@ const getAssignmentRemarks = (member) => {
   return ''
 }
 
+const formatDurationMonths = (value) => {
+  if (value == null || value === '') {
+    return '-'
+  }
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return String(value)
+  }
+  return `${parsed} month${parsed === 1 ? '' : 's'}`
+}
+
+const renderMetaValue = (value, isRequired = false) => {
+  if (value == null || value === '' || value === '-') {
+    return (
+      <span className={isRequired ? styles.requiredMetaValue : styles.mutedMetaValue}>
+        {isRequired ? 'Required' : '-'}
+      </span>
+    )
+  }
+
+  return value
+}
+
 /**
  * Displays assignment payment controls and history for engagement members.
  * Payment history is available for any assignment status as long as an
@@ -200,6 +294,7 @@ const EngagementPayment = ({
   onCompleteAssignment
 }) => {
   const [paymentHistoryMember, setPaymentHistoryMember] = useState(null)
+  const [remarksMember, setRemarksMember] = useState(null)
   const [completionMember, setCompletionMember] = useState(null)
   const [terminationMember, setTerminationMember] = useState(null)
   const [terminationReason, setTerminationReason] = useState('')
@@ -210,7 +305,6 @@ const EngagementPayment = ({
   const members = Array.isArray(assignedMembers) ? assignedMembers : []
   const hasMembers = members.length > 0
   const engagementTitle = engagement && engagement.title ? engagement.title : 'Engagement'
-  const backUrl = projectId ? `/projects/${projectId}/engagements` : '/projects'
   const resolvedEngagementId = engagementId != null ? engagementId : (engagement && engagement.id != null ? engagement.id : null)
   const showEngagementLinks = Boolean(projectId && resolvedEngagementId)
   const feedbackUrl = showEngagementLinks
@@ -219,6 +313,18 @@ const EngagementPayment = ({
   const experienceUrl = showEngagementLinks
     ? `/projects/${projectId}/engagements/${resolvedEngagementId}/experience`
     : null
+
+  const closeRemarksModal = () => {
+    setRemarksMember(null)
+  }
+
+  const openRemarksModal = (member) => {
+    const remarks = getAssignmentRemarks(member)
+    if (!remarks) {
+      return
+    }
+    setRemarksMember(member)
+  }
 
   const closePaymentHistoryModal = () => {
     setPaymentHistoryMember(null)
@@ -320,12 +426,18 @@ const EngagementPayment = ({
           const showStatus = normalizedStatus && normalizedStatus !== 'unknown'
           const title = getPaymentTitle(payment)
           const remarks = getPaymentRemarks(payment)
+          const hoursWorked = getPaymentHoursWorked(payment)
           return (
             <div key={paymentKey} className={styles.paymentItem}>
               <div className={styles.paymentAmount}>{amount}</div>
               <div className={styles.paymentDetails}>
                 <div className={styles.paymentTitle}>{title}</div>
                 {remarks && <div className={styles.paymentRemarks}>{remarks}</div>}
+                {hoursWorked && (
+                  <div className={styles.paymentHoursWorked}>
+                    {`Hours Worked: ${hoursWorked}`}
+                  </div>
+                )}
                 <div className={styles.paymentMeta}>
                   <span className={styles.paymentDate}>{date}</span>
                   {showStatus && <span className={styles.paymentStatus}>{status}</span>}
@@ -357,6 +469,10 @@ const EngagementPayment = ({
   const isCompletionProcessing = completionAssignmentId && completingAssignments
     ? Boolean(completingAssignments[completionAssignmentId])
     : false
+  const remarksHandle = remarksMember
+    ? (remarksMember.handle || remarksMember.memberHandle || '-')
+    : '-'
+  const remarksContent = getAssignmentRemarks(remarksMember)
 
   return (
     <div className={styles.container}>
@@ -379,7 +495,6 @@ const EngagementPayment = ({
               />
             </>
           )}
-          <OutlineButton text='Back' type='info' link={backUrl} className={styles.actionButton} />
         </div>
       </div>
       {hasMembers ? (
@@ -402,10 +517,15 @@ const EngagementPayment = ({
               : false
             const assignmentRemarks = getAssignmentRemarks(member)
             const assignmentRate = getAssignmentRate(member)
-            const startDate = formatDate(getAssignmentDate(member, 'start'))
-            const endDate = formatDate(getAssignmentDate(member, 'end'))
+            const billingStartDate = formatDate(getAssignmentDate(member, 'start'))
+            const durationMonths = formatDurationMonths(getDurationMonths(member))
+            const ratePerHour = getRatePerHour(member)
+            const standardHoursPerWeek = getStandardHoursPerWeek(member)
             const rateDisplay = assignmentRate !== '' && assignmentRate != null
               ? formatCurrency(assignmentRate)
+              : '-'
+            const ratePerHourDisplay = ratePerHour !== '' && ratePerHour != null
+              ? formatCurrency(ratePerHour)
               : '-'
 
             return (
@@ -429,22 +549,64 @@ const EngagementPayment = ({
                     )}
                     <div className={styles.memberMeta}>
                       <div className={styles.memberMetaItem}>
-                        <span className={styles.memberMetaLabel}>Remarks</span>
+                        <span className={styles.memberMetaLabel}>Other Remarks</span>
                         <span className={styles.memberMetaValue}>
-                          {assignmentRemarks || '-'}
+                          {assignmentRemarks
+                            ? (
+                              <button
+                                type='button'
+                                className={styles.remarksButton}
+                                onClick={() => openRemarksModal(member)}
+                                aria-label={`View other remarks for ${member.handle || 'member'}`}
+                                title='View other remarks'
+                              >
+                                <FontAwesomeIcon icon={faCommentAlt} className={styles.remarksIcon} />
+                              </button>
+                            )
+                            : renderMetaValue('')}
                         </span>
                       </div>
                       <div className={styles.memberMetaItem}>
-                        <span className={styles.memberMetaLabel}>Agreed Rate</span>
-                        <span className={styles.memberMetaValue}>{rateDisplay}</span>
+                        <span className={styles.memberMetaLabel}>
+                          Billing Start Date
+                          <span className={styles.requiredIndicator}>*</span>
+                        </span>
+                        <span className={styles.memberMetaValue}>
+                          {renderMetaValue(billingStartDate, true)}
+                        </span>
                       </div>
                       <div className={styles.memberMetaItem}>
-                        <span className={styles.memberMetaLabel}>Tentative Start</span>
-                        <span className={styles.memberMetaValue}>{startDate}</span>
+                        <span className={styles.memberMetaLabel}>Duration</span>
+                        <span className={styles.memberMetaValue}>
+                          {renderMetaValue(durationMonths)}
+                        </span>
                       </div>
                       <div className={styles.memberMetaItem}>
-                        <span className={styles.memberMetaLabel}>Tentative End</span>
-                        <span className={styles.memberMetaValue}>{endDate}</span>
+                        <span className={styles.memberMetaLabel}>
+                          Rate per Hour
+                          <span className={styles.requiredIndicator}>*</span>
+                        </span>
+                        <span className={styles.memberMetaValue}>
+                          {renderMetaValue(ratePerHourDisplay, true)}
+                        </span>
+                      </div>
+                      <div className={styles.memberMetaItem}>
+                        <span className={styles.memberMetaLabel}>
+                          Standard Hours per Week
+                          <span className={styles.requiredIndicator}>*</span>
+                        </span>
+                        <span className={styles.memberMetaValue}>
+                          {renderMetaValue(
+                            standardHoursPerWeek !== '' && standardHoursPerWeek != null
+                              ? `${standardHoursPerWeek}`
+                              : '',
+                            true
+                          )}
+                        </span>
+                      </div>
+                      <div className={styles.memberMetaItem}>
+                        <span className={styles.memberMetaLabel}>Rate per Week</span>
+                        <span className={styles.memberMetaValue}>{renderMetaValue(rateDisplay)}</span>
                       </div>
                     </div>
                     {assignmentStatusLower === 'terminated' && member.terminationReason && (
@@ -563,6 +725,23 @@ const EngagementPayment = ({
           </div>
         </Modal>
       )}
+      {remarksMember && (
+        <Modal onCancel={closeRemarksModal}>
+          <div className={styles.remarksModal}>
+            <div className={styles.remarksTitle}>Other Remarks</div>
+            <div className={styles.remarksSubtitle}>{remarksHandle}</div>
+            <div className={styles.remarksContent}>{remarksContent}</div>
+            <div className={styles.remarksActions}>
+              <OutlineButton
+                text='Close'
+                type='info'
+                className={styles.remarksCloseButton}
+                onClick={closeRemarksModal}
+              />
+            </div>
+          </div>
+        </Modal>
+      )}
       {paymentHistoryMember && (
         <Modal onCancel={closePaymentHistoryModal}>
           <div className={styles.historyModal}>
@@ -632,6 +811,9 @@ EngagementPayment.propTypes = {
     assignmentStatus: PropTypes.string,
     termsAccepted: PropTypes.oneOfType([PropTypes.bool, PropTypes.string, PropTypes.number]),
     agreementRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    ratePerHour: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    standardHoursPerWeek: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    durationMonths: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     terminationReason: PropTypes.string,
     startDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
     endDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)])
@@ -656,6 +838,9 @@ EngagementPayment.propTypes = {
     assignmentStatus: PropTypes.string,
     termsAccepted: PropTypes.oneOfType([PropTypes.bool, PropTypes.string, PropTypes.number]),
     agreementRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    ratePerHour: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    standardHoursPerWeek: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    durationMonths: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     terminationReason: PropTypes.string,
     startDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
     endDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)])

@@ -307,7 +307,7 @@ class EngagementPaymentContainer extends Component {
     })
   }
 
-  async onSubmitPayment (member, paymentTitle, amount, remarks) {
+  async onSubmitPayment (member, paymentTitle, amount, remarks, hoursWorked) {
     const { selectedMember } = this.state
     const {
       payments,
@@ -365,6 +365,7 @@ class EngagementPaymentContainer extends Component {
         remarks,
         agreementRate,
         amount,
+        hoursWorked,
         billingAccountId
       )
       if (fetchAssignmentPayments) {

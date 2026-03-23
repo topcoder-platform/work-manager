@@ -14,6 +14,11 @@ import DateInput from '../DateInput'
 import Handle from '../Handle'
 import { JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
 import { suggestProfiles } from '../../services/user'
+import {
+  calculateAssignmentRatePerWeek,
+  toPositiveInteger,
+  toPositiveNumber
+} from '../../util/assignmentRates'
 import { getCountableAssignments } from '../../util/engagements'
 import { serializeTentativeAssignmentDate } from '../../util/assignmentDates'
 import { formatTimeZoneLabel, formatTimeZoneList } from '../../util/timezones'
@@ -22,8 +27,8 @@ import { toastSuccess, toastFailure } from '../../util/toaster'
 import styles from './EngagementEditor.module.scss'
 
 const ANY_OPTION = { label: 'Any', value: 'Any' }
-const INPUT_DATE_FORMAT = 'MM/dd/yyyy'
-const INPUT_TIME_FORMAT = 'HH:mm'
+const INPUT_DATE_FORMAT = 'MM/DD/YYYY'
+const INPUT_TIME_FORMAT = false
 const ANTICIPATED_START_OPTIONS = [
   { label: 'Immediate', value: 'Immediate' },
   { label: 'In a few days', value: 'In a few days' },
@@ -77,22 +82,11 @@ const normalizeMemberInfo = (member, index) => {
   }
 }
 
-const toValidMoment = (value) => {
-  if (!value) {
-    return null
-  }
-  if (moment.isMoment(value)) {
-    return value.isValid() ? value : null
-  }
-  const parsed = moment(value)
-  return parsed.isValid() ? parsed : null
-}
-
 const formatAssignmentDate = (value) => {
   if (!value) {
     return '-'
   }
-  return moment(value).format('MMM DD, YYYY HH:mm')
+  return moment(value).format('MMM DD, YYYY')
 }
 
 /**
@@ -129,8 +123,9 @@ const EngagementEditor = ({
 }) => {
   const [assignModal, setAssignModal] = useState(null)
   const [assignStartDate, setAssignStartDate] = useState(null)
-  const [assignEndDate, setAssignEndDate] = useState(null)
-  const [assignRate, setAssignRate] = useState('')
+  const [assignDurationMonths, setAssignDurationMonths] = useState('')
+  const [assignRatePerHour, setAssignRatePerHour] = useState('')
+  const [assignStandardHoursPerWeek, setAssignStandardHoursPerWeek] = useState('')
   const [assignOtherRemarks, setAssignOtherRemarks] = useState('')
   const [assignErrors, setAssignErrors] = useState({})
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false)
@@ -323,34 +318,9 @@ const EngagementEditor = ({
   )
   const assignHandle = assignModal ? assignModal.handle : null
   const assignHandleColor = assignHandle ? '#000' : undefined
-  const today = moment().startOf('day')
-  const parsedAssignStart = assignStartDate ? moment(assignStartDate) : null
-  const parsedAssignStartDay = parsedAssignStart && parsedAssignStart.isValid()
-    ? parsedAssignStart.clone().startOf('day')
-    : null
-  const minAssignEndDay = parsedAssignStartDay && parsedAssignStartDay.isAfter(today) ? parsedAssignStartDay : today
-  const isAssignStartDateValid = (current) => {
-    const currentMoment = toValidMoment(current)
-    if (!currentMoment) {
-      return false
-    }
-    return currentMoment.isSameOrAfter(today, 'day')
-  }
-  const isAssignEndDateValid = (current) => {
-    const currentMoment = toValidMoment(current)
-    if (!currentMoment) {
-      return false
-    }
-    return currentMoment.isSameOrAfter(minAssignEndDay, 'day')
-  }
-  const getMinAssignStartDateTime = () => moment().toDate()
-  const getMinAssignEndDateTime = () => {
-    const now = moment()
-    if (parsedAssignStart && parsedAssignStart.isValid() && parsedAssignStart.isAfter(now)) {
-      return parsedAssignStart.toDate()
-    }
-    return now.toDate()
-  }
+  const assignAssignmentRate = useMemo(() => {
+    return calculateAssignmentRatePerWeek(assignRatePerHour, assignStandardHoursPerWeek)
+  }, [assignRatePerHour, assignStandardHoursPerWeek])
   const assignSubtitle = assignHandle ? (
     <div className={styles.acceptHandleLine}>
       <Handle
@@ -378,8 +348,9 @@ const EngagementEditor = ({
   const resetAssignState = () => {
     setAssignModal(null)
     setAssignStartDate(null)
-    setAssignEndDate(null)
-    setAssignRate('')
+    setAssignDurationMonths('')
+    setAssignRatePerHour('')
+    setAssignStandardHoursPerWeek('')
     setAssignOtherRemarks('')
     setAssignErrors({})
   }
@@ -389,8 +360,9 @@ const EngagementEditor = ({
     const existingDetails = normalizedHandle ? assignmentDetailsByHandle[normalizedHandle] : null
     setAssignModal({ index, handle })
     setAssignStartDate(existingDetails ? existingDetails.startDate || null : null)
-    setAssignEndDate(existingDetails ? existingDetails.endDate || null : null)
-    setAssignRate(existingDetails ? existingDetails.agreementRate || '' : '')
+    setAssignDurationMonths(existingDetails ? existingDetails.durationMonths || '' : '')
+    setAssignRatePerHour(existingDetails ? existingDetails.ratePerHour || '' : '')
+    setAssignStandardHoursPerWeek(existingDetails ? existingDetails.standardHoursPerWeek || '' : '')
     setAssignOtherRemarks(existingDetails ? existingDetails.otherRemarks || '' : '')
     setAssignErrors({})
   }
@@ -439,21 +411,22 @@ const EngagementEditor = ({
 
     const nextErrors = {}
     const parsedStart = assignStartDate ? moment(assignStartDate) : null
-    const parsedEnd = assignEndDate ? moment(assignEndDate) : null
-    const normalizedRate = assignRate != null ? String(assignRate).trim() : ''
+    const parsedDurationMonths = toPositiveInteger(assignDurationMonths)
+    const parsedRatePerHour = toPositiveNumber(assignRatePerHour)
+    const parsedStandardHoursPerWeek = toPositiveInteger(assignStandardHoursPerWeek)
     const normalizedOtherRemarks = assignOtherRemarks != null ? String(assignOtherRemarks).trim() : ''
 
     if (!parsedStart || !parsedStart.isValid()) {
-      nextErrors.startDate = 'Start date is required.'
+      nextErrors.startDate = 'Billing start date is required.'
     }
-    if (!parsedEnd || !parsedEnd.isValid()) {
-      nextErrors.endDate = 'End date is required.'
+    if (parsedDurationMonths === null) {
+      nextErrors.durationMonths = 'Duration must be a positive whole number.'
     }
-    if (!normalizedRate) {
-      nextErrors.rate = 'Assignment rate is required.'
+    if (parsedRatePerHour === null) {
+      nextErrors.ratePerHour = 'Rate per hour must be a positive number.'
     }
-    if (parsedStart && parsedEnd && parsedStart.isValid() && parsedEnd.isValid() && parsedEnd.isBefore(parsedStart)) {
-      nextErrors.endDate = 'End date must be after start date.'
+    if (parsedStandardHoursPerWeek === null) {
+      nextErrors.standardHoursPerWeek = 'Standard hours per week must be a positive whole number.'
     }
 
     if (Object.keys(nextErrors).length > 0) {
@@ -473,8 +446,10 @@ const EngagementEditor = ({
     nextAssignmentDetails[assignModal.index] = {
       memberHandle: assignModal.handle,
       startDate: serializeTentativeAssignmentDate(parsedStart),
-      endDate: serializeTentativeAssignmentDate(parsedEnd),
-      agreementRate: normalizedRate,
+      durationMonths: parsedDurationMonths,
+      ratePerHour: parsedRatePerHour.toString(),
+      standardHoursPerWeek: parsedStandardHoursPerWeek,
+      agreementRate: assignAssignmentRate,
       otherRemarks: normalizedOtherRemarks
     }
 
@@ -521,7 +496,7 @@ const EngagementEditor = ({
             <div className={styles.acceptGrid}>
               <div className={styles.acceptField}>
                 <label className={styles.acceptLabel}>
-                  Tentative start date
+                  Billing start date
                   <span className={styles.acceptRequired}>*</span>
                 </label>
                 <DateInput
@@ -529,8 +504,6 @@ const EngagementEditor = ({
                   value={assignStartDate}
                   dateFormat={INPUT_DATE_FORMAT}
                   timeFormat={INPUT_TIME_FORMAT}
-                  minDateTime={getMinAssignStartDateTime}
-                  isValidDate={isAssignStartDateValid}
                   onChange={(value) => {
                     setAssignStartDate(value)
                     if (assignErrors.startDate) {
@@ -544,48 +517,81 @@ const EngagementEditor = ({
               </div>
               <div className={styles.acceptField}>
                 <label className={styles.acceptLabel}>
-                  Tentative end date
-                  <span className={styles.acceptRequired}>*</span>
-                </label>
-                <DateInput
-                  className={styles.acceptDateInput}
-                  value={assignEndDate}
-                  dateFormat={INPUT_DATE_FORMAT}
-                  timeFormat={INPUT_TIME_FORMAT}
-                  minDateTime={getMinAssignEndDateTime}
-                  isValidDate={isAssignEndDateValid}
-                  onChange={(value) => {
-                    setAssignEndDate(value)
-                    if (assignErrors.endDate) {
-                      setAssignErrors(prev => ({ ...prev, endDate: '' }))
-                    }
-                  }}
-                />
-                {assignErrors.endDate && (
-                  <div className={styles.acceptError}>{assignErrors.endDate}</div>
-                )}
-              </div>
-              <div className={styles.acceptFieldFull}>
-                <label className={styles.acceptLabel}>
-                  Assignment rate (per week)
+                  Duration (in months)
                   <span className={styles.acceptRequired}>*</span>
                 </label>
                 <input
                   className={styles.acceptInput}
                   type='number'
-                  min='0'
-                  step='0.01'
-                  value={assignRate}
+                  min='1'
+                  step='1'
+                  value={assignDurationMonths}
                   onChange={(event) => {
-                    setAssignRate(event.target.value)
-                    if (assignErrors.rate) {
-                      setAssignErrors(prev => ({ ...prev, rate: '' }))
+                    setAssignDurationMonths(event.target.value)
+                    if (assignErrors.durationMonths) {
+                      setAssignErrors(prev => ({ ...prev, durationMonths: '' }))
                     }
                   }}
                 />
-                {assignErrors.rate && (
-                  <div className={styles.acceptError}>{assignErrors.rate}</div>
+                {assignErrors.durationMonths && (
+                  <div className={styles.acceptError}>{assignErrors.durationMonths}</div>
                 )}
+              </div>
+              <div className={styles.acceptField}>
+                <label className={styles.acceptLabel}>
+                  Rate per hour
+                  <span className={styles.acceptRequired}>*</span>
+                </label>
+                <input
+                  className={styles.acceptInput}
+                  type='number'
+                  min='0.01'
+                  step='0.01'
+                  value={assignRatePerHour}
+                  onChange={(event) => {
+                    setAssignRatePerHour(event.target.value)
+                    if (assignErrors.ratePerHour) {
+                      setAssignErrors(prev => ({ ...prev, ratePerHour: '' }))
+                    }
+                  }}
+                />
+                {assignErrors.ratePerHour && (
+                  <div className={styles.acceptError}>{assignErrors.ratePerHour}</div>
+                )}
+              </div>
+              <div className={styles.acceptField}>
+                <label className={styles.acceptLabel}>
+                  Standard hours per week
+                  <span className={styles.acceptRequired}>*</span>
+                </label>
+                <input
+                  className={styles.acceptInput}
+                  type='number'
+                  min='1'
+                  step='1'
+                  value={assignStandardHoursPerWeek}
+                  onChange={(event) => {
+                    setAssignStandardHoursPerWeek(event.target.value)
+                    if (assignErrors.standardHoursPerWeek) {
+                      setAssignErrors(prev => ({ ...prev, standardHoursPerWeek: '' }))
+                    }
+                  }}
+                />
+                {assignErrors.standardHoursPerWeek && (
+                  <div className={styles.acceptError}>{assignErrors.standardHoursPerWeek}</div>
+                )}
+              </div>
+              <div className={styles.acceptFieldFull}>
+                <label className={styles.acceptLabel}>
+                  Assignment rate per week
+                  <span className={styles.acceptRequired}>*</span>
+                </label>
+                <input
+                  className={styles.acceptInput}
+                  type='text'
+                  value={assignAssignmentRate}
+                  readOnly
+                />
               </div>
               <div className={styles.acceptFieldFull}>
                 <label className={styles.acceptLabel}>Other remarks</label>
@@ -1090,7 +1096,13 @@ const EngagementEditor = ({
                 : null
               const hasAssignmentDetail = Boolean(
                 assignmentDetail &&
-                (assignmentDetail.startDate || assignmentDetail.endDate || assignmentDetail.agreementRate)
+                (
+                  assignmentDetail.startDate ||
+                  assignmentDetail.durationMonths ||
+                  assignmentDetail.ratePerHour ||
+                  assignmentDetail.standardHoursPerWeek ||
+                  assignmentDetail.agreementRate
+                )
               )
               const fieldError = validationErrors[`assignedMemberHandle${index}`]
               const nextAssignedMemberHandles = Array.from(
@@ -1150,17 +1162,29 @@ const EngagementEditor = ({
                       <div className={styles.assignmentDetails}>
                         <div className={styles.assignmentDetailsText}>
                           <span>
-                            <span className={styles.assignmentDetailLabel}>Start:</span>
+                            <span className={styles.assignmentDetailLabel}>Billing start:</span>
                             {' '}
                             {formatAssignmentDate(assignmentDetail.startDate)}
                           </span>
                           <span>
-                            <span className={styles.assignmentDetailLabel}>End:</span>
+                            <span className={styles.assignmentDetailLabel}>Duration:</span>
                             {' '}
-                            {formatAssignmentDate(assignmentDetail.endDate)}
+                            {assignmentDetail.durationMonths
+                              ? `${assignmentDetail.durationMonths} month${Number(assignmentDetail.durationMonths) === 1 ? '' : 's'}`
+                              : '-'}
                           </span>
                           <span>
-                            <span className={styles.assignmentDetailLabel}>Rate:</span>
+                            <span className={styles.assignmentDetailLabel}>Rate / hr:</span>
+                            {' '}
+                            {assignmentDetail.ratePerHour || '-'}
+                          </span>
+                          <span>
+                            <span className={styles.assignmentDetailLabel}>Std hrs / week:</span>
+                            {' '}
+                            {assignmentDetail.standardHoursPerWeek || '-'}
+                          </span>
+                          <span>
+                            <span className={styles.assignmentDetailLabel}>Rate / week:</span>
                             {' '}
                             {assignmentDetail.agreementRate || '-'}
                           </span>
@@ -1258,7 +1282,9 @@ EngagementEditor.propTypes = {
     assignmentDetails: PropTypes.arrayOf(PropTypes.shape({
       memberHandle: PropTypes.string,
       startDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
-      endDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
+      durationMonths: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      ratePerHour: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      standardHoursPerWeek: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
       agreementRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
       otherRemarks: PropTypes.string
     })),

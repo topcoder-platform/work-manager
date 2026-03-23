@@ -19,6 +19,7 @@ const ENGAGEMENT_PAYMENT_STATUS = 'ON_HOLD_ADMIN'
  * @param {String} remarks
  * @param {String|Number} agreementRate
  * @param {String|Number} amount
+ * @param {String|Number} hoursWorked
  * @param {String|Number} billingAccountId
  * @param {String} paymentStatus
  */
@@ -30,6 +31,7 @@ export function createMemberPayment (
   remarks,
   agreementRate,
   amount,
+  hoursWorked,
   billingAccountId,
   paymentStatus = ENGAGEMENT_PAYMENT_STATUS
 ) {
@@ -39,6 +41,7 @@ export function createMemberPayment (
     })
 
     const parsedAmount = Number(amount)
+    const parsedHoursWorked = Number(hoursWorked)
     const trimmedTitle = typeof paymentTitle === 'string'
       ? paymentTitle.trim()
       : (paymentTitle != null ? String(paymentTitle) : '')
@@ -60,6 +63,9 @@ export function createMemberPayment (
       description: trimmedTitle,
       externalId: String(assignmentId),
       attributes,
+      ...(Number.isFinite(parsedHoursWorked) && parsedHoursWorked > 0
+        ? { hoursWorked: parsedHoursWorked }
+        : {}),
       ...(paymentStatus ? { status: paymentStatus } : {}),
       details: [
         {

@@ -52,6 +52,11 @@
   box-sizing: border-box;
 }
 
+.readOnlyInput {
+  background-color: $tc-gray-10;
+  color: $tc-gray-80;
+}
+
 .dateInput {
   :global(.rdt) {
     width: 100%;

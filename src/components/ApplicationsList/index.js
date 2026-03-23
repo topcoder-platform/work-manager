@@ -13,6 +13,11 @@ import Handle from '../Handle'
 import styles from './ApplicationsList.module.scss'
 import { PROFILE_URL } from '../../config/constants'
 import { serializeTentativeAssignmentDate } from '../../util/assignmentDates'
+import {
+  calculateAssignmentRatePerWeek,
+  toPositiveInteger,
+  toPositiveNumber
+} from '../../util/assignmentRates'
 import { isCapacityLimitError } from '../../util/applicationErrors'
 import { getCountableAssignments } from '../../util/engagements'
 
@@ -25,8 +30,8 @@ const STATUS_OPTIONS = [
 ]
 
 const STATUS_UPDATE_OPTIONS = STATUS_OPTIONS.filter(option => option.value !== 'all')
-const INPUT_DATE_FORMAT = 'MM/dd/yyyy'
-const INPUT_TIME_FORMAT = 'HH:mm'
+const INPUT_DATE_FORMAT = 'MM/DD/YYYY'
+const INPUT_TIME_FORMAT = false
 const CAPACITY_ERROR_MODAL_MESSAGE = 'The required number of members are already assigned to this engagement. If you\'d like to add another member, change the required number of members on the engagement first.'
 
 const ANTICIPATED_START_LABELS = {
@@ -153,17 +158,6 @@ const normalizeAssignmentStatus = (status) => {
     .replace(/\s+/g, '_')
 }
 
-const toValidMoment = (value) => {
-  if (!value) {
-    return null
-  }
-  if (moment.isMoment(value)) {
-    return value.isValid() ? value : null
-  }
-  const parsed = moment(value)
-  return parsed.isValid() ? parsed : null
-}
-
 const isActiveAssignmentStatus = (status) => {
   const normalized = normalizeAssignmentStatus(status)
   return normalized === 'ASSIGNED' || normalized === 'ACTIVE'
@@ -182,8 +176,9 @@ const ApplicationsList = ({
   const [acceptSuccess, setAcceptSuccess] = useState(null)
   const [capacityError, setCapacityError] = useState(false)
   const [acceptStartDate, setAcceptStartDate] = useState(null)
-  const [acceptEndDate, setAcceptEndDate] = useState(null)
-  const [acceptRate, setAcceptRate] = useState('')
+  const [acceptDurationMonths, setAcceptDurationMonths] = useState('')
+  const [acceptRatePerHour, setAcceptRatePerHour] = useState('')
+  const [acceptStandardHoursPerWeek, setAcceptStandardHoursPerWeek] = useState('')
   const [acceptOtherRemarks, setAcceptOtherRemarks] = useState('')
   const [acceptErrors, setAcceptErrors] = useState({})
   const [isAccepting, setIsAccepting] = useState(false)
@@ -193,34 +188,9 @@ const ApplicationsList = ({
   const acceptHandleColor = Number.isFinite(acceptRating) ? undefined : '#000'
   const acceptName = getApplicationName(acceptApplication) || 'Selected applicant'
   const acceptSuccessLabel = acceptSuccess ? acceptSuccess.memberLabel : null
-  const today = moment().startOf('day')
-  const parsedAcceptStart = acceptStartDate ? moment(acceptStartDate) : null
-  const parsedAcceptStartDay = parsedAcceptStart && parsedAcceptStart.isValid()
-    ? parsedAcceptStart.clone().startOf('day')
-    : null
-  const minEndDay = parsedAcceptStartDay && parsedAcceptStartDay.isAfter(today) ? parsedAcceptStartDay : today
-  const isAcceptStartDateValid = (current) => {
-    const currentMoment = toValidMoment(current)
-    if (!currentMoment) {
-      return false
-    }
-    return currentMoment.isSameOrAfter(today, 'day')
-  }
-  const isAcceptEndDateValid = (current) => {
-    const currentMoment = toValidMoment(current)
-    if (!currentMoment) {
-      return false
-    }
-    return currentMoment.isSameOrAfter(minEndDay, 'day')
-  }
-  const getMinStartDateTime = () => moment().toDate()
-  const getMinEndDateTime = () => {
-    const now = moment()
-    if (parsedAcceptStart && parsedAcceptStart.isValid() && parsedAcceptStart.isAfter(now)) {
-      return parsedAcceptStart.toDate()
-    }
-    return now.toDate()
-  }
+  const acceptAssignmentRate = useMemo(() => {
+    return calculateAssignmentRatePerWeek(acceptRatePerHour, acceptStandardHoursPerWeek)
+  }, [acceptRatePerHour, acceptStandardHoursPerWeek])
   const acceptSubtitle = acceptHandle ? (
     <div className={styles.acceptHandleLine}>
       <Handle
@@ -298,8 +268,9 @@ const ApplicationsList = ({
   const resetAcceptState = () => {
     setAcceptApplication(null)
     setAcceptStartDate(null)
-    setAcceptEndDate(null)
-    setAcceptRate('')
+    setAcceptDurationMonths('')
+    setAcceptRatePerHour('')
+    setAcceptStandardHoursPerWeek('')
     setAcceptOtherRemarks('')
     setAcceptErrors({})
     setIsAccepting(false)
@@ -316,8 +287,9 @@ const ApplicationsList = ({
   const openAcceptModal = (application) => {
     setAcceptApplication(application)
     setAcceptStartDate(null)
-    setAcceptEndDate(null)
-    setAcceptRate('')
+    setAcceptDurationMonths('')
+    setAcceptRatePerHour('')
+    setAcceptStandardHoursPerWeek('')
     setAcceptOtherRemarks('')
     setAcceptErrors({})
     setIsAccepting(false)
@@ -335,21 +307,22 @@ const ApplicationsList = ({
 
     const nextErrors = {}
     const parsedStart = acceptStartDate ? moment(acceptStartDate) : null
-    const parsedEnd = acceptEndDate ? moment(acceptEndDate) : null
-    const normalizedRate = acceptRate != null ? String(acceptRate).trim() : ''
+    const parsedDurationMonths = toPositiveInteger(acceptDurationMonths)
+    const parsedRatePerHour = toPositiveNumber(acceptRatePerHour)
+    const parsedStandardHoursPerWeek = toPositiveInteger(acceptStandardHoursPerWeek)
     const normalizedOtherRemarks = acceptOtherRemarks != null ? String(acceptOtherRemarks).trim() : ''
 
     if (!parsedStart || !parsedStart.isValid()) {
-      nextErrors.startDate = 'Start date is required.'
+      nextErrors.startDate = 'Billing start date is required.'
     }
-    if (!parsedEnd || !parsedEnd.isValid()) {
-      nextErrors.endDate = 'End date is required.'
+    if (parsedDurationMonths === null) {
+      nextErrors.durationMonths = 'Duration must be a positive whole number.'
     }
-    if (!normalizedRate) {
-      nextErrors.rate = 'Assignment rate is required.'
+    if (parsedRatePerHour === null) {
+      nextErrors.ratePerHour = 'Rate per hour must be a positive number.'
     }
-    if (parsedStart && parsedEnd && parsedStart.isValid() && parsedEnd.isValid() && parsedEnd.isBefore(parsedStart)) {
-      nextErrors.endDate = 'End date must be after start date.'
+    if (parsedStandardHoursPerWeek === null) {
+      nextErrors.standardHoursPerWeek = 'Standard hours per week must be a positive whole number.'
     }
 
     if (Object.keys(nextErrors).length > 0) {
@@ -360,11 +333,12 @@ const ApplicationsList = ({
     setIsAccepting(true)
     try {
       const startDate = serializeTentativeAssignmentDate(parsedStart)
-      const endDate = serializeTentativeAssignmentDate(parsedEnd)
       await onUpdateStatus(acceptApplication.id, 'SELECTED', {
         startDate,
-        endDate,
-        agreementRate: normalizedRate,
+        durationMonths: parsedDurationMonths,
+        ratePerHour: parsedRatePerHour.toString(),
+        standardHoursPerWeek: parsedStandardHoursPerWeek,
+        agreementRate: acceptAssignmentRate,
         ...(normalizedOtherRemarks ? { otherRemarks: normalizedOtherRemarks } : {})
       })
       const memberHandle = getApplicationHandle(acceptApplication)
@@ -434,7 +408,7 @@ const ApplicationsList = ({
             <div className={styles.acceptGrid}>
               <div className={styles.acceptField}>
                 <label className={styles.acceptLabel}>
-                  Tentative start date
+                  Billing start date
                   <span className={styles.acceptRequired}>*</span>
                 </label>
                 <DateInput
@@ -443,8 +417,6 @@ const ApplicationsList = ({
                   dateFormat={INPUT_DATE_FORMAT}
                   timeFormat={INPUT_TIME_FORMAT}
                   preventViewportOverflow
-                  minDateTime={getMinStartDateTime}
-                  isValidDate={isAcceptStartDateValid}
                   onChange={(value) => {
                     setAcceptStartDate(value)
                     if (acceptErrors.startDate) {
@@ -458,49 +430,81 @@ const ApplicationsList = ({
               </div>
               <div className={styles.acceptField}>
                 <label className={styles.acceptLabel}>
-                  Tentative end date
-                  <span className={styles.acceptRequired}>*</span>
-                </label>
-                <DateInput
-                  className={styles.acceptDateInput}
-                  value={acceptEndDate}
-                  dateFormat={INPUT_DATE_FORMAT}
-                  timeFormat={INPUT_TIME_FORMAT}
-                  preventViewportOverflow
-                  minDateTime={getMinEndDateTime}
-                  isValidDate={isAcceptEndDateValid}
-                  onChange={(value) => {
-                    setAcceptEndDate(value)
-                    if (acceptErrors.endDate) {
-                      setAcceptErrors(prev => ({ ...prev, endDate: '' }))
-                    }
-                  }}
-                />
-                {acceptErrors.endDate && (
-                  <div className={styles.acceptError}>{acceptErrors.endDate}</div>
-                )}
-              </div>
-              <div className={styles.acceptFieldFull}>
-                <label className={styles.acceptLabel}>
-                  Assignment rate (per week)
+                  Duration (in months)
                   <span className={styles.acceptRequired}>*</span>
                 </label>
                 <input
                   className={styles.acceptInput}
                   type='number'
-                  min='0'
-                  step='0.01'
-                  value={acceptRate}
+                  min='1'
+                  step='1'
+                  value={acceptDurationMonths}
                   onChange={(event) => {
-                    setAcceptRate(event.target.value)
-                    if (acceptErrors.rate) {
-                      setAcceptErrors(prev => ({ ...prev, rate: '' }))
+                    setAcceptDurationMonths(event.target.value)
+                    if (acceptErrors.durationMonths) {
+                      setAcceptErrors(prev => ({ ...prev, durationMonths: '' }))
                     }
                   }}
                 />
-                {acceptErrors.rate && (
-                  <div className={styles.acceptError}>{acceptErrors.rate}</div>
+                {acceptErrors.durationMonths && (
+                  <div className={styles.acceptError}>{acceptErrors.durationMonths}</div>
                 )}
+              </div>
+              <div className={styles.acceptField}>
+                <label className={styles.acceptLabel}>
+                  Rate per hour
+                  <span className={styles.acceptRequired}>*</span>
+                </label>
+                <input
+                  className={styles.acceptInput}
+                  type='number'
+                  min='0.01'
+                  step='0.01'
+                  value={acceptRatePerHour}
+                  onChange={(event) => {
+                    setAcceptRatePerHour(event.target.value)
+                    if (acceptErrors.ratePerHour) {
+                      setAcceptErrors(prev => ({ ...prev, ratePerHour: '' }))
+                    }
+                  }}
+                />
+                {acceptErrors.ratePerHour && (
+                  <div className={styles.acceptError}>{acceptErrors.ratePerHour}</div>
+                )}
+              </div>
+              <div className={styles.acceptField}>
+                <label className={styles.acceptLabel}>
+                  Standard hours per week
+                  <span className={styles.acceptRequired}>*</span>
+                </label>
+                <input
+                  className={styles.acceptInput}
+                  type='number'
+                  min='1'
+                  step='1'
+                  value={acceptStandardHoursPerWeek}
+                  onChange={(event) => {
+                    setAcceptStandardHoursPerWeek(event.target.value)
+                    if (acceptErrors.standardHoursPerWeek) {
+                      setAcceptErrors(prev => ({ ...prev, standardHoursPerWeek: '' }))
+                    }
+                  }}
+                />
+                {acceptErrors.standardHoursPerWeek && (
+                  <div className={styles.acceptError}>{acceptErrors.standardHoursPerWeek}</div>
+                )}
+              </div>
+              <div className={styles.acceptFieldFull}>
+                <label className={styles.acceptLabel}>
+                  Assignment rate per week
+                  <span className={styles.acceptRequired}>*</span>
+                </label>
+                <input
+                  className={styles.acceptInput}
+                  type='text'
+                  value={acceptAssignmentRate}
+                  readOnly
+                />
               </div>
               <div className={styles.acceptFieldFull}>
                 <label className={styles.acceptLabel}>Other remarks</label>
