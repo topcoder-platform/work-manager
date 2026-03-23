@@ -323,7 +323,7 @@ const ReviewSummary = ({
             )}
 
             {/* Failure Path: Locked Step (only for AI_GATING with gating workflows) */}
-            {isAIGatingMode && isAIGating && (
+            {isAIGatingMode && isAIGatingMode && (
               <div className={styles.flowBox} style={{ gridColumn: 3, gridRow: 3, backgroundColor: '#f5f5f5' }}>
                 <div>🔒</div>
                 <div>Locked</div>
