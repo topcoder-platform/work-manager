@@ -4,7 +4,10 @@ import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import { withRouter } from 'react-router-dom'
 import EngagementPayment from '../../components/EngagementPayment'
-import { loadEngagementDetails } from '../../actions/engagements'
+import {
+  loadEngagementDetails,
+  partiallyUpdateEngagementDetails
+} from '../../actions/engagements'
 import { createMemberPayment, fetchAssignmentPayments } from '../../actions/payments'
 import { loadProject } from '../../actions/projects'
 import { toastFailure, toastSuccess } from '../../util/toaster'
@@ -187,6 +190,105 @@ const applyAssignmentUpdate = (engagement, assignmentId, assignmentUpdate = {}, 
   })
 }
 
+/**
+ * Serializes the supported member-facing assignment fields for engagement patch
+ * requests.
+ *
+ * @param {Object} assignment Assignment record from the normalized engagement state.
+ * @returns {Object|null} Assignment details payload entry, or `null` when the
+ * assignment lacks both member identifiers required by the API.
+ */
+const buildAssignmentDetailsPayloadEntry = (assignment = {}) => {
+  const payload = {}
+  const memberId = assignment.memberId != null ? String(assignment.memberId).trim() : ''
+  const memberHandle = getMemberHandle(assignment)
+  const startDate = assignment.startDate || assignment.start_date
+  const durationMonths = assignment.durationMonths != null
+    ? assignment.durationMonths
+    : assignment.duration_months
+  const ratePerHour = assignment.ratePerHour || assignment.rate_per_hour
+  const standardHoursPerWeek = assignment.standardHoursPerWeek != null
+    ? assignment.standardHoursPerWeek
+    : assignment.standard_hours_per_week
+  const agreementRate = assignment.agreementRate ||
+    assignment.agreement_rate ||
+    assignment.rate ||
+    assignment.agreedRate
+  const otherRemarks = assignment.otherRemarks != null
+    ? assignment.otherRemarks
+    : assignment.other_remarks
+
+  if (memberId) {
+    payload.memberId = memberId
+  }
+  if (memberHandle) {
+    payload.memberHandle = memberHandle
+  }
+  if (!payload.memberId && !payload.memberHandle) {
+    return null
+  }
+  if (startDate) {
+    payload.startDate = startDate
+  }
+  if (durationMonths !== '' && durationMonths != null) {
+    payload.durationMonths = Number(durationMonths)
+  }
+  if (ratePerHour != null && `${ratePerHour}`.trim() !== '') {
+    payload.ratePerHour = String(ratePerHour).trim()
+  }
+  if (standardHoursPerWeek !== '' && standardHoursPerWeek != null) {
+    payload.standardHoursPerWeek = Number(standardHoursPerWeek)
+  }
+  if (agreementRate != null && `${agreementRate}`.trim() !== '') {
+    payload.agreementRate = String(agreementRate).trim()
+  }
+  if (otherRemarks != null && `${otherRemarks}`.trim() !== '') {
+    payload.otherRemarks = String(otherRemarks).trim()
+  }
+
+  return payload
+}
+
+/**
+ * Builds the complete `assignmentDetails` array required to edit one
+ * assignment without removing the others from the engagement.
+ *
+ * @param {Object} engagement Normalized engagement state from the assignments page.
+ * @param {string|number} assignmentId Target assignment identifier.
+ * @param {Object} updatedDetails Validated assignment fields from the edit modal.
+ * @returns {{assignmentDetails: Array<Object>}} Engagement patch payload.
+ */
+const buildAssignmentDetailsUpdatePayload = (
+  engagement,
+  assignmentId,
+  updatedDetails
+) => {
+  const assignmentIdText = `${assignmentId}`
+  const assignments = Array.isArray(engagement && engagement.assignments)
+    ? engagement.assignments
+    : []
+
+  return {
+    assignmentDetails: assignments
+      .map((assignment) => {
+        const baseEntry = buildAssignmentDetailsPayloadEntry(assignment)
+        if (!baseEntry) {
+          return null
+        }
+
+        if (`${_.get(assignment, 'id', '')}` !== assignmentIdText) {
+          return baseEntry
+        }
+
+        return {
+          ...baseEntry,
+          ...updatedDetails
+        }
+      })
+      .filter(Boolean)
+  }
+}
+
 class EngagementPaymentContainer extends Component {
   constructor (props) {
     super(props)
@@ -197,6 +299,7 @@ class EngagementPaymentContainer extends Component {
       memberIdLookup: {},
       terminatingAssignments: {},
       completingAssignments: {},
+      updatingAssignments: {},
       lastSyncedEngagementDetails: null
     }
 
@@ -208,6 +311,7 @@ class EngagementPaymentContainer extends Component {
     this.getPaymentEntries = this.getPaymentEntries.bind(this)
     this.onTerminateAssignment = this.onTerminateAssignment.bind(this)
     this.onCompleteAssignment = this.onCompleteAssignment.bind(this)
+    this.onSaveAssignment = this.onSaveAssignment.bind(this)
   }
 
   static getDerivedStateFromProps (nextProps, prevState) {
@@ -517,6 +621,71 @@ class EngagementPaymentContainer extends Component {
     }
   }
 
+  /**
+   * Saves edited assignment offer details by patching the engagement with the
+   * full assignment list so the backend can emit the assignment-updated email.
+   *
+   * @param {Object} member Assignment row currently being edited.
+   * @param {Object} updatedDetails Validated assignment detail fields from the modal.
+   * @returns {Promise<boolean>} `true` when the update succeeds; otherwise `false`.
+   */
+  async onSaveAssignment (member, updatedDetails) {
+    const assignmentId = _.get(member, 'assignmentId', null)
+    if (_.isNil(assignmentId) || assignmentId === '') {
+      toastFailure('Error', 'Assignment ID is required to update an assignment')
+      return false
+    }
+
+    const engagementId = this.getEngagementId()
+    if (!engagementId) {
+      toastFailure('Error', 'Engagement ID is required to update an assignment')
+      return false
+    }
+
+    const partialDetails = buildAssignmentDetailsUpdatePayload(
+      this.state.engagement,
+      assignmentId,
+      updatedDetails
+    )
+    if (!partialDetails.assignmentDetails.length) {
+      toastFailure('Error', 'Assignment details are unavailable for update')
+      return false
+    }
+
+    this.setState((prevState) => ({
+      updatingAssignments: {
+        ...prevState.updatingAssignments,
+        [assignmentId]: true
+      }
+    }))
+
+    try {
+      const action = await this.props.partiallyUpdateEngagementDetails(
+        engagementId,
+        partialDetails,
+        this.getProjectId()
+      )
+      const updatedEngagement = normalizeEngagement(
+        _.get(action, 'engagementDetails', null)
+      )
+      if (updatedEngagement && updatedEngagement.id) {
+        this.setState({
+          engagement: updatedEngagement,
+          lastSyncedEngagementDetails: _.get(action, 'engagementDetails', null)
+        })
+      }
+      return true
+    } catch (error) {
+      return false
+    } finally {
+      this.setState((prevState) => {
+        const next = { ...prevState.updatingAssignments }
+        delete next[assignmentId]
+        return { updatingAssignments: next }
+      })
+    }
+  }
+
   getPaymentEntries (engagement) {
     if (!engagement) {
       return []
@@ -596,6 +765,7 @@ class EngagementPaymentContainer extends Component {
         paymentsByAssignment={paymentsByAssignment}
         terminatingAssignments={this.state.terminatingAssignments}
         completingAssignments={this.state.completingAssignments}
+        updatingAssignments={this.state.updatingAssignments}
         projectId={projectId}
         engagementId={engagementId}
         showPaymentModal={shouldShowPaymentModal}
@@ -605,6 +775,7 @@ class EngagementPaymentContainer extends Component {
         onSubmitPayment={this.onSubmitPayment}
         onTerminateAssignment={this.onTerminateAssignment}
         onCompleteAssignment={this.onCompleteAssignment}
+        onSaveAssignment={this.onSaveAssignment}
       />
     )
   }
@@ -635,6 +806,7 @@ EngagementPaymentContainer.propTypes = {
   }),
   currentBillingAccount: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   loadEngagementDetails: PropTypes.func.isRequired,
+  partiallyUpdateEngagementDetails: PropTypes.func.isRequired,
   loadProject: PropTypes.func.isRequired,
   createMemberPayment: PropTypes.func.isRequired,
   fetchAssignmentPayments: PropTypes.func.isRequired
@@ -651,6 +823,7 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = {
   loadEngagementDetails,
+  partiallyUpdateEngagementDetails,
   loadProject,
   createMemberPayment,
   fetchAssignmentPayments

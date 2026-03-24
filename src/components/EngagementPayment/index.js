@@ -1,12 +1,24 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
+import moment from 'moment-timezone'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faCommentAlt } from '@fortawesome/free-solid-svg-icons'
+import { faCommentAlt, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import Loader from '../Loader'
 import Modal from '../Modal'
 import PaymentForm from '../PaymentForm'
+import DateInput from '../DateInput'
 import styles from './EngagementPayment.module.scss'
+import { serializeTentativeAssignmentDate } from '../../util/assignmentDates'
+import {
+  calculateAssignmentRatePerWeek,
+  toPositiveInteger,
+  toPositiveNumber
+} from '../../util/assignmentRates'
+
+// The shared DateInput uses date-fns tokens; uppercase moment-style tokens prevent the calendar from opening.
+const INPUT_DATE_FORMAT = 'MM/dd/yyyy'
+const INPUT_TIME_FORMAT = false
 
 const currencyFormatter = new Intl.NumberFormat('en-US', {
   style: 'currency',
@@ -246,6 +258,32 @@ const getAssignmentRemarks = (member) => {
   return ''
 }
 
+/**
+ * Converts an assignment row into editable modal field values.
+ *
+ * @param {Object|null|undefined} member Assignment row rendered on the page.
+ * @returns {{startDate: *, durationMonths: string, ratePerHour: string, standardHoursPerWeek: string, otherRemarks: string}}
+ * Seed values for the edit-assignment modal.
+ */
+const createEditAssignmentState = (member) => {
+  const startDate = getAssignmentDate(member, 'start')
+  const parsedStartDate = startDate ? moment(startDate) : null
+
+  return {
+    startDate: parsedStartDate && parsedStartDate.isValid() ? parsedStartDate : null,
+    durationMonths: getDurationMonths(member) !== '' && getDurationMonths(member) != null
+      ? String(getDurationMonths(member))
+      : '',
+    ratePerHour: getRatePerHour(member) !== '' && getRatePerHour(member) != null
+      ? String(getRatePerHour(member))
+      : '',
+    standardHoursPerWeek: getStandardHoursPerWeek(member) !== '' && getStandardHoursPerWeek(member) != null
+      ? String(getStandardHoursPerWeek(member))
+      : '',
+    otherRemarks: getAssignmentRemarks(member)
+  }
+}
+
 const formatDurationMonths = (value) => {
   if (value == null || value === '') {
     return '-'
@@ -283,6 +321,7 @@ const EngagementPayment = ({
   paymentsByAssignment,
   terminatingAssignments,
   completingAssignments,
+  updatingAssignments,
   projectId,
   engagementId,
   showPaymentModal,
@@ -291,14 +330,23 @@ const EngagementPayment = ({
   onClosePaymentModal,
   onSubmitPayment,
   onTerminateAssignment,
-  onCompleteAssignment
+  onCompleteAssignment,
+  onSaveAssignment
 }) => {
   const [paymentHistoryMember, setPaymentHistoryMember] = useState(null)
   const [remarksMember, setRemarksMember] = useState(null)
   const [completionMember, setCompletionMember] = useState(null)
   const [terminationMember, setTerminationMember] = useState(null)
   const [terminationReason, setTerminationReason] = useState('')
-  if (isLoading) {
+  const [editMember, setEditMember] = useState(null)
+  const [editStartDate, setEditStartDate] = useState(null)
+  const [editDurationMonths, setEditDurationMonths] = useState('')
+  const [editRatePerHour, setEditRatePerHour] = useState('')
+  const [editStandardHoursPerWeek, setEditStandardHoursPerWeek] = useState('')
+  const [editOtherRemarks, setEditOtherRemarks] = useState('')
+  const [editErrors, setEditErrors] = useState({})
+
+  if (isLoading && !(engagement && engagement.id)) {
     return <Loader />
   }
 
@@ -316,6 +364,16 @@ const EngagementPayment = ({
 
   const closeRemarksModal = () => {
     setRemarksMember(null)
+  }
+
+  const closeEditModal = () => {
+    setEditMember(null)
+    setEditStartDate(null)
+    setEditDurationMonths('')
+    setEditRatePerHour('')
+    setEditStandardHoursPerWeek('')
+    setEditOtherRemarks('')
+    setEditErrors({})
   }
 
   const openRemarksModal = (member) => {
@@ -336,6 +394,17 @@ const EngagementPayment = ({
       return
     }
     setPaymentHistoryMember(member)
+  }
+
+  const openEditModal = (member) => {
+    const nextState = createEditAssignmentState(member)
+    setEditMember(member)
+    setEditStartDate(nextState.startDate)
+    setEditDurationMonths(nextState.durationMonths)
+    setEditRatePerHour(nextState.ratePerHour)
+    setEditStandardHoursPerWeek(nextState.standardHoursPerWeek)
+    setEditOtherRemarks(nextState.otherRemarks)
+    setEditErrors({})
   }
 
   const closeTerminationModal = () => {
@@ -380,6 +449,64 @@ const EngagementPayment = ({
     )
     if (wasSuccessful) {
       closeTerminationModal()
+    }
+  }
+
+  /**
+   * Validates and submits edited assignment details for the currently selected
+   * assignment.
+   *
+   * @returns {Promise<void>} Resolves after the modal save attempt completes.
+   */
+  const submitEdit = async () => {
+    if (!editMember) {
+      return
+    }
+
+    const nextErrors = {}
+    const parsedStartDate = editStartDate ? moment(editStartDate) : null
+    const hasDurationValue = editDurationMonths !== ''
+    const parsedDurationMonths = hasDurationValue
+      ? toPositiveInteger(editDurationMonths)
+      : null
+    const parsedRatePerHour = toPositiveNumber(editRatePerHour)
+    const parsedStandardHoursPerWeek = toPositiveInteger(editStandardHoursPerWeek)
+    const normalizedOtherRemarks = editOtherRemarks != null
+      ? String(editOtherRemarks).trim()
+      : ''
+
+    if (!parsedStartDate || !parsedStartDate.isValid()) {
+      nextErrors.startDate = 'Billing start date is required.'
+    }
+    if (hasDurationValue && parsedDurationMonths === null) {
+      nextErrors.durationMonths = 'Duration must be a positive whole number.'
+    }
+    if (parsedRatePerHour === null) {
+      nextErrors.ratePerHour = 'Rate per hour must be a positive number.'
+    }
+    if (parsedStandardHoursPerWeek === null) {
+      nextErrors.standardHoursPerWeek = 'Standard hours per week must be a positive whole number.'
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setEditErrors(nextErrors)
+      return
+    }
+
+    const wasSuccessful = await onSaveAssignment(editMember, {
+      startDate: serializeTentativeAssignmentDate(parsedStartDate),
+      ...(parsedDurationMonths !== null ? { durationMonths: parsedDurationMonths } : {}),
+      ratePerHour: parsedRatePerHour.toString(),
+      standardHoursPerWeek: parsedStandardHoursPerWeek,
+      agreementRate: calculateAssignmentRatePerWeek(
+        parsedRatePerHour,
+        parsedStandardHoursPerWeek
+      ),
+      ...(normalizedOtherRemarks ? { otherRemarks: normalizedOtherRemarks } : {})
+    })
+
+    if (wasSuccessful) {
+      closeEditModal()
     }
   }
 
@@ -473,6 +600,19 @@ const EngagementPayment = ({
     ? (remarksMember.handle || remarksMember.memberHandle || '-')
     : '-'
   const remarksContent = getAssignmentRemarks(remarksMember)
+  const editAssignmentId = editMember && editMember.assignmentId != null
+    ? String(editMember.assignmentId)
+    : null
+  const editHandle = editMember
+    ? (editMember.handle || editMember.memberHandle || '-')
+    : '-'
+  const isEditProcessing = editAssignmentId && updatingAssignments
+    ? Boolean(updatingAssignments[editAssignmentId])
+    : false
+  const editAssignmentRate = calculateAssignmentRatePerWeek(
+    editRatePerHour,
+    editStandardHoursPerWeek
+  )
 
   return (
     <div className={styles.container}>
@@ -515,6 +655,9 @@ const EngagementPayment = ({
             const isRowCompleting = assignmentKey && completingAssignments
               ? Boolean(completingAssignments[assignmentKey])
               : false
+            const isRowUpdating = assignmentKey && updatingAssignments
+              ? Boolean(updatingAssignments[assignmentKey])
+              : false
             const assignmentRemarks = getAssignmentRemarks(member)
             const assignmentRate = getAssignmentRate(member)
             const billingStartDate = formatDate(getAssignmentDate(member, 'start'))
@@ -534,12 +677,27 @@ const EngagementPayment = ({
                   <div className={styles.memberInfo}>
                     <div className={styles.memberHeader}>
                       <div className={styles.memberHandle}>{member.handle || '-'}</div>
-                      <span
-                        className={styles.assignmentStatus}
-                        title={assignmentStatusRaw || assignmentStatusLabel}
-                      >
-                        {assignmentStatusLabel}
-                      </span>
+                      <div className={styles.assignmentStatusGroup}>
+                        <span
+                          className={styles.assignmentStatus}
+                          title={assignmentStatusRaw || assignmentStatusLabel}
+                        >
+                          {assignmentStatusLabel}
+                        </span>
+                        {isAssignedStatus && (
+                          <button
+                            type='button'
+                            className={styles.editAssignmentButton}
+                            onClick={() => openEditModal(member)}
+                            disabled={!hasAssignmentId || isRowUpdating || isRowTerminating || isRowCompleting}
+                            aria-label={`Edit assignment details for ${member.handle || 'member'}`}
+                            title='Edit assignment details'
+                            aria-haspopup='dialog'
+                          >
+                            <FontAwesomeIcon icon={faPencilAlt} className={styles.editAssignmentIcon} />
+                          </button>
+                        )}
+                      </div>
                     </div>
                     {!member.id && (
                       <div className={styles.memberNote}>Resolving member ID...</div>
@@ -636,21 +794,21 @@ const EngagementPayment = ({
                           type='info'
                           className={styles.actionButton}
                           onClick={() => onOpenPaymentModal(member)}
-                          disabled={!canPay}
+                          disabled={!canPay || isRowUpdating}
                         />
                         <PrimaryButton
                           text={isRowCompleting ? 'Completing...' : 'Complete'}
                           type='success'
                           className={styles.actionButton}
                           onClick={() => openCompletionModal(member)}
-                          disabled={!hasAssignmentId || isRowTerminating || isRowCompleting}
+                          disabled={!hasAssignmentId || isRowUpdating || isRowTerminating || isRowCompleting}
                         />
                         <PrimaryButton
                           text={isRowTerminating ? 'Terminating...' : 'Terminate'}
                           type='danger'
                           className={styles.actionButton}
                           onClick={() => openTerminationModal(member)}
-                          disabled={!hasAssignmentId || isRowTerminating || isRowCompleting}
+                          disabled={!hasAssignmentId || isRowUpdating || isRowTerminating || isRowCompleting}
                         />
                       </>
                     )}
@@ -742,6 +900,133 @@ const EngagementPayment = ({
           </div>
         </Modal>
       )}
+      {editMember && (
+        <Modal onCancel={closeEditModal}>
+          <div className={styles.editModal}>
+            <div className={styles.editTitle}>Edit Assignment</div>
+            <div className={styles.editSubtitle}>{editHandle}</div>
+            <div className={styles.editGrid}>
+              <div className={styles.editField}>
+                <label className={styles.editLabel}>
+                  Billing start date
+                  <span className={styles.editRequired}>*</span>
+                </label>
+                <DateInput
+                  className={styles.editDateInput}
+                  value={editStartDate}
+                  dateFormat={INPUT_DATE_FORMAT}
+                  timeFormat={INPUT_TIME_FORMAT}
+                  preventViewportOverflow
+                  onChange={(value) => {
+                    setEditStartDate(value)
+                    if (editErrors.startDate) {
+                      setEditErrors(prev => ({ ...prev, startDate: '' }))
+                    }
+                  }}
+                />
+                {editErrors.startDate && (
+                  <div className={styles.editError}>{editErrors.startDate}</div>
+                )}
+              </div>
+              <div className={styles.editField}>
+                <label className={styles.editLabel}>Duration (in months)</label>
+                <input
+                  className={styles.editInput}
+                  type='number'
+                  min='1'
+                  step='1'
+                  value={editDurationMonths}
+                  onChange={(event) => {
+                    setEditDurationMonths(event.target.value)
+                    if (editErrors.durationMonths) {
+                      setEditErrors(prev => ({ ...prev, durationMonths: '' }))
+                    }
+                  }}
+                />
+                {editErrors.durationMonths && (
+                  <div className={styles.editError}>{editErrors.durationMonths}</div>
+                )}
+              </div>
+              <div className={styles.editField}>
+                <label className={styles.editLabel}>
+                  Rate per hour
+                  <span className={styles.editRequired}>*</span>
+                </label>
+                <input
+                  className={styles.editInput}
+                  type='number'
+                  min='0.01'
+                  step='0.01'
+                  value={editRatePerHour}
+                  onChange={(event) => {
+                    setEditRatePerHour(event.target.value)
+                    if (editErrors.ratePerHour) {
+                      setEditErrors(prev => ({ ...prev, ratePerHour: '' }))
+                    }
+                  }}
+                />
+                {editErrors.ratePerHour && (
+                  <div className={styles.editError}>{editErrors.ratePerHour}</div>
+                )}
+              </div>
+              <div className={styles.editField}>
+                <label className={styles.editLabel}>
+                  Standard hours per week
+                  <span className={styles.editRequired}>*</span>
+                </label>
+                <input
+                  className={styles.editInput}
+                  type='number'
+                  min='1'
+                  step='1'
+                  value={editStandardHoursPerWeek}
+                  onChange={(event) => {
+                    setEditStandardHoursPerWeek(event.target.value)
+                    if (editErrors.standardHoursPerWeek) {
+                      setEditErrors(prev => ({ ...prev, standardHoursPerWeek: '' }))
+                    }
+                  }}
+                />
+                {editErrors.standardHoursPerWeek && (
+                  <div className={styles.editError}>{editErrors.standardHoursPerWeek}</div>
+                )}
+              </div>
+              <div className={styles.editFieldFull}>
+                <label className={styles.editLabel}>Assignment rate per week</label>
+                <input
+                  className={styles.editInput}
+                  type='text'
+                  value={editAssignmentRate}
+                  readOnly
+                />
+              </div>
+              <div className={styles.editFieldFull}>
+                <label className={styles.editLabel}>Other remarks</label>
+                <textarea
+                  className={styles.editTextarea}
+                  rows={3}
+                  value={editOtherRemarks}
+                  onChange={(event) => setEditOtherRemarks(event.target.value)}
+                />
+              </div>
+            </div>
+            <div className={styles.editActions}>
+              <OutlineButton
+                text='Cancel'
+                type='info'
+                onClick={closeEditModal}
+                disabled={isEditProcessing}
+              />
+              <PrimaryButton
+                text={isEditProcessing ? 'Saving...' : 'Save'}
+                type='info'
+                onClick={submitEdit}
+                disabled={isEditProcessing}
+              />
+            </div>
+          </div>
+        </Modal>
+      )}
       {paymentHistoryMember && (
         <Modal onCancel={closePaymentHistoryModal}>
           <div className={styles.historyModal}>
@@ -785,6 +1070,7 @@ EngagementPayment.defaultProps = {
   paymentsByAssignment: {},
   terminatingAssignments: {},
   completingAssignments: {},
+  updatingAssignments: {},
   projectId: null,
   engagementId: null,
   showPaymentModal: false,
@@ -793,7 +1079,8 @@ EngagementPayment.defaultProps = {
   onClosePaymentModal: () => {},
   onSubmitPayment: () => {},
   onTerminateAssignment: () => {},
-  onCompleteAssignment: () => {}
+  onCompleteAssignment: () => {},
+  onSaveAssignment: () => {}
 }
 
 EngagementPayment.propTypes = {
@@ -827,6 +1114,7 @@ EngagementPayment.propTypes = {
   })),
   terminatingAssignments: PropTypes.objectOf(PropTypes.bool),
   completingAssignments: PropTypes.objectOf(PropTypes.bool),
+  updatingAssignments: PropTypes.objectOf(PropTypes.bool),
   projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   engagementId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   showPaymentModal: PropTypes.bool,
@@ -849,7 +1137,8 @@ EngagementPayment.propTypes = {
   onClosePaymentModal: PropTypes.func,
   onSubmitPayment: PropTypes.func,
   onTerminateAssignment: PropTypes.func,
-  onCompleteAssignment: PropTypes.func
+  onCompleteAssignment: PropTypes.func,
+  onSaveAssignment: PropTypes.func
 }
 
 export default EngagementPayment
