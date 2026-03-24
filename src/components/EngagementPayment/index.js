@@ -267,10 +267,9 @@ const getAssignmentRemarks = (member) => {
  */
 const createEditAssignmentState = (member) => {
   const startDate = getAssignmentDate(member, 'start')
-  const parsedStartDate = startDate ? moment(startDate) : null
 
   return {
-    startDate: parsedStartDate && parsedStartDate.isValid() ? parsedStartDate : null,
+    startDate: startDate || null,
     durationMonths: getDurationMonths(member) !== '' && getDurationMonths(member) != null
       ? String(getDurationMonths(member))
       : '',
