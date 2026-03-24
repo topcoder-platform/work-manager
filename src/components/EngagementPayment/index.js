@@ -267,9 +267,12 @@ const getAssignmentRemarks = (member) => {
  */
 const createEditAssignmentState = (member) => {
   const startDate = getAssignmentDate(member, 'start')
+  const parsedStartDate = startDate ? new Date(startDate) : null
 
   return {
-    startDate: startDate || null,
+    startDate: parsedStartDate && !Number.isNaN(parsedStartDate.getTime())
+      ? parsedStartDate
+      : (startDate || null),
     durationMonths: getDurationMonths(member) !== '' && getDurationMonths(member) != null
       ? String(getDurationMonths(member))
       : '',
