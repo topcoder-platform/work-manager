@@ -30,7 +30,8 @@ const STATUS_OPTIONS = [
 ]
 
 const STATUS_UPDATE_OPTIONS = STATUS_OPTIONS.filter(option => option.value !== 'all')
-const INPUT_DATE_FORMAT = 'MM/DD/YYYY'
+// The shared DateInput uses date-fns tokens; uppercase moment-style tokens prevent the calendar from opening.
+const INPUT_DATE_FORMAT = 'MM/dd/yyyy'
 const INPUT_TIME_FORMAT = false
 const CAPACITY_ERROR_MODAL_MESSAGE = 'The required number of members are already assigned to this engagement. If you\'d like to add another member, change the required number of members on the engagement first.'
 
