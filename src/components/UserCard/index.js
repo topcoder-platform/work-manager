@@ -8,6 +8,7 @@ import { PROJECT_ROLES } from '../../config/constants'
 import PrimaryButton from '../Buttons/PrimaryButton'
 import AlertModal from '../Modal/AlertModal'
 import { updateProjectMemberRole } from '../../services/projects'
+import { checkCanSelfAssignProjectRole } from '../../util/tc'
 
 const theme = {
   container: styles.modalContainer
@@ -23,11 +24,23 @@ function normalizeDisplayValue (value) {
   return normalizedValue || null
 }
 
+function normalizeUserId (userId) {
+  if (_.isNil(userId)) {
+    return null
+  }
+
+  const normalizedUserId = String(userId).trim()
+
+  return normalizedUserId || null
+}
+
 /**
  * Renders one project member or invite card with role controls.
  *
  * `user.handle` may be null/empty for some members; this component falls back
  * to `user.userId` and then `"(unknown user)"` when rendering labels/messages.
+ * Members may lower their own role, but this control blocks self-promotion to
+ * higher project privileges.
  */
 class UserCard extends Component {
   constructor (props) {
@@ -54,11 +67,20 @@ class UserCard extends Component {
   async updatePermission (newRole) {
     if (this.state.isUpdatingPermission) { return }
 
+    const { user, updateProjectMember, currentUserId } = this.props
+    const isCurrentUser = normalizeUserId(user.userId) === normalizeUserId(currentUserId)
+
+    if (isCurrentUser && !checkCanSelfAssignProjectRole(user.role, newRole)) {
+      this.setState({
+        showWarningModal: true,
+        permissionUpdateError: 'You cannot give yourself higher privileges in this project.'
+      })
+      return
+    }
+
     this.setState({
       isUpdatingPermission: true
     })
-
-    const { user, updateProjectMember } = this.props
 
     try {
       const newUserInfoRole = await updateProjectMemberRole(user.projectId, user.id, newRole)
@@ -75,8 +97,13 @@ class UserCard extends Component {
   }
 
   render () {
-    const { isInvite, user, onRemoveClick, isEditable } = this.props
+    const { isInvite, user, onRemoveClick, isEditable, currentUserId } = this.props
     const showRadioButtons = _.includes(_.values(PROJECT_ROLES), user.role)
+    const isCurrentUser = normalizeUserId(user.userId) === normalizeUserId(currentUserId)
+    const canAssignRole = role => (
+      isEditable &&
+      (!isCurrentUser || checkCanSelfAssignProjectRole(user.role, role))
+    )
     const userDisplayName = normalizeDisplayValue(user.handle) ||
       normalizeDisplayValue(user.userId) ||
       '(unknown user)'
@@ -125,9 +152,10 @@ class UserCard extends Component {
                     type='radio'
                     id={`read-${user.id}`}
                     checked={user.role === PROJECT_ROLES.READ}
+                    disabled={!canAssignRole(PROJECT_ROLES.READ)}
                     onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.READ)}
                   />
-                  <label className={cn({ [styles.isDisabled]: !isEditable })} htmlFor={`read-${user.id}`}>
+                  <label className={cn({ [styles.isDisabled]: !canAssignRole(PROJECT_ROLES.READ) })} htmlFor={`read-${user.id}`}>
                     <div>
                       Read
                     </div>
@@ -142,9 +170,10 @@ class UserCard extends Component {
                     type='radio'
                     id={`write-${user.id}`}
                     checked={user.role === PROJECT_ROLES.WRITE}
+                    disabled={!canAssignRole(PROJECT_ROLES.WRITE)}
                     onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.WRITE)}
                   />
-                  <label className={cn({ [styles.isDisabled]: !isEditable })} htmlFor={`write-${user.id}`}>
+                  <label className={cn({ [styles.isDisabled]: !canAssignRole(PROJECT_ROLES.WRITE) })} htmlFor={`write-${user.id}`}>
                     <div>
                       Write
                     </div>
@@ -159,9 +188,10 @@ class UserCard extends Component {
                     type='radio'
                     id={`full-access-${user.id}`}
                     checked={user.role === PROJECT_ROLES.MANAGER}
+                    disabled={!canAssignRole(PROJECT_ROLES.MANAGER)}
                     onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.MANAGER)}
                   />
-                  <label className={cn({ [styles.isDisabled]: !isEditable })} htmlFor={`full-access-${user.id}`}>
+                  <label className={cn({ [styles.isDisabled]: !canAssignRole(PROJECT_ROLES.MANAGER) })} htmlFor={`full-access-${user.id}`}>
                     <div>
                       Full Access
                     </div>
@@ -176,9 +206,10 @@ class UserCard extends Component {
                     type='radio'
                     id={`copilot-${user.id}`}
                     checked={user.role === PROJECT_ROLES.COPILOT}
+                    disabled={!canAssignRole(PROJECT_ROLES.COPILOT)}
                     onChange={(e) => e.target.checked && this.updatePermission(PROJECT_ROLES.COPILOT)}
                   />
-                  <label className={cn({ [styles.isDisabled]: !isEditable })} htmlFor={`copilot-${user.id}`}>
+                  <label className={cn({ [styles.isDisabled]: !canAssignRole(PROJECT_ROLES.COPILOT) })} htmlFor={`copilot-${user.id}`}>
                     <div>
                       Copilot
                     </div>
@@ -213,6 +244,7 @@ class UserCard extends Component {
 UserCard.propTypes = {
   isInvite: PropTypes.bool,
   user: PropTypes.object,
+  currentUserId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   updateProjectMember: PropTypes.func.isRequired,
   onRemoveClick: PropTypes.func.isRequired,
   isEditable: PropTypes.bool
