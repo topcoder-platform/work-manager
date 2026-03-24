@@ -12,6 +12,7 @@ import styles from './EngagementPayment.module.scss'
 import { serializeTentativeAssignmentDate } from '../../util/assignmentDates'
 import {
   calculateAssignmentRatePerWeek,
+  sanitizePositiveNumericInput,
   toPositiveInteger,
   toPositiveNumber
 } from '../../util/assignmentRates'
@@ -180,6 +181,17 @@ const normalizeAssignmentStatus = (status) => {
     .split(' ')
     .map((word) => (word ? `${word[0].toUpperCase()}${word.slice(1).toLowerCase()}` : ''))
     .join(' ')
+}
+
+/**
+ * Determines whether an assignment should remain selectable in the create
+ * payment modal.
+ *
+ * @param {Object|null|undefined} member Assignment row rendered on the page.
+ * @returns {boolean} `true` when the assignment is in the Assigned state.
+ */
+const isPaymentEligibleMember = (member) => {
+  return normalizeAssignmentStatus(getAssignmentStatus(member)).toLowerCase() === 'assigned'
 }
 
 const getAssignmentRate = (member) => {
@@ -353,6 +365,7 @@ const EngagementPayment = ({
   }
 
   const members = Array.isArray(assignedMembers) ? assignedMembers : []
+  const paymentEligibleMembers = members.filter(isPaymentEligibleMember)
   const hasMembers = members.length > 0
   const engagementTitle = engagement && engagement.title ? engagement.title : 'Engagement'
   const resolvedEngagementId = engagementId != null ? engagementId : (engagement && engagement.id != null ? engagement.id : null)
@@ -934,12 +947,12 @@ const EngagementPayment = ({
                 <label className={styles.editLabel}>Duration (in months)</label>
                 <input
                   className={styles.editInput}
-                  type='number'
-                  min='1'
-                  step='1'
+                  type='text'
+                  inputMode='decimal'
+                  pattern='[0-9.]*'
                   value={editDurationMonths}
                   onChange={(event) => {
-                    setEditDurationMonths(event.target.value)
+                    setEditDurationMonths(sanitizePositiveNumericInput(event.target.value))
                     if (editErrors.durationMonths) {
                       setEditErrors(prev => ({ ...prev, durationMonths: '' }))
                     }
@@ -956,12 +969,12 @@ const EngagementPayment = ({
                 </label>
                 <input
                   className={styles.editInput}
-                  type='number'
-                  min='0.01'
-                  step='0.01'
+                  type='text'
+                  inputMode='decimal'
+                  pattern='[0-9.]*'
                   value={editRatePerHour}
                   onChange={(event) => {
-                    setEditRatePerHour(event.target.value)
+                    setEditRatePerHour(sanitizePositiveNumericInput(event.target.value))
                     if (editErrors.ratePerHour) {
                       setEditErrors(prev => ({ ...prev, ratePerHour: '' }))
                     }
@@ -978,12 +991,12 @@ const EngagementPayment = ({
                 </label>
                 <input
                   className={styles.editInput}
-                  type='number'
-                  min='1'
-                  step='1'
+                  type='text'
+                  inputMode='decimal'
+                  pattern='[0-9.]*'
                   value={editStandardHoursPerWeek}
                   onChange={(event) => {
-                    setEditStandardHoursPerWeek(event.target.value)
+                    setEditStandardHoursPerWeek(sanitizePositiveNumericInput(event.target.value))
                     if (editErrors.standardHoursPerWeek) {
                       setEditErrors(prev => ({ ...prev, standardHoursPerWeek: '' }))
                     }
@@ -1052,7 +1065,7 @@ const EngagementPayment = ({
             engagement={engagement}
             projectName={projectName}
             member={selectedMember}
-            availableMembers={members}
+            availableMembers={paymentEligibleMembers.length ? paymentEligibleMembers : members}
             isProcessing={isPaymentProcessing}
             onSubmit={onSubmitPayment}
             onCancel={onClosePaymentModal}

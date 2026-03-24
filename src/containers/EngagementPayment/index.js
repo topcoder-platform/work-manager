@@ -13,7 +13,10 @@ import { loadProject } from '../../actions/projects'
 import { toastFailure, toastSuccess } from '../../util/toaster'
 import { fetchProfile } from '../../services/user'
 import { updateEngagementAssignmentStatus } from '../../services/engagements'
-import { normalizeEngagement as normalizeEngagementShape } from '../../util/engagements'
+import {
+  normalizeAssignmentStatus as normalizeAssignmentStatusValue,
+  normalizeEngagement as normalizeEngagementShape
+} from '../../util/engagements'
 
 const getEmptyEngagement = () => ({
   id: null,
@@ -70,6 +73,28 @@ const getAgreementRate = (member) => {
     member.rate ||
     member.agreedRate ||
     null
+}
+
+const getAssignmentStatus = (member) => {
+  if (!member || typeof member !== 'object') {
+    return ''
+  }
+  return member.assignmentStatus ||
+    member.assignment_status ||
+    member.assignmentState ||
+    member.status ||
+    ''
+}
+
+/**
+ * Determines whether the selected assignment has been offer-rejected and must
+ * be blocked from manual payment creation.
+ *
+ * @param {Object|null|undefined} member Assignment row selected in the payment flow.
+ * @returns {boolean} `true` when the assignment status is `OFFER_REJECTED`.
+ */
+const isOfferRejectedAssignment = (member) => {
+  return normalizeAssignmentStatusValue(getAssignmentStatus(member)) === 'OFFER_REJECTED'
 }
 
 const normalizeMemberInfo = (member, index, memberIdLookup = {}) => {
@@ -393,6 +418,10 @@ class EngagementPaymentContainer extends Component {
   }
 
   onOpenPaymentModal (member) {
+    if (isOfferRejectedAssignment(member)) {
+      toastFailure('Error', 'Offer rejected members cannot receive payments')
+      return
+    }
     const assignmentId = _.get(member, 'assignmentId', null)
     if (_.isNil(assignmentId) || assignmentId === '') {
       toastFailure('Error', 'Assignment ID is required to create a payment')
@@ -426,6 +455,10 @@ class EngagementPaymentContainer extends Component {
     const memberToPay = member || selectedMember
     if (!memberToPay) {
       toastFailure('Error', 'Member is required to create a payment')
+      return
+    }
+    if (isOfferRejectedAssignment(memberToPay)) {
+      toastFailure('Error', 'Offer rejected members cannot receive payments')
       return
     }
     const memberHandle = getMemberHandle(memberToPay)

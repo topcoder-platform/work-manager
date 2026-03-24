@@ -16,6 +16,7 @@ import { JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
 import { suggestProfiles } from '../../services/user'
 import {
   calculateAssignmentRatePerWeek,
+  sanitizePositiveNumericInput,
   toPositiveInteger,
   toPositiveNumber
 } from '../../util/assignmentRates'
@@ -27,7 +28,8 @@ import { toastSuccess, toastFailure } from '../../util/toaster'
 import styles from './EngagementEditor.module.scss'
 
 const ANY_OPTION = { label: 'Any', value: 'Any' }
-const INPUT_DATE_FORMAT = 'MM/DD/YYYY'
+// The shared DateInput uses date-fns tokens; uppercase moment-style tokens prevent the calendar from opening.
+const INPUT_DATE_FORMAT = 'MM/dd/yyyy'
 const INPUT_TIME_FORMAT = false
 const ANTICIPATED_START_OPTIONS = [
   { label: 'Immediate', value: 'Immediate' },
@@ -417,7 +419,7 @@ const EngagementEditor = ({
     const normalizedOtherRemarks = assignOtherRemarks != null ? String(assignOtherRemarks).trim() : ''
 
     if (!parsedStart || !parsedStart.isValid()) {
-      nextErrors.startDate = 'Billing start date is required.'
+      nextErrors.startDate = 'Engagement start date is required.'
     }
     if (parsedDurationMonths === null) {
       nextErrors.durationMonths = 'Duration must be a positive whole number.'
@@ -496,7 +498,7 @@ const EngagementEditor = ({
             <div className={styles.acceptGrid}>
               <div className={styles.acceptField}>
                 <label className={styles.acceptLabel}>
-                  Billing start date
+                  Engagement start date
                   <span className={styles.acceptRequired}>*</span>
                 </label>
                 <DateInput
@@ -504,6 +506,7 @@ const EngagementEditor = ({
                   value={assignStartDate}
                   dateFormat={INPUT_DATE_FORMAT}
                   timeFormat={INPUT_TIME_FORMAT}
+                  preventViewportOverflow
                   onChange={(value) => {
                     setAssignStartDate(value)
                     if (assignErrors.startDate) {
@@ -522,12 +525,12 @@ const EngagementEditor = ({
                 </label>
                 <input
                   className={styles.acceptInput}
-                  type='number'
-                  min='1'
-                  step='1'
+                  type='text'
+                  inputMode='decimal'
+                  pattern='[0-9.]*'
                   value={assignDurationMonths}
                   onChange={(event) => {
-                    setAssignDurationMonths(event.target.value)
+                    setAssignDurationMonths(sanitizePositiveNumericInput(event.target.value))
                     if (assignErrors.durationMonths) {
                       setAssignErrors(prev => ({ ...prev, durationMonths: '' }))
                     }
@@ -544,12 +547,12 @@ const EngagementEditor = ({
                 </label>
                 <input
                   className={styles.acceptInput}
-                  type='number'
-                  min='0.01'
-                  step='0.01'
+                  type='text'
+                  inputMode='decimal'
+                  pattern='[0-9.]*'
                   value={assignRatePerHour}
                   onChange={(event) => {
-                    setAssignRatePerHour(event.target.value)
+                    setAssignRatePerHour(sanitizePositiveNumericInput(event.target.value))
                     if (assignErrors.ratePerHour) {
                       setAssignErrors(prev => ({ ...prev, ratePerHour: '' }))
                     }
@@ -566,12 +569,12 @@ const EngagementEditor = ({
                 </label>
                 <input
                   className={styles.acceptInput}
-                  type='number'
-                  min='1'
-                  step='1'
+                  type='text'
+                  inputMode='decimal'
+                  pattern='[0-9.]*'
                   value={assignStandardHoursPerWeek}
                   onChange={(event) => {
-                    setAssignStandardHoursPerWeek(event.target.value)
+                    setAssignStandardHoursPerWeek(sanitizePositiveNumericInput(event.target.value))
                     if (assignErrors.standardHoursPerWeek) {
                       setAssignErrors(prev => ({ ...prev, standardHoursPerWeek: '' }))
                     }

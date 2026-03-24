@@ -27,6 +27,30 @@ export const toPositiveInteger = (value) => {
 }
 
 /**
+ * Removes non-numeric characters from assignment form input while preserving a
+ * single decimal separator.
+ *
+ * @param {string|number|null|undefined} value Raw input field value.
+ * @returns {string} Sanitized numeric string suitable for controlled inputs.
+ */
+export const sanitizePositiveNumericInput = (value) => {
+  if (value == null) {
+    return ''
+  }
+
+  const numeric = String(value).replace(/[^0-9.]/g, '')
+  const firstDecimalIndex = numeric.indexOf('.')
+
+  if (firstDecimalIndex === -1) {
+    return numeric
+  }
+
+  return `${numeric.slice(0, firstDecimalIndex + 1)}${numeric
+    .slice(firstDecimalIndex + 1)
+    .replace(/\./g, '')}`
+}
+
+/**
  * Calculates the assignment rate per week from hourly rate and standard hours.
  *
  * @param {string|number|null|undefined} ratePerHour Hourly assignment rate.

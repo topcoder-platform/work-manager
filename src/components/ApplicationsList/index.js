@@ -15,6 +15,7 @@ import { PROFILE_URL } from '../../config/constants'
 import { serializeTentativeAssignmentDate } from '../../util/assignmentDates'
 import {
   calculateAssignmentRatePerWeek,
+  sanitizePositiveNumericInput,
   toPositiveInteger,
   toPositiveNumber
 } from '../../util/assignmentRates'
@@ -436,12 +437,12 @@ const ApplicationsList = ({
                 </label>
                 <input
                   className={styles.acceptInput}
-                  type='number'
-                  min='1'
-                  step='1'
+                  type='text'
+                  inputMode='decimal'
+                  pattern='[0-9.]*'
                   value={acceptDurationMonths}
                   onChange={(event) => {
-                    setAcceptDurationMonths(event.target.value)
+                    setAcceptDurationMonths(sanitizePositiveNumericInput(event.target.value))
                     if (acceptErrors.durationMonths) {
                       setAcceptErrors(prev => ({ ...prev, durationMonths: '' }))
                     }
@@ -458,12 +459,12 @@ const ApplicationsList = ({
                 </label>
                 <input
                   className={styles.acceptInput}
-                  type='number'
-                  min='0.01'
-                  step='0.01'
+                  type='text'
+                  inputMode='decimal'
+                  pattern='[0-9.]*'
                   value={acceptRatePerHour}
                   onChange={(event) => {
-                    setAcceptRatePerHour(event.target.value)
+                    setAcceptRatePerHour(sanitizePositiveNumericInput(event.target.value))
                     if (acceptErrors.ratePerHour) {
                       setAcceptErrors(prev => ({ ...prev, ratePerHour: '' }))
                     }
@@ -480,12 +481,12 @@ const ApplicationsList = ({
                 </label>
                 <input
                   className={styles.acceptInput}
-                  type='number'
-                  min='1'
-                  step='1'
+                  type='text'
+                  inputMode='decimal'
+                  pattern='[0-9.]*'
                   value={acceptStandardHoursPerWeek}
                   onChange={(event) => {
-                    setAcceptStandardHoursPerWeek(event.target.value)
+                    setAcceptStandardHoursPerWeek(sanitizePositiveNumericInput(event.target.value))
                     if (acceptErrors.standardHoursPerWeek) {
                       setAcceptErrors(prev => ({ ...prev, standardHoursPerWeek: '' }))
                     }
