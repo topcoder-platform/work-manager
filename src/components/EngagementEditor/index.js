@@ -21,7 +21,10 @@ import {
   toPositiveNumber
 } from '../../util/assignmentRates'
 import { getCountableAssignments } from '../../util/engagements'
-import { serializeTentativeAssignmentDate } from '../../util/assignmentDates'
+import {
+  deserializeTentativeAssignmentDate,
+  serializeTentativeAssignmentDate
+} from '../../util/assignmentDates'
 import { formatTimeZoneLabel, formatTimeZoneList } from '../../util/timezones'
 import { autowriteDescription } from '../../services/workflowAI'
 import { toastSuccess, toastFailure } from '../../util/toaster'
@@ -361,7 +364,9 @@ const EngagementEditor = ({
     const normalizedHandle = handle ? handle.toLowerCase() : null
     const existingDetails = normalizedHandle ? assignmentDetailsByHandle[normalizedHandle] : null
     setAssignModal({ index, handle })
-    setAssignStartDate(existingDetails ? existingDetails.startDate || null : null)
+    setAssignStartDate(existingDetails
+      ? deserializeTentativeAssignmentDate(existingDetails.startDate)
+      : null)
     setAssignDurationMonths(existingDetails ? existingDetails.durationMonths || '' : '')
     setAssignRatePerHour(existingDetails ? existingDetails.ratePerHour || '' : '')
     setAssignStandardHoursPerWeek(existingDetails ? existingDetails.standardHoursPerWeek || '' : '')

@@ -9,7 +9,10 @@ import Modal from '../Modal'
 import PaymentForm from '../PaymentForm'
 import DateInput from '../DateInput'
 import styles from './EngagementPayment.module.scss'
-import { serializeTentativeAssignmentDate } from '../../util/assignmentDates'
+import {
+  deserializeTentativeAssignmentDate,
+  serializeTentativeAssignmentDate
+} from '../../util/assignmentDates'
 import {
   calculateAssignmentRatePerWeek,
   sanitizePositiveNumericInput,
@@ -279,12 +282,9 @@ const getAssignmentRemarks = (member) => {
  */
 const createEditAssignmentState = (member) => {
   const startDate = getAssignmentDate(member, 'start')
-  const parsedStartDate = startDate ? new Date(startDate) : null
 
   return {
-    startDate: parsedStartDate && !Number.isNaN(parsedStartDate.getTime())
-      ? parsedStartDate
-      : (startDate || null),
+    startDate: deserializeTentativeAssignmentDate(startDate),
     durationMonths: getDurationMonths(member) !== '' && getDurationMonths(member) != null
       ? String(getDurationMonths(member))
       : '',
