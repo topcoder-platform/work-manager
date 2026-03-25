@@ -16,8 +16,10 @@ import { JOB_ROLE_OPTIONS, JOB_WORKLOAD_OPTIONS } from '../../config/constants'
 import { suggestProfiles } from '../../services/user'
 import {
   calculateAssignmentRatePerWeek,
+  formatAssignmentCurrency,
   sanitizePositiveNumericInput,
   toPositiveInteger,
+  toPositiveNumberWithMaxDecimalPlaces,
   toPositiveNumber
 } from '../../util/assignmentRates'
 import { getCountableAssignments } from '../../util/engagements'
@@ -420,7 +422,10 @@ const EngagementEditor = ({
     const parsedStart = assignStartDate ? moment(assignStartDate) : null
     const parsedDurationMonths = toPositiveInteger(assignDurationMonths)
     const parsedRatePerHour = toPositiveNumber(assignRatePerHour)
-    const parsedStandardHoursPerWeek = toPositiveInteger(assignStandardHoursPerWeek)
+    const parsedStandardHoursPerWeek = toPositiveNumberWithMaxDecimalPlaces(
+      assignStandardHoursPerWeek,
+      2
+    )
     const normalizedOtherRemarks = assignOtherRemarks != null ? String(assignOtherRemarks).trim() : ''
 
     if (!parsedStart || !parsedStart.isValid()) {
@@ -433,7 +438,7 @@ const EngagementEditor = ({
       nextErrors.ratePerHour = 'Rate per hour must be a positive number.'
     }
     if (parsedStandardHoursPerWeek === null) {
-      nextErrors.standardHoursPerWeek = 'Standard hours per week must be a positive whole number.'
+      nextErrors.standardHoursPerWeek = 'Standard hours per week must be a positive number with up to 2 decimal places.'
     }
 
     if (Object.keys(nextErrors).length > 0) {
@@ -579,7 +584,9 @@ const EngagementEditor = ({
                   pattern='[0-9.]*'
                   value={assignStandardHoursPerWeek}
                   onChange={(event) => {
-                    setAssignStandardHoursPerWeek(sanitizePositiveNumericInput(event.target.value))
+                    setAssignStandardHoursPerWeek(
+                      sanitizePositiveNumericInput(event.target.value, 2)
+                    )
                     if (assignErrors.standardHoursPerWeek) {
                       setAssignErrors(prev => ({ ...prev, standardHoursPerWeek: '' }))
                     }
@@ -1102,6 +1109,12 @@ const EngagementEditor = ({
               const assignmentDetail = selectedHandle
                 ? assignmentDetailsByHandle[selectedHandle.toLowerCase()]
                 : null
+              const assignmentRatePerHour = assignmentDetail && assignmentDetail.ratePerHour != null && assignmentDetail.ratePerHour !== ''
+                ? formatAssignmentCurrency(assignmentDetail.ratePerHour) || assignmentDetail.ratePerHour
+                : '-'
+              const assignmentRatePerWeek = assignmentDetail && assignmentDetail.agreementRate != null && assignmentDetail.agreementRate !== ''
+                ? formatAssignmentCurrency(assignmentDetail.agreementRate) || assignmentDetail.agreementRate
+                : '-'
               const hasAssignmentDetail = Boolean(
                 assignmentDetail &&
                 (
@@ -1184,7 +1197,7 @@ const EngagementEditor = ({
                           <span>
                             <span className={styles.assignmentDetailLabel}>Rate / hr:</span>
                             {' '}
-                            {assignmentDetail.ratePerHour || '-'}
+                            {assignmentRatePerHour}
                           </span>
                           <span>
                             <span className={styles.assignmentDetailLabel}>Std hrs / week:</span>
@@ -1194,7 +1207,7 @@ const EngagementEditor = ({
                           <span>
                             <span className={styles.assignmentDetailLabel}>Rate / week:</span>
                             {' '}
-                            {assignmentDetail.agreementRate || '-'}
+                            {assignmentRatePerWeek}
                           </span>
                         </div>
                         <button

@@ -15,8 +15,10 @@ import {
 } from '../../util/assignmentDates'
 import {
   calculateAssignmentRatePerWeek,
+  formatAssignmentCurrency,
   sanitizePositiveNumericInput,
   toPositiveInteger,
+  toPositiveNumberWithMaxDecimalPlaces,
   toPositiveNumber
 } from '../../util/assignmentRates'
 
@@ -24,20 +26,11 @@ import {
 const INPUT_DATE_FORMAT = 'MM/dd/yyyy'
 const INPUT_TIME_FORMAT = false
 
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD'
-})
-
 const formatCurrency = (value) => {
   if (value == null || value === '') {
     return '-'
   }
-  const parsed = Number(value)
-  if (Number.isNaN(parsed)) {
-    return String(value)
-  }
-  return currencyFormatter.format(parsed)
+  return formatAssignmentCurrency(value) || '-'
 }
 
 const formatDate = (value) => {
@@ -485,7 +478,10 @@ const EngagementPayment = ({
       ? toPositiveInteger(editDurationMonths)
       : null
     const parsedRatePerHour = toPositiveNumber(editRatePerHour)
-    const parsedStandardHoursPerWeek = toPositiveInteger(editStandardHoursPerWeek)
+    const parsedStandardHoursPerWeek = toPositiveNumberWithMaxDecimalPlaces(
+      editStandardHoursPerWeek,
+      2
+    )
     const normalizedOtherRemarks = editOtherRemarks != null
       ? String(editOtherRemarks).trim()
       : ''
@@ -500,7 +496,7 @@ const EngagementPayment = ({
       nextErrors.ratePerHour = 'Rate per hour must be a positive number.'
     }
     if (parsedStandardHoursPerWeek === null) {
-      nextErrors.standardHoursPerWeek = 'Standard hours per week must be a positive whole number.'
+      nextErrors.standardHoursPerWeek = 'Standard hours per week must be a positive number with up to 2 decimal places.'
     }
 
     if (Object.keys(nextErrors).length > 0) {
@@ -996,7 +992,9 @@ const EngagementPayment = ({
                   pattern='[0-9.]*'
                   value={editStandardHoursPerWeek}
                   onChange={(event) => {
-                    setEditStandardHoursPerWeek(sanitizePositiveNumericInput(event.target.value))
+                    setEditStandardHoursPerWeek(
+                      sanitizePositiveNumericInput(event.target.value, 2)
+                    )
                     if (editErrors.standardHoursPerWeek) {
                       setEditErrors(prev => ({ ...prev, standardHoursPerWeek: '' }))
                     }

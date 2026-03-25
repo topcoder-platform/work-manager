@@ -28,7 +28,11 @@ import {
   toEngagementWorkloadApi,
   toEngagementStatusApi
 } from '../../util/engagements'
-import { calculateAssignmentRatePerWeek, toPositiveInteger } from '../../util/assignmentRates'
+import {
+  calculateAssignmentRatePerWeek,
+  toPositiveInteger,
+  toPositiveNumberWithMaxDecimalPlaces
+} from '../../util/assignmentRates'
 
 const getEmptyEngagement = () => ({
   id: null,
@@ -533,7 +537,10 @@ class EngagementEditorContainer extends Component {
       const detail = assignmentDetails[index] || {}
       const normalizedRatePerHour = detail.ratePerHour != null ? String(detail.ratePerHour).trim() : ''
       const normalizedDurationMonths = toPositiveInteger(detail.durationMonths)
-      const normalizedStandardHoursPerWeek = toPositiveInteger(detail.standardHoursPerWeek)
+      const normalizedStandardHoursPerWeek = toPositiveNumberWithMaxDecimalPlaces(
+        detail.standardHoursPerWeek,
+        2
+      )
       const normalizedRate = calculateAssignmentRatePerWeek(
         normalizedRatePerHour,
         normalizedStandardHoursPerWeek

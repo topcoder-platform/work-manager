@@ -17,6 +17,7 @@ import {
   calculateAssignmentRatePerWeek,
   sanitizePositiveNumericInput,
   toPositiveInteger,
+  toPositiveNumberWithMaxDecimalPlaces,
   toPositiveNumber
 } from '../../util/assignmentRates'
 import { isCapacityLimitError } from '../../util/applicationErrors'
@@ -311,7 +312,10 @@ const ApplicationsList = ({
     const parsedStart = acceptStartDate ? moment(acceptStartDate) : null
     const parsedDurationMonths = toPositiveInteger(acceptDurationMonths)
     const parsedRatePerHour = toPositiveNumber(acceptRatePerHour)
-    const parsedStandardHoursPerWeek = toPositiveInteger(acceptStandardHoursPerWeek)
+    const parsedStandardHoursPerWeek = toPositiveNumberWithMaxDecimalPlaces(
+      acceptStandardHoursPerWeek,
+      2
+    )
     const normalizedOtherRemarks = acceptOtherRemarks != null ? String(acceptOtherRemarks).trim() : ''
 
     if (!parsedStart || !parsedStart.isValid()) {
@@ -324,7 +328,7 @@ const ApplicationsList = ({
       nextErrors.ratePerHour = 'Rate per hour must be a positive number.'
     }
     if (parsedStandardHoursPerWeek === null) {
-      nextErrors.standardHoursPerWeek = 'Standard hours per week must be a positive whole number.'
+      nextErrors.standardHoursPerWeek = 'Standard hours per week must be a positive number with up to 2 decimal places.'
     }
 
     if (Object.keys(nextErrors).length > 0) {
@@ -486,7 +490,9 @@ const ApplicationsList = ({
                   pattern='[0-9.]*'
                   value={acceptStandardHoursPerWeek}
                   onChange={(event) => {
-                    setAcceptStandardHoursPerWeek(sanitizePositiveNumericInput(event.target.value))
+                    setAcceptStandardHoursPerWeek(
+                      sanitizePositiveNumericInput(event.target.value, 2)
+                    )
                     if (acceptErrors.standardHoursPerWeek) {
                       setAcceptErrors(prev => ({ ...prev, standardHoursPerWeek: '' }))
                     }
