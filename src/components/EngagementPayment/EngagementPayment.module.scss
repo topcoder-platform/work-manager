@@ -101,6 +101,13 @@
   flex-wrap: wrap;
 }
 
+.assignmentStatusGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .memberHandle {
   font-size: 16px;
   font-weight: 600;
@@ -118,6 +125,35 @@
   border: 1px solid $tc-gray-30;
   text-transform: none;
   white-space: nowrap;
+}
+
+.editAssignmentButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid $tc-gray-30;
+  border-radius: 50%;
+  background: $white;
+  color: $tc-gray-60;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.editAssignmentButton:hover:not(:disabled) {
+  background: $tc-gray-10;
+  border-color: $tc-gray-40;
+  color: $tc-gray-80;
+}
+
+.editAssignmentButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.editAssignmentIcon {
+  font-size: 11px;
 }
 
 .memberNote {
@@ -147,10 +183,51 @@
   font-weight: 600;
 }
 
+.requiredIndicator {
+  color: $tc-red;
+  margin-left: 2px;
+}
+
 .memberMetaValue {
   font-size: 13px;
   color: $tc-gray-80;
   font-weight: 600;
+}
+
+.mutedMetaValue {
+  font-size: 13px;
+  color: $tc-gray-50;
+  font-weight: 500;
+}
+
+.requiredMetaValue {
+  font-size: 13px;
+  color: $tc-red;
+  font-weight: 600;
+}
+
+.remarksButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid $tc-gray-30;
+  background: $tc-gray-10;
+  color: $tc-gray-70;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+.remarksButton:hover {
+  background: $tc-gray-20;
+  border-color: $tc-gray-40;
+  color: $tc-gray-80;
+}
+
+.remarksIcon {
+  font-size: 13px;
 }
 
 .memberTerminationReason {
@@ -182,6 +259,20 @@
 }
 
 .historyModal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.editModal {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 360px;
+}
+
+.remarksModal {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -257,10 +348,52 @@
   color: $tc-gray-90;
 }
 
+.editTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: $challenges-title;
+}
+
+.remarksTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: $tc-gray-90;
+}
+
 .historyModalSubtitle {
   font-size: 13px;
   color: $tc-gray-60;
   margin-top: 4px;
+}
+
+.editSubtitle {
+  font-size: 13px;
+  color: $tc-gray-70;
+}
+
+.remarksSubtitle {
+  font-size: 13px;
+  color: $tc-gray-60;
+  margin-top: -8px;
+}
+
+.remarksContent {
+  font-size: 13px;
+  color: $tc-gray-80;
+  line-height: 1.5;
+  white-space: pre-line;
+  word-break: break-word;
+}
+
+.remarksActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.remarksCloseButton {
+  width: auto;
+  min-width: 120px;
+  flex: 0 0 auto;
 }
 
 .historyModalBody {
@@ -314,6 +447,12 @@
   white-space: pre-line;
 }
 
+.paymentHoursWorked {
+  font-size: 12px;
+  color: $tc-gray-70;
+  line-height: 1.4;
+}
+
 .paymentMeta {
   display: flex;
   align-items: center;
@@ -342,6 +481,84 @@
   align-items: center;
   gap: 8px;
   color: $tc-gray-60;
+}
+
+.editGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.editField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.editFieldFull {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  grid-column: 1 / -1;
+}
+
+.editLabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: $tc-gray-60;
+}
+
+.editRequired {
+  color: $tc-red;
+  margin-left: 4px;
+}
+
+.editDateInput {
+  :global(.rdt) {
+    width: 100%;
+  }
+
+  :global(.form-control) {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid $tc-gray-20;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  :global(.rdtPicker) {
+    z-index: 1100;
+  }
+}
+
+.editInput {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid $tc-gray-20;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.editTextarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid $tc-gray-20;
+  border-radius: 4px;
+  font-size: 14px;
+  resize: vertical;
+}
+
+.editError {
+  color: $tc-red;
+  font-size: 12px;
+}
+
+.editActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
 }
 
 .paymentError {
@@ -377,6 +594,10 @@
   }
 
   .memberInfo {
+    width: 100%;
+  }
+
+  .assignmentStatusGroup {
     width: 100%;
   }
 

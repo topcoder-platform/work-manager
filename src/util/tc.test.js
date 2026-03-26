@@ -6,6 +6,10 @@ import {
   checkCanCreateProject,
   checkCanManageProject,
   checkCanManageProjectBillingAccount,
+  checkCanViewProjectAssets,
+  checkIsProjectMember,
+  checkManager,
+  checkTalentManager,
   checkIsUserInvitedToProject,
   getProjectMemberByUserId
 } from './tc'
@@ -90,6 +94,39 @@ describe('checkCanManageProjectBillingAccount', () => {
   })
 })
 
+describe('checkTalentManager', () => {
+  beforeEach(() => {
+    decodeToken.mockReset()
+  })
+
+  it('treats talent-manager tokens as talent-manager access', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      roles: ['talent manager']
+    })
+
+    expect(checkTalentManager('token')).toBe(true)
+  })
+
+  it('treats topcoder-talent-manager tokens as talent-manager access', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      roles: ['topcoder talent manager']
+    })
+
+    expect(checkTalentManager('token')).toBe(true)
+  })
+
+  it('does not treat project-manager tokens as talent-manager access', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      roles: ['project manager']
+    })
+
+    expect(checkTalentManager('token')).toBe(false)
+  })
+})
+
 describe('checkCanManageProject', () => {
   beforeEach(() => {
     decodeToken.mockReset()
@@ -125,6 +162,125 @@ describe('checkCanManageProject', () => {
         }]
       })
     ).toBe(false)
+  })
+
+  it('allows talent-manager roles to manage projects when they have full access', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      roles: ['talent manager']
+    })
+
+    expect(
+      checkCanManageProject('token', {
+        members: [{
+          userId: '1001',
+          role: PROJECT_ROLES.MANAGER
+        }]
+      })
+    ).toBe(true)
+  })
+})
+
+describe('checkIsProjectMember', () => {
+  beforeEach(() => {
+    decodeToken.mockReset()
+  })
+
+  it('returns true when the authenticated user is on the project member list', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      roles: ['topcoder user']
+    })
+
+    expect(checkIsProjectMember('token', {
+      members: [{
+        userId: '1001',
+        role: PROJECT_ROLES.WRITE
+      }]
+    })).toBe(true)
+  })
+
+  it('returns false when the authenticated user is not on the project member list', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      roles: ['topcoder user']
+    })
+
+    expect(checkIsProjectMember('token', {
+      members: [{
+        userId: '1002',
+        role: PROJECT_ROLES.WRITE
+      }]
+    })).toBe(false)
+  })
+})
+
+describe('checkCanViewProjectAssets', () => {
+  beforeEach(() => {
+    decodeToken.mockReset()
+  })
+
+  it('allows administrators to view project assets', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      roles: ['administrator']
+    })
+
+    expect(checkCanViewProjectAssets('token', {
+      members: []
+    })).toBe(true)
+  })
+
+  it('allows project members to view project assets even without elevated global roles', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      roles: ['topcoder user']
+    })
+
+    expect(checkCanViewProjectAssets('token', {
+      members: [{
+        userId: '1001',
+        role: PROJECT_ROLES.READ
+      }]
+    })).toBe(true)
+  })
+
+  it('blocks non-members without admin or copilot access from viewing project assets', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      roles: ['topcoder user']
+    })
+
+    expect(checkCanViewProjectAssets('token', {
+      members: [{
+        userId: '1002',
+        role: PROJECT_ROLES.READ
+      }]
+    })).toBe(false)
+  })
+})
+
+describe('checkManager', () => {
+  beforeEach(() => {
+    decodeToken.mockReset()
+  })
+
+  it('treats talent-manager tokens as manager-tier access', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      roles: ['talent manager']
+    })
+
+    expect(checkManager('token')).toBe(true)
+  })
+
+  it('treats topcoder-talent-manager tokens as manager-tier access', () => {
+    decodeToken.mockReturnValue({
+      userId: '1001',
+      roles: ['topcoder talent manager']
+    })
+
+    expect(checkManager('token')).toBe(true)
   })
 })
 

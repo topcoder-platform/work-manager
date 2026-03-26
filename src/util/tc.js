@@ -26,6 +26,13 @@ const TALENT_MANAGER_ROLES = [
   'topcoder talent manager'
 ]
 
+const PROJECT_ROLE_PRIVILEGE_LEVELS = {
+  [PROJECT_ROLES.READ]: 0,
+  [PROJECT_ROLES.WRITE]: 1,
+  [PROJECT_ROLES.MANAGER]: 2,
+  [PROJECT_ROLES.COPILOT]: 3
+}
+
 const normalizeUserId = (userId) => {
   if (_.isNil(userId)) {
     return null
@@ -345,6 +352,49 @@ export const getProjectMemberRole = (project, userId) => {
 }
 
 /**
+ * Returns the privilege level for a project role used by Work Manager.
+ *
+ * Higher numbers represent broader project permissions. Unknown roles return
+ * `null` so callers can fail closed when comparing permissions.
+ *
+ * @param {string} role Project role identifier from the API/UI.
+ * @returns {number|null} Numeric privilege level or `null` for unknown roles.
+ */
+export const getProjectRolePrivilegeLevel = (role) => {
+  if (_.isNil(role)) {
+    return null
+  }
+
+  const normalizedRole = `${role}`.trim().toLowerCase()
+
+  return Object.prototype.hasOwnProperty.call(PROJECT_ROLE_PRIVILEGE_LEVELS, normalizedRole)
+    ? PROJECT_ROLE_PRIVILEGE_LEVELS[normalizedRole]
+    : null
+}
+
+/**
+ * Checks whether a member may assign themselves `nextRole` without increasing
+ * their project privileges.
+ *
+ * This keeps self-service role edits limited to the same role or a downgrade,
+ * while blocking self-promotion to broader project access.
+ *
+ * @param {string} currentRole Current project role for the member.
+ * @param {string} nextRole Requested replacement project role.
+ * @returns {boolean} `true` when the new role is the same privilege or lower.
+ */
+export const checkCanSelfAssignProjectRole = (currentRole, nextRole) => {
+  const currentRolePrivilegeLevel = getProjectRolePrivilegeLevel(currentRole)
+  const nextRolePrivilegeLevel = getProjectRolePrivilegeLevel(nextRole)
+
+  if (_.isNil(currentRolePrivilegeLevel) || _.isNil(nextRolePrivilegeLevel)) {
+    return false
+  }
+
+  return nextRolePrivilegeLevel <= currentRolePrivilegeLevel
+}
+
+/**
  * Returns the matching project member for the provided user id, if present.
  *
  * @param {Object|Object[]} projectDetail Project detail payload with `members`,
@@ -473,6 +523,19 @@ export const checkIsUserInvitedToProject = (token, project) => {
       )
     )
   ))
+}
+
+export const getRoleNameForReviewer = (reviewer, challengePhases = []) => {
+  const phase = (challengePhases || []).find(p => (p.id === reviewer.phaseId) || (p.phaseId === reviewer.phaseId))
+  const phaseName = (phase && phase.name) ? phase.name.toLowerCase() : ''
+  const normalizedPhaseName = phaseName.replace(/[-\s]/g, '')
+
+  if (phaseName.includes('iterative review') || normalizedPhaseName === 'iterativereview') return 'Iterative Reviewer'
+  if (normalizedPhaseName === 'approval') return 'Approver'
+  if (normalizedPhaseName === 'checkpointscreening') return 'Checkpoint Screener'
+  if (normalizedPhaseName === 'checkpointreview') return 'Checkpoint Reviewer'
+  if (normalizedPhaseName === 'screening') return 'Screener'
+  return 'Reviewer'
 }
 
 /**

@@ -4,7 +4,6 @@ import {
   fetchEngagement,
   createEngagement as createEngagementAPI,
   updateEngagement as updateEngagementAPI,
-  patchEngagement,
   deleteEngagement as deleteEngagementAPI
 } from '../services/engagements'
 import { fetchSkillsByIds } from '../services/skills'
@@ -345,7 +344,10 @@ export function updateEngagementDetails (engagementId, engagementDetails, projec
 }
 
 /**
- * Partially updates engagement details
+ * Partially updates engagement details.
+ *
+ * The engagements API currently accepts partial engagement payloads through the
+ * `PUT :id` update route rather than a dedicated `PATCH :id` handler.
  * @param {String|Number} engagementId
  * @param {Object} partialDetails
  * @param {String|Number} projectId
@@ -358,7 +360,7 @@ export function partiallyUpdateEngagementDetails (engagementId, partialDetails, 
     })
 
     try {
-      const response = await patchEngagement(engagementId, partialDetails)
+      const response = await updateEngagementAPI(engagementId, partialDetails)
       const [hydratedEngagement] = await hydrateEngagementSkills([_.get(response, 'data', {})])
       const updatedDetails = normalizeEngagement(hydratedEngagement || {})
       return dispatch({

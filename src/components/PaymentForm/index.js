@@ -31,7 +31,14 @@ const getAgreementRate = (member) => {
     null
 }
 
-const normalizeAmountValue = (value) => {
+/**
+ * Normalizes a positive numeric value for input display.
+ *
+ * @param {string|number|null|undefined} value Value from assignment or payment data.
+ * @returns {string} Normalized numeric string, or an empty string when the
+ * value is missing or invalid.
+ */
+const normalizePositiveValue = (value) => {
   if (value == null || value === '') {
     return ''
   }
@@ -53,7 +60,86 @@ const normalizeAmountValue = (value) => {
   return parsed.toString()
 }
 
-const getDefaultAmount = (member) => normalizeAmountValue(getAgreementRate(member))
+/**
+ * Reads the assignment standard hours value from a member object.
+ *
+ * @param {Object|null|undefined} member Selected assignment/member record.
+ * @returns {string|number|null} Standard hours per week, when available.
+ */
+const getStandardHoursPerWeek = (member) => {
+  if (!member || typeof member !== 'object') {
+    return null
+  }
+
+  return member.standardHoursPerWeek != null
+    ? member.standardHoursPerWeek
+    : member.standard_hours_per_week != null
+      ? member.standard_hours_per_week
+      : null
+}
+
+/**
+ * Resolves the hourly assignment rate for payment calculation.
+ *
+ * @param {Object|null|undefined} member Selected assignment/member record.
+ * @returns {number|null} Hourly pay rate, or `null` when it cannot be derived.
+ */
+const getRatePerHour = (member) => {
+  if (!member || typeof member !== 'object') {
+    return null
+  }
+
+  const directRate = Number(member.ratePerHour || member.rate_per_hour)
+  if (Number.isFinite(directRate) && directRate > 0) {
+    return directRate
+  }
+
+  const standardHours = Number(getStandardHoursPerWeek(member))
+  const agreementRate = Number(getAgreementRate(member))
+  if (
+    Number.isFinite(standardHours) &&
+    standardHours > 0 &&
+    Number.isFinite(agreementRate) &&
+    agreementRate > 0
+  ) {
+    return agreementRate / standardHours
+  }
+
+  return null
+}
+
+/**
+ * Calculates the payment amount from hours worked and hourly pay rate.
+ *
+ * @param {string|number|null|undefined} hoursWorked Worked hours for the payment week.
+ * @param {number|null} ratePerHour Assignment hourly pay rate.
+ * @returns {string} Calculated amount with two decimal places, or an empty
+ * string when the inputs are incomplete or invalid.
+ */
+const calculatePaymentAmount = (hoursWorked, ratePerHour) => {
+  const parsedHoursWorked = Number(hoursWorked)
+
+  if (
+    !Number.isFinite(parsedHoursWorked) ||
+    parsedHoursWorked <= 0 ||
+    !Number.isFinite(ratePerHour) ||
+    ratePerHour <= 0
+  ) {
+    return ''
+  }
+
+  return (parsedHoursWorked * ratePerHour).toFixed(2)
+}
+
+/**
+ * Reads the default hours-worked value from the selected assignment.
+ *
+ * @param {Object|null|undefined} member Selected assignment/member record.
+ * @returns {string} Default hours-worked input value.
+ */
+const getDefaultHoursWorked = (member) => normalizePositiveValue(
+  getStandardHoursPerWeek(member)
+)
 
 const normalizeMember = (member) => {
   if (!member) {
@@ -159,7 +245,7 @@ const PaymentForm = ({
   const defaultWeekEndingDate = useMemo(() => getDefaultWeekEndingDate(), [])
   const weekEndingInputId = useRef(`week-ending-input-${Math.random().toString(36).slice(2, 9)}`)
   const [weekEndingDate, setWeekEndingDate] = useState(defaultWeekEndingDate)
-  const [amount, setAmount] = useState('')
+  const [hoursWorked, setHoursWorked] = useState('')
   const [remarks, setRemarks] = useState('')
   const [validationError, setValidationError] = useState('')
   const [memberError, setMemberError] = useState('')
@@ -203,7 +289,7 @@ const PaymentForm = ({
 
   useEffect(() => {
     setWeekEndingDate(defaultWeekEndingDate)
-    setAmount(getDefaultAmount(member))
+    setHoursWorked(getDefaultHoursWorked(member))
     setRemarks('')
     setValidationError('')
     setTitleError('')
@@ -211,10 +297,11 @@ const PaymentForm = ({
 
   useEffect(() => {
     if (!selectedMember) {
-      setAmount('')
+      setHoursWorked('')
       return
     }
-    setAmount(getDefaultAmount(selectedMember))
+    setHoursWorked(getDefaultHoursWorked(selectedMember))
+    setValidationError('')
   }, [selectedMember])
 
   useEffect(() => {
@@ -238,8 +325,13 @@ const PaymentForm = ({
   }, [member, normalizedMembers])
 
   const memberHandle = getMemberHandle(selectedMember)
+  const ratePerHour = getRatePerHour(selectedMember)
+  const amount = calculatePaymentAmount(hoursWorked, ratePerHour)
   const parsedAmount = Number(amount)
+  const parsedHoursWorked = Number(hoursWorked)
+  const isHoursWorkedValid = Number.isFinite(parsedHoursWorked) && parsedHoursWorked > 0
   const isAmountValid = Number.isFinite(parsedAmount) && parsedAmount > 0
+  const hasHourlyRate = Number.isFinite(ratePerHour) && ratePerHour > 0
   const isWeekEndingValid = isWeekEndingSaturday(weekEndingDate)
   const weekEndingTitle = isWeekEndingValid ? formatWeekEndingTitle(weekEndingDate) : ''
   const engagementName = getEngagementName(engagement)
@@ -264,6 +356,14 @@ const PaymentForm = ({
       setTitleError('Week ending date must be a Saturday')
       return
     }
+    if (!isHoursWorkedValid) {
+      setValidationError('Hours Worked must be greater than 0')
+      return
+    }
+    if (!hasHourlyRate) {
+      setValidationError('Hourly Pay Rate is required to calculate payment amount')
+      return
+    }
     if (!isAmountValid) {
       setValidationError('Amount must be greater than 0')
       return
@@ -271,11 +371,17 @@ const PaymentForm = ({
     setValidationError('')
     setMemberError('')
     setTitleError('')
-    onSubmit(selectedMember, trimmedTitle, parsedAmount, remarks.trim())
+    onSubmit(
+      selectedMember,
+      trimmedTitle,
+      parsedAmount,
+      remarks.trim(),
+      parsedHoursWorked
+    )
   }
 
-  const onAmountChange = (event) => {
-    setAmount(event.target.value)
+  const onHoursWorkedChange = (event) => {
+    setHoursWorked(event.target.value)
     if (validationError) {
       setValidationError('')
     }
@@ -285,6 +391,9 @@ const PaymentForm = ({
     setSelectedMember(option ? normalizeMember(option.member) : null)
     if (memberError) {
       setMemberError('')
+    }
+    if (validationError) {
+      setValidationError('')
     }
   }
 
@@ -334,17 +443,36 @@ const PaymentForm = ({
         </div>
       </div>
       <div className={styles.row}>
-        <div className={styles.label}>Amount</div>
+        <div className={styles.label}>Hours Worked</div>
         <div className={styles.field}>
           <input
             className={styles.input}
             type='number'
             min='0.01'
             step='0.01'
-            value={amount}
-            onChange={onAmountChange}
+            value={hoursWorked}
+            onChange={onHoursWorkedChange}
           />
           {validationError && <div className={styles.error}>{validationError}</div>}
+        </div>
+      </div>
+      <div className={styles.row}>
+        <div className={styles.label}>Amount</div>
+        <div className={styles.field}>
+          <input
+            className={`${styles.input} ${styles.readOnlyInput}`}
+            type='number'
+            min='0.01'
+            step='0.01'
+            value={amount}
+            readOnly
+            aria-readonly='true'
+          />
+          {!hasHourlyRate && (
+            <div className={styles.error}>
+              Hourly Pay Rate is unavailable for this assignment.
+            </div>
+          )}
         </div>
       </div>
       <div className={styles.row}>
@@ -365,7 +493,15 @@ const PaymentForm = ({
           text={isProcessing ? 'Processing...' : 'Submit Payment'}
           type='info'
           submit
-          disabled={isProcessing || !isAmountValid || !selectedMember || memberHandle === '-' || !isTitleValid}
+          disabled={
+            isProcessing ||
+            !isHoursWorkedValid ||
+            !isAmountValid ||
+            !hasHourlyRate ||
+            !selectedMember ||
+            memberHandle === '-' ||
+            !isTitleValid
+          }
         />
       </div>
     </form>
@@ -386,12 +522,16 @@ PaymentForm.propTypes = {
   member: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     handle: PropTypes.string,
-    agreementRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    agreementRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    ratePerHour: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    standardHoursPerWeek: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
   }),
   availableMembers: PropTypes.arrayOf(PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     handle: PropTypes.string,
-    agreementRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    agreementRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    ratePerHour: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    standardHoursPerWeek: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
   })),
   engagement: PropTypes.shape({
     title: PropTypes.string,

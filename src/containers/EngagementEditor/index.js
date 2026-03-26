@@ -28,6 +28,11 @@ import {
   toEngagementWorkloadApi,
   toEngagementStatusApi
 } from '../../util/engagements'
+import {
+  calculateAssignmentRatePerWeek,
+  toPositiveInteger,
+  toPositiveNumberWithMaxDecimalPlaces
+} from '../../util/assignmentRates'
 
 const getEmptyEngagement = () => ({
   id: null,
@@ -266,7 +271,9 @@ class EngagementEditorContainer extends Component {
         return {
           memberHandle: handle,
           startDate: null,
-          endDate: null,
+          durationMonths: '',
+          ratePerHour: '',
+          standardHoursPerWeek: '',
           agreementRate: '',
           otherRemarks: ''
         }
@@ -274,7 +281,11 @@ class EngagementEditorContainer extends Component {
       return {
         memberHandle: handle,
         startDate: assignmentMatch.startDate || null,
-        endDate: assignmentMatch.endDate || null,
+        durationMonths: assignmentMatch.durationMonths != null ? assignmentMatch.durationMonths : '',
+        ratePerHour: assignmentMatch.ratePerHour || '',
+        standardHoursPerWeek: assignmentMatch.standardHoursPerWeek != null
+          ? assignmentMatch.standardHoursPerWeek
+          : '',
         agreementRate: assignmentMatch.agreementRate || '',
         otherRemarks: assignmentMatch.otherRemarks || ''
       }
@@ -524,10 +535,18 @@ class EngagementEditorContainer extends Component {
     }
     const payloadAssignmentDetails = payloadAssignedMemberHandles.map((handle, index) => {
       const detail = assignmentDetails[index] || {}
-      const normalizedRate = detail.agreementRate != null ? String(detail.agreementRate).trim() : ''
+      const normalizedRatePerHour = detail.ratePerHour != null ? String(detail.ratePerHour).trim() : ''
+      const normalizedDurationMonths = toPositiveInteger(detail.durationMonths)
+      const normalizedStandardHoursPerWeek = toPositiveNumberWithMaxDecimalPlaces(
+        detail.standardHoursPerWeek,
+        2
+      )
+      const normalizedRate = calculateAssignmentRatePerWeek(
+        normalizedRatePerHour,
+        normalizedStandardHoursPerWeek
+      )
       const normalizedOtherRemarks = detail.otherRemarks != null ? String(detail.otherRemarks).trim() : ''
       const startDate = normalizeAssignmentDate(detail.startDate)
-      const endDate = normalizeAssignmentDate(detail.endDate)
       const detailPayload = {
         memberHandle: handle
       }
@@ -537,8 +556,14 @@ class EngagementEditorContainer extends Component {
       if (startDate) {
         detailPayload.startDate = startDate
       }
-      if (endDate) {
-        detailPayload.endDate = endDate
+      if (normalizedDurationMonths != null) {
+        detailPayload.durationMonths = normalizedDurationMonths
+      }
+      if (normalizedRatePerHour) {
+        detailPayload.ratePerHour = normalizedRatePerHour
+      }
+      if (normalizedStandardHoursPerWeek != null) {
+        detailPayload.standardHoursPerWeek = normalizedStandardHoursPerWeek
       }
       if (normalizedRate) {
         detailPayload.agreementRate = normalizedRate
@@ -549,7 +574,12 @@ class EngagementEditorContainer extends Component {
       return detailPayload
     })
     const hasAssignmentDetails = payloadAssignmentDetails.some((detail) => (
-      detail.startDate || detail.endDate || detail.agreementRate || detail.otherRemarks
+      detail.startDate ||
+      detail.durationMonths ||
+      detail.ratePerHour ||
+      detail.standardHoursPerWeek ||
+      detail.agreementRate ||
+      detail.otherRemarks
     ))
 
     if (engagement.isPrivate && payloadAssignedMemberHandles.length) {

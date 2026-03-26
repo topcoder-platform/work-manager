@@ -1,3 +1,5 @@
+import { calculateAssignmentRatePerWeek } from './assignmentRates'
+
 const STATUS_LABELS = {
   OPEN: 'Open',
   PENDING_ASSIGNMENT: 'Pending Assignment',
@@ -264,7 +266,22 @@ export const normalizeEngagement = (engagement = {}) => {
     termsAccepted: assignment.termsAccepted != null
       ? assignment.termsAccepted
       : assignment.terms_accepted,
-    agreementRate: assignment.agreementRate || assignment.agreement_rate || assignment.rate,
+    agreementRate: assignment.agreementRate ||
+      assignment.agreement_rate ||
+      assignment.rate ||
+      calculateAssignmentRatePerWeek(
+        assignment.ratePerHour || assignment.rate_per_hour,
+        assignment.standardHoursPerWeek != null
+          ? assignment.standardHoursPerWeek
+          : assignment.standard_hours_per_week
+      ),
+    ratePerHour: assignment.ratePerHour || assignment.rate_per_hour,
+    standardHoursPerWeek: assignment.standardHoursPerWeek != null
+      ? assignment.standardHoursPerWeek
+      : assignment.standard_hours_per_week,
+    durationMonths: assignment.durationMonths != null
+      ? assignment.durationMonths
+      : assignment.duration_months,
     otherRemarks: assignment.otherRemarks || assignment.other_remarks,
     terminationReason: assignment.terminationReason || assignment.termination_reason,
     startDate: assignment.startDate || assignment.start_date,

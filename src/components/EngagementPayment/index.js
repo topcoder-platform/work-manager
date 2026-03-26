@@ -1,25 +1,36 @@
 import React, { useState } from 'react'
 import PropTypes from 'prop-types'
+import moment from 'moment-timezone'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCommentAlt, faPencilAlt } from '@fortawesome/free-solid-svg-icons'
 import { PrimaryButton, OutlineButton } from '../Buttons'
 import Loader from '../Loader'
 import Modal from '../Modal'
 import PaymentForm from '../PaymentForm'
+import DateInput from '../DateInput'
 import styles from './EngagementPayment.module.scss'
+import {
+  deserializeTentativeAssignmentDate,
+  serializeTentativeAssignmentDate
+} from '../../util/assignmentDates'
+import {
+  calculateAssignmentRatePerWeek,
+  formatAssignmentCurrency,
+  sanitizePositiveNumericInput,
+  toPositiveInteger,
+  toPositiveNumberWithMaxDecimalPlaces,
+  toPositiveNumber
+} from '../../util/assignmentRates'
 
-const currencyFormatter = new Intl.NumberFormat('en-US', {
-  style: 'currency',
-  currency: 'USD'
-})
+// The shared DateInput uses date-fns tokens; uppercase moment-style tokens prevent the calendar from opening.
+const INPUT_DATE_FORMAT = 'MM/dd/yyyy'
+const INPUT_TIME_FORMAT = false
 
 const formatCurrency = (value) => {
   if (value == null || value === '') {
     return '-'
   }
-  const parsed = Number(value)
-  if (Number.isNaN(parsed)) {
-    return String(value)
-  }
-  return currencyFormatter.format(parsed)
+  return formatAssignmentCurrency(value) || '-'
 }
 
 const formatDate = (value) => {
@@ -100,6 +111,44 @@ const getPaymentRemarks = (payment) => {
   return ''
 }
 
+/**
+ * Resolves the optional hours-worked value returned for a payment.
+ *
+ * @param {Object|null|undefined} payment Payment record returned by the finance API.
+ * @returns {string} Formatted hours-worked value, or an empty string when the
+ * field is unavailable.
+ */
+const getPaymentHoursWorked = (payment) => {
+  if (!payment) {
+    return ''
+  }
+
+  const attributes = payment.attributes && typeof payment.attributes === 'object'
+    ? payment.attributes
+    : null
+  const detail = Array.isArray(payment.details) && payment.details.length
+    ? payment.details[0]
+    : null
+  const value = payment.hoursWorked != null
+    ? payment.hoursWorked
+    : attributes && Object.prototype.hasOwnProperty.call(attributes, 'hoursWorked')
+      ? attributes.hoursWorked
+      : detail && detail.hoursWorked != null
+        ? detail.hoursWorked
+        : null
+
+  if (value == null || value === '') {
+    return ''
+  }
+
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return ''
+  }
+
+  return Number(parsed.toFixed(2)).toString()
+}
+
 const getAssignmentStatus = (member) => {
   if (!member || typeof member !== 'object') {
     return ''
@@ -130,6 +179,17 @@ const normalizeAssignmentStatus = (status) => {
     .join(' ')
 }
 
+/**
+ * Determines whether an assignment should remain selectable in the create
+ * payment modal.
+ *
+ * @param {Object|null|undefined} member Assignment row rendered on the page.
+ * @returns {boolean} `true` when the assignment is in the Assigned state.
+ */
+const isPaymentEligibleMember = (member) => {
+  return normalizeAssignmentStatus(getAssignmentStatus(member)).toLowerCase() === 'assigned'
+}
+
 const getAssignmentRate = (member) => {
   if (!member || typeof member !== 'object') {
     return ''
@@ -139,6 +199,37 @@ const getAssignmentRate = (member) => {
     member.rate ||
     member.agreedRate ||
     ''
+}
+
+const getRatePerHour = (member) => {
+  if (!member || typeof member !== 'object') {
+    return ''
+  }
+  return member.ratePerHour ||
+    member.rate_per_hour ||
+    ''
+}
+
+const getStandardHoursPerWeek = (member) => {
+  if (!member || typeof member !== 'object') {
+    return ''
+  }
+  return member.standardHoursPerWeek != null
+    ? member.standardHoursPerWeek
+    : member.standard_hours_per_week != null
+      ? member.standard_hours_per_week
+      : ''
+}
+
+const getDurationMonths = (member) => {
+  if (!member || typeof member !== 'object') {
+    return ''
+  }
+  return member.durationMonths != null
+    ? member.durationMonths
+    : member.duration_months != null
+      ? member.duration_months
+      : ''
 }
 
 const getAssignmentDate = (member, key) => {
@@ -176,6 +267,54 @@ const getAssignmentRemarks = (member) => {
 }
 
 /**
+ * Converts an assignment row into editable modal field values.
+ *
+ * @param {Object|null|undefined} member Assignment row rendered on the page.
+ * @returns {{startDate: *, durationMonths: string, ratePerHour: string, standardHoursPerWeek: string, otherRemarks: string}}
+ * Seed values for the edit-assignment modal.
+ */
+const createEditAssignmentState = (member) => {
+  const startDate = getAssignmentDate(member, 'start')
+
+  return {
+    startDate: deserializeTentativeAssignmentDate(startDate),
+    durationMonths: getDurationMonths(member) !== '' && getDurationMonths(member) != null
+      ? String(getDurationMonths(member))
+      : '',
+    ratePerHour: getRatePerHour(member) !== '' && getRatePerHour(member) != null
+      ? String(getRatePerHour(member))
+      : '',
+    standardHoursPerWeek: getStandardHoursPerWeek(member) !== '' && getStandardHoursPerWeek(member) != null
+      ? String(getStandardHoursPerWeek(member))
+      : '',
+    otherRemarks: getAssignmentRemarks(member)
+  }
+}
+
+const formatDurationMonths = (value) => {
+  if (value == null || value === '') {
+    return '-'
+  }
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return String(value)
+  }
+  return `${parsed} month${parsed === 1 ? '' : 's'}`
+}
+
+const renderMetaValue = (value, isRequired = false) => {
+  if (value == null || value === '' || value === '-') {
+    return (
+      <span className={isRequired ? styles.requiredMetaValue : styles.mutedMetaValue}>
+        {isRequired ? 'Required' : '-'}
+      </span>
+    )
+  }
+
+  return value
+}
+
+/**
  * Displays assignment payment controls and history for engagement members.
  * Payment history is available for any assignment status as long as an
  * assignment ID is present.
@@ -189,6 +328,7 @@ const EngagementPayment = ({
   paymentsByAssignment,
   terminatingAssignments,
   completingAssignments,
+  updatingAssignments,
   projectId,
   engagementId,
   showPaymentModal,
@@ -197,20 +337,30 @@ const EngagementPayment = ({
   onClosePaymentModal,
   onSubmitPayment,
   onTerminateAssignment,
-  onCompleteAssignment
+  onCompleteAssignment,
+  onSaveAssignment
 }) => {
   const [paymentHistoryMember, setPaymentHistoryMember] = useState(null)
+  const [remarksMember, setRemarksMember] = useState(null)
   const [completionMember, setCompletionMember] = useState(null)
   const [terminationMember, setTerminationMember] = useState(null)
   const [terminationReason, setTerminationReason] = useState('')
-  if (isLoading) {
+  const [editMember, setEditMember] = useState(null)
+  const [editStartDate, setEditStartDate] = useState(null)
+  const [editDurationMonths, setEditDurationMonths] = useState('')
+  const [editRatePerHour, setEditRatePerHour] = useState('')
+  const [editStandardHoursPerWeek, setEditStandardHoursPerWeek] = useState('')
+  const [editOtherRemarks, setEditOtherRemarks] = useState('')
+  const [editErrors, setEditErrors] = useState({})
+
+  if (isLoading && !(engagement && engagement.id)) {
     return <Loader />
   }
 
   const members = Array.isArray(assignedMembers) ? assignedMembers : []
+  const paymentEligibleMembers = members.filter(isPaymentEligibleMember)
   const hasMembers = members.length > 0
   const engagementTitle = engagement && engagement.title ? engagement.title : 'Engagement'
-  const backUrl = projectId ? `/projects/${projectId}/engagements` : '/projects'
   const resolvedEngagementId = engagementId != null ? engagementId : (engagement && engagement.id != null ? engagement.id : null)
   const showEngagementLinks = Boolean(projectId && resolvedEngagementId)
   const feedbackUrl = showEngagementLinks
@@ -219,6 +369,28 @@ const EngagementPayment = ({
   const experienceUrl = showEngagementLinks
     ? `/projects/${projectId}/engagements/${resolvedEngagementId}/experience`
     : null
+
+  const closeRemarksModal = () => {
+    setRemarksMember(null)
+  }
+
+  const closeEditModal = () => {
+    setEditMember(null)
+    setEditStartDate(null)
+    setEditDurationMonths('')
+    setEditRatePerHour('')
+    setEditStandardHoursPerWeek('')
+    setEditOtherRemarks('')
+    setEditErrors({})
+  }
+
+  const openRemarksModal = (member) => {
+    const remarks = getAssignmentRemarks(member)
+    if (!remarks) {
+      return
+    }
+    setRemarksMember(member)
+  }
 
   const closePaymentHistoryModal = () => {
     setPaymentHistoryMember(null)
@@ -230,6 +402,17 @@ const EngagementPayment = ({
       return
     }
     setPaymentHistoryMember(member)
+  }
+
+  const openEditModal = (member) => {
+    const nextState = createEditAssignmentState(member)
+    setEditMember(member)
+    setEditStartDate(nextState.startDate)
+    setEditDurationMonths(nextState.durationMonths)
+    setEditRatePerHour(nextState.ratePerHour)
+    setEditStandardHoursPerWeek(nextState.standardHoursPerWeek)
+    setEditOtherRemarks(nextState.otherRemarks)
+    setEditErrors({})
   }
 
   const closeTerminationModal = () => {
@@ -277,6 +460,67 @@ const EngagementPayment = ({
     }
   }
 
+  /**
+   * Validates and submits edited assignment details for the currently selected
+   * assignment.
+   *
+   * @returns {Promise<void>} Resolves after the modal save attempt completes.
+   */
+  const submitEdit = async () => {
+    if (!editMember) {
+      return
+    }
+
+    const nextErrors = {}
+    const parsedStartDate = editStartDate ? moment(editStartDate) : null
+    const hasDurationValue = editDurationMonths !== ''
+    const parsedDurationMonths = hasDurationValue
+      ? toPositiveInteger(editDurationMonths)
+      : null
+    const parsedRatePerHour = toPositiveNumber(editRatePerHour)
+    const parsedStandardHoursPerWeek = toPositiveNumberWithMaxDecimalPlaces(
+      editStandardHoursPerWeek,
+      2
+    )
+    const normalizedOtherRemarks = editOtherRemarks != null
+      ? String(editOtherRemarks).trim()
+      : ''
+
+    if (!parsedStartDate || !parsedStartDate.isValid()) {
+      nextErrors.startDate = 'Billing start date is required.'
+    }
+    if (hasDurationValue && parsedDurationMonths === null) {
+      nextErrors.durationMonths = 'Duration must be a positive whole number.'
+    }
+    if (parsedRatePerHour === null) {
+      nextErrors.ratePerHour = 'Rate per hour must be a positive number.'
+    }
+    if (parsedStandardHoursPerWeek === null) {
+      nextErrors.standardHoursPerWeek = 'Standard hours per week must be a positive number with up to 2 decimal places.'
+    }
+
+    if (Object.keys(nextErrors).length > 0) {
+      setEditErrors(nextErrors)
+      return
+    }
+
+    const wasSuccessful = await onSaveAssignment(editMember, {
+      startDate: serializeTentativeAssignmentDate(parsedStartDate),
+      ...(parsedDurationMonths !== null ? { durationMonths: parsedDurationMonths } : {}),
+      ratePerHour: parsedRatePerHour.toString(),
+      standardHoursPerWeek: parsedStandardHoursPerWeek,
+      agreementRate: calculateAssignmentRatePerWeek(
+        parsedRatePerHour,
+        parsedStandardHoursPerWeek
+      ),
+      ...(normalizedOtherRemarks ? { otherRemarks: normalizedOtherRemarks } : {})
+    })
+
+    if (wasSuccessful) {
+      closeEditModal()
+    }
+  }
+
   const renderPaymentHistory = (member) => {
     const assignmentId = member && member.assignmentId != null ? member.assignmentId : null
     if (assignmentId == null || assignmentId === '') {
@@ -320,12 +564,18 @@ const EngagementPayment = ({
           const showStatus = normalizedStatus && normalizedStatus !== 'unknown'
           const title = getPaymentTitle(payment)
           const remarks = getPaymentRemarks(payment)
+          const hoursWorked = getPaymentHoursWorked(payment)
           return (
             <div key={paymentKey} className={styles.paymentItem}>
               <div className={styles.paymentAmount}>{amount}</div>
               <div className={styles.paymentDetails}>
                 <div className={styles.paymentTitle}>{title}</div>
                 {remarks && <div className={styles.paymentRemarks}>{remarks}</div>}
+                {hoursWorked && (
+                  <div className={styles.paymentHoursWorked}>
+                    {`Hours Worked: ${hoursWorked}`}
+                  </div>
+                )}
                 <div className={styles.paymentMeta}>
                   <span className={styles.paymentDate}>{date}</span>
                   {showStatus && <span className={styles.paymentStatus}>{status}</span>}
@@ -357,6 +607,23 @@ const EngagementPayment = ({
   const isCompletionProcessing = completionAssignmentId && completingAssignments
     ? Boolean(completingAssignments[completionAssignmentId])
     : false
+  const remarksHandle = remarksMember
+    ? (remarksMember.handle || remarksMember.memberHandle || '-')
+    : '-'
+  const remarksContent = getAssignmentRemarks(remarksMember)
+  const editAssignmentId = editMember && editMember.assignmentId != null
+    ? String(editMember.assignmentId)
+    : null
+  const editHandle = editMember
+    ? (editMember.handle || editMember.memberHandle || '-')
+    : '-'
+  const isEditProcessing = editAssignmentId && updatingAssignments
+    ? Boolean(updatingAssignments[editAssignmentId])
+    : false
+  const editAssignmentRate = calculateAssignmentRatePerWeek(
+    editRatePerHour,
+    editStandardHoursPerWeek
+  )
 
   return (
     <div className={styles.container}>
@@ -379,7 +646,6 @@ const EngagementPayment = ({
               />
             </>
           )}
-          <OutlineButton text='Back' type='info' link={backUrl} className={styles.actionButton} />
         </div>
       </div>
       {hasMembers ? (
@@ -400,12 +666,20 @@ const EngagementPayment = ({
             const isRowCompleting = assignmentKey && completingAssignments
               ? Boolean(completingAssignments[assignmentKey])
               : false
+            const isRowUpdating = assignmentKey && updatingAssignments
+              ? Boolean(updatingAssignments[assignmentKey])
+              : false
             const assignmentRemarks = getAssignmentRemarks(member)
             const assignmentRate = getAssignmentRate(member)
-            const startDate = formatDate(getAssignmentDate(member, 'start'))
-            const endDate = formatDate(getAssignmentDate(member, 'end'))
+            const billingStartDate = formatDate(getAssignmentDate(member, 'start'))
+            const durationMonths = formatDurationMonths(getDurationMonths(member))
+            const ratePerHour = getRatePerHour(member)
+            const standardHoursPerWeek = getStandardHoursPerWeek(member)
             const rateDisplay = assignmentRate !== '' && assignmentRate != null
               ? formatCurrency(assignmentRate)
+              : '-'
+            const ratePerHourDisplay = ratePerHour !== '' && ratePerHour != null
+              ? formatCurrency(ratePerHour)
               : '-'
 
             return (
@@ -414,12 +688,27 @@ const EngagementPayment = ({
                   <div className={styles.memberInfo}>
                     <div className={styles.memberHeader}>
                       <div className={styles.memberHandle}>{member.handle || '-'}</div>
-                      <span
-                        className={styles.assignmentStatus}
-                        title={assignmentStatusRaw || assignmentStatusLabel}
-                      >
-                        {assignmentStatusLabel}
-                      </span>
+                      <div className={styles.assignmentStatusGroup}>
+                        <span
+                          className={styles.assignmentStatus}
+                          title={assignmentStatusRaw || assignmentStatusLabel}
+                        >
+                          {assignmentStatusLabel}
+                        </span>
+                        {isAssignedStatus && (
+                          <button
+                            type='button'
+                            className={styles.editAssignmentButton}
+                            onClick={() => openEditModal(member)}
+                            disabled={!hasAssignmentId || isRowUpdating || isRowTerminating || isRowCompleting}
+                            aria-label={`Edit assignment details for ${member.handle || 'member'}`}
+                            title='Edit assignment details'
+                            aria-haspopup='dialog'
+                          >
+                            <FontAwesomeIcon icon={faPencilAlt} className={styles.editAssignmentIcon} />
+                          </button>
+                        )}
+                      </div>
                     </div>
                     {!member.id && (
                       <div className={styles.memberNote}>Resolving member ID...</div>
@@ -429,22 +718,64 @@ const EngagementPayment = ({
                     )}
                     <div className={styles.memberMeta}>
                       <div className={styles.memberMetaItem}>
-                        <span className={styles.memberMetaLabel}>Remarks</span>
+                        <span className={styles.memberMetaLabel}>Other Remarks</span>
                         <span className={styles.memberMetaValue}>
-                          {assignmentRemarks || '-'}
+                          {assignmentRemarks
+                            ? (
+                              <button
+                                type='button'
+                                className={styles.remarksButton}
+                                onClick={() => openRemarksModal(member)}
+                                aria-label={`View other remarks for ${member.handle || 'member'}`}
+                                title='View other remarks'
+                              >
+                                <FontAwesomeIcon icon={faCommentAlt} className={styles.remarksIcon} />
+                              </button>
+                            )
+                            : renderMetaValue('')}
                         </span>
                       </div>
                       <div className={styles.memberMetaItem}>
-                        <span className={styles.memberMetaLabel}>Agreed Rate</span>
-                        <span className={styles.memberMetaValue}>{rateDisplay}</span>
+                        <span className={styles.memberMetaLabel}>
+                          Billing Start Date
+                          <span className={styles.requiredIndicator}>*</span>
+                        </span>
+                        <span className={styles.memberMetaValue}>
+                          {renderMetaValue(billingStartDate, true)}
+                        </span>
                       </div>
                       <div className={styles.memberMetaItem}>
-                        <span className={styles.memberMetaLabel}>Tentative Start</span>
-                        <span className={styles.memberMetaValue}>{startDate}</span>
+                        <span className={styles.memberMetaLabel}>Duration</span>
+                        <span className={styles.memberMetaValue}>
+                          {renderMetaValue(durationMonths)}
+                        </span>
                       </div>
                       <div className={styles.memberMetaItem}>
-                        <span className={styles.memberMetaLabel}>Tentative End</span>
-                        <span className={styles.memberMetaValue}>{endDate}</span>
+                        <span className={styles.memberMetaLabel}>
+                          Rate per Hour
+                          <span className={styles.requiredIndicator}>*</span>
+                        </span>
+                        <span className={styles.memberMetaValue}>
+                          {renderMetaValue(ratePerHourDisplay, true)}
+                        </span>
+                      </div>
+                      <div className={styles.memberMetaItem}>
+                        <span className={styles.memberMetaLabel}>
+                          Standard Hours per Week
+                          <span className={styles.requiredIndicator}>*</span>
+                        </span>
+                        <span className={styles.memberMetaValue}>
+                          {renderMetaValue(
+                            standardHoursPerWeek !== '' && standardHoursPerWeek != null
+                              ? `${standardHoursPerWeek}`
+                              : '',
+                            true
+                          )}
+                        </span>
+                      </div>
+                      <div className={styles.memberMetaItem}>
+                        <span className={styles.memberMetaLabel}>Rate per Week</span>
+                        <span className={styles.memberMetaValue}>{renderMetaValue(rateDisplay)}</span>
                       </div>
                     </div>
                     {assignmentStatusLower === 'terminated' && member.terminationReason && (
@@ -474,21 +805,21 @@ const EngagementPayment = ({
                           type='info'
                           className={styles.actionButton}
                           onClick={() => onOpenPaymentModal(member)}
-                          disabled={!canPay}
+                          disabled={!canPay || isRowUpdating}
                         />
                         <PrimaryButton
                           text={isRowCompleting ? 'Completing...' : 'Complete'}
                           type='success'
                           className={styles.actionButton}
                           onClick={() => openCompletionModal(member)}
-                          disabled={!hasAssignmentId || isRowTerminating || isRowCompleting}
+                          disabled={!hasAssignmentId || isRowUpdating || isRowTerminating || isRowCompleting}
                         />
                         <PrimaryButton
                           text={isRowTerminating ? 'Terminating...' : 'Terminate'}
                           type='danger'
                           className={styles.actionButton}
                           onClick={() => openTerminationModal(member)}
-                          disabled={!hasAssignmentId || isRowTerminating || isRowCompleting}
+                          disabled={!hasAssignmentId || isRowUpdating || isRowTerminating || isRowCompleting}
                         />
                       </>
                     )}
@@ -563,6 +894,152 @@ const EngagementPayment = ({
           </div>
         </Modal>
       )}
+      {remarksMember && (
+        <Modal onCancel={closeRemarksModal}>
+          <div className={styles.remarksModal}>
+            <div className={styles.remarksTitle}>Other Remarks</div>
+            <div className={styles.remarksSubtitle}>{remarksHandle}</div>
+            <div className={styles.remarksContent}>{remarksContent}</div>
+            <div className={styles.remarksActions}>
+              <OutlineButton
+                text='Close'
+                type='info'
+                className={styles.remarksCloseButton}
+                onClick={closeRemarksModal}
+              />
+            </div>
+          </div>
+        </Modal>
+      )}
+      {editMember && (
+        <Modal onCancel={closeEditModal}>
+          <div className={styles.editModal}>
+            <div className={styles.editTitle}>Edit Assignment</div>
+            <div className={styles.editSubtitle}>{editHandle}</div>
+            <div className={styles.editGrid}>
+              <div className={styles.editField}>
+                <label className={styles.editLabel}>
+                  Billing start date
+                  <span className={styles.editRequired}>*</span>
+                </label>
+                <DateInput
+                  className={styles.editDateInput}
+                  value={editStartDate}
+                  dateFormat={INPUT_DATE_FORMAT}
+                  timeFormat={INPUT_TIME_FORMAT}
+                  preventViewportOverflow
+                  onChange={(value) => {
+                    setEditStartDate(value)
+                    if (editErrors.startDate) {
+                      setEditErrors(prev => ({ ...prev, startDate: '' }))
+                    }
+                  }}
+                />
+                {editErrors.startDate && (
+                  <div className={styles.editError}>{editErrors.startDate}</div>
+                )}
+              </div>
+              <div className={styles.editField}>
+                <label className={styles.editLabel}>Duration (in months)</label>
+                <input
+                  className={styles.editInput}
+                  type='text'
+                  inputMode='decimal'
+                  pattern='[0-9.]*'
+                  value={editDurationMonths}
+                  onChange={(event) => {
+                    setEditDurationMonths(sanitizePositiveNumericInput(event.target.value))
+                    if (editErrors.durationMonths) {
+                      setEditErrors(prev => ({ ...prev, durationMonths: '' }))
+                    }
+                  }}
+                />
+                {editErrors.durationMonths && (
+                  <div className={styles.editError}>{editErrors.durationMonths}</div>
+                )}
+              </div>
+              <div className={styles.editField}>
+                <label className={styles.editLabel}>
+                  Rate per hour
+                  <span className={styles.editRequired}>*</span>
+                </label>
+                <input
+                  className={styles.editInput}
+                  type='text'
+                  inputMode='decimal'
+                  pattern='[0-9.]*'
+                  value={editRatePerHour}
+                  onChange={(event) => {
+                    setEditRatePerHour(sanitizePositiveNumericInput(event.target.value))
+                    if (editErrors.ratePerHour) {
+                      setEditErrors(prev => ({ ...prev, ratePerHour: '' }))
+                    }
+                  }}
+                />
+                {editErrors.ratePerHour && (
+                  <div className={styles.editError}>{editErrors.ratePerHour}</div>
+                )}
+              </div>
+              <div className={styles.editField}>
+                <label className={styles.editLabel}>
+                  Standard hours per week
+                  <span className={styles.editRequired}>*</span>
+                </label>
+                <input
+                  className={styles.editInput}
+                  type='text'
+                  inputMode='decimal'
+                  pattern='[0-9.]*'
+                  value={editStandardHoursPerWeek}
+                  onChange={(event) => {
+                    setEditStandardHoursPerWeek(
+                      sanitizePositiveNumericInput(event.target.value, 2)
+                    )
+                    if (editErrors.standardHoursPerWeek) {
+                      setEditErrors(prev => ({ ...prev, standardHoursPerWeek: '' }))
+                    }
+                  }}
+                />
+                {editErrors.standardHoursPerWeek && (
+                  <div className={styles.editError}>{editErrors.standardHoursPerWeek}</div>
+                )}
+              </div>
+              <div className={styles.editFieldFull}>
+                <label className={styles.editLabel}>Assignment rate per week</label>
+                <input
+                  className={styles.editInput}
+                  type='text'
+                  value={editAssignmentRate}
+                  readOnly
+                />
+              </div>
+              <div className={styles.editFieldFull}>
+                <label className={styles.editLabel}>Other remarks</label>
+                <textarea
+                  className={styles.editTextarea}
+                  rows={3}
+                  value={editOtherRemarks}
+                  onChange={(event) => setEditOtherRemarks(event.target.value)}
+                />
+              </div>
+            </div>
+            <div className={styles.editActions}>
+              <OutlineButton
+                text='Cancel'
+                type='info'
+                onClick={closeEditModal}
+                disabled={isEditProcessing}
+              />
+              <PrimaryButton
+                text={isEditProcessing ? 'Saving...' : 'Save'}
+                type='info'
+                onClick={submitEdit}
+                disabled={isEditProcessing}
+              />
+            </div>
+          </div>
+        </Modal>
+      )}
       {paymentHistoryMember && (
         <Modal onCancel={closePaymentHistoryModal}>
           <div className={styles.historyModal}>
@@ -586,7 +1063,7 @@ const EngagementPayment = ({
             engagement={engagement}
             projectName={projectName}
             member={selectedMember}
-            availableMembers={members}
+            availableMembers={paymentEligibleMembers.length ? paymentEligibleMembers : members}
             isProcessing={isPaymentProcessing}
             onSubmit={onSubmitPayment}
             onCancel={onClosePaymentModal}
@@ -606,6 +1083,7 @@ EngagementPayment.defaultProps = {
   paymentsByAssignment: {},
   terminatingAssignments: {},
   completingAssignments: {},
+  updatingAssignments: {},
   projectId: null,
   engagementId: null,
   showPaymentModal: false,
@@ -614,7 +1092,8 @@ EngagementPayment.defaultProps = {
   onClosePaymentModal: () => {},
   onSubmitPayment: () => {},
   onTerminateAssignment: () => {},
-  onCompleteAssignment: () => {}
+  onCompleteAssignment: () => {},
+  onSaveAssignment: () => {}
 }
 
 EngagementPayment.propTypes = {
@@ -632,6 +1111,9 @@ EngagementPayment.propTypes = {
     assignmentStatus: PropTypes.string,
     termsAccepted: PropTypes.oneOfType([PropTypes.bool, PropTypes.string, PropTypes.number]),
     agreementRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    ratePerHour: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    standardHoursPerWeek: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    durationMonths: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     terminationReason: PropTypes.string,
     startDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
     endDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)])
@@ -645,6 +1127,7 @@ EngagementPayment.propTypes = {
   })),
   terminatingAssignments: PropTypes.objectOf(PropTypes.bool),
   completingAssignments: PropTypes.objectOf(PropTypes.bool),
+  updatingAssignments: PropTypes.objectOf(PropTypes.bool),
   projectId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   engagementId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   showPaymentModal: PropTypes.bool,
@@ -656,6 +1139,9 @@ EngagementPayment.propTypes = {
     assignmentStatus: PropTypes.string,
     termsAccepted: PropTypes.oneOfType([PropTypes.bool, PropTypes.string, PropTypes.number]),
     agreementRate: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    ratePerHour: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    standardHoursPerWeek: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    durationMonths: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     terminationReason: PropTypes.string,
     startDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
     endDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)])
@@ -664,7 +1150,8 @@ EngagementPayment.propTypes = {
   onClosePaymentModal: PropTypes.func,
   onSubmitPayment: PropTypes.func,
   onTerminateAssignment: PropTypes.func,
-  onCompleteAssignment: PropTypes.func
+  onCompleteAssignment: PropTypes.func,
+  onSaveAssignment: PropTypes.func
 }
 
 export default EngagementPayment

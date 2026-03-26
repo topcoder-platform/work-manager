@@ -27,7 +27,8 @@ import {
   QA_TRACK_ID, DESIGN_CHALLENGE_TYPES, ROUND_TYPES,
   MULTI_ROUND_CHALLENGE_TEMPLATE_ID,
   CHALLENGE_STATUS,
-  SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS
+  SKILLS_OPTIONAL_BILLING_ACCOUNT_IDS,
+  AI_SCREENING_PHASE_NAME
 } from '../../config/constants'
 import {
   getDomainTypes,
@@ -62,6 +63,7 @@ import Track from '../Track'
 import ConfirmationModal from '../Modal/ConfirmationModal'
 import AlertModal from '../Modal/AlertModal'
 import PhaseInput from '../PhaseInput'
+import { hasAiReviewers } from './ChallengeReviewer-Field/AiReviewerTab/utils'
 import LegacyLinks from '../LegacyLinks'
 import AssignedMemberField from './AssignedMember-Field'
 import Tooltip from '../Tooltip'
@@ -75,6 +77,7 @@ import DiscussionField from './Discussion-Field'
 import CheckpointPrizesField from './CheckpointPrizes-Field'
 import { canChangeDuration } from '../../util/phase'
 import { isBetaMode } from '../../util/localstorage'
+import { fetchAIReviewConfigByChallenge } from '../../services/aiReviewConfigs'
 
 const theme = {
   container: styles.modalContainer
@@ -1395,10 +1398,66 @@ class ChallengeEditor extends Component {
     return challengeId
   }
 
+  /**
+   * Sync AI review config workflows to challenge reviewers array
+   * Maps workflows from AI review config to reviewer objects with aiWorkflowId and isMemberReview=false
+   */
+  async syncAIReviewConfigToReviewers (challengeId) {
+    try {
+      // Fetch the AI review config for this challenge
+      const aiConfig = await fetchAIReviewConfigByChallenge(challengeId)
+
+      if (!aiConfig || !aiConfig.workflows || aiConfig.workflows.length === 0) {
+        // No AI config or workflows, nothing to sync
+        return
+      }
+
+      // Get current reviewers from state
+      const currentReviewers = this.state.challenge.reviewers || []
+
+      // Separate AI reviewers from human reviewers
+      const humanReviewers = currentReviewers.filter(r => {
+        const isAI = (r.aiWorkflowId && r.aiWorkflowId.trim() !== '') || r.isMemberReview === false
+        return !isAI
+      })
+
+      // Create reviewer entries for each workflow in the config
+      const aiReviewers = aiConfig.workflows.map(workflow => ({
+        aiWorkflowId: workflow.workflowId,
+        scorecardId: workflow.workflow.scorecardId,
+        phaseId: '6950164f-3c5e-4bdc-abc8-22aaf5a1bd49',
+        shouldOpenOpportunity: false,
+        isMemberReview: false
+      }))
+
+      // Combine human reviewers with synced AI reviewers
+      const syncedReviewers = [...humanReviewers, ...aiReviewers]
+
+      // Update state with synced reviewers
+      await new Promise(resolve => {
+        this.setState(prevState => ({
+          challenge: {
+            ...prevState.challenge,
+            reviewers: syncedReviewers
+          }
+        }), resolve)
+      })
+
+      console.log('Synced AI review config workflows to reviewers:', aiReviewers.length)
+    } catch (error) {
+      // Log error but don't fail the save operation
+      console.error('Error syncing AI review config to reviewers:', error)
+    }
+  }
+
   async updateAllChallengeInfo (status, cb = () => { }) {
     const { updateChallengeDetails, assignedMemberDetails: oldAssignedMember, projectDetail, challengeDetails } = this.props
     if (this.state.isSaving) return
     this.setState({ isSaving: true }, async () => {
+      // Sync AI review config workflows to reviewers before collecting challenge data
+      const challengeId = this.getCurrentChallengeId()
+      await this.syncAIReviewConfigToReviewers(challengeId)
+
       let challenge = this.collectChallengeData(status)
       let newChallenge = _.cloneDeep(this.state.challenge)
       newChallenge.status = status
@@ -1583,7 +1642,8 @@ class ChallengeEditor extends Component {
       assignYourselfCopilot,
       challengeResources,
       loggedInUser,
-      challengeDetails
+      challengeDetails,
+      totalSubmissions
     } = this.props
     if (_.isEmpty(challenge)) {
       return <div>Error loading challenge</div>
@@ -1844,6 +1904,7 @@ class ChallengeEditor extends Component {
     const isFunChallenge = challenge.funChallenge === true
     const showRoundType = isDesignChallenge && isChallengeType
     const showCheckpointPrizes = challenge.timelineTemplateId === MULTI_ROUND_CHALLENGE_TEMPLATE_ID
+    const isAiReviewerConfigReadOnly = totalSubmissions > 0
     const useDashboardData = _.find(challenge.metadata, { name: 'show_data_dashboard' })
     const showDashBoard = this.shouldShowDashboardSetting(challenge)
 
@@ -1988,18 +2049,42 @@ class ChallengeEditor extends Component {
                 </div>
               </div>
               {
-                phases.map((phase, index) => (
-                  <PhaseInput
-                    phase={phase}
-                    phaseIndex={index}
-                    key={index}
-                    readOnly={false}
-                    onUpdatePhase={(item) => {
-                      this.onUpdatePhaseDate(item, index)
-                    }}
-                  />
-                )
-                )
+                (() => {
+                  const hasRealAiScreeningPhase = phases.some(p => p.name === AI_SCREENING_PHASE_NAME)
+                  const showVirtualAiScreening = hasAiReviewers(challenge.reviewers) && !hasRealAiScreeningPhase
+                  const submissionIndex = phases.findIndex(p => p.name === 'Submission')
+                  const checkpointSubmissionIndex = phases.findIndex(p => p.name === 'Checkpoint Submission')
+                  return (
+                    <>
+                      {phases.map((phase, index) => (
+                        <React.Fragment key={index}>
+                          <PhaseInput
+                            phase={phase}
+                            phaseIndex={index}
+                            readOnly={false}
+                            onUpdatePhase={(item) => {
+                              this.onUpdatePhaseDate(item, index)
+                            }}
+                          />
+                          {showVirtualAiScreening && (index === submissionIndex || index === checkpointSubmissionIndex) && (
+                            <PhaseInput
+                              phase={{ name: AI_SCREENING_PHASE_NAME }}
+                              readOnly
+                              isVirtual
+                            />
+                          )}
+                        </React.Fragment>
+                      ))}
+                      {showVirtualAiScreening && (submissionIndex === -1 || checkpointSubmissionIndex === -1) && (
+                        <PhaseInput
+                          phase={{ name: AI_SCREENING_PHASE_NAME }}
+                          readOnly
+                          isVirtual
+                        />
+                      )}
+                    </>
+                  )
+                })()
               }
             </>
             )}
@@ -2048,6 +2133,7 @@ class ChallengeEditor extends Component {
               onUpdateMetadata={this.onUpdateMetadata}
               showReviewerField={!isTask}
               onUpdateReviewers={this.onUpdateOthers}
+              aiReviewerReadOnly={isAiReviewerConfigReadOnly}
             />
             {/* hide until challenge API change is pushed to PROD https://github.com/topcoder-platform/challenge-api/issues/348 */}
             {false && <AttachmentField
@@ -2141,7 +2227,8 @@ ChallengeEditor.propTypes = {
   deleteChallenge: PropTypes.func.isRequired,
   loggedInUser: PropTypes.shape().isRequired,
   projectPhases: PropTypes.arrayOf(PropTypes.object).isRequired,
-  assignYourselfCopilot: PropTypes.func.isRequired
+  assignYourselfCopilot: PropTypes.func.isRequired,
+  totalSubmissions: PropTypes.number
 }
 
 export default withRouter(ChallengeEditor)
