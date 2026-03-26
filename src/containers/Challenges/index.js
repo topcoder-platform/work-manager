@@ -20,7 +20,7 @@ import {
   setActiveProject,
   resetSidebarActiveParams
 } from '../../actions/sidebar'
-import { checkAdmin, checkIsUserInvitedToProject } from '../../util/tc'
+import { checkAdmin, checkCopilot, checkIsProjectMember, checkIsUserInvitedToProject } from '../../util/tc'
 import { withRouter } from 'react-router-dom'
 import { getActiveProject } from './helper'
 
@@ -126,8 +126,10 @@ class Challenges extends Component {
       filterProjectOption,
       projects,
       activeProjectId,
+      projectId,
       status,
       projectDetail: reduxProjectInfo,
+      hasProjectAccess,
       loadChallengesByPage,
       page,
       perPage,
@@ -158,13 +160,26 @@ class Challenges extends Component {
       activeProjectId
     )
 
+    // Check if user has access to this specific project
+    const isProjectRoute = !!projectId && !dashboard && !selfService
+    const isProjectDetailLoaded = reduxProjectInfo && `${reduxProjectInfo.id}` === `${projectId}`
+    const isAdmin = checkAdmin(auth.token)
+    const isCopilot = checkCopilot(auth.token)
+    const isProjectMember = isProjectDetailLoaded && checkIsProjectMember(auth.token, reduxProjectInfo)
+    const canAccessProject = isAdmin || isCopilot || isProjectMember || hasProjectAccess
+
+    // Show access denied message if user cannot access this project
+    const accessDeniedMessage = isProjectRoute && isProjectDetailLoaded && !canAccessProject
+      ? "You don't have access to this project. Please contact support@topcoder.com."
+      : warnMessage
+
     return (
       <Fragment>
         {(dashboard || activeProjectId !== -1 || selfService) && (
           <ChallengesComponent
             activeProject={activeProject}
             fetchNextProjects={fetchNextProjects}
-            warnMessage={warnMessage}
+            warnMessage={accessDeniedMessage}
             setActiveProject={setActiveProject}
             dashboard={dashboard}
             challenges={challenges}
@@ -213,6 +228,7 @@ Challenges.propTypes = {
   menu: PropTypes.string,
   challenges: PropTypes.arrayOf(PropTypes.object),
   projectDetail: PropTypes.object,
+  hasProjectAccess: PropTypes.bool,
   isLoading: PropTypes.bool,
   loadChallengesByPage: PropTypes.func,
   loadProject: PropTypes.func.isRequired,
@@ -259,6 +275,7 @@ const mapStateToProps = ({ challenges, sidebar, projects, auth }) => ({
   activeProjectId: sidebar.activeProjectId,
   projects: sidebar.projects,
   projectDetail: projects.projectDetail,
+  hasProjectAccess: projects.hasProjectAccess,
   isBillingAccountExpired: projects.isBillingAccountExpired,
   billingStartDate: projects.billingStartDate,
   billingEndDate: projects.billingEndDate,
