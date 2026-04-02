@@ -38,24 +38,6 @@ class MaximumSubmissionsField extends Component {
             <div className={styles.subRow}>
               <div className={styles.tcCheckbox}>
                 <input
-                  name='unlimited'
-                  id='unlimited'
-                  type='checkbox'
-                  checked={isUnlimited}
-                  onChange={(e) => onUpdateMetadata('submissionLimit', e.target.checked, 'unlimited')}
-                />
-                <label htmlFor='unlimited'>
-                  <div className={styles.checkboxLabel}>
-                    Unlimited
-                  </div>
-                </label>
-              </div>
-            </div>
-          </div>
-          <div className={styles.subGroup}>
-            <div className={styles.subRow}>
-              <div className={styles.tcCheckbox}>
-                <input
                   name='limit'
                   id='limit'
                   type='checkbox'
