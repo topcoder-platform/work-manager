@@ -5,7 +5,6 @@ import SkillsField from '../SkillsField'
 import FinalDeliverablesField from '../FinalDeliverables-Field'
 import StockArtsField from '../StockArts-Field'
 import SubmssionVisibility from '../SubmissionVisibility-Field'
-import MaximumSubmissionsField from '../MaximumSubmissions-Field'
 import { CHALLENGE_TRACKS } from '../../../config/constants'
 import styles from './TextEditor-Field.module.scss'
 import PropTypes from 'prop-types'
@@ -121,11 +120,6 @@ class TextEditorField extends Component {
             <SubmssionVisibility
               challenge={challenge}
               onUpdateCheckbox={onUpdateMetadata}
-              readOnly={readOnly}
-            />
-            <MaximumSubmissionsField
-              challenge={challenge}
-              onUpdateMetadata={onUpdateMetadata}
               readOnly={readOnly}
             />
           </React.Fragment>
